@@ -1,0 +1,28 @@
+\documentclass[border=0pt]{standalone}
+
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{graphicx}
+
+\ifpdf
+% Ensure reproducible output
+\pdfinfoomitdate=1
+\pdfsuppressptexinfo=-1
+\pdftrailerid{}
+\hypersetup{
+  pdfcreator={},
+  pdfproducer={}
+}
+\fi
+
+\begin{document}
+\begin{tikzpicture}
+  \node at (0, 0) {\includegraphics[width=5cm]{pra_spectrum.png}};
+  \begin{scope}
+    \foreach \x/\y in {-506/0.417881,-249/0.0950523,0/1,542/0.69667,830/0.261298,1179/0.179118} {
+      \draw[line width=1.5,red,opacity=0.6]
+      (\x * 0.0013962 - 0.514,\y * 3.08 - 1.27) circle (0.05);
+    }
+  \end{scope}
+\end{tikzpicture}
+\end{document}
