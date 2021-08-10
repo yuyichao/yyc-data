@@ -62,10 +62,15 @@ function fit_data(model, xs, ratios, uncs, p0; plotx=nothing, plot_lo=nothing,
     plotx = get_plot_range(xs; plotx=plotx, plot_lo=plot_lo,
                            plot_hi=plot_hi, plot_scale=plot_scale, plot_npts=plot_npts)
     param = fit.param
-    unc = sqrt.(diag(estimate_covar(fit)))
-    return (param=param, unc=unc,
-            uncs=Unc.(param, unc, Sci),
-            plotx=plotx, ploty=plotx === false ? false : model(plotx, param))
+    try
+        unc = sqrt.(diag(estimate_covar(fit)))
+        return (param=param, unc=unc,
+                uncs=Unc.(param, unc, Sci),
+                plotx=plotx, ploty=plotx === false ? false : model(plotx, param))
+    catch
+        return (param=param, unc=nothing, uncs=param,
+                plotx=plotx, ploty=plotx === false ? false : model(plotx, param))
+    end
 end
 
 function fit_survival(model, data::SortedData, p0; use_unc=true, kws...)
