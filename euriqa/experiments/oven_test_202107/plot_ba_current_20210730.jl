@@ -73,4 +73,76 @@ end
 tight_layout(pad=0.3)
 NaCsPlot.maybe_save("$(prefix)_imgs_auto")
 
+function get_single_count_per_sec(img, time)
+    return sum(@view img[signal_roi...]) / time
+end
+
+function get_count_per_sec(imgs, time)
+    res = Float64[]
+    off = Float64[]
+    for img in imgs.res
+        push!(res, get_single_count_per_sec(img, time))
+    end
+    for img in imgs.off
+        push!(off, get_single_count_per_sec(img, time))
+    end
+    return Unc(mean(res) - mean(off),
+               sqrt(std(res)^2 / length(res) + std(off)^2 / length(off)))
+end
+
+const count_per_sec_uncs = [get_count_per_sec(all_imgs[i], times[i])
+                            for i in 1:length(currents)]
+# @show count_per_sec_uncs
+
+function uncs_to_errorbar(uncs)
+    as = Float64[]
+    ss = Float64[]
+    for unc in uncs
+        push!(as, unc.a)
+        push!(ss, unc.s)
+    end
+    return as, ss
+end
+
+# Objective focal length: 100mm, clear diameter: 0.9inch (from retaining ring) / 22.86mm
+# Imaging lens focal length: 175mm
+# Pixel size 6.5um (100% filling AFAICT)
+# Quantum efficiency: 78%
+# Factor from read mode: 16 ??
+# Binning: 8
+# Beam size: e^-2 FW 160um
+# Viewing angle: 45deg
+# Atom beam width: ~580um
+# Florescence area size: 92800um^2 -> 0.000928cm^2
+
+const QE = 0.78 / 16
+const transmission = 1
+const area = 0.000928 # cm^2
+const solid_angle_ratio = (100 - sqrt(100^2 - (22.86 / 2)^2)) / (2 * 100) # h / 2R
+const m_Ba = 138e-3 / 6.02e23
+const k_B = 1.38e-23
+const T_Ba = 1000
+const v_Ba = sqrt(k_B * T_Ba / m_Ba) * 100 # in cm/s
+
+const atom_per_cm2_per_sec_uncs = count_per_sec_uncs ./ QE ./ solid_angle_ratio ./ area ./ transmission
+const atom_per_cm3_uncs = atom_per_cm2_per_sec_uncs ./ v_Ba
+
+figure()
+errorbar(currents, uncs_to_errorbar(atom_per_cm2_per_sec_uncs)...)
+grid()
+yscale("log")
+xlabel("Oven current (A)")
+ylabel("Flux (cm\$^{-2}\\cdot s^{-1}\$)")
+title("Ba Flux")
+NaCsPlot.maybe_save("$(prefix)_flux")
+
+figure()
+errorbar(currents, uncs_to_errorbar(atom_per_cm3_uncs)...)
+grid()
+yscale("log")
+xlabel("Oven current (A)")
+ylabel("Density (cm\$^{-3}\$)")
+title("Ba Density (assume $(T_Ba) K)")
+NaCsPlot.maybe_save("$(prefix)_density")
+
 NaCsPlot.maybe_show()
