@@ -208,6 +208,17 @@
 \author{Yichao Yu}
 \institute{Ni Group}
 
+\ifpdf
+% Ensure reproducible output
+\pdfinfoomitdate=1
+\pdfsuppressptexinfo=-1
+\pdftrailerid{}
+\hypersetup{
+  pdfcreator={},
+  pdfproducer={}
+}
+\fi
+
 \begin{document}
 
 \pgfdeclarelayer{tweezer}
@@ -499,7 +510,7 @@
         }
         \visible<7-8>{
           \node at (0, 1) {
-            \includegraphics[width=5cm]{../../notes/two-photon-broadening/kenneth_figure}
+            \includegraphics[width=5cm]{../../../notes/two-photon-broadening/kenneth_figure}
           };
         }
         \visible<9->{
