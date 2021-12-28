@@ -1,0 +1,68 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# Cypress Semiconductor CYPD3177-24LQXQ
+#
+DEF CYPD3177-24LQXQ U 0 40 Y Y 1 L N
+F0 "U" 0 200 50 H V L CNN 
+F1 "CYPD3177-24LQXQ" 0 300 50 H V L CNN 
+F2 "Cypress_Semiconductor-002-16934-0-C-*" 0 400 50 H I L CNN 
+F3 "https://www.cypress.com/file/460416/download" 0 500 50 H I L CNN 
+F4 "+105°C" 0 600 50 H I L CNN "ambient temperature range high"
+F5 "-40°C" 0 700 50 H I L CNN "ambient temperature range low"
+F6 "No" 0 800 50 H I L CNN "automotive"
+F7 "IC" 0 900 50 H I L CNN "category"
+F8 "Integrated Circuits (ICs)" 0 1000 50 H I L CNN "device class L1"
+F9 "Interface ICs" 0 1100 50 H I L CNN "device class L2"
+F10 "USB Interface ICs" 0 1200 50 H I L CNN "device class L3"
+F11 "IC USB TYPE-C PORT CONTROL 24QFN" 0 1300 50 H I L CNN "digikey description"
+F12 "428-4652-ND" 0 1400 50 H I L CNN "digikey part number"
+F13 "0.6mm" 0 1500 50 H I L CNN "height"
+F14 "I2C,USB" 0 1600 50 H I L CNN "interface"
+F15 "QFN50P400X400X60-24" 0 1700 50 H I L CNN "ipc land pattern name"
+F16 "Yes" 0 1800 50 H I L CNN "lead free"
+F17 "fccc3b7104efadc5" 0 1900 50 H I L CNN "library id"
+F18 "Cypress Semiconductor" 0 2000 50 H I L CNN "manufacturer"
+F19 "+120°C" 0 2100 50 H I L CNN "max junction temp"
+F20 "24.5V" 0 2200 50 H I L CNN "max supply voltage"
+F21 "1.8V" 0 2300 50 H I L CNN "min supply voltage"
+F22 "USB 3 V 24 MHz surface Mount Type-C Port Controller - QFN-24" 0 2400 50 H I L CNN "mouser description"
+F23 "727-CYPD3177-24LQXQ" 0 2500 50 H I L CNN "mouser part number"
+F24 "1" 0 2600 50 H I L CNN "number of ports"
+F25 "QFN24" 0 2700 50 H I L CNN "package"
+F26 "Yes" 0 2800 50 H I L CNN "rohs"
+F27 "0mm" 0 2900 50 H I L CNN "standoff height"
+F28 "+120°C" 0 3000 50 H I L CNN "temperature range high"
+F29 "-40°C" 0 3100 50 H I L CNN "temperature range low"
+F30 "USB 3.0" 0 3200 50 H I L CNN "usb standard"
+DRAW
+X VCCD 24 100 -200 100 R 40 40 1 1 W 
+X VDDD 23 100 0 100 R 40 40 1 1 W 
+X VBUS_FET_EN 3 100 -2300 100 R 40 40 1 1 P 
+X VBUS_IN 18 100 -500 100 R 40 40 1 1 W 
+X VBUS_MAX 2 100 -2100 100 R 40 40 1 1 P 
+X VBUS_MIN 1 100 -1900 100 R 40 40 1 1 P 
+X ISNK_COARSE 5 100 -1500 100 R 40 40 1 1 P 
+X ISNK_FINE 6 100 -1700 100 R 40 40 1 1 P 
+X ~HPI_INT~ 7 2000 -600 100 L 40 40 1 1 P 
+X HPI_SCL 13 2000 -300 100 L 40 40 1 1 I 
+X HPI_SDA 12 2000 -400 100 L 40 40 1 1 B 
+X CC1 15 100 -800 100 R 40 40 1 1 P 
+X CC2 14 100 -700 100 R 40 40 1 1 P 
+X D+ 17 100 -1000 100 R 40 40 1 1 B 
+X D- 16 100 -1100 100 R 40 40 1 1 B 
+X FAULT 9 2000 -1200 100 L 40 40 1 1 C 
+X FLIP 10 100 -1300 100 R 40 40 1 1 B 
+X GPIO_1 8 2000 -900 100 L 40 40 1 1 B 
+X SAFE_PWR_EN 4 100 -2500 100 R 40 40 1 1 P 
+X VDC_OUT 11 2000 0 100 L 40 40 1 1 P 
+X NC 20 2000 -2000 100 L 40 40 1 1 P 
+X NC 21 2000 -2100 100 L 40 40 1 1 P 
+X EPAD 25 2000 -2300 100 L 40 40 1 1 W 
+X GND 19 2000 -2400 100 L 40 40 1 1 W 
+X GND 22 2000 -2500 100 L 40 40 1 1 W 
+S 200 100 1900 -2600 1 1 0 f
+ENDDRAW
+ENDDEF
+#
+# End Library
