@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name CYPD3177-24LQXQ)(type KiCad)(uri ${KIPRJMOD}/../libs/CYPD3177-24LQXQ/eec.pretty)(options "")(descr ""))
+)
