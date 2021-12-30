@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name eec)(type Legacy)(uri ${KIPRJMOD}/../libs/CYPD3177-24LQXQ/eec.lib)(options "")(descr ""))
+)
