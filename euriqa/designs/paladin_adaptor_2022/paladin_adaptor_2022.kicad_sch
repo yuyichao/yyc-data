@@ -275,7 +275,7 @@
       )
     )
     (symbol "Connectors:Conn_03x20" (in_bom yes) (on_board yes)
-      (property "Reference" "U" (id 0) (at 2.54 2.54 90)
+      (property "Reference" "J" (id 0) (at 2.54 2.54 90)
         (effects (font (size 1.27 1.27)))
       )
       (property "Value" "Conn_03x20" (id 1) (at 2.54 -8.89 90)
@@ -1864,7 +1864,7 @@
   (symbol (lib_id "Connector_Generic:Conn_02x15_Odd_Even") (at 130.81 45.72 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid 69213733-d313-49fb-a8ac-640a9394e76c)
-    (property "Reference" "J2" (id 0) (at 132.08 22.9702 0))
+    (property "Reference" "J3" (id 0) (at 132.08 22.9702 0))
     (property "Value" "Conn_02x15_Odd_Even" (id 1) (at 132.08 25.5071 0))
     (property "Footprint" "Connector_IDC:IDC-Header_2x15_P2.54mm_Vertical" (id 2) (at 130.81 45.72 0)
       (effects (font (size 1.27 1.27)) hide)
@@ -1907,7 +1907,7 @@
   (symbol (lib_id "Connectors:Conn_03x20") (at 43.18 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid a4358792-fb65-4f7e-967e-aa66e21be627)
-    (property "Reference" "U1" (id 0) (at 48.9712 103.9403 0)
+    (property "Reference" "J1" (id 0) (at 48.9712 103.9403 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Conn_03x20" (id 1) (at 48.9712 106.4772 0)
@@ -1984,7 +1984,7 @@
   (symbol (lib_id "Connector_Generic:Conn_02x15_Odd_Even") (at 85.09 45.72 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid c62294fb-0835-4fa4-8556-b09b594000e0)
-    (property "Reference" "J1" (id 0) (at 86.36 22.9702 0))
+    (property "Reference" "J2" (id 0) (at 86.36 22.9702 0))
     (property "Value" "Conn_02x15_Odd_Even" (id 1) (at 86.36 25.5071 0))
     (property "Footprint" "Connector_IDC:IDC-Header_2x15_P2.54mm_Vertical" (id 2) (at 85.09 45.72 0)
       (effects (font (size 1.27 1.27)) hide)
@@ -2029,14 +2029,14 @@
   )
 
   (symbol_instances
-    (path "/c62294fb-0835-4fa4-8556-b09b594000e0"
-      (reference "J1") (unit 1) (value "Conn_02x15_Odd_Even") (footprint "Connector_IDC:IDC-Header_2x15_P2.54mm_Vertical")
+    (path "/a4358792-fb65-4f7e-967e-aa66e21be627"
+      (reference "J1") (unit 1) (value "Conn_03x20") (footprint "Connectors:Conn_3x20_P2.54mm_Vertical")
     )
-    (path "/69213733-d313-49fb-a8ac-640a9394e76c"
+    (path "/c62294fb-0835-4fa4-8556-b09b594000e0"
       (reference "J2") (unit 1) (value "Conn_02x15_Odd_Even") (footprint "Connector_IDC:IDC-Header_2x15_P2.54mm_Vertical")
     )
-    (path "/a4358792-fb65-4f7e-967e-aa66e21be627"
-      (reference "U1") (unit 1) (value "Conn_03x20") (footprint "Connectors:Conn_3x20_P2.54mm_Vertical")
+    (path "/69213733-d313-49fb-a8ac-640a9394e76c"
+      (reference "J3") (unit 1) (value "Conn_02x15_Odd_Even") (footprint "Connector_IDC:IDC-Header_2x15_P2.54mm_Vertical")
     )
   )
 )
