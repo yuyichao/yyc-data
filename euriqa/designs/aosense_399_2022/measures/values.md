@@ -42,20 +42,58 @@ so the center distance should be the average of the two. All units are inch.
 |S|(973, 1661)|
 |T|(305, 1650)|
 
+The output beam needs to go through point (1479, 2738)
 
 # Constraints
 
-* `O = (0, 0, -0.230)`
-* `A = (0, -1.850, -0.230)`
-* `B = (0.678, -1.850, -0.230)`
-* `C = (0.678, -3.700, -0.230)`
-* `D - E = (-0.738, 0)`
-* `D - F = (0, -0.422)`
-* `F - G = (-0.738, 0)`
-* `H - I = (0, -0.422)`
-* `K - J = (-0.422, 0)`
-* `Y(L) - (Y(T) + Y(S) + Y(R) + Y(Q)) / 4 = -2.745`
-* `Y(M) - Y(L) = 0`
-* `Y(T) - Y(S) = 0`
-* `Y(R) - Y(Q) = 0`
-* `Y(T) + Y(S) - Y(R) - Y(Q) = -0.260`
+1. `O = (0, 0, -0.230)`
+2. `A = (0, -1.850, -0.230)`
+3. `B = (0.678, -1.850, -0.230)`
+4. `C = (0.678, -3.700, -0.230)`
+5. `D - E = (-0.738, 0)`
+6. `D - F = (0, -0.422)`
+7. `F - G = (-0.738, 0)`
+8. `H - I = (0, -0.422)`
+9. `K - J = (-0.422, 0)`
+10. `Y(L) - (Y(T) + Y(S) + Y(R) + Y(Q)) / 4 = -2.745`
+11. `Y(M) - Y(L) = 0`
+12. `Y(T) - Y(S) = 0`
+13. `Y(R) - Y(Q) = 0`
+14. `Y(T) + Y(S) - Y(R) - Y(Q) = -0.260`
+
+# Processing
+
+The frame size of the 35mm film is 36x24mm. So with a equivalent focal length of 73mm,
+and a image size of 4032x3024, (assuming the equivalence is on the diagonal of the image),
+the effective focal length should be 8503 pixels.
+
+The transformation from the coordinate on the board, to the coordinate on the picture is
+an arbitrary 3D rotation and translation followed by a point projection.
+For the actual fit, the center of the image needs to be relabelled as pixel 0, 0.
+
+Since we know all the image coordinates, it's easier/more consistent to reverse transform
+the points (given the known Z position in real space) back to the expected x, y position
+in real space to do our fit using the constraints above. The fit shows that
+the tilt of the camera was (in degree)
+
+* Yaw: -5.19
+* Pitch: 4.65
+* Roll: 1.01
+
+The camera center is shifted from the origin I defined by
+
+* X: 0.258 inch
+* Y: 0.339 inch
+
+And the height of the cemera was 29.8 inch.
+
+# Machining related positions (inch)
+
+* Bottom left mounting hole (the top right hole along the slot): (-3.556, -0.148)
+* Bottom right mounting hole (point N): (-1.801, 0.090)
+* Top left mounting hole (point L): (-3.978, -2.431)
+* Top right mounting hole (point G): (-1.603, -1.528)
+
+* Horizontal beam goes through (center of the lower fiber coupler): (0, -0.925)
+* Vertical beam goes through (slightly shifted from a screw hole
+  next to the mirror we want to hit): (-2.066, 3.976)
