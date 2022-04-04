@@ -12,6 +12,8 @@ import NaCsCalc: Trap
 using NaCsCalc.Utils: interactive
 using NaCsCalc.Atomic: all_scatter_D
 
+using LinearAlgebra
+
 function maybe_save(name)
     if !interactive()
         dir = dirname(name)
@@ -83,7 +85,7 @@ plot_hf(params, res) = plot_hf(params, collect(res))
 
 function plot_hf(params, res::Vector{T}) where {T<:Tuple}
     figure()
-    for i in 1:nfields(T)
+    for i in 1:fieldcount(T)
         hf = [r[i].a for r in res]
         hf_unc = [r[i].s for r in res]
         errorbar(params, hf, hf_unc, label="$i")
@@ -170,8 +172,8 @@ function threadmap(f, arg)
     # A really simple work queue
     n = length(arg)
     counter = Threads.Atomic{Int}(1)
-    T = Core.Inference.return_type(f, Tuple{eltype(arg)})
-    res = Vector{T}(n)
+    T = Core.Compiler.return_type(f, Tuple{eltype(arg)})
+    res = Vector{T}(undef, n)
     nt = Threads.nthreads()
     Threads.@threads for _ in 1:nt
         while true
@@ -182,7 +184,7 @@ function threadmap(f, arg)
             res[i] = f(arg[i])
         end
     end
-    if !isleaftype(T)
+    if !isconcretetype(T)
         return [v for v in res]
     end
     return res
@@ -349,7 +351,7 @@ gen_f2op_spec(p, pol) =
 const include_scatter = true
 
 const sz = 300, 30, 30
-const trapscatter = System.Scatter{Float32}(eye(Float32, 8) .* 0.033e-3 * include_scatter,
+const trapscatter = System.Scatter{Float32}(Diagonal{Float32}(I * 0.033e-3 * include_scatter, 8),
                                             ηs_trap(1, 1, 1), ηs_trap(1, 0, 0),
                                             zeros(Bool, 8, 8),
                                             (0, 1, 1))
@@ -416,7 +418,7 @@ function create_op(t, p1, p2, pol=op_pol)
     return System.MultiOP{Float32}(t, [s1s; s2s; trapscatter])
 end
 
-const BuilderT = Setup.SeqBuilder{System.StateC,Void}
+const BuilderT = Setup.SeqBuilder{System.StateC,Nothing}
 statec() = System.StateC(sz...)
 
 function create_sequence(n)
