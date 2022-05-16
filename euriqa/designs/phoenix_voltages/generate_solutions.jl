@@ -1,5 +1,7 @@
 #!/usr/bin/julia
 
+using Printf
+
 include("fill_electrodes.jl")
 
 function generate_solution_plots(outdir, names, data)
@@ -9,6 +11,8 @@ function generate_solution_plots(outdir, names, data)
         for j in 1:length(names)
             vals[names[j]] = data[i, j]
         end
-        write(joinpath(outdir, "line_$i.svg"), fill_electrode(vals))
+        context = Dict("frame_no"=>"Frame: $(@sprintf("%04d", i))")
+        write(joinpath(outdir, "line_$i.svg"),
+              fill_electrode(vals, context))
     end
 end

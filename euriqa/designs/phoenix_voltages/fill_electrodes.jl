@@ -20,8 +20,8 @@ function default_fill_map(v, cmap=get_cmap("RdBu_r"))
     return "#" * val_to_color(rgb[1]) * val_to_color(rgb[2]) * val_to_color(rgb[3])
 end
 
-function fill_electrode(vals, fill_map=default_fill_map, def_fill="none")
-    context = Dict{String,String}()
+function fill_electrode(vals, context=Dict{String,String}(),
+                        fill_map=default_fill_map, def_fill="none")
     for (key, value) in vals
         context["fill_$key"] = fill_map(value)
     end
