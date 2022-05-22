@@ -245,8 +245,8 @@
 % _ * Trapping and initial characterization
 
 %% Title
-% I'm Yichao from the Monroe group at Duke and today I'll tell you about
-% our second generation quantum computing experiment.
+% I'm Yichao from the Monroe group at Duke Quantum Center
+% and today I'll tell you about our second generation quantum computing experiment.
 
 {
   % \usebackgroundtemplate{
@@ -262,32 +262,38 @@
 }
 
 % Questions:
+% * 355nm power on ions
 % * use of 355nm to reduce light shift
 % * which transverse mode do we use
 % * qubit fidelity
 % * main limiting factors
+% * breadboard/HOA heating rate
+% * what limits gate time? motional mode/laser intrinsic issues
+% * Anything else worth mentioning about the oven
+% * Reordering graph, what is it showing
+% * conversion between pressure and ion reordering rate
 
 %% Yb ions
 % In our group, we are building quantum computers using trapped Yb 171 ions.
 % As many people here would know, these are good choice for qubits mostly thanks to
-% their internal structures.
-% It got a electronic ground state with a J=1/2 and I=1/2 meaning that we have
-% a pair of mF=0 states that are insensitive to the B field to the first order,
-% which has allowed people to achieve a very long coherence time of ~1hr.
-% It also has a mostly cycling optical transition at 369nm which we can use to
+% their internal structures. For a start, it got a electronic ground state with
+% a J=1/2 and I=1/2 meaning that we have a pair of mF=0 states
+% that are insensitive to the B field to the first order.
+% This is what has allowed people to achieve a very long coherence time of ~1hr.
+% The Yb ion also has a mostly cycling optical transition at 369nm which we can use to
 % do fast imaging, state preparation and detection with high fidelity.
 % The occational leak into a different electronic D state can be closed with
 % a 935nm IR light fairly easily as well.
 
 % The ions are trapped in a chain above a surface trap, which give us
-% fine control on the axial position of the ions.
+% fine control on the axial position of the ions using the surface electrodes.
 % For coherent manipulation of these qubit states,
 % we use a commercial pulsed laser at 355nm.
 % Compared to using CW lasers, these laser systems can provide much higher power,
 % allowing us to achieve fast gate operation, and relatively low maintanance,
 % which reduces the down time of our experiment.
-% In order to entangle these qubits, we use the momentum kicks
-% from our Raman beam to implement a MS gate using the radial mode of
+% Finally, in order to entangle these qubits, we use the momentum kicks
+% from our Raman beam to implement a MS gate on the radial mode of
 % the shared motional state of the ion chain.
 
 %% First generation system
@@ -301,16 +307,89 @@
 
 %% Second generation system
 % During the operation of the first system, however, we have identified
-% a few limitations of our system that affects the maximum size and fidelity
+% a few limitations of our system that affects the maximum size and fidelity of
 % the circuits we run. This is why we are building the second generation EURIQA
 % system that is designed to improve on most of these limitations
-% based on what we've learnt and this is what I'm going to focus on
-% for the rest of the talk.
+% based on what we've learnt. You can see an overview of some of the new features here
+% and this is what I'm going to focus on for the rest of the talk.
 
-\begin{frame}[t]{Conclusion and Outlook}
-  \begin{center}
-  \end{center}
-\end{frame}
+%% Phoenix trap
+% One of the main issues that limits the gate fidelity and ion numbers
+% in the 1st generation experiment is the heating of ions from surface
+% electric field noise and that's indeed one of the main focus of the design.
+
+% We use the Pheonix trap which is a new generation of the surface trap
+% from the Snadia National Lab. It has better wall metallization,
+% which should shield and reduce the field noise as well as reducing
+% charging and photovoltaic effect caused by stray laser beams.
+% It also comes with segmented outter electrodes which give us better control
+% on the ion chain for compensating micromotion across the whole chain.
+% All of these contributes to a lower heating rate when we run our gates
+% on the ion chain.
+
+% Additionally, the loading rate of the trap is also improved thanks to a larger
+% loading slot and a simpler trap geometry
+% allowing shuttling of multiple ions simutaniously.
+
+%% Raman geometry
+% Another main change we made to improve our gate fidelity is the Raman beam geometry.
+% Compared to the 1st generation experiment, which send one of the Raman beams
+% perpendicular to the trap surface, we send both of our Raman beams parallel
+% to the trap. This means that the motional mode we use is also parallel to the surface,
+% and has minimum coupling to the dominant E field noise.
+% The momentum transfer from the Raman transition is also faster,
+% allowing faster gate operations.
+% Not having to send our Raman beam through the trap should also reduces
+% the amount of field noise induced by the laser.
+
+%% New oven
+% In the 1st gen experiment, we demostrated an improvment in circuit depth
+% by sympathetically cooling the ion chain using Yb 172 icon.
+% To accommodate this better, we've changed our atomic source to one with higher
+% Yb 172 abundance. As you can see in this theoretical plot,
+% we can selectively load either an 171 or 172 ion with more than 90% probability
+% by changin the frequency of our ionization laser.
+% This will help us construct the chain with the composition we want
+% more deterministically.
+
+%% Construction
+% As part of the system upgrade and construction, we've also designed
+% and implemented some technical improvements that should help with
+% the general operation of the system.
+% This includes a better vacuum system built using vacuum-fired low hydrogen components
+% that should improve upon the 4-5min time between collisions
+% measured in our first gen system.
+% We have pumped down our chamber and we are currently measuring
+% a 9e-12 Torr pressure in our system.
+% We'll need to check the collision rate with the ions after we trap a chain of them.
+%
+% We also have a specially build Raman deliverying beam path built by L3Harris
+% that is more stable and purged with clean nitrogen to reduce UV burn on the optics.
+% This Raman delivery system was just aligned and commissioned thanks to people from
+% L3Harris a few months ago as you can see in this picture.
+% We have optically characterized the shape of our global and individual
+% addressing Raman beams which shows promising performance especially
+% in terms of the cross talk to the neighboring ions.
+%
+% The CW lasers for cooling and trapping of the ions has also been upgraded
+% to a system built by AOSense for us. The whole beam path is built
+% on a single piece of aluminum base board and with my hand there for scale,
+% you can see that the optics and beam path are quite compact.
+% These design features should improve the stability of our beam path.
+% We've already aligned and commissioned most of the beam path
+% and we'll learn more about their stability as we operate the system.
+
+%% Current status
+% The system, with all of the improved design in place, is shown in this photo.
+% Here you can see our vacuum chamber, with the delivery beam path for the CW lasers
+% mounted on it, and the Raman beam path from L3Harris surrounding it.
+% We have trapped Yb 171 ions in the chamber as of two weeks ago
+% as you can see in this picture.
+% We've also started characterizing our system
+% as well as the optimization for various parameters,
+% moving towards operating quantum gates in our system.
+% Here I'll leave you with a video showing our first measurement of
+% the secular frequency using parametric heating.
 
 \begin{frame}{}
 \end{frame}
