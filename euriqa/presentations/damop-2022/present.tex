@@ -211,14 +211,14 @@
 \institute[Duke Quantum Center]{Monroe Group/Duke Quantum Center}
 
 \ifpdf
-% Ensure reproducible output
-\pdfinfoomitdate=1
-\pdfsuppressptexinfo=-1
-\pdftrailerid{}
-\hypersetup{
-  pdfcreator={},
-  pdfproducer={}
-}
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
 \fi
 
 \begin{document}
@@ -253,12 +253,12 @@
 
 {
   % \usebackgroundtemplate{
-  %   \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{front_bg.png}}
+  % \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{front_bg.png}}
   % }
-  % \setbeamercolor{title}{fg=white}
-  % \setbeamercolor{author}{fg=white}
-  % \setbeamercolor{institute}{fg=white}
-  % \setbeamercolor{date}{fg=white}
+  %   \setbeamercolor{title}{fg=white}
+  %   \setbeamercolor{author}{fg=white}
+  %   \setbeamercolor{institute}{fg=white}
+  %   \setbeamercolor{date}{fg=white}
   \begin{frame}{}
     \titlepage
   \end{frame}
@@ -289,8 +289,10 @@
 % a 935nm IR light fairly easily as well.
 
 \begin{frame}{$^{171}\text{Yb}^+$ qubit}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 % The ions are trapped in a chain above a surface trap, which give us
@@ -309,9 +311,28 @@
 % * Paladin
 
 \begin{frame}{$^{171}\text{Yb}^+$ chain and coherent manipulation}
-  \begin{tikzpicture}
-    \node at (0, 0) {\includegraphics[width=5cm]{imgs/Phoenix_with_ion}};
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{scope}[shift={(-3, 0)}]
+        \draw[line width=1] (-1.0, -3) -- node[above] {\small $|0, 0\rangle$} (1.0, -3);
+        \draw[line width=1] (-1.0, -2) -- node[above] {\small $|1, 0\rangle$} (1.0, -2);
+        \draw[line width=1] (-1.5, 2.5) node[left] {$^2\mathrm{P}_{1/2}$} -- (1.5, 2.5);
+        \draw[line width=1,dashed] (-1.5, 3) -- (1.5, 3);
+        \draw[line width=1] (-1.5, 4) node[left] {$^2\mathrm{P}_{3/2}$} -- (1.5, 4);
+        \draw[blue,<->,line width=1] (-0.8, -3) -- node[left] {$355$ nm} (0, 3);
+        \draw[blue,<->,line width=1] (0.8, -2) -- (0, 3);
+
+        \draw[<->,dashed,line width=0.5] (0.95, -2) --
+        node[right] {$12.6$ GHz} (0.95, -3);
+        \draw[<->,dashed,line width=0.5] (1.2, 2.5) --
+        node[right] {$33$ THz} (1.2, 3);
+        \draw[<->,dashed,line width=0.5] (1.2, 3) --
+        node[right] {$66$ THz} (1.2, 4);
+      \end{scope}
+      \node at (3, 2.5) {\includegraphics[width=5cm]{imgs/Phoenix_with_ion}};
+      \node at (3, -1.5) {\includegraphics[width=5cm]{imgs/Paladin_Breadboard}};
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% First generation system
@@ -327,8 +348,10 @@
 % * EURIQA picture
 
 \begin{frame}{$1^{\text{st}}$ generation EURIQA system}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Second generation system
@@ -347,8 +370,10 @@
 % * AOSense
 
 \begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Phoenix trap
@@ -375,8 +400,10 @@
 % * Loading slot
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Pheonix trap}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Raman geometry
@@ -391,8 +418,10 @@
 % the amount of field noise induced by the laser.
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman geometry}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% New oven
@@ -409,8 +438,10 @@
 % * Isotope selection plot
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: New Yb atom source}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Construction
@@ -429,8 +460,10 @@
 % * Reordering
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Improved vacuum}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 % We also have a specially build Raman deliverying beam path built by L3Harris
@@ -446,8 +479,10 @@
 % * Beam images
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman beam path}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 % The CW lasers for cooling and trapping of the ions has also been upgraded
@@ -463,8 +498,10 @@
 % * AOSense alignment picture
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: CW lasers}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Current status
@@ -485,8 +522,10 @@
 % * Ion heating video
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: status and first ion}
-  \begin{tikzpicture}
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 \begin{frame}{}
