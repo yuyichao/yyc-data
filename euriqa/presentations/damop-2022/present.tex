@@ -290,8 +290,43 @@
 
 \begin{frame}{$^{171}\text{Yb}^+$ qubit}
   \begin{center}
-    \begin{tikzpicture}
-    \end{tikzpicture}
+    \begin{columns}
+      \column{6.5cm}
+      \begin{block}{}
+        \begin{itemize}
+        \item Long coherence time: $T_2\approx1 \text{hr}$\\
+          {\scriptsize Wang, et al., Nat Commun 12, 233 (2021)}\\
+          \vspace{1em}
+        \item High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mu s$
+        \item High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mu s$\\
+          \vspace{0.5em}
+          {\scriptsize Harty, et al., PRL. 113, 22051, (2014)}
+          {\scriptsize Christensen, et al., NPJ Quantum Inf. 6, 35 (2020)}
+        \end{itemize}
+      \end{block}
+      \column{5cm}
+      \begin{tikzpicture}
+        \begin{scope}[scale=0.8]
+          \draw[line width=1] (-0.6, -3) -- node[above right] {$|\!\downarrow\rangle$} (0.6, -3);
+          \draw[line width=1] (-2.1, -2.15) -- (-0.9, -2.15);
+          \draw[line width=1] (-0.6, -2) --
+          node[above right] {$|\!\uparrow\rangle$} (0.6, -2);
+          \draw[line width=1] (0.9, -1.85) -- (2.1, -1.85);
+          \node[left] at (-2.1, -2.5) {$^2\mathrm{S}_{1/2}$};
+
+          \begin{scope}[shift={(0, 6)}]
+            \draw[line width=1] (-0.6, -3) -- (0.6, -3);
+            \draw[line width=1] (-2.1, -2.1) -- (-0.9, -2.1);
+            \draw[line width=1] (-0.6, -2) -- (0.6, -2);
+            \draw[line width=1] (0.9, -1.9) -- (2.1, -1.9);
+            \node[left] at (-2.1, -2.5) {$^2\mathrm{P}_{1/2}$};
+          \end{scope}
+
+          \draw[snakearrow,line width=1,blue] (0, -2.5) --
+          node[right] {$369$ nm} (0, 3.5);
+        \end{scope}
+      \end{tikzpicture}
+    \end{columns}
   \end{center}
 \end{frame}
 
