@@ -526,7 +526,9 @@
   \begin{center}
     \begin{tikzpicture}
       \begin{scope}[shift={(-3, 0)}]
-        \node at (0, 2) {\includegraphics[width=4.6cm]{imgs/Breadboard_Raman.png}};
+        \node[align=center] at (0, 2)
+        {\usebeamercolor[fg]{frametitle}{\bf 1$^{\text{st}}$ gen Raman}\\
+          \includegraphics[width=4.6cm]{imgs/Breadboard_Raman.png}};
 
         \draw[->,blue!80!black,line width=1] (-1.9, -2.5) --
         node[below] {$k_g$} (-0.1, -2.5);
@@ -540,7 +542,9 @@
       \end{scope}
 
       \begin{scope}[shift={(3, 0)}]
-        \node at (0, 2) {\includegraphics[width=4.6cm]{imgs/Brassboard_Raman.png}};
+        \node[align=center] at (0, 2)
+        {\usebeamercolor[fg]{frametitle}{\bf 2$^{\text{nd}}$ gen Raman}\\
+          \includegraphics[width=4.6cm]{imgs/Brassboard_Raman.png}};
 
         \draw[->,blue!80!black,line width=1] (-1.9, -2.5) --
         node[below] {$k_g$} (-0.1, -2.5);
@@ -577,10 +581,12 @@
       \item Sympathetic cooling with $^{172}\mathrm{Yb}^+$\\
         {\scriptsize Cetina, et al., PRX Quantum 3, 010334 (2022)}\\
         \vspace{1em}
-      \item New Yb source to enhance loading of $^{172}\mathrm{Yb}^+$
+      \item<2-> New Yb source to enhance loading of $^{172}\mathrm{Yb}^+$
       \end{itemize}
       \column{5.1cm}
-      \includegraphics[width=5cm]{imgs/Loading_Frequency.png}
+      \visible<2->{
+        \includegraphics[width=5cm]{imgs/Loading_Frequency.png}
+      }
     \end{columns}
   \end{center}
 \end{frame}
@@ -606,14 +612,17 @@
       \column{6.3cm}
       \begin{itemize}
       \item Vacuum fired components
-      \item Reduce ion-chain reordering rate
+      \item<2-> Reduce ion-chain reordering rate
+      \item<3-> $10^{-11} \mathrm{Torr}$ measured pressure
       \end{itemize}
-      \begin{center}
-        \includegraphics[width=5cm]{imgs/Reorder_rate.png}\\
-        {\footnotesize 15-ion chain reorders every 4-5 min}\\
-        {\footnotesize in $1^{\text{st}}$ gen EURIQA system.}\\
-        {\scriptsize Cetina, et al.}
-      \end{center}
+      \visible<2->{
+        \begin{center}
+          \includegraphics[width=5cm]{imgs/Reorder_rate.png}\\
+          {\footnotesize 15-ion chain reorders every 4-5 min}\\
+          {\footnotesize in $1^{\text{st}}$ gen EURIQA system.}\\
+          {\scriptsize Cetina, et al.}
+        \end{center}
+      }
       \column{5.1cm}
       \includegraphics[width=5cm]{imgs/Vacuum_stack.png}
     \end{columns}
@@ -632,17 +641,25 @@
 % * Harris picture/drawing
 % * Beam images
 
-% TODO: mark spacing on individual
-
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman beam path}
   \begin{center}
     \begin{tikzpicture}
       \node at (0, 0) {\includegraphics[width=10cm]{imgs/Harris_optics.png}};
-      \fill[white,opacity=0.8] (-5.05, -3.2) rectangle (5.05, 3.2);
-      \node[align=center] at (0, 2) {\large Global addressing Raman beam\\
-        \includegraphics[height=1cm]{imgs/Global_beam.png}};
-      \node[align=center] at (0, -2) {\large Individual addressing Raman beam\\
-        \includegraphics[height=1.5cm]{imgs/Individual_beam.png}};
+
+      \visible<2->{
+        \fill[white,opacity=0.8] (-5.05, -3.2) rectangle (5.05, 3.2);
+        \node[align=center] at (0, 2) {\large Global addressing Raman beam\\
+          \includegraphics[height=1cm]{imgs/Global_beam.png}};
+        \begin{scope}[shift={(0, -2)}]
+          \node[align=center] at (0, 0) {\large Individual addressing Raman beam\\
+            \includegraphics[height=1.5cm]{imgs/Individual_beam.png}};
+          \draw[dotted,line width=1,gray] (-1.17, -0.5) -- (-1.17, -1.6);
+          \draw[dotted,line width=1,gray] (-1.49, -0.5) -- (-1.49, -1.6);
+          \draw[<-,>=stealth,line width=1] (-1.49, -1.5) -- ++(-0.8, 0);
+          \draw[<-,>=stealth,line width=1] (-1.17, -1.5) -- ++(0.8, 0);
+          \node[below] at (-1.33, -1.6) {$4.5\mathrm{\mu m}$};
+        \end{scope}
+      }
     \end{tikzpicture}
   \end{center}
 \end{frame}
@@ -662,11 +679,15 @@
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: CW lasers}
   \begin{center}
     \begin{tikzpicture}
-      \node at (-2.2, -1) {\includegraphics[width=7.5cm]{imgs/AOSense_internal.jpg}};
-      \node at (4, 0) {\includegraphics[width=4cm]{imgs/AOSense_external.png}};
-      \node[align=left] at (-2.2, 2.5) {Rack mounted miniaturized beam path\\
-        for 369, 399, 780 and 935 nm.};
-      \node at (0, 0) {\includegraphics[width=11.5cm]{imgs/AOSense_align.jpg}};
+      \visible<1>{
+        \node at (-2.2, -1) {\includegraphics[width=7.5cm]{imgs/AOSense_internal.jpg}};
+        \node at (4, 0) {\includegraphics[width=4cm]{imgs/AOSense_external.png}};
+        \node[align=left] at (-2.2, 2.5) {Rack mounted miniaturized beam path\\
+          for 369, 399, 780 and 935 nm.};
+      }
+      \visible<2>{
+        \node at (0, 0) {\includegraphics[width=11.5cm]{imgs/AOSense_align.jpg}};
+      }
     \end{tikzpicture}
   \end{center}
 \end{frame}
