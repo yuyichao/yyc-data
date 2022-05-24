@@ -505,6 +505,33 @@
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman geometry}
   \begin{center}
     \begin{tikzpicture}
+      \begin{scope}[shift={(-3, 0)}]
+        \node at (0, 2) {\includegraphics[width=4.6cm]{imgs/Breadboard_Raman.png}};
+
+        \draw[->,blue!80!black,line width=1] (-1.9, -2.5) --
+        node[below] {$k_g$} (-0.1, -2.5);
+        \draw[->,blue!80!black,line width=1] (0, -0.6) --
+        node[right] {$k_i$} (0, -2.4);
+        \draw[->,green!70!black,line width=1] (-1.9, -2.4) --
+        node[above,sloped] {$\Delta k$} (-0.1, -0.6);
+
+        \draw[->,red!60!black,line width=0.7] (2.1, -3.1) --
+        node[below,sloped] {E field noise} (2.1, -0.9);
+      \end{scope}
+
+      \begin{scope}[shift={(3, 0)}]
+        \node at (0, 2) {\includegraphics[width=4.6cm]{imgs/Brassboard_Raman.png}};
+
+        \draw[->,blue!80!black,line width=1] (-1.9, -2.5) --
+        node[below] {$k_g$} (-0.1, -2.5);
+        \draw[->,blue!80!black,line width=1] (1.9, -2.5) --
+        node[below] {$k_i$} (0.1, -2.5);
+        \draw[->,green!70!black,line width=1] (-1.9, -2.3) --
+        node[above,sloped] {$\Delta k$} (1.9, -2.3);
+
+        \draw[->,red!60!black,line width=0.7] (2.1, -3.1) --
+        node[below,sloped] {E field noise} (2.1, -0.9);
+      \end{scope}
     \end{tikzpicture}
   \end{center}
 \end{frame}
