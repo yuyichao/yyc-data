@@ -438,19 +438,20 @@
 % * Vacuum
 % * AOSense
 
-%% TODO: arrow
-
 \begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
   \begin{center}
     \vspace{-0.5cm}
     \begin{tikzpicture}
       \node at (0, 0) {\includegraphics[width=7.5cm]{imgs/Brassboard_render}};
+      \draw[->,cyan,line width=3,>=stealth] (-3.8, 3.0) -- (-0.9, 0.5);
       \node[align=center,font=\tiny] at (-3.8, 3.0)
       {\includegraphics[width=2.3cm]{imgs/Phoenix_zoomout}\\
         Sandia Phoenix trap};
+      \draw[->,cyan,line width=3,>=stealth] (-2.7, -3.0) -- (0.9, -1);
       \node[align=center,font=\tiny] at (-2.7, -3.0)
       {\includegraphics[width=4cm]{imgs/Harris_overview}\\
         L3Harris Raman beam path};
+      \draw[->,cyan,line width=3,>=stealth] (3.9, 2.7) -- (-0.4, 1.0);
       \node[align=center,font=\tiny] at (3.9, 2.7)
       {\includegraphics[width=2.6cm]{imgs/Vacuum_stack}\\
         Improved vacuum system};
@@ -489,19 +490,23 @@
     \begin{tikzpicture}
       \node[text width=6.5cm] at (-3, 2) {
         \begin{itemize}
-        \item Better metallization
+        \item<2-> Better metallization
           \begin{itemize}
           \item Reducing noise
           \item Less charging/photovoltaic effect
           \end{itemize}
           30 qunta/s @ 3 MHz heating rate
-        \item Segmented outter electrodes
-        \item Better and faster ion loading
+        \item<3-> Segmented outter electrodes
+        \item<4-> Better and faster ion loading
         \end{itemize}
       };
       \node at (3, 2) {\includegraphics[width=4.8cm]{imgs/Phoenix}};
-      \node at (3.5, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
-      \node at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
+      \visible<3->{
+        \node at (3.5, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
+      }
+      \visible<4->{
+        \node at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
+      }
     \end{tikzpicture}
   \end{center}
 \end{frame}
