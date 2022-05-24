@@ -290,11 +290,11 @@
       \column{6.5cm}
       \begin{block}{}
         \begin{itemize}
-        \item Long coherence time: $T_2\approx1 \text{hr}$\\
+        \item<1-> Long coherence time: $T_2\approx1 \text{hr}$\\
           {\scriptsize Wang, et al., Nat Commun 12, 233 (2021)}\\
           \vspace{1em}
-        \item High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mathrm{\mu s}$
-        \item High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mathrm{\mu s}$\\
+        \item<2-> High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mathrm{\mu s}$
+        \item<2-> High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mathrm{\mu s}$\\
           \vspace{0.5em}
           {\scriptsize Harty, et al., PRL. 113, 22051, (2014)}
           {\scriptsize Christensen, et al., NPJ Quantum Inf. 6, 35 (2020)}
@@ -310,16 +310,18 @@
           \draw[line width=1] (0.9, -1.85) -- (2.1, -1.85);
           \node[left] at (-2.1, -2.5) {$^2\mathrm{S}_{1/2}$};
 
-          \begin{scope}[shift={(0, 6)}]
-            \draw[line width=1] (-0.6, -3) -- (0.6, -3);
-            \draw[line width=1] (-2.1, -2.1) -- (-0.9, -2.1);
-            \draw[line width=1] (-0.6, -2) -- (0.6, -2);
-            \draw[line width=1] (0.9, -1.9) -- (2.1, -1.9);
-            \node[left] at (-2.1, -2.5) {$^2\mathrm{P}_{1/2}$};
-          \end{scope}
+          \visible<2->{
+            \begin{scope}[shift={(0, 6)}]
+              \draw[line width=1] (-0.6, -3) -- (0.6, -3);
+              \draw[line width=1] (-2.1, -2.1) -- (-0.9, -2.1);
+              \draw[line width=1] (-0.6, -2) -- (0.6, -2);
+              \draw[line width=1] (0.9, -1.9) -- (2.1, -1.9);
+              \node[left] at (-2.1, -2.5) {$^2\mathrm{P}_{1/2}$};
+            \end{scope}
 
-          \draw[snakearrow,line width=1,blue] (0, -2.5) --
-          node[right] {$369$ nm} (0, 3.5);
+            \draw[snakearrow,line width=1,blue] (0, -2.5) --
+            node[right] {$369$ nm} (0, 3.5);
+          }
         \end{scope}
       \end{tikzpicture}
     \end{columns}
@@ -344,24 +346,26 @@
 \begin{frame}{$^{171}\text{Yb}^+$ chain and coherent manipulation}
   \begin{center}
     \begin{tikzpicture}
-      \begin{scope}[shift={(-3, 0)}]
-        \draw[line width=1] (-1.0, -3) -- node[above] {\small $|0, 0\rangle$} (1.0, -3);
-        \draw[line width=1] (-1.0, -2) -- node[above] {\small $|1, 0\rangle$} (1.0, -2);
-        \draw[line width=1] (-1.5, 2.5) node[left] {$^2\mathrm{P}_{1/2}$} -- (1.5, 2.5);
-        \draw[line width=1,dashed] (-1.5, 3) -- (1.5, 3);
-        \draw[line width=1] (-1.5, 4) node[left] {$^2\mathrm{P}_{3/2}$} -- (1.5, 4);
-        \draw[blue,<->,line width=1] (-0.8, -3) -- node[left] {$355$ nm} (0, 3);
-        \draw[blue,<->,line width=1] (0.8, -2) -- (0, 3);
-
-        \draw[<->,dashed,line width=0.5] (0.95, -2) --
-        node[right] {$12.6$ GHz} (0.95, -3);
-        \draw[<->,dashed,line width=0.5] (1.2, 2.5) --
-        node[right] {$33$ THz} (1.2, 3);
-        \draw[<->,dashed,line width=0.5] (1.2, 3) --
-        node[right] {$66$ THz} (1.2, 4);
-      \end{scope}
       \node at (3, 2.5) {\includegraphics[width=5cm]{imgs/Phoenix_with_ion}};
-      \node at (3, -1.5) {\includegraphics[width=5cm]{imgs/Paladin_Breadboard}};
+      \visible<2->{
+        \node at (3, -1.5) {\includegraphics[width=5cm]{imgs/Paladin_Breadboard}};
+        \begin{scope}[shift={(-3, 0)}]
+          \draw[line width=1] (-1.0, -3) -- node[above] {\small $|0, 0\rangle$} (1.0, -3);
+          \draw[line width=1] (-1.0, -2) -- node[above] {\small $|1, 0\rangle$} (1.0, -2);
+          \draw[line width=1] (-1.5, 2.5) node[left] {$^2\mathrm{P}_{1/2}$} -- (1.5, 2.5);
+          \draw[line width=1,dashed] (-1.5, 3) -- (1.5, 3);
+          \draw[line width=1] (-1.5, 4) node[left] {$^2\mathrm{P}_{3/2}$} -- (1.5, 4);
+          \draw[blue,<->,line width=1] (-0.8, -3) -- node[left] {$355$ nm} (0, 3);
+          \draw[blue,<->,line width=1] (0.8, -2) -- (0, 3);
+
+          \draw[<->,dashed,line width=0.5] (0.95, -2) --
+          node[right] {$12.6$ GHz} (0.95, -3);
+          \draw[<->,dashed,line width=0.5] (1.2, 2.5) --
+          node[right] {$33$ THz} (1.2, 3);
+          \draw[<->,dashed,line width=0.5] (1.2, 3) --
+          node[right] {$66$ THz} (1.2, 4);
+        \end{scope}
+      }
     \end{tikzpicture}
   \end{center}
 \end{frame}
@@ -389,12 +393,12 @@
       \begin{block}{}
         \begin{itemize}
         \item 15-24 qubits
-        \item High fidelity single and two qubit gates
-        \item Universal reconfigurable
-        \item Remote operations
+        \item<2-> High fidelity single and two qubit gates
+        \item<3-> Universal reconfigurable
+        \item<4-> Remote operations
         \end{itemize}
       \end{block}
-      {
+      \visible<5->{
         \scriptsize
         \begin{itemize}
         \item E06: Programmable N-body interactions with trapped ion qubits
@@ -672,6 +676,7 @@
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: status and first ion}
   \begin{center}
     \begin{tikzpicture}
+      \node at (0, 0) {\includegraphics[width=10.5cm]{imgs/LabPicture.png}};
     \end{tikzpicture}
   \end{center}
 \end{frame}
