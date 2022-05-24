@@ -252,13 +252,9 @@
 % * (background) lab picture
 
 {
-  % \usebackgroundtemplate{
-  % \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{front_bg.png}}
-  % }
-  %   \setbeamercolor{title}{fg=white}
-  %   \setbeamercolor{author}{fg=white}
-  %   \setbeamercolor{institute}{fg=white}
-  %   \setbeamercolor{date}{fg=white}
+  \usebackgroundtemplate{
+    \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
+  }
   \begin{frame}{}
     \titlepage
   \end{frame}
@@ -297,8 +293,8 @@
         \item Long coherence time: $T_2\approx1 \text{hr}$\\
           {\scriptsize Wang, et al., Nat Commun 12, 233 (2021)}\\
           \vspace{1em}
-        \item High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mu s$
-        \item High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mu s$\\
+        \item High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mathrm{\mu s}$
+        \item High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mathrm{\mu s}$\\
           \vspace{0.5em}
           {\scriptsize Harty, et al., PRL. 113, 22051, (2014)}
           {\scriptsize Christensen, et al., NPJ Quantum Inf. 6, 35 (2020)}
@@ -384,6 +380,8 @@
 
 \begin{frame}{$1^{\text{st}}$ generation EURIQA system}
   \begin{center}
+    \textbf{E}rror-corrected \textbf{U}niversal \textbf{R}econfigurable
+    \textbf{I}on-trap \textbf{Q}uantum \textbf{A}rchetype
     \begin{columns}
       \column{5.2cm}
       \includegraphics[width=5cm]{imgs/Breadboard_box}
