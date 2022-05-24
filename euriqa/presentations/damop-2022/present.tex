@@ -428,6 +428,7 @@
 
 \begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
   \begin{center}
+    \vspace{-0.5cm}
     \begin{tikzpicture}
       \node at (0, 0) {\includegraphics[width=7.5cm]{imgs/Brassboard_render}};
       \node[align=center,font=\tiny] at (-3.8, 3.0)
@@ -551,8 +552,17 @@
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: New Yb atom source}
   \begin{center}
-    \begin{tikzpicture}
-    \end{tikzpicture}
+    \begin{columns}
+      \column{6.3cm}
+      \begin{itemize}
+      \item Sympathetic cooling with $^{172}\mathrm{Yb}^+$\\
+        {\scriptsize Cetina, et al., PRX Quantum 3, 010334 (2022)}\\
+        \vspace{1em}
+      \item New Yb source to enhance loading of $^{172}\mathrm{Yb}^+$
+      \end{itemize}
+      \column{5.1cm}
+      \includegraphics[width=5cm]{imgs/Loading_Frequency.png}
+    \end{columns}
   \end{center}
 \end{frame}
 
@@ -561,8 +571,8 @@
 % and implemented some technical improvements that should help with
 % the general operation of the system.
 % This includes a better vacuum system built using vacuum-fired low hydrogen components
-% that should improve upon the 4-5min time between collisions
-% measured in our first gen system.
+% This should reduce the hydrogen pressure in our chamber and therefore
+% improve upon the 4-5min time between collisions measured in our first gen system.
 % We have pumped down our chamber and we are currently measuring
 % a 9e-12 Torr pressure in our system.
 % We'll need to check the collision rate with the ions after we trap a chain of them.
@@ -573,8 +583,21 @@
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Improved vacuum}
   \begin{center}
-    \begin{tikzpicture}
-    \end{tikzpicture}
+    \begin{columns}
+      \column{6.3cm}
+      \begin{itemize}
+      \item Vacuum fired components
+      \item Reduce ion-chain reordering rate
+      \end{itemize}
+      \begin{center}
+        \includegraphics[width=5cm]{imgs/Reorder_rate.png}\\
+        {\footnotesize 15-ion chain reorders every 4-5 min}\\
+        {\footnotesize in $1^{\text{st}}$ gen EURIQA system.}\\
+        {\scriptsize Cetina, et al.}
+      \end{center}
+      \column{5.1cm}
+      \includegraphics[width=5cm]{imgs/Vacuum_stack.png}
+    \end{columns}
   \end{center}
 \end{frame}
 
@@ -595,6 +618,12 @@
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman beam path}
   \begin{center}
     \begin{tikzpicture}
+      \node at (0, 0) {\includegraphics[width=10cm]{imgs/Harris_optics.png}};
+      \fill[white,opacity=0.8] (-5.05, -3.2) rectangle (5.05, 3.2);
+      \node[align=center] at (0, 2) {\large Global addressing Raman beam\\
+        \includegraphics[height=1cm]{imgs/Global_beam.png}};
+      \node[align=center] at (0, -2) {\large Individual addressing Raman beam\\
+        \includegraphics[height=1.5cm]{imgs/Individual_beam.png}};
     \end{tikzpicture}
   \end{center}
 \end{frame}
