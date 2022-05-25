@@ -283,16 +283,18 @@
 % _ for H2 on the ion gauge.
 
 %% Yb ions
-% In our group, we are building quantum computers using trapped Yb 171 ions.
-% As many people here would know, these are good choice for qubits mostly thanks to
-% their internal structures. For a start, it got a electronic ground state with
-% a J=1/2 and I=1/2 meaning that we have a pair of mF=0 states
+% In our group, we build quantum computers using trapped Yb 171 ions.
+% As many people here may know, we pick these ions since they have
+% a favorable internal structure to be used as qubits.
+% For a start, it got a J=1/2 and I=1/2 electronic ground state
+% which means that we have a pair of mF=0 clock states
 % that are insensitive to the B field to the first order.
-% This is what has allowed people to achieve a very long coherence time of ~1hr.
-% The Yb ion also has a mostly cycling optical transition at 369nm which we can use to
-% do fast imaging, state preparation and detection with high fidelity.
-% The occational leak into a different electronic D state can be closed with
-% a 935nm IR light fairly easily as well.
+% This give us a really long coherence time and
+% people has measured a T_2 of as long as ~1hr.
+% The Yb ion also has a stong and mostly cycling optical transition at 369nm
+% which we can use for fast imaging, state preparation and detection with high fidelity.
+% There is occational leak into a different electronic D state with 50ms life time,
+% but it can be pumped back with a 935nm IR light fairly easily.
 
 \begin{frame}{$^{171}\text{Yb}^+$ qubit}
   \begin{center}
@@ -338,12 +340,13 @@
   \end{center}
 \end{frame}
 
-% The ions are trapped in a chain above a surface trap, which give us
+% We trap our ions in a chain above a surface trap, which give us
 % fine control on the axial position of the ions using the surface electrodes.
 % For coherent manipulation of these qubit states,
 % we use a commercial pulsed laser at 355nm.
-% Compared to using CW lasers, these laser systems can provide much higher power,
-% allowing us to achieve fast gate operation, and relatively low maintanance,
+% Compared to using CW lasers, these laser systems provides much higher power,
+% up to a few walts, allowing us to achieve fast gate operation,
+% and they also requires relatively low maintanance,
 % which reduces the down time of our experiment.
 % Finally, in order to entangle these qubits, we use the momentum kicks
 % from our Raman beam to implement a MS gate on the radial mode of
@@ -381,7 +384,9 @@
 \end{frame}
 
 %% First generation system
-% Based on these designs, our first generation EURIQA system is able to
+% Based on these designs, our first generation EURIQA system,
+% short for Error-corrected Universal Reconfigurable
+% Ion-trap Quantum Archetype, is able to
 % achieve high fidelity single and two qubit operations on 15-24 qubits
 % The system can be universally reconfigured/reprogrammed to run
 % different kinds of circuits and it's even stable and autonomous enough
@@ -465,12 +470,12 @@
 %% Phoenix trap
 % One of the main issues that limits the gate fidelity and ion numbers
 % in the 1st generation experiment is the heating of ions from surface
-% electric field noise and that's indeed one of the main focus of the design.
+% electric field noise and that's indeed one of the main focus of the design change.
 
 % We use the Pheonix trap which is a new generation of the surface trap
-% from the Snadia National Lab. It has better wall metallization,
+% from the Sandia National Lab. It has better wall metallization,
 % which should shield and reduce the field noise as well as reducing
-% charging and photovoltaic effect caused by stray laser beams.
+% charging and photovoltaic effect caused by stray laser beams hitting the trap.
 % It also comes with segmented outter electrodes which give us better control
 % on the ion chain for compensating micromotion across the whole chain.
 % All of these contributes to a lower heating rate when we run our gates
@@ -517,7 +522,7 @@
 % perpendicular to the trap surface, we send both of our Raman beams parallel
 % to the trap. This means that the motional mode we use is also parallel to the surface,
 % and has minimum coupling to the dominant E field noise.
-% The momentum transfer from the Raman transition is also faster,
+% The momentum transfer from the Raman transition is also higher,
 % allowing faster gate operations.
 % Not having to send our Raman beam through the trap should also reduces
 % the amount of field noise induced by the laser.
@@ -566,7 +571,7 @@
 % To accommodate this better, we've changed our atomic source to one with higher
 % Yb 172 abundance. As you can see in this theoretical plot,
 % we can selectively load either an 171 or 172 ion with more than 90% probability
-% by changin the frequency of our ionization laser.
+% by changing the frequency of our ionization laser.
 % This will help us construct the chain with the composition we want
 % more deterministically.
 
@@ -613,13 +618,14 @@
       \begin{itemize}
       \item Vacuum fired components
       \item<2-> Reduce ion-chain reordering rate
-      \item<3-> $10^{-11} \mathrm{Torr}$ measured pressure
+      \item<3-> $10^{-11}\ \mathrm{Torr}$ measured pressure
       \end{itemize}
       \visible<2->{
         \begin{center}
           \includegraphics[width=5cm]{imgs/Reorder_rate.png}\\
-          {\footnotesize 15-ion chain reorders every 4-5 min}\\
+          {\footnotesize 15-ion chain reordering}\\
           {\footnotesize in $1^{\text{st}}$ gen EURIQA system.}\\
+          {\footnotesize Consistent with $10^{-10}\ \mathrm{Torr}$.}\\
           {\scriptsize Cetina, et al.}
         \end{center}
       }
