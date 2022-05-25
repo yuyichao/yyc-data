@@ -619,14 +619,18 @@
 
 %% Construction
 % As part of the system upgrade and construction, we've also designed
-% and implemented some technical improvements that should help with
+% and implemented some more technical improvements that should help with
 % the general operation of the system.
-% This includes a better vacuum system built using vacuum-fired low hydrogen components
-% This should reduce the hydrogen pressure in our chamber and therefore
-% improve upon the 4-5min time between collisions measured in our first gen system.
+% This includes a better vacuum system built from vacuum-fired components.
+% It should reduce the pressure, especially for hydrogen, in our chamber.
+% Although not directly related to gate fidelity, it should
+% improve upon the 4-5min time between collisions measured in our first gen system
+% that's limitting our usable time and ion chain length.
+%
 % We have pumped down our chamber and we are currently measuring
-% a 9e-12 Torr pressure in our system.
-% We'll need to check the collision rate with the ions after we trap a chain of them.
+% a 1e-11 Torr pressure inside. This is expected to be about 2-4x better
+% than the first generation system but we'll need to check the collision rate
+% using the ions after we trap a chain of them.
 
 % Figures:
 % * Vacuum drawing
@@ -658,11 +662,12 @@
 
 % We also have a specially build Raman deliverying beam path built by L3Harris
 % that is more stable and purged with clean nitrogen to reduce UV burn on the optics.
-% This Raman delivery system was just aligned and commissioned thanks to people from
+% This Raman delivery system has been aligned and commissioned thanks to people from
 % L3Harris a few months ago as you can see in this picture.
-% We have optically characterized the shape of our global and individual
-% addressing Raman beams which shows promising performance especially
-% in terms of the cross talk to the neighboring ions.
+% Here you can also see two photos that are used to characterize both our global
+% and individual addressing Raman beams.
+% It shows promising performance especially in terms of the cross talk
+% to the neighboring ions.
 
 % Figures:
 % * Harris picture/drawing
@@ -692,11 +697,13 @@
 \end{frame}
 
 % The CW lasers for cooling and trapping of the ions has also been upgraded
-% to a system built by AOSense for us. The whole beam path is built
-% on a single piece of aluminum base board and with my hand there for scale,
-% you can see that the optics and beam path are quite compact.
-% These design features should improve the stability of our beam path.
-% We've already aligned and commissioned most of the beam path
+% to a system built by AOSense for us.
+% As you can see here, the whole beam path is built on a single piece of
+% aluminum base board which is mounted in a standard rack as drawn on the right.
+% It is designed to improve the stability of our beam path for continuous operation.
+% With my hand as scale in this photo you could really see how small the optics are
+% and how compact it is, which makes it somewhat, interesting, to align.
+% Currently, we've already aligned and commissioned most of the beam path
 % and we'll learn more about their stability as we operate the system.
 
 % Figures:
@@ -720,16 +727,24 @@
 \end{frame}
 
 %% Current status
-% The system, with all of the improved design in place, is shown in this photo.
-% Here you can see our vacuum chamber, with the delivery beam path for the CW lasers
-% mounted on it, and the Raman beam path from L3Harris surrounding it.
-% We have trapped Yb 171 ions in the chamber as of two weeks ago
+% The system, with all of the improved design in place is assembled in our lab
+% as you can see in this photo. Here you can see our vacuum chamber,
+% with connection for DC and RF electrodes as well as the delivery beam path
+% for the CW lasers mounted on it in the middle and in the foreground,
+% and the Raman beam path from L3Harris in the black boxes are surrounding the chamber
+% and in the back, as you've already seen in an earlier slide.
+%
+% We have trapped Yb 171 ions in this chamber as of two weeks ago
 % as you can see in this picture.
-% We've also started characterizing our system
+% Since then, we've started characterizing our system
 % as well as the optimization for various parameters,
 % moving towards operating quantum gates in our system.
-% Here I'll leave you with a video showing our first measurement of
-% the secular frequency using parametric heating.
+% Here is a video showing one of the first measurements we did to
+% measure the secular frequency using parametric heating
+% by modulating the RF trap depth.
+% As we vary the modulation frequency, you can see that the ion is getting heated
+% and becoming more fuzzy on our camera, until we get over the resonance range
+% and it gets cooled down and sharp again in the image.
 
 % Figures:
 % * Lab picture
@@ -751,6 +766,7 @@
   \end{center}
 \end{frame}
 
+% With that
 {
   \usebackgroundtemplate{
     \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
