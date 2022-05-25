@@ -244,22 +244,6 @@
 % _ * Raman beam cross talk
 % _ * Trapping and initial characterization
 
-%% Title
-% I'm Yichao from the Monroe group at Duke Quantum Center
-% and today I'll tell you about our second generation quantum computing experiment.
-
-% Figures
-% * (background) lab picture
-
-{
-  \usebackgroundtemplate{
-    \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
-  }
-  \begin{frame}{}
-    \titlepage
-  \end{frame}
-}
-
 % Questions:
 % * 355nm power on ions (??)
 % * use of 355nm to reduce light shift
@@ -281,6 +265,22 @@
 % _ Breadboard pressure is ~1e-10 Torr.
 % _ We are ~4x better after accounting for the calibration factor
 % _ for H2 on the ion gauge.
+
+%% Title
+% I'm Yichao from the Monroe group at Duke Quantum Center
+% and today I'll tell you about our second generation quantum computing experiment.
+
+% Figures
+% * (background) lab picture
+
+{
+  \usebackgroundtemplate{
+    \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
+  }
+  \begin{frame}{}
+    \titlepage
+  \end{frame}
+}
 
 %% Yb ions
 % In our group, we build quantum computers using trapped Yb 171 ions.
@@ -391,8 +391,9 @@
 % The system can be universally reconfigured/reprogrammed to run
 % different kinds of circuits and it's even stable and autonomous enough
 % for us to run it almost completely remotely.
-% You can hear more about the results from this system,
-% and from many of our other experiments in this conference as shown in this list.
+% There has already been many results from this system,
+% and you can hear more about them many other talks in this conference
+% as shown in this list.
 
 % Figures:
 % * EURIQA picture
@@ -476,14 +477,14 @@
 % from the Sandia National Lab. It has better wall metallization,
 % which should shield and reduce the field noise as well as reducing
 % charging and photovoltaic effect caused by stray laser beams hitting the trap.
-% It also comes with segmented outter electrodes which give us better control
-% on the ion chain for compensating micromotion across the whole chain.
-% All of these contributes to a lower heating rate when we run our gates
-% on the ion chain. (show number)
+% It also comes with segmented outter electrodes which should allow us
+% to compensate for the micromotion more precisely across the whole chain.
+% All of these contributes to a lower heating rate that is a factor of 2-3
+% better than the previous generation.
 
 % Additionally, the loading rate of the trap is also improved thanks to a larger
 % loading slot and a simpler trap geometry
-% allowing shuttling of multiple ions simutaniously.
+% allowing loading and shuttling of multiple ions simutaniously.
 
 % Figures:
 % * Phoenix
@@ -528,13 +529,17 @@
 %% Raman geometry
 % Another main change we made to improve our gate fidelity is the Raman beam geometry.
 % Compared to the 1st generation experiment, which send one of the Raman beams
-% perpendicular to the trap surface, we send both of our Raman beams parallel
-% to the trap. This means that the motional mode we use is also parallel to the surface,
-% and has minimum coupling to the dominant E field noise.
-% The momentum transfer from the Raman transition is also higher,
-% allowing faster gate operations.
-% Not having to send our Raman beam through the trap should also reduces
-% the amount of field noise induced by the laser.
+% perpendicular to the trap surface, as you can see on the left,
+% we send both of our Raman beams parallel to the trap, as shown on the right.
+% This means that the motional mode we couple to,
+% as shown by the green arrow in both cases, is also parallel to the surface,
+% meaning that it will have minimum coupling to the dominant E field noise,
+% perpendicular to the trap surface, shown in red.
+% The magnitude of the momentum transfer from the Raman transition is also larger,
+% which should improve the speed of the gate operations.
+% As a bonus, not having to send our Raman beam through the trap in the new geometry
+% should help us to not hit the trap with the Raman beam
+% and therefore reduces the amount of field noise induced by the laser.
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman geometry}
   \begin{center}
