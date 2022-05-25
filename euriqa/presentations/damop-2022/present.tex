@@ -490,9 +490,17 @@
 % * Outer electrodes
 % * Loading slot
 
+\definecolor{trapyellow}{HTML}{ffe0a5}
+\definecolor{semgray}{HTML}{cccccc}
+
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Pheonix trap}
   \begin{center}
     \begin{tikzpicture}
+      \node at (3, 2) {\includegraphics[width=4.8cm]{imgs/Phoenix}};
+      \visible<4->{
+        \fill[semgray,opacity=0.6] (1.8, 2.115) -- (-4.65, -0.3875)
+        -- (-0.35, -3.6125) -- (1.9, 2.115) -- cycle;
+      }
       \node[text width=6.5cm] at (-3, 2) {
         \begin{itemize}
         \item<2-> Better metallization
@@ -505,9 +513,10 @@
         \item<4-> Better and faster ion loading
         \end{itemize}
       };
-      \node at (3, 2) {\includegraphics[width=4.8cm]{imgs/Phoenix}};
       \visible<3->{
-        \node at (3.5, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
+        \fill[trapyellow,opacity=0.6] (2.85, 2.115) -- (0.9, -1) -- (5.7, -1)
+        -- (3.15, 2.115) -- cycle;
+        \node at (3.3, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
       }
       \visible<4->{
         \node at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
