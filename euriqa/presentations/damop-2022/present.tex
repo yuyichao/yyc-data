@@ -559,8 +559,9 @@
         \draw[->,green!70!black,line width=1] (-1.9, -2.4) --
         node[above,sloped] {$\Delta k$} (-0.1, -0.6);
 
-        \draw[->,red!60!black,line width=0.7] (2.1, -3.1) --
-        node[below,sloped] {E field noise} (2.1, -0.9);
+        \draw[->,red!60!black,line width=0.7] (2.3, -3.1) --
+        node[sloped,font=\small,align=center]
+        {Dominant\\E field noise} (2.3, -0.9);
       \end{scope}
 
       \begin{scope}[shift={(3, 0)}]
@@ -575,8 +576,9 @@
         \draw[->,green!70!black,line width=1] (-1.9, -2.3) --
         node[above,sloped] {$\Delta k$} (1.9, -2.3);
 
-        \draw[->,red!60!black,line width=0.7] (2.1, -3.1) --
-        node[below,sloped] {E field noise} (2.1, -0.9);
+        \draw[->,red!60!black,line width=0.7] (2.3, -3.1) --
+        node[sloped,font=\small,align=center]
+        {Dominant\\E field noise} (2.3, -0.9);
       \end{scope}
     \end{tikzpicture}
   \end{center}
@@ -778,15 +780,23 @@
   \begin{frame}{}
     \begin{center}
       \begin{tikzpicture}
-        \node at (-4.5, 0) {\includegraphics[height=2cm]{imgs/members/Chris.jpg}};
-        \node at (-1.5, 0) {\includegraphics[height=2cm]{imgs/members/Alex.jpg}};
-        \node at (1.5, 0) {\includegraphics[height=2cm]{imgs/members/Marko.jpg}};
-        \node at (4.5, 0) {\includegraphics[height=2cm]{imgs/members/Crystal.jpg}};
+        \node[align=center,below,font=\tiny] at (-4.5, 0)
+        {\includegraphics[height=2cm]{imgs/members/Chris.jpg}\\Christopher R Monroe};
+        \node[align=center,below,font=\tiny] at (-1.5, 0)
+        {\includegraphics[height=2cm]{imgs/members/Alex.jpg}\\Alexander Kozhanov};
+        \node[align=center,below,font=\tiny] at (1.5, 0)
+        {\includegraphics[height=2cm]{imgs/members/Marko.jpg}\\Marko Cetina};
+        \node[align=center,below,font=\tiny] at (4.5, 0)
+        {\includegraphics[height=2cm]{imgs/members/Crystal.jpg}\\Crystal Noel};
 
-        \node at (-4.5, -3) {\includegraphics[height=2cm]{imgs/members/Lei.png}};
-        \node at (-1.5, -3) {\includegraphics[height=2cm]{imgs/members/Mila.jpg}};
-        \node at (1.5, -3) {\includegraphics[height=2cm]{imgs/members/Debo.jpg}};
-        \node at (4.5, -3) {\includegraphics[height=2cm]{imgs/members/Drew.jpg}};
+        \node[align=center,below,font=\tiny] at (-4.5, -3)
+        {\includegraphics[height=2cm]{imgs/members/Lei.png}\\Lei Feng};
+        \node[align=center,below,font=\tiny] at (-1.5, -3)
+        {\includegraphics[height=2cm]{imgs/members/Mila.jpg}\\Liudmila Zhukas};
+        \node[align=center,below,font=\tiny] at (1.5, -3)
+        {\includegraphics[height=2cm]{imgs/members/Debo.jpg}\\Debopriyo Biswas};
+        \node[align=center,below,font=\tiny] at (4.5, -3)
+        {\includegraphics[height=2cm]{imgs/members/Drew.jpg}\\Drew Risinger};
       \end{tikzpicture}
     \end{center}
   \end{frame}
