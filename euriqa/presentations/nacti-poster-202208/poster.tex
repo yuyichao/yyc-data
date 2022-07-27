@@ -52,8 +52,8 @@
 \setlength{\paperheight}{36in} % A0 height: 33.1in
 \setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
 \setlength{\colonewid}{0.27\paperwidth} % Width of column one
-\setlength{\coltwowid}{0.28\paperwidth} % Width of column two
-\setlength{\colthreewid}{0.354\paperwidth} % Width of one column
+\setlength{\coltwowid}{0.354\paperwidth} % Width of column two
+\setlength{\colthreewid}{0.28\paperwidth} % Width of one column
 \setlength{\topmargin}{-0.5in} % Reduce the top margin size
 % -----------------------------------------------------------
 
@@ -96,13 +96,13 @@
   }
   {\realtitle}} % Poster title
 
-\author{Yichao Yu \inst{1}, Liudmila Zhukas \inst{1}, Lei Feng \inst{1}\inst{2},
-  Marko Cetina \inst{1}\inst{2}, Crystal Noel \inst{1}\inst{2},
-  Debopriyo Biswas \inst{1}\inst{2}, Andrew Risinger \inst{2},
-  Alexander Kozhanov \inst{1}, Christopher R Monroe \inst{1}\inst{2}\inst{3}}
-\institute{\inst{1} Duke Quantum Center, Duke University, Durham, NC 27701, USA
-  \inst{2} Joint Quantum Institute, University of Maryland, College Park, MD 20742, USA
-  \inst{3} IonQ, Inc., College Park, MD 20740, USA}
+\author{Yichao Yu \inst{1}, Liudmila Zhukas \inst{1}, Lei Feng \inst{1,2},
+  Marko Cetina \inst{1,2}, Crystal Noel \inst{1,2},\\
+  Debopriyo Biswas \inst{1,2}, Andrew Risinger \inst{2},
+  Alexander Kozhanov \inst{1}, Christopher R Monroe \inst{1,2,3}}
+\institute{\inst{1} Duke Quantum Center, Duke University
+  \inst{2} Joint Quantum Institute, University of Maryland
+  \inst{3} IonQ, Inc.}
 
 \begin{document}
 
@@ -112,17 +112,33 @@
 \setlength{\belowcaptionskip}{2ex} % White space under figures
 \setlength\belowdisplayshortskip{2ex} % White space under equations
 
+% * Phoenix Surface trap
+% ** Properties
+% ** Trap/shuttling
+% * Raman system
+% ** New geometry
+% ** L3Harris beam path
+% * AOSense
+% * Control
+% ----------
+% *
+% * Application
+
 \begin{frame}[t] % The whole poster is enclosed in one beamer frame
   \begin{columns}[t]
     \begin{column}{\sepwid}\end{column} % Empty spacer column
     \begin{column}{\colonewid} % The first column
-      \begin{block}{}
+      \begin{block}{Trapped Ion Quantum Computing}
+        \begin{tikzpicture}
+          \node at (0, 0) {\includegraphics[width=16cm]{imgs/yb171_levels.pdf}};
+        \end{tikzpicture}
+        % ** Detection
+        % ** Single qubit manipulation
+        % ** Ion Chain
+        % ** Breadboard performance
       \end{block}
 
-      \begin{block}{}
-      \end{block}
-
-      \begin{block}{}
+      \begin{block}{New Vacuum System}
       \end{block}
     \end{column} % End of the first column
 
@@ -139,9 +155,10 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{}
+        \vspace{60cm}
       \end{block}
 
-      \begin{block}{}
+      \begin{block}{Applications}
       \end{block}
     \end{column} % End of the third column
   \end{columns} % End of all the columns in the poster
