@@ -1,0 +1,150 @@
+\documentclass[final]{beamer}
+
+\usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
+
+\usetheme{confposter} % Use the confposter theme supplied with this template
+
+\setbeamercolor{block title}{fg=nblue,bg=white} % Colors of the block titles
+\setbeamercolor{block body}{fg=black,bg=white} % Colors of the body of blocks
+\setbeamercolor{block alerted title}{fg=white,bg=dblue!70} % Colors of the highlighted block titles
+\setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
+% Many more colors are available for use in beamerthemeconfposter.sty
+
+\usepackage[skins]{tcolorbox}
+% a "sub-block" (plain block-within-block (second-level header))
+\newenvironment{subblock}[1]{
+  \setbeamertemplate{block begin}
+  {
+    \setbeamercolor{block title}{fg=nblue!90} % @TODO defer to beamercolortheme
+    \par\vskip\medskipamount
+    \begin{beamercolorbox}[colsep*=0ex,dp={2ex}]{block title}
+      \vskip-0.5cm
+      \begin{tikzpicture}[every node/.style={inner sep=0}]
+        \node (titlenode) at (0.1cm, 0) {\usebeamerfont{block title}\normalsize\insertblocktitle};
+        \tcbsetmacrotowidthofnode{\titlewidth}{titlenode}
+        \tcbsetmacrotoheightofnode{\titleheight}{titlenode}
+        \shade [inner color=nblue!16!black!24,outer color=white]
+        (-\titlewidth/2,-\titleheight/2) rectangle ++({1.1*\titlewidth+0.1cm},-0.2cm);
+      \end{tikzpicture}
+    \end{beamercolorbox}
+    {\parskip0pt\par}
+    \ifbeamercolorempty[bg]{block title}
+    {}
+    {\ifbeamercolorempty[bg]{block body}{}{\nointerlineskip\vskip-0.5pt}}
+    \usebeamerfont{block body}
+    \vskip-0.5cm
+    \begin{beamercolorbox}[colsep*=0ex,vmode]{block body}
+      \justifying
+    }
+    \setbeamertemplate{block end}
+    {
+    \end{beamercolorbox}
+    \vskip\smallskipamount
+  }
+  \begin{block}{{\normalsize #1}}
+  }{\end{block}}
+
+\newlength{\sepwid}
+\newlength{\colonewid}
+\newlength{\coltwowid}
+\newlength{\colthreewid}
+\setlength{\paperwidth}{48in} % A0 width: 46.8in
+\setlength{\paperheight}{36in} % A0 height: 33.1in
+\setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
+\setlength{\colonewid}{0.27\paperwidth} % Width of column one
+\setlength{\coltwowid}{0.28\paperwidth} % Width of column two
+\setlength{\colthreewid}{0.354\paperwidth} % Width of one column
+\setlength{\topmargin}{-0.5in} % Reduce the top margin size
+% -----------------------------------------------------------
+
+\usepackage{graphicx}  % Required for including images
+\usepackage{booktabs} % Top and bottom rules for tables
+\usepackage{tikz}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes,
+  arrows.meta
+}
+\usepgfmodule{oo}
+
+% --------------------------------------------------------------------------------
+%	TITLE SECTION
+% --------------------------------------------------------------------------------
+
+\def\realtitle{A next-generation trapped ion quantum computing system
+  - a.k.a. ``brassboard''}
+
+\title{%
+  \texorpdfstring{%
+    \makebox[\linewidth]{%
+      \makebox[0pt][l]{%
+        \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
+        {}% Left logo
+      }\hfill
+      \makebox[0pt]{\textcolor{dblue}{\realtitle}}%
+      \hfill\makebox[0pt][r]{%
+        \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
+        {}% Right logo
+      }%
+    }%
+  }
+  {\realtitle}} % Poster title
+
+\author{Yichao Yu \inst{1}, Liudmila Zhukas \inst{1}, Lei Feng \inst{1}\inst{2},
+  Marko Cetina \inst{1}\inst{2}, Crystal Noel \inst{1}\inst{2},
+  Debopriyo Biswas \inst{1}\inst{2}, Andrew Risinger \inst{2},
+  Alexander Kozhanov \inst{1}, Christopher R Monroe \inst{1}\inst{2}\inst{3}}
+\institute{\inst{1} Duke Quantum Center, Duke University, Durham, NC 27701, USA
+  \inst{2} Joint Quantum Institute, University of Maryland, College Park, MD 20742, USA
+  \inst{3} IonQ, Inc., College Park, MD 20740, USA}
+
+\begin{document}
+
+\addtobeamertemplate{block end}{}{\vspace*{2ex}} % White space under blocks
+\addtobeamertemplate{block alerted end}{}{\vspace*{2ex}} % White space under highlighted (alert) blocks
+
+\setlength{\belowcaptionskip}{2ex} % White space under figures
+\setlength\belowdisplayshortskip{2ex} % White space under equations
+
+\begin{frame}[t] % The whole poster is enclosed in one beamer frame
+  \begin{columns}[t]
+    \begin{column}{\sepwid}\end{column} % Empty spacer column
+    \begin{column}{\colonewid} % The first column
+      \begin{block}{}
+      \end{block}
+
+      \begin{block}{}
+      \end{block}
+
+      \begin{block}{}
+      \end{block}
+    \end{column} % End of the first column
+
+    \begin{column}{\sepwid}\end{column} % Empty spacer column
+
+    \begin{column}{\coltwowid}
+      \begin{block}{}
+      \end{block}
+      \begin{block}{}
+      \end{block}
+    \end{column} % End of the second column
+
+    \begin{column}{\sepwid}\end{column} % Empty spacer column
+
+    \begin{column}{\colthreewid} % The third column
+      \begin{block}{}
+      \end{block}
+
+      \begin{block}{}
+      \end{block}
+    \end{column} % End of the third column
+  \end{columns} % End of all the columns in the poster
+\end{frame} % End of the enclosing frame
+
+\end{document}
