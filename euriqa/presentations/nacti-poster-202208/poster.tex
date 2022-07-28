@@ -154,11 +154,32 @@
     \begin{column}{\sepwid}\end{column} % Empty spacer column
 
     \begin{column}{\colthreewid} % The third column
-      \begin{block}{}
-        \vspace{60cm}
+      \begin{block}{Imaging System}
+        \vspace{50cm}
       \end{block}
 
       \begin{block}{Applications}
+        \vspace{-0.5cm}
+        \begin{tikzpicture}
+          \node at (0, -0.5) {\includegraphics[width=9cm]{imgs/app1.png}};
+          \node at (24.5, -3.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
+          \node[below,text width=15cm,align=left] at (11.5, 5) {
+            \begin{itemize}
+            \item Universal Quantum Computer
+            \item 20+ qubits and high fidelity
+            \item Quantum simulations of many body physics
+            \item Quantum chemistry
+            \item Quantum gravity
+            \item Nuclear theory
+            \item Quantum Error Correction
+            \end{itemize}
+          };
+          \node at (13, -13) {
+            \includegraphics[width=10.5cm]{imgs/app4.pdf}
+            \includegraphics[width=10.5cm]{imgs/app5.pdf}\hspace{2cm}
+            \includegraphics[width=10cm]{imgs/app3.png}
+          };
+        \end{tikzpicture}
       \end{block}
     \end{column} % End of the third column
   \end{columns} % End of all the columns in the poster
