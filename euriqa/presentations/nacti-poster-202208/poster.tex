@@ -86,12 +86,28 @@
     \makebox[\linewidth]{%
       \makebox[0pt][l]{%
         \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
-        {}% Left logo
+        {
+          \begin{tikzpicture}
+            \node at (0, 0) {\includegraphics[width=17cm]{imgs/logos/Duke}};
+            \node at (0, -4.5) {\includegraphics[width=17cm]{imgs/logos/UMD}};
+
+            \node at (12.5, 0) {\includegraphics[width=4cm]{imgs/logos/ARL}};
+            \node at (16, -4) {\includegraphics[width=4cm]{imgs/logos/IARPA}};
+          \end{tikzpicture}
+        }% Left logo
       }\hfill
       \makebox[0pt]{\textcolor{dblue}{\realtitle}}%
       \hfill\makebox[0pt][r]{%
         \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
-        {}% Right logo
+        {
+          \begin{tikzpicture}
+            \node at (0, 0) {\includegraphics[width=7.5cm]{imgs/logos/NIST}};
+            \node at (8.5, 0) {\includegraphics[width=7.5cm]{imgs/logos/Sandia}};
+            \node at (17.75, 0) {\includegraphics[width=9cm]{imgs/logos/L3Harris}};
+            \node at (3.25, -4) {\includegraphics[width=9cm]{imgs/logos/ColdQuanta}};
+            \node at (15.25, -4) {\includegraphics[width=9cm]{imgs/logos/AOSense}};
+          \end{tikzpicture}
+        }% Right logo
       }%
     }%
   }
@@ -364,7 +380,7 @@
         \vspace{0.5cm}
         \begin{center}
           \begin{tikzpicture}
-            \node at (0, 0) {\includegraphics[width=33cm]{imgs/imaging_system.png}};
+            \node at (0, 1) {\includegraphics[width=33cm]{imgs/imaging_system.png}};
             \node[text width=28cm,align=left] at (-3.5, -12.5) {
               \begin{itemize}
               \item Imaging system for 32 ions, fixed 4.5 \unit{\micro\meter} spacing between ions
@@ -376,7 +392,7 @@
                 is >~0.95 for all 32 ions in the chain
               \end{itemize}
             };
-            \node at (-6.5, -27) {\includegraphics[width=22cm]{imgs/zeemax_sim.png}};
+            \node at (-6.5, -27) {\includegraphics[width=20cm]{imgs/zeemax_sim.png}};
             \node at (11.5, -24) {\includegraphics[width=12cm]{imgs/hexapod.jpg}};
           \end{tikzpicture}
         \end{center}
@@ -387,8 +403,8 @@
         \vspace{1cm}
         \begin{tikzpicture}
           \node at (0, -0.5) {\includegraphics[width=9cm]{imgs/app1.png}};
-          \node at (24.5, -4.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
-          \node[below,text width=15cm,align=left] at (11.5, 4.5) {
+          \node at (24, -5.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
+          \node[below,text width=15cm,align=left] at (12, 4.5) {
             \begin{itemize}
             \item Universal Quantum Computer
             \item 20+ qubits and high fidelity
@@ -396,10 +412,11 @@
             \item Quantum chemistry
             \item Quantum gravity
             \item Nuclear theory
-            \item Quantum Error Correction
+            \item Quantum Error\\
+              Correction
             \end{itemize}
           };
-          \node at (13, -15) {
+          \node at (13, -16) {
             \includegraphics[width=10.5cm]{imgs/app4.pdf}
             \includegraphics[width=10.5cm]{imgs/app5.pdf}\hspace{2cm}
             \includegraphics[width=10cm]{imgs/app3.png}
