@@ -233,11 +233,13 @@
     \begin{column}{\coltwowid}
       \begin{block}{Raman System}
         \begin{center}
+          \vspace{-1cm}
           \begin{tikzpicture}[scale=2.5]
-            \begin{scope}[shift={(-3, 0)}]
-              \node[align=center] at (0, 2)
-              {\usebeamercolor[fg]{frametitle}{\bf 1$^{\text{st}}$ gen Raman}\\
-                \includegraphics[width=11.5cm]{imgs/Breadboard_Raman.png}};
+            \begin{scope}[shift={(-3.5, 0)}]
+              \node[align=center] at (-1.5, 3.25)
+              {\usebeamercolor[fg]{frametitle}{\bf 1$^{\text{st}}$ gen}};
+              \node[align=center] at (0, 1.75)
+              {\includegraphics[width=11.5cm]{imgs/Breadboard_Raman.png}};
 
               \begin{scope}[shift={(1.75, 2.8)}]
                 \draw[->,blue!80!black,line width=5,>=stealth] (-1.9, -2.5) --
@@ -253,10 +255,11 @@
             node[sloped,font=\small,align=center]
             {Dominant\\E field noise} (0, 2);
 
-            \begin{scope}[shift={(3, 0)}]
-              \node[align=center] at (0, 2)
-              {\usebeamercolor[fg]{frametitle}{\bf 2$^{\text{nd}}$ gen Raman}\\
-                \includegraphics[width=11.5cm]{imgs/Brassboard_Raman.png}};
+            \begin{scope}[shift={(3.5, 0)}]
+              \node[align=center] at (-1.5, 3.25)
+              {\usebeamercolor[fg]{frametitle}{\bf 2$^{\text{nd}}$ gen}};
+              \node[align=center] at (0, 1.75)
+              {\includegraphics[width=11.5cm]{imgs/Brassboard_Raman.png}};
 
               \begin{scope}[shift={(0, 2.8)}]
                 \draw[->,blue!80!black,line width=5,>=stealth] (-1.9, -2.5) --
@@ -267,20 +270,47 @@
                 node[above,sloped] {$\bf \Delta k$} (1.9, -2.3);
               \end{scope}
             \end{scope}
+
+            \begin{scope}[shift={(0, -3.5)}]
+              \node at (0, 0) {\includegraphics[width=26cm]{imgs/Harris_optics.png}};
+              \node at (3.7, 2) {\includegraphics[width=7cm]{imgs/logos/L3Harris.png}};
+
+              \node[align=center] at (3, -3.25)
+              {\includegraphics[height=1.25cm]{imgs/Global_beam.png}};
+              \fill[semgray,opacity=0.6] (-0.07, 0.65)
+              -- (1.038, -3) -- (4.962, -3) -- cycle;
+              \node[below] at (3, -3 - 0.8) {Global Raman Beam};
+              \begin{scope}[shift={(-3, -3)}]
+                \begin{scope}[scale=0.5]
+                  \node[align=center] at (0, -0.5)
+                  {\includegraphics[height=1.875cm]{imgs/Individual_beam.png}};
+                  \draw[dotted,line width=1,gray] (-1.17, -0.5) -- (-1.17, -1.6);
+                  \draw[dotted,line width=1,gray] (-1.49, -0.5) -- (-1.49, -1.6);
+                  \draw[<-,>=stealth,line width=1] (-1.49, -1.5) -- ++(-0.8, 0);
+                  \draw[<-,>=stealth,line width=1] (-1.17, -1.5) -- ++(0.8, 0);
+                  \node[below] at (-1.33, -1.6) {$4.5\mathrm{\mu m}$};
+                \end{scope}
+                \node[below] at (0, -1.25) {Individual Raman Beams};
+              \end{scope}
+              \fill[semgray,opacity=0.6] (-3, 0.6)
+              -- (-5.724, -2.875) -- (-0.276, -2.875) -- cycle;
+            \end{scope}
+
           \end{tikzpicture}
         \end{center}
       \end{block}
       \begin{block}{Miniaturized 369/399/780/935nm Beam Path}
         \begin{center}
-          \includegraphics[height=14cm]{imgs/AOSense_internal.jpg}
-          \hspace{1cm}
-          \includegraphics[height=13.5cm]{imgs/AOSense_external.png}
+          \includegraphics[height=11.2cm]{imgs/AOSense_internal.jpg}
+          \hspace{2.5cm}
+          \includegraphics[height=10.8cm]{imgs/AOSense_external.png}
         \end{center}
       \end{block}
       \begin{block}{Control System}
+        \vspace{-1cm}
         \begin{center}
           \begin{columns}[t]
-            \begin{column}{0.38\coltwowid}
+            \begin{column}{0.36\coltwowid}
               \begin{subblock}{ARTIQ}
                 \begin{itemize}
                 \item Artiq software
@@ -288,7 +318,7 @@
                 \end{itemize}
                 \vspace{0.3cm}
                 \begin{center}
-                  \includegraphics[width=13.5cm]{imgs/artiq_hardware.png}
+                  \includegraphics[width=12cm]{imgs/artiq_hardware.png}
                 \end{center}
               \end{subblock}
               \begin{subblock}{RFSoC/Pentek}
@@ -297,11 +327,11 @@
                 \item phase synchronization
                 \end{itemize}
                 \begin{center}
-                  \includegraphics[width=13.5cm]{imgs/pentek.png}
+                  \includegraphics[width=12cm]{imgs/pentek.png}
                 \end{center}
               \end{subblock}
             \end{column}
-            \begin{column}{0.55\coltwowid}
+            \begin{column}{0.54\coltwowid}
               \begin{subblock}{Duke Artiq Extensions}
                 \begin{itemize}
                 \item modular control software
@@ -309,7 +339,7 @@
                 \end{itemize}
                 \vspace{0.7cm}
                 \begin{center}
-                  \includegraphics[width=22cm]{imgs/dax.pdf}
+                  \includegraphics[width=19cm]{imgs/dax.pdf}
                 \end{center}
               \end{subblock}
             \end{column}
@@ -322,7 +352,7 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Imaging System}
-        \vspace{50cm}
+        \vspace{47cm}
       \end{block}
 
       \begin{block}{Applications}
