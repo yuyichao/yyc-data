@@ -2,6 +2,8 @@
 
 \usepackage[scale=1.24]{beamerposter} % Use the beamerposter package for laying out the poster
 
+\usepackage{siunitx}
+
 \usetheme{confposter} % Use the confposter theme supplied with this template
 
 \setbeamercolor{block title}{fg=nblue,bg=white} % Colors of the block titles
@@ -51,9 +53,9 @@
 \setlength{\paperwidth}{48in} % A0 width: 46.8in
 \setlength{\paperheight}{36in} % A0 height: 33.1in
 \setlength{\sepwid}{0.024\paperwidth} % Separation width (white space) between columns
-\setlength{\colonewid}{0.27\paperwidth} % Width of column one
-\setlength{\coltwowid}{0.354\paperwidth} % Width of column two
-\setlength{\colthreewid}{0.28\paperwidth} % Width of one column
+\setlength{\colonewid}{0.29\paperwidth} % Width of column one
+\setlength{\coltwowid}{0.324\paperwidth} % Width of column two
+\setlength{\colthreewid}{0.29\paperwidth} % Width of one column
 \setlength{\topmargin}{-0.5in} % Reduce the top margin size
 % -----------------------------------------------------------
 
@@ -77,8 +79,7 @@
 %	TITLE SECTION
 % --------------------------------------------------------------------------------
 
-\def\realtitle{A next-generation trapped ion quantum computing system
-  - a.k.a. ``brassboard''}
+\def\realtitle{A next-generation trapped ion quantum computing system}
 
 \title{%
   \texorpdfstring{%
@@ -228,7 +229,11 @@
       \end{block}
     \end{column} % End of the first column
 
-    \begin{column}{\sepwid}\end{column} % Empty spacer column
+    \begin{column}{\sepwid}
+      \begin{center}
+        {\color{gray}\rule{3pt}{\textheight}}
+      \end{center}
+    \end{column} % Empty spacer column
 
     \begin{column}{\coltwowid}
       \begin{block}{Raman System}
@@ -348,19 +353,37 @@
       \end{block}
     \end{column} % End of the second column
 
-    \begin{column}{\sepwid}\end{column} % Empty spacer column
+    \begin{column}{\sepwid}
+      \begin{center}
+        {\color{gray}\rule{3pt}{\textheight}}
+      \end{center}
+    \end{column} % Empty spacer column
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Imaging System}
-        \vspace{47cm}
+        \begin{center}
+          \begin{tikzpicture}
+            \node at (0, 0) {\includegraphics[width=33cm]{imgs/imaging_system.png}};
+            \node[text width=27cm,align=left] at (-2, -12.5) {
+              \begin{itemize}
+              \item Imaging system for 32 ions, fixed 4.5 \unit{\micro\meter} spacing between ions
+              \item Two stage imaging system with a total magnification of 27
+              \item Minimized instrumental crosstalk by coupling fluorescence from each ion to the individual PMT module (Hamamatsu, H10682-210)
+              \item PhotonGear optical lens design (0.63 NA) mounted on PI Hexapod for precise positioning
+              \item Zemax simulations: the resulting Strehl ratio is >~0.95 for all 32 ions in the chain
+              \end{itemize}
+            };
+            \node at (0, -28) {\includegraphics[width=27cm]{imgs/zeemax_sim.png}};
+          \end{tikzpicture}
+        \end{center}
       \end{block}
 
       \begin{block}{Applications}
-        \vspace{-1cm}
+        \vspace{1cm}
         \begin{tikzpicture}
           \node at (0, -0.5) {\includegraphics[width=9cm]{imgs/app1.png}};
-          \node at (24.5, -3.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
-          \node[below,text width=15cm,align=left] at (11.5, 5) {
+          \node at (24.5, -4.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
+          \node[below,text width=15cm,align=left] at (11.5, 4.5) {
             \begin{itemize}
             \item Universal Quantum Computer
             \item 20+ qubits and high fidelity
@@ -371,7 +394,7 @@
             \item Quantum Error Correction
             \end{itemize}
           };
-          \node at (13, -13) {
+          \node at (13, -15) {
             \includegraphics[width=10.5cm]{imgs/app4.pdf}
             \includegraphics[width=10.5cm]{imgs/app5.pdf}\hspace{2cm}
             \includegraphics[width=10cm]{imgs/app3.png}
