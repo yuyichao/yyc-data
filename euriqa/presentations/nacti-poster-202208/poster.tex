@@ -147,7 +147,44 @@
     \begin{column}{\coltwowid}
       \begin{block}{}
       \end{block}
-      \begin{block}{}
+      \begin{block}{Control System}
+        \begin{center}
+          \begin{columns}[t]
+            \begin{column}{0.4\coltwowid}
+              \begin{subblock}{ARTIQ}
+                \begin{itemize}
+                \item Artiq software
+                \item Sinara hardware
+                \end{itemize}
+                \vspace{0.3cm}
+                \begin{center}
+                  \includegraphics[width=13.5cm]{imgs/artiq_hardware.png}
+                \end{center}
+              \end{subblock}
+              \begin{subblock}{RFSoC/Pentek}
+                \begin{itemize}
+                \item integrated pulse-level control
+                \item phase synchronization
+                \end{itemize}
+                \begin{center}
+                  \includegraphics[width=13.5cm]{imgs/pentek.png}
+                \end{center}
+              \end{subblock}
+            \end{column}
+            \begin{column}{0.58\coltwowid}
+              \begin{subblock}{Duke Artiq Extensions}
+                \begin{itemize}
+                \item modular control software
+                \item system code organization
+                \end{itemize}
+                \vspace{0.7cm}
+                \begin{center}
+                  \includegraphics[width=22cm]{imgs/dax.pdf}
+                \end{center}
+              \end{subblock}
+            \end{column}
+          \end{columns}
+        \end{center}
       \end{block}
     \end{column} % End of the second column
 
@@ -159,7 +196,7 @@
       \end{block}
 
       \begin{block}{Applications}
-        \vspace{-0.5cm}
+        \vspace{-1cm}
         \begin{tikzpicture}
           \node at (0, -0.5) {\includegraphics[width=9cm]{imgs/app1.png}};
           \node at (24.5, -3.1) {\includegraphics[width=11.6cm]{imgs/app2.png}};
