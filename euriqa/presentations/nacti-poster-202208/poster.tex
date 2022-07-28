@@ -130,15 +130,37 @@
   \begin{columns}[t]
     \begin{column}{\sepwid}\end{column} % Empty spacer column
     \begin{column}{\colonewid} % The first column
-      \begin{block}{Trapped Ion Quantum Computing}
-        \begin{tikzpicture}
-          \node at (0, 0) {\includegraphics[width=16cm]{imgs/yb171_levels.pdf}};
-        \end{tikzpicture}
-        % ** Detection
-        % ** Single qubit manipulation
-        % ** Ion Chain
-        % ** Breadboard performance
+      \vspace{-0.8cm}
+      \begin{block}{\textbf{E}rror-corrected \textbf{U}niversal \textbf{R}econfigurable
+          \textbf{I}on-trap \textbf{Q}uantum \textbf{A}rchetype}
+        \begin{center}
+          \vspace{-1cm}
+          \begin{tikzpicture}
+            \begin{scope}[shift={(-7.5,0)}]
+              \node[above] at (0, 0) {$1^{\text{st}}$ Generation};
+              \node[below] at (0, 0) {
+                \includegraphics[width=12.5cm]{imgs/Breadboard_box}
+              };
+              \node[below,text width=12.5cm,align=left] at (-0.15, -1.85) {
+                \setbeamercolor{itemize/enumerate body}{fg=white}
+                \begin{itemize}
+                \item 15-24 usable qubits
+                \item High fidelity single ($99.9\ \%$) and two-qubit ($99\ \%$) gates
+                \item Universal reconfigurable
+                \item Remote operations
+                \end{itemize}
+              };
+            \end{scope}
+            \begin{scope}[shift={(7.5,0)}]
+              \node[above] at (0, 0) {$2^{\text{nd}}$ Generation};
+              \node[below] at (0, -0.7) {
+                \includegraphics[width=17cm]{imgs/LabPicture}
+              };
+            \end{scope}
+          \end{tikzpicture}
+        \end{center}
       \end{block}
+      \vspace{-0.7cm}
 
       \begin{block}{Vacuum System}
         \begin{center}
@@ -210,8 +232,43 @@
 
     \begin{column}{\coltwowid}
       \begin{block}{Raman System}
-        % ** New geometry
-        % ** L3Harris beam path
+        \begin{center}
+          \begin{tikzpicture}[scale=2.5]
+            \begin{scope}[shift={(-3, 0)}]
+              \node[align=center] at (0, 2)
+              {\usebeamercolor[fg]{frametitle}{\bf 1$^{\text{st}}$ gen Raman}\\
+                \includegraphics[width=11.5cm]{imgs/Breadboard_Raman.png}};
+
+              \begin{scope}[shift={(1.75, 2.8)}]
+                \draw[->,blue!80!black,line width=5,>=stealth] (-1.9, -2.5) --
+                node[below] {$\bf k_{glob}$} (-0.1, -2.5);
+                \draw[<-,blue!80!black,line width=5,>=stealth] (0, -2.4) --
+                node[below,sloped] {$\bf k_{ind}$} (0, -0.6);
+                \draw[->,green!60!black,line width=5,>=stealth] (-1.9, -2.4) --
+                node[above,sloped] {$\bf \Delta k$} (-0.1, -0.6);
+              \end{scope}
+            \end{scope}
+
+            \draw[->,red!60!black,line width=0.7] (0, 0) --
+            node[sloped,font=\small,align=center]
+            {Dominant\\E field noise} (0, 2);
+
+            \begin{scope}[shift={(3, 0)}]
+              \node[align=center] at (0, 2)
+              {\usebeamercolor[fg]{frametitle}{\bf 2$^{\text{nd}}$ gen Raman}\\
+                \includegraphics[width=11.5cm]{imgs/Brassboard_Raman.png}};
+
+              \begin{scope}[shift={(0, 2.8)}]
+                \draw[->,blue!80!black,line width=5,>=stealth] (-1.9, -2.5) --
+                node[below] {$\bf k_{glob}$} (-0.1, -2.5);
+                \draw[->,blue!80!black,line width=5,>=stealth] (1.9, -2.5) --
+                node[below] {$\bf k_{ind}$} (0.1, -2.5);
+                \draw[->,green!60!black,line width=5,>=stealth] (-1.9, -2.3) --
+                node[above,sloped] {$\bf \Delta k$} (1.9, -2.3);
+              \end{scope}
+            \end{scope}
+          \end{tikzpicture}
+        \end{center}
       \end{block}
       \begin{block}{Miniaturized 369/399/780/935nm Beam Path}
         \begin{center}
