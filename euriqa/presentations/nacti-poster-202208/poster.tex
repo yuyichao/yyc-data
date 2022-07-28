@@ -361,21 +361,26 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Imaging System}
+        \vspace{0.5cm}
         \begin{center}
           \begin{tikzpicture}
             \node at (0, 0) {\includegraphics[width=33cm]{imgs/imaging_system.png}};
-            \node[text width=27cm,align=left] at (-2, -12.5) {
+            \node[text width=28cm,align=left] at (-3.5, -12.5) {
               \begin{itemize}
               \item Imaging system for 32 ions, fixed 4.5 \unit{\micro\meter} spacing between ions
               \item Two stage imaging system with a total magnification of 27
               \item Minimized instrumental crosstalk by coupling fluorescence from each ion to the individual PMT module (Hamamatsu, H10682-210)
-              \item PhotonGear optical lens design (0.63 NA) mounted on PI Hexapod for precise positioning
-              \item Zemax simulations: the resulting Strehl ratio is >~0.95 for all 32 ions in the chain
+              \item PhotonGear optical lens design (0.63 NA)\\
+                mounted on PI Hexapod for precise positioning
+              \item Zemax simulations: the resulting Strehl ratio\\
+                is >~0.95 for all 32 ions in the chain
               \end{itemize}
             };
-            \node at (0, -28) {\includegraphics[width=27cm]{imgs/zeemax_sim.png}};
+            \node at (-6.5, -27) {\includegraphics[width=22cm]{imgs/zeemax_sim.png}};
+            \node at (11.5, -24) {\includegraphics[width=12cm]{imgs/hexapod.jpg}};
           \end{tikzpicture}
         \end{center}
+        \vspace{0.5cm}
       \end{block}
 
       \begin{block}{Applications}
