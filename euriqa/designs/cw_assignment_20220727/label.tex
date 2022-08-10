@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{xcolor}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\setlength\tabcolsep{8pt}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{|c|c|c|||c|c|c|}
+  \hline
+  Motor No.&Position&Direction&Motor No.&Position&Direction\\\hline
+  1&Front Left&horizontal&5&Back Left&horizontal\\\cline{1-1}\cline{3-4}\cline{6-6}
+  2&(435)&vertical&6&(370 ID)&vertical\\\hline
+  3&Front Right&horizontal&7&Back Right&horizontal\\\cline{1-1}\cline{3-4}\cline{6-6}
+  4&(Loading)&vertical&8&(370 SCI)&vertical\\\hline
+\end{tabular}
+
+\end{document}
