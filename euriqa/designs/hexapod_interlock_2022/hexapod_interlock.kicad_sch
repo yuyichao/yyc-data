@@ -749,7 +749,6 @@
     )
   )
 
-
   (junction (at 39.37 40.64) (diameter 0) (color 0 0 0 0)
     (uuid 08bcfe9e-d492-4dbb-b6cb-7fd8d6604289)
   )
@@ -2029,7 +2028,7 @@
     (uuid 890daf4f-b51c-40c8-b633-714ff32664b0)
     (property "Reference" "K1" (id 0) (at 81.28 19.05 90))
     (property "Value" "PC236" (id 1) (at 81.28 21.59 90))
-    (property "Footprint" "Relay_THT:Relay_SPDT_PC236" (id 2) (at 80.518 66.548 0)
+    (property "Footprint" "Relay2:Relay_SPDT_PC236" (id 2) (at 80.518 66.548 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "https://pickercomponents.com/pdf/Relays/PC236.pdf" (id 3) (at 81.28 34.29 0)
@@ -2529,7 +2528,7 @@
       (reference "J3") (unit 1) (value "PowerIn") (footprint "Connector_Coaxial:BNC_Amphenol_B6252HB-NPP3G-50_Horizontal")
     )
     (path "/890daf4f-b51c-40c8-b633-714ff32664b0"
-      (reference "K1") (unit 1) (value "PC236") (footprint "Relay_THT:Relay_SPDT_PC236")
+      (reference "K1") (unit 1) (value "PC236") (footprint "Relay2:Relay_SPDT_PC236")
     )
     (path "/ec451df7-2925-4ccd-8462-5e77b82a8911"
       (reference "R1") (unit 1) (value "47") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal")
