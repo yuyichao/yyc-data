@@ -1,3 +1,4 @@
 (fp_lib_table
   (lib (name "Relay2")(type "KiCad")(uri "${KIPRJMOD}/../kicad/Relay2.pretty")(options "")(descr ""))
+  (lib (name "Button_Switch2")(type "KiCad")(uri "${KIPRJMOD}/../kicad/Button_Switch2.pretty")(options "")(descr ""))
 )
