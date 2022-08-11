@@ -1566,7 +1566,7 @@
     (uuid 1335cd1f-ad57-4289-bbfc-4670e8369120)
     (property "Reference" "SW2" (id 0) (at 227.33 40.64 0))
     (property "Value" "SW_DPDT_x2" (id 1) (at 227.33 43.18 0))
-    (property "Footprint" "" (id 2) (at 227.33 48.26 0)
+    (property "Footprint" "Button_Switch2:OS202013MT5QN1" (id 2) (at 227.33 48.26 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 227.33 48.26 0)
@@ -2245,7 +2245,7 @@
     (uuid db86439e-22f6-4a69-ba80-443c6959f624)
     (property "Reference" "SW1" (id 0) (at 35.56 57.15 0))
     (property "Value" "SW_Push_DPDT2" (id 1) (at 35.56 59.69 0))
-    (property "Footprint" "" (id 2) (at 35.56 64.77 0)
+    (property "Footprint" "Button_Switch2:E-Switch_TL2233" (id 2) (at 35.56 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 35.56 64.77 0)
@@ -2321,7 +2321,7 @@
     (uuid e818e1a5-35d0-4978-9d17-01ccf3474d55)
     (property "Reference" "SW2" (id 0) (at 227.33 27.94 0))
     (property "Value" "SW_DPDT_x2" (id 1) (at 227.33 30.48 0))
-    (property "Footprint" "" (id 2) (at 227.33 35.56 0)
+    (property "Footprint" "Button_Switch2:OS202013MT5QN1" (id 2) (at 227.33 35.56 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 227.33 35.56 0)
@@ -2574,13 +2574,13 @@
       (reference "RV1") (unit 1) (value "10k") (footprint "Potentiometer_SMD:Potentiometer_Bourns_3214W_Vertical")
     )
     (path "/db86439e-22f6-4a69-ba80-443c6959f624"
-      (reference "SW1") (unit 1) (value "SW_Push_DPDT2") (footprint "")
+      (reference "SW1") (unit 1) (value "SW_Push_DPDT2") (footprint "Button_Switch2:E-Switch_TL2233")
     )
     (path "/e818e1a5-35d0-4978-9d17-01ccf3474d55"
-      (reference "SW2") (unit 1) (value "SW_DPDT_x2") (footprint "")
+      (reference "SW2") (unit 1) (value "SW_DPDT_x2") (footprint "Button_Switch2:OS202013MT5QN1")
     )
     (path "/1335cd1f-ad57-4289-bbfc-4670e8369120"
-      (reference "SW2") (unit 2) (value "SW_DPDT_x2") (footprint "")
+      (reference "SW2") (unit 2) (value "SW_DPDT_x2") (footprint "Button_Switch2:OS202013MT5QN1")
     )
     (path "/7e750dcd-0186-4f3b-90f9-d808a98c4db4"
       (reference "U1") (unit 1) (value "AP2126K-ADJ") (footprint "Package_TO_SOT_SMD:SOT-23-5_HandSoldering")
