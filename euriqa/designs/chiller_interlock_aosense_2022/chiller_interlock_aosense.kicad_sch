@@ -1480,7 +1480,7 @@
     (uuid c4c8c9d8-a4af-489f-a7d1-ccdd91a693a4)
     (property "Reference" "R7" (id 0) (at 31.75 95.25 90))
     (property "Value" "2k" (id 1) (at 31.75 97.79 90))
-    (property "Footprint" "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm" (id 2) (at 31.75 103.378 90)
+    (property "Footprint" "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" (id 2) (at 31.75 103.378 90)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 31.75 101.6 0)
@@ -1699,7 +1699,7 @@
       (reference "R6") (unit 1) (value "25") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal")
     )
     (path "/c4c8c9d8-a4af-489f-a7d1-ccdd91a693a4"
-      (reference "R7") (unit 1) (value "2k") (footprint "Capacitor_THT:CP_Radial_D8.0mm_P3.50mm")
+      (reference "R7") (unit 1) (value "2k") (footprint "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal")
     )
   )
 )
