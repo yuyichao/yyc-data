@@ -963,6 +963,7 @@
   )
 
   (no_connect (at 30.48 74.93) (uuid 096dd1a8-226e-4a3c-bc85-08d481631039))
+  (no_connect (at 102.87 31.75) (uuid 9a06fd0f-3b32-4cb0-b5bd-f18bb9ae7c4c))
   (no_connect (at 40.64 72.39) (uuid a7181abd-f649-4ea9-8973-302a291a6b2c))
   (no_connect (at 40.64 77.47) (uuid e1320c02-865f-4ac6-ad3c-dc884a388e3f))
   (no_connect (at 102.87 41.91) (uuid fb6572e1-dfd3-4d48-99d4-f6edd2e22a19))
