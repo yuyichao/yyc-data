@@ -1,12 +1,12 @@
 %TF.GenerationSoftware,KiCad,Pcbnew,(6.0.7)*%
-%TF.CreationDate,2022-08-24T23:08:52-04:00*%
+%TF.CreationDate,2022-08-25T07:22:17-04:00*%
 %TF.ProjectId,chiller_interlock_aosense,6368696c-6c65-4725-9f69-6e7465726c6f,rev?*%
 %TF.SameCoordinates,Original*%
 %TF.FileFunction,Soldermask,Top*%
 %TF.FilePolarity,Negative*%
 %FSLAX46Y46*%
 G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
-G04 Created by KiCad (PCBNEW (6.0.7)) date 2022-08-24 23:08:52*
+G04 Created by KiCad (PCBNEW (6.0.7)) date 2022-08-25 07:22:17*
 %MOMM*%
 %LPD*%
 G01*
@@ -175,11 +175,10 @@ X370232500Y-103357500D03*
 D16*
 X366732500Y-103357500D03*
 %TD*%
-D18*
 %TO.C,J4*%
-X381732500Y-103357500D03*
-D16*
 X378232500Y-103357500D03*
+D18*
+X381732500Y-103357500D03*
 %TD*%
 D12*
 %TO.C,R1*%
