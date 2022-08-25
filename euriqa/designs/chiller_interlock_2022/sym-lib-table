@@ -1,3 +1,5 @@
 (sym_lib_table
   (lib (name "Relay2")(type "KiCad")(uri "${KIPRJMOD}/../kicad/Relay2.kicad_sym")(options "")(descr ""))
+  (lib (name "regulator")(type "KiCad")(uri "${KIPRJMOD}/../kicad/regulator.kicad_sym")(options "")(descr ""))
+  (lib (name "Switch2")(type "KiCad")(uri "${KIPRJMOD}/../kicad/Switch2.kicad_sym")(options "")(descr ""))
 )
