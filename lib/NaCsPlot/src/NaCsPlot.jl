@@ -42,10 +42,10 @@ end
 
 const hist = PyCall.PyNULL()
 
-function plot_data(data, columns, scale=1; yoffset=0, kws...)
+function plot_data(data, columns, scale=1; yoffset=0, xscale=1, kws...)
     params, ratios, uncs = NaCsData.get_values(data)
     perm = sortperm(params)
-    params = params[perm]
+    params = params[perm] .* xscale
     for col in columns
         errorbar(params, ratios[perm, col] .* scale .+ yoffset,
                  uncs[perm, col] .* scale; kws...)
