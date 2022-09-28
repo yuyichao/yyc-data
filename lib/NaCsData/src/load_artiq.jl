@@ -25,7 +25,7 @@ function load_dax_scan1(fd)
         end
     else
         counts = Matrix{Int}(undef, actual_nparams, 2)
-        new_params = similar(params, nparams)
+        new_params = similar(params, actual_nparams)
         idx = 0
         for i in 1:nparams
             k = string(i - 1)
