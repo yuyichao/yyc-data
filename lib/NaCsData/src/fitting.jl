@@ -82,4 +82,14 @@ function fit_survival(model, data::SortedData, p0; use_unc=true, kws...)
         return fit_data(model, xs, ratios[:, 2], p0; kws...)
     end
 end
+
+function fit_loading(model, data::SortedData, p0; use_unc=true, kws...)
+    if use_unc
+        xs, ratios, uncs = get_values(data)
+        return fit_data(model, xs, ratios[:, 1], uncs[:, 1], p0; kws...)
+    else
+        xs, ratios, uncs = get_values(data, 0.0)
+        return fit_data(model, xs, ratios[:, 1], p0; kws...)
+    end
+end
 end
