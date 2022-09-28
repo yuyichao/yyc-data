@@ -83,7 +83,7 @@ text(0.1, 0.4, "\$\\tau_{before}=$(fit_depump0.uncs[3] * 1e3) ms\$", color="C0")
 text(0.1, 0.25, "\$\\tau_{after}=$(fit_depump1.uncs[2]) s\$", color="C1")
 grid()
 # xlim([0, 2.5])
-xlabel("Pump Time (\$\\mu s\$)")
+xlabel("Pump Time (\$s\$)")
 ylabel("\$P_{detect}\$")
 NaCsPlot.maybe_save("$(prefix)_depump")
 
