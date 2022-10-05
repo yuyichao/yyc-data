@@ -266,9 +266,16 @@ as the free parameters.
 \item The well height difference is $\dfrac{x_2^2\paren{1 - \alpha}}{12}$
 \end{enumerate}
 Note that this can describe both the second well and the barrier.
-The condition for this describing the well, instead of the barrier is simply $\alpha>0$.
+The condition for this describing the well, instead of the barrier is simply $\alpha>0$.\\
 
-With a fixed ratio of the potential the well height difference goes down quadratically and the only way to get true zero well height differences is for $\alpha=1$, which means symmetric well.
+With a fixed ratio of the potential the well height difference goes down quadratically and the only way to get true zero well height differences is for $\alpha=1$, which means symmetric well.\\
 
+Converting back to the polynomial coefficients so that it's easy to tell
+what are parameters that makes sense
+\eqar{
+  b=&-\frac{\alpha + 2}{x_2}\\
+  a=&\frac{\alpha + 1}{x_2^2}
+}
+As $x_2\rightarrow0$, $a$ diverges for $\alpha\neq-1$ and $b$ diverges for $\alpha\neq-2$, so this description is not suitable when the two wells merges together. In the actual merging process for two wells in quartic potential, the quadratic term will disappear when the traps are merged together. During that process, the confinement of each of the wells will goes to zero and that cannot be covered by our model (it could be if we add another scaling factor and make it proportional to $x_2^2$).
 
 \end{document}
