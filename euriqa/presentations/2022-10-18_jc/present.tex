@@ -557,4 +557,71 @@
   \end{center}
 \end{frame}
 
+\begin{frame}{Polarization: Effect of reflection}
+  \begin{center}
+    \begin{columns}[t]
+      \column{5.5cm}
+      \begin{block}{Normal incident}
+        \begin{itemize}
+        \item $\pi$ phase shift
+        \item No effect on relative amplitude
+        \end{itemize}
+      \end{block}
+      \vspace{0.2cm}
+      \visible<2->{
+        \begin{center}
+          \begin{tikzpicture}
+            \draw[red, line width=1] (-2, 2) -- (0, 0) -- (2, 2);
+
+            \fill[red] (-0.8, 0.8) circle (0.1);
+            \fill[red] (-1.5, 1.5) circle (0.1);
+            \draw[<->,>=stealth,red,line width=0.8]
+            (-0.8 - 0.4, 0.8 - 0.4) -- (-0.8 + 0.4, 0.8 + 0.4);
+            \draw[<->,>=stealth,red,line width=0.8]
+            (-1.5 - 0.4, 1.5 - 0.4) -- (-1.5 + 0.4, 1.5 + 0.4);
+
+            \fill[red] (0.8, 0.8) circle (0.1);
+            \fill[red] (1.5, 1.5) circle (0.1);
+            \draw[<->,>=stealth,red,line width=0.8]
+            (0.8 + 0.4, 0.8 - 0.4) -- (0.8 - 0.4, 0.8 + 0.4);
+            \draw[<->,>=stealth,red,line width=0.8]
+            (1.5 + 0.4, 1.5 - 0.4) -- (1.5 - 0.4, 1.5 + 0.4);
+
+            \draw[<->,>=stealth,red,line width=0.8]
+            (-1.7, -1 - 0.4) --
+            node[right=0.36] {$p$-polarization}
+            (-1.7, -1 + 0.4);
+            \fill[<->,>=stealth,red,line width=0.8]
+            (-1.7, -2) circle (0.1)
+            node[right=0.36] {$s$-polarization};
+
+            \draw[line width=2] (-2.5, 0) -- (2.5, 0);
+          \end{tikzpicture}
+        \end{center}
+      }
+      \vspace{1cm}
+      \column{5.5cm}
+      \visible<3->{
+        \begin{block}{Simple surface}
+          \begin{itemize}
+          \item (metal or dielectric)
+          \item $\pi$ phase shift
+          \item Change relative amplitude
+          \end{itemize}
+        \end{block}
+      }
+      \vspace{0.3cm}
+      \visible<4->{
+        \begin{block}{Coating}
+          \begin{itemize}
+          \item ``Arbitrary'' phase shift
+          \item Change relative amplitude
+          \item (dielectric mirror, dichroics)
+          \end{itemize}
+        \end{block}
+      }
+    \end{columns}
+  \end{center}
+\end{frame}
+
 \end{document}
