@@ -421,4 +421,64 @@
   \end{center}
 \end{frame}
 
+\begin{frame}{Fiber coupling}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<-3>{
+        \node at (0, 0) {\textbf{Collimation}};
+
+        \draw[dashed,line width=0.8,opacity=0.2] (-4, -2) -- (4, -2);
+
+        \visible<2->{
+          \draw[blue, dashed, line width=0.5] (-1, -1) -- (1, -2) -- (-1, -3);
+          \draw[blue, line width=0.5] (0.2, -2) arc (180:180-26.56505117707799:0.8)
+          node[midway,left] {$\theta$};
+          \draw[blue,->,>=stealth,line width=0.5] (-2.5, -1.5) -- (-2.5, -1);
+          \node[blue] at (-2.5, -2) {$d$};
+          \draw[blue,->,>=stealth,line width=0.5] (-2.5, -2.5) -- (-2.5, -3);
+        }
+
+        \draw[line width=1] (4, -2.2) -- (1, -2.2) -- (1, -1.8) -- (4, -1.8);
+        \draw[red, line width=0.7, domain=-2:0,smooth,variable=\x]
+        (-4, -1) -- plot ({\x + 1}, {-2 + sqrt(0.2^2 + (\x / 2)^2)});
+        \draw[red, line width=0.7, domain=-2:0,smooth,variable=\x]
+        (-4, -3) -- plot ({\x + 1}, {-2 - sqrt(0.2^2 + (\x / 2)^2)});
+        \draw[<->,>=stealth, line width=1.5] (-1, -3.3) -- (-1, -0.7);
+
+        \visible<3->{
+          \node[blue,below] at (0, -4) {$d\approx 2f\tan\theta$};
+        }
+      }
+      \visible<4->{
+        \node at (0, 0) {\textbf{Alignment}};
+
+        \visible<5>{
+          \node at (-2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_sym.pdf}};
+        }
+        \visible<6>{
+          \node at (-2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_sym_point.pdf}};
+        }
+        \visible<7->{
+          \node at (-2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_sym_align.pdf}};
+        }
+        \visible<8>{
+          \node at (2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_asym.pdf}};
+        }
+        \visible<9>{
+          \node at (2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_asym_axis.pdf}};
+        }
+        \visible<10>{
+          \node at (2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_asym_point.pdf}};
+        }
+        \visible<11>{
+          \node at (2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_asym_naive.pdf}};
+        }
+        \visible<12->{
+          \node at (2.8, -3) {\includegraphics[width=4.2cm]{imgs/opt_asym_jump.pdf}};
+        }
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 \end{document}
