@@ -481,4 +481,80 @@
   \end{center}
 \end{frame}
 
+\begin{frame}[t]{Polarization\visible<2->{: Polarizers}}
+  \begin{center}
+    \begin{columns}[t]
+      \begin{column}{3.9cm}
+        \visible<3->{
+          \centering
+          \textbf{PBS Cubes}\\
+          \visible<4->{
+            \begin{itemize}
+            \item Based on coating
+            \item Easy to use for both polarizations
+            \item OK loss (few \%)
+            \item low-mid extinction
+            \item Wavelength dependent
+            \end{itemize}
+          }
+        }
+      \end{column}
+      \begin{column}{3.9cm}
+        \visible<5->{
+          \centering
+          \textbf{Prisms}\\
+          \visible<6->{
+            \begin{itemize}
+            \item Based on birefringence
+            \item Non 90 reflection angle
+            \item Low loss
+            \item High extinction
+            \item Etaloning
+            \item Broadband
+            \end{itemize}
+          }
+        }
+      \end{column}
+      \begin{column}{3.9cm}
+        \visible<7->{
+          \centering
+          \textbf{Thin film}\\
+          \visible<8->{
+            \begin{itemize}
+            \item Based on absorption
+            \item Easy to use\\
+              (minimal change to beam)
+            \item High loss
+            \item High extinction
+            \item Broadband
+            \end{itemize}
+          }
+        }
+      \end{column}
+    \end{columns}
+  \end{center}
+\end{frame}
+
+\begin{frame}[t]{Polarization: Waveplates}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (0, 0) {$\Delta\phi=\dfrac{2\pi nl}{\lambda}$};
+      \visible<2>{
+        \node at (-2.5, -1.5) {Half WP: $\Delta\phi=\dfrac{\pi}{2}$};
+        \node at (2.5, -1.5) {Quarter WP: $\Delta\phi=\dfrac{\pi}{4}$};
+      }
+      \visible<3->{
+        \node at (-2.5, -1.5) {Half WP: $\Delta\phi=2n\pi+\dfrac{\pi}{2}$};
+        \node at (2.5, -1.5) {Quarter WP: $\Delta\phi=2n\pi+\dfrac{\pi}{4}$};
+      }
+      \visible<4->{
+        \node at (0, -3) {Zero-th order WP: $n=0$};
+      }
+      \visible<5->{
+        \node at (0, -4.5) {Other WP type: Achromatic, ``Magic''};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 \end{document}
