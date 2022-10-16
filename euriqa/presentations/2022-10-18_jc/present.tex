@@ -895,6 +895,69 @@
 \end{frame}
 
 \begin{frame}{AOM vs EOM}
+  \begin{center}
+    \begin{tikzpicture}
+      \fill[opacity=0] (-5.8, -3.7) rectangle (5.8, 3.7);
+
+      \draw[line width=1] (0, -3.7) -- (0, 3.7);
+      \node[below] at (-2.9, 3.7) {\bf AOM};
+      \node[below] at (2.9, 3.7) {\bf EOM};
+
+      \visible<2->{
+        \node[below] at (-2.9, 3.1) {$40-2000\mathrm{MHz}$};
+        \node[below] at (2.9, 3.1) {$\mathrm{DC}-40\mathrm{GHz}$};
+      }
+
+      \visible<3->{
+        \node[below] at (-2.9, 2.5) {Tunable (AOBD vs AOM)};
+        \node[below] at (2.9, 2.5) {Tunable (if not resonant)};
+      }
+
+      \visible<4->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, 1.9) {Good suppression of wrong order};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, 1.9) {Bad suppression of wrong order};
+      }
+
+      \visible<5->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, 1.3) {No/little polarization modulation};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, 1.3) {Support polarization modulation};
+      }
+
+      \visible<6->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, 0.7) {Multiple frequencies in single beam\\
+        (Requires multiple AOMs)};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, 0.7) {Multiple frequencies in single beam};
+      }
+
+      \visible<7->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, -0.4) {Steer beam with frequency};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, -0.4) {Cannot steer beam};
+      }
+
+      \visible<8->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, -1.0) {Switching implies frequency shift\\
+        (Can shift back with another AOM)};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, -1.0) {Switching without frequency shift (DC)};
+      }
+
+      \visible<9->{
+        \node[below, align=center, text width=5.8cm]
+        at (-2.9, -2.1) {Slow ($\mu s$)};
+        \node[below, align=center, text width=5.8cm]
+        at (2.9, -2.1) {Fast ($ns$)};
+      }
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 \end{document}
