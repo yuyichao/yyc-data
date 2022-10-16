@@ -35,6 +35,17 @@
   shapes,
   arrows.meta
 }
+\tikzset{
+  mid arrow/.style={postaction={decorate,decoration={
+        markings,
+        mark=at position .5 with {\arrow[#1]{stealth}}
+      }}},
+  mid arrow2/.style={postaction={decorate,decoration={
+        markings,
+        mark=at position .5 with {\arrow[>=stealth]{><}}
+      }}},
+}
+
 \usepgfmodule{oo}
 
 \pgfdeclareradialshading{glow2}{\pgfpoint{0cm}{0cm}}{
@@ -146,6 +157,78 @@
   }
 }
 \makeatother
+
+\newcommand\drawlens[3]{
+  % 1: center (x, y)
+  % 2: size
+  % 3: angle
+  \begin{scope}[shift={#1}]
+    \node[rotate={#3}] at (0, 0) {\scalebox{#2}{\includegraphics[width=2cm]{fadings/lens.png}}};
+  \end{scope}
+}
+\newcommand\drawwaveplate[3]{
+  % 1: center (x, y)
+  % 2: size
+  % 3: angle
+  \begin{scope}[shift={#1}]
+    \node[rotate={#3}] at (0, 0)
+    {\scalebox{#2}{\includegraphics[width=2cm]{fadings/waveplate.png}}};
+  \end{scope}
+}
+\newcommand\drawaom[4]{
+  % 1: center (x, y)
+  % 2: xsize
+  % 3: ysize
+  % 4: angle
+  \begin{scope}[shift={#1}]
+    \node[rotate={#4}] at (0, 0)
+    {\scalebox{#2}[#3]{\includegraphics[width=2cm,height=2cm]{fadings/aom.png}}};
+  \end{scope}
+  \begin{scope}[rotate around={#4:#1}]
+    \fill[orange, even odd rule, opacity=0.8]
+    ($#1 + ({#2}, 0)$) arc (0:360:{#2} and {#3})
+    -- ($#1 + ({#2}, {#3})$) -- ($#1 + (-{#2}, {#3})$) -- ($#1 + (-{#2}, -{#3})$)
+    -- ($#1 + ({#2}, -{#3})$) --cycle;
+    \draw ($#1 + ({#2}, {#3})$) -- ($#1 + (-{#2}, {#3})$) -- ($#1 + (-{#2}, -{#3})$)
+    -- ($#1 + ({#2}, -{#3})$) --cycle;
+  \end{scope}
+}
+\newcommand\drawpbs[3]{
+  % 1: center (x, y)
+  % 2: size
+  % 3: angle
+  \begin{scope}
+    \begin{scope}
+      \clip[rotate around={#3:#1}] ($#1 - ({#2}, {#2})$) rectangle ($#1 + ({#2}, {#2})$);
+      \begin{scope}[transform canvas={shift={#1}, rotate=#3}]
+        \node[rotate=-90] at (0, 0)
+        {\scalebox{#2}{\includegraphics[width=2cm,
+            height=2cm]{fadings/pbs.png}}};
+        \draw[line width=1] (-{#2}, -{#2}) -- ({#2}, {#2});
+      \end{scope}
+    \end{scope}
+    % Make sure the frame is not clipped
+    \draw[rotate around={#3:#1}] ($#1 - ({#2}, {#2})$) rectangle ($#1 + ({#2}, {#2})$);
+  \end{scope}
+}
+\newcommand\drawnonpbs[3]{
+  % 1: center (x, y)
+  % 2: size
+  % 3: angle
+  \begin{scope}
+    \begin{scope}
+      \clip[rotate around={#3:#1}] ($#1 - ({#2}, {#2})$) rectangle ($#1 + ({#2}, {#2})$);
+      \begin{scope}[transform canvas={shift={#1}, rotate=#3}]
+        \node[rotate=-90] at (0, 0)
+        {\scalebox{#2}{\includegraphics[width=2cm,
+            height=2cm]{fadings/non_pbs.png}}};
+        \draw[line width=1] (-{#2}, -{#2}) -- ({#2}, {#2});
+      \end{scope}
+    \end{scope}
+    % Make sure the frame is not clipped
+    \draw[rotate around={#3:#1}] ($#1 - ({#2}, {#2})$) rectangle ($#1 + ({#2}, {#2})$);
+  \end{scope}
+}
 
 % not mandatory, but I though it was better to set it blank
 \setbeamertemplate{headline}{}
@@ -680,7 +763,138 @@
   \end{center}
 \end{frame}
 
-\begin{frame}{Acousto-optic modulator (AOM)}
+\begin{frame}[t]{Acousto-optic modulator (AOM)\visible<2->{ \footnotesize i.e. dynamic/moving grating}}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<3-5>{
+        \draw[red,line width=15] (-4, 0) -- (4, 0);
+        \draw[red,line width=15] (0, 0) -- (4, 2);
+        \draw[red,line width=15] (0, 0) -- (4, 1);
+        \draw[red,line width=15] (0, 0) -- (4, -1);
+        \draw[red,line width=15] (0, 0) -- (4, -2);
+
+        \draw[line width=1] (0, 1.5) -- (0, 1.4);
+        \draw[line width=1] (0, 1.3) -- (0, 1.2);
+        \draw[line width=1] (0, 1.1) -- (0, 1.0);
+        \draw[line width=1] (0, 0.9) -- (0, 0.8);
+        \draw[line width=1] (0, 0.7) -- (0, 0.6);
+        \draw[line width=1] (0, 0.5) -- (0, 0.4);
+        \draw[line width=1] (0, 0.3) -- (0, 0.2);
+        \draw[line width=1] (0, 0.1) -- (0, 0);
+        \draw[line width=1] (0, -0.1) -- (0, -0.2);
+        \draw[line width=1] (0, -0.3) -- (0, -0.4);
+        \draw[line width=1] (0, -0.5) -- (0, -0.6);
+        \draw[line width=1] (0, -0.7) -- (0, -0.8);
+        \draw[line width=1] (0, -0.9) -- (0, -1.0);
+        \draw[line width=1] (0, -1.1) -- (0, -1.2);
+        \draw[line width=1] (0, -1.3) -- (0, -1.4);
+        \draw[line width=1] (0, -1.5) -- (0, -1.6);
+
+        \draw[line width=0.8] (0, 0.95) -- (-1, 0.95);
+        \draw[line width=0.8] (0, 1.15) -- (-1, 1.15);
+        \draw[->,line width=1,>=stealth] (-0.5, 1.55) -- node[left=0.1] {$d$} (-0.5, 1.15);
+        \draw[->,line width=1,>=stealth] (-0.5, 0.55) -- (-0.5, 0.95);
+
+        \draw[dashed,line width=1] (-5, 0) -- (5, 0);
+        \draw[dashed,line width=1] (0, 0) -- (5, 1.25);
+        \draw[line width=1] (1.6, 0) arc (0:14.036243467926479:1.6)
+        node[midway,right] {$\theta$};
+
+        \node at (0, -2.5) {$d\sin\theta_n=n\lambda$};
+
+        \visible<4>{
+          \node[above] at (0, 1.5) {$T(x)$};
+          \node[below,align=center,text width=8cm] at (0, -2.5) {
+            \begin{align*}
+              T(x)=&\sum_na_n\exp\left(\mathrm{i}\frac{2n\pi x}{d}\right)
+            \end{align*}
+          };
+        }
+
+        \visible<5->{
+          \node[above] at (0, 1.5) {$T(x- d \omega t/2\pi)$};
+          \node[below,align=center,text width=8cm] at (0, -2.5) {
+            \begin{align*}
+              T(x)=&\sum_na_n\exp\left(\mathrm{i}\frac{2n\pi (x- d \omega t/2\pi)}{d}\right)\\
+              =&\sum_na_n\exp\left(\mathrm{i}\frac{2n\pi x}{d}-\mathrm{i}n\omega t\right)
+            \end{align*}
+          };
+        }
+      }
+      \visible<6->{
+        \draw[red,line width=15] (-4, 0) -- (4, 0);
+        \draw[red,line width=15] (0, 0) -- (4, -1);
+        \foreach \i in {-5, ..., 5} {
+          \draw[line width=1] (-1 + \i * 0.15 * 0.12310562561766054, 0.12310562561766054 + \i * 0.15) --
+          ++(2, -2 * 0.12310562561766054);
+        }
+        \draw[dashed,line width=1] (-5, 0) -- (5, 0);
+        \draw[dashed,line width=1] (0, 0) -- (5, -1.25);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[t]{Acousto-optic modulator (AOM) \footnotesize i.e. dynamic/moving grating}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (2.75, -1.5) {\textbf{Double Pass}};
+      % PBS input
+      \draw[red,line width=1.6,mid arrow] (0, -2) -- (0, -3.5 + 0.5);
+      \draw[red,line width=1.6] (0, -3.5 + 0.5) -- (0, -3.5);
+      % AOM input
+      \draw[red,line width=1.6] (0, -3.5) -- (0.6, -3.5);
+      \draw[red,line width=1.6,mid arrow2] (0.6, -3.5) -- (2, -3.5);
+      % DP
+      \draw[red,line width=1.6,mid arrow2] (2, -3.5) -- (4.5, -4.1);
+      \draw[red,line width=1.6] (4.5, -4.1) -- (4.95, -4.1);
+      \draw[red,line width=1.6,mid arrow2] (4.95, -4.1) -- (7, -4.1);
+      % output
+      \draw[red,line width=1.6] (0, -3.5) -- (-0.95, -3.5);
+      \draw[red,line width=1.6,mid arrow] (-0.95, -3.5) -- (-1.5, -3.5);
+
+      % PBS
+      \drawpbs{(0, -3.5)}{0.7}{90}
+      \node[blue!40!cyan,below,align=center] at (0, -3.5 - 0.7) {\large PBS};
+      % AOM
+      \drawaom{(2, -3.5)}{1}{0.5}{90}
+      \node[rotate=90,align=center] at (2, -3.5) {\large AOM};
+      % QWP
+      \drawwaveplate{(3.9, -3.5)}{1}{90}
+      \node[blue!80!black,above] at (3.9, -3.5 + 0.8) {\large $\lambda/4$};
+      % lens
+      \drawlens{(4.5, -3.5)}{1}{90}
+      % mirror
+      \draw[line width=3] (7, -3.5 - 0.2) -- (7, -3.5 - 0.9);
+
+      \visible<2->{
+        \node at (2.75, -5.5) {\textbf{Tandem}};
+
+        % AOM 1 input
+        \draw[red,line width=1.6,mid arrow] (-2.5, -7) -- (-1.15, -7);
+        \draw[red,line width=1.6] (-1.15, -7) -- (-1, -7);
+        % AOM 1 output
+        \draw[red,line width=1.6,mid arrow] (-1, -7) -- (2.75, -7 - 0.7);
+        % AOM 2 input
+        \draw[red,line width=1.6,mid arrow] (2.75, -7 - 0.7) -- (6.5, -7);
+        % AOM 1 output
+        \draw[red,line width=1.6] (6.5, -7) -- (7.2, -7);
+        \draw[red,line width=1.6,mid arrow] (7.2, -7) -- (8, -7);
+
+        % AOM 1
+        \drawaom{(-1, -7)}{1}{0.5}{90}
+        \node[rotate=90,align=center] at (-1, -7) {\large AOM 1};
+        % lens
+        \drawlens{(2.75, -7)}{1}{90}
+        % AOM 2
+        \drawaom{(6.5, -7)}{1}{0.5}{90}
+        \node[rotate=90,align=center] at (6.5, -7) {\large AOM 2};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{AOM vs EOM}
 \end{frame}
 
 \end{document}
