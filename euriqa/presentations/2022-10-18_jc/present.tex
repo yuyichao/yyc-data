@@ -624,4 +624,63 @@
   \end{center}
 \end{frame}
 
+\begin{frame}[t]{Electro-optic modulator (EOM)\visible<2->{ \footnotesize i.e. electrically variable waveplate}}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<3,10->{
+        \node at (0, 0) {$n=n_0+\alpha E$};
+      }
+      \visible<4-9>{
+        \node at (0, 0) {$n_{i}={n_0}_{i}+\alpha_i^j E_j$};
+      }
+      \visible<5-7>{
+        \node[align=center,text width=8cm,below] at (0, -0.1) {
+          \begin{block}{DC EOM: adjustable waveplate}
+            \begin{itemize}
+            \item<6-> Rotate polarization
+            \item<6-> (with polarizer) Turn beam on/off
+            \item<7-> Temperature drift compensation
+            \end{itemize}
+          \end{block}
+        };
+      }
+      \visible<8->{
+        \node[align=center,text width=8cm,below] at (0, -0.1) {
+          \begin{block}{AC EOM: phase/polarization modulation}
+            \begin{itemize}
+            \item<9-> Polarization modulation
+            \item<9-> Power modulation
+            \item<10-> Phase modulation/sideband
+            \item<12-> Asymmetric sideband\visible<14->{: sawtooth drive}
+            \end{itemize}
+          \end{block}
+        };
+      }
+      \visible<11>{
+        \node[align=center,text width=8cm,below] at (0, -3) {
+          \begin{align*}
+            \phi=&\phi_0+\beta\sin(\omega t)\\
+            \tilde{A}=&A_0\exp(\mathrm{i}\phi)\\
+            =&\tilde{A_0}\exp(\mathrm{i}\beta\sin(\omega t))\\
+            =&\tilde{A_0}\sum_{n=-\infty}^{\infty}J_{n}(\beta)\exp(\mathrm{i}n\omega t)
+          \end{align*}
+        };
+      }
+      \visible<13>{
+        \node[align=center,below] at (0, -4) {
+          $\phi=\phi_0+\omega t$
+        };
+      }
+      \visible<14->{
+        \node[align=center,below] at (0, -4) {
+          $\phi=mod(\phi_0+\omega t, 2\pi)$
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Acousto-optic modulator (AOM)}
+\end{frame}
+
 \end{document}
