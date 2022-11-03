@@ -106,6 +106,7 @@ const data_4_1 = read_data(joinpath(@__DIR__, "data/Y_-100_20_20_Z_0_4.dat"))
 const data_4_2 = read_data(joinpath(@__DIR__, "data/Y_40_20_100_Z_0_4.dat"))
 
 const freq_MHz = 46.25
+const dys = -100:20:100
 
 for trace in data_1_1
     truncate_trace!(trace, freq_MHz)
@@ -154,60 +155,63 @@ const fits_4 = [fit_trace(trace, freq_MHz) for trace in norm_data_4]
 
 const prefix = joinpath(@__DIR__, "imgs", "data_axial_20221102")
 
-function plot_trace(norm_data, fits)
-    for (i, trace, fit) in zip(1:length(norm_data), norm_data, fits)
-        errorbar((0:length(trace.counts) - 1) .* trace.bin_size, trace.counts, trace.uncs,
-                 ls="", color="C$i")
-        plot(fit.plotx, fit.ploty, color="C$i")
+function plot_trace(dys, norm_data, fits)
+    for (i, dy, trace, fit) in zip(1:length(norm_data), dys, norm_data, fits)
+        errorbar((0:length(trace.counts) - 1) .* trace.bin_size, trace.counts,
+                 trace.uncs, ls="", color="C$i")
+        plot(fit.plotx, fit.ploty, color="C$i", label="$dy")
     end
     grid()
     xlabel("Time (ns)")
     ylabel("Normalized counts")
+    legend(fontsize=8, ncol=4)
 end
 
 figure()
-plot_trace(norm_data_1, fits_1)
+plot_trace(dys, norm_data_1, fits_1)
 NaCsPlot.maybe_save("$(prefix)_0_quantum")
 
 figure()
-plot_trace(norm_data_2, fits_2)
+plot_trace(dys, norm_data_2, fits_2)
 NaCsPlot.maybe_save("$(prefix)_0_loading")
 
 figure()
-plot_trace(norm_data_3, fits_3)
+plot_trace(dys, norm_data_3, fits_3)
 NaCsPlot.maybe_save("$(prefix)_105_quantum")
 
 figure()
-plot_trace(norm_data_4, fits_4)
+plot_trace(dys, norm_data_4, fits_4)
 NaCsPlot.maybe_save("$(prefix)_105_loading")
 
 figure()
 errorbar([fit.param[1] for fit in fits_1], [fit.param[2] for fit in fits_1],
          xerr=[fit.unc[1] for fit in fits_1], yerr=[fit.unc[2] for fit in fits_1],
-         fmt="o-")
+         fmt="o-", label="Quantum")
 errorbar([fit.param[1] for fit in fits_2], [fit.param[2] for fit in fits_2],
          xerr=[fit.unc[1] for fit in fits_2], yerr=[fit.unc[2] for fit in fits_2],
-         fmt="o-")
+         fmt="o-", label="Loading")
 grid()
 xlim([-0.45, 0.45])
 ylim([-0.45, 0.45])
 xlabel("Amplitude 1")
 ylabel("Amplitude 2")
+legend(fontsize=15)
 gca()[:set_aspect](1)
 NaCsPlot.maybe_save("$(prefix)_amp_phase_0")
 
 figure()
 errorbar([fit.param[1] for fit in fits_3], [fit.param[2] for fit in fits_3],
          xerr=[fit.unc[1] for fit in fits_3], yerr=[fit.unc[2] for fit in fits_3],
-         fmt="o-")
+         fmt="o-", label="Quantum")
 errorbar([fit.param[1] for fit in fits_4], [fit.param[2] for fit in fits_4],
          xerr=[fit.unc[1] for fit in fits_4], yerr=[fit.unc[2] for fit in fits_4],
-         fmt="o-")
+         fmt="o-", label="Loading")
 grid()
 xlim([-0.45, 0.45])
 ylim([-0.45, 0.45])
 xlabel("Amplitude 1")
 ylabel("Amplitude 2")
+legend(fontsize=15)
 gca()[:set_aspect](1)
 NaCsPlot.maybe_save("$(prefix)_amp_phase_105")
 
@@ -232,7 +236,6 @@ function fit_amp(dys, amps)
     return fit
 end
 
-const dys = -100:20:100
 const amp_1 = get_amp_unc.(fits_1)
 const amp_2 = get_amp_unc.(fits_2)
 const amp_3 = get_amp_unc.(fits_3)
@@ -244,25 +247,27 @@ const fit_amp_3 = fit_amp(dys, amp_3)
 const fit_amp_4 = fit_amp(dys, amp_4)
 
 figure()
-errorbar(dys, [a[1] for a in amp_1], [a[2] for a in amp_1], fmt="C0o")
+errorbar(dys, [a[1] for a in amp_1], [a[2] for a in amp_1], fmt="C0o", label="Quantum")
 plot(fit_amp_1.plotx, fit_amp_1.ploty, "C0-")
-errorbar(dys, [a[1] for a in amp_2], [a[2] for a in amp_2], fmt="C1o")
+errorbar(dys, [a[1] for a in amp_2], [a[2] for a in amp_2], fmt="C1o", label="Loading")
 plot(fit_amp_2.plotx, fit_amp_2.ploty, "C1-")
 text(-40, 0.4, "\$DV_{min1}=$(fit_amp_1.uncs[3])\$ V/m", color="C0")
 text(-40, 0.35, "\$DV_{min2}=$(fit_amp_2.uncs[3])\$ V/m", color="C1")
 grid()
+legend(fontsize=15, loc="lower left")
 xlabel("DY (V/m)")
 ylabel("Amplitude")
 NaCsPlot.maybe_save("$(prefix)_mindiff_0")
 
 figure()
-errorbar(dys, [a[1] for a in amp_3], [a[2] for a in amp_3], fmt="C0o")
+errorbar(dys, [a[1] for a in amp_3], [a[2] for a in amp_3], fmt="C0o", label="Quantum")
 plot(fit_amp_3.plotx, fit_amp_3.ploty, "C0-")
-errorbar(dys, [a[1] for a in amp_4], [a[2] for a in amp_4], fmt="C1o")
+errorbar(dys, [a[1] for a in amp_4], [a[2] for a in amp_4], fmt="C1o", label="Loading")
 plot(fit_amp_4.plotx, fit_amp_4.ploty, "C1-")
 text(-40, 0.45, "\$DV_{min1}=$(fit_amp_3.uncs[3])\$ V/m", color="C0")
 text(-40, 0.4, "\$DV_{min2}=$(fit_amp_4.uncs[3])\$ V/m", color="C1")
 grid()
+legend(fontsize=15, loc="lower left")
 xlabel("DY (V/m)")
 ylabel("Amplitude")
 NaCsPlot.maybe_save("$(prefix)_mindiff_105")
