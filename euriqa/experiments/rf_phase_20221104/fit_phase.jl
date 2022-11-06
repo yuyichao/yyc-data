@@ -122,6 +122,10 @@ function save_tables(prefix, names, block_infos, block_counts, fit)
             for blk_id2 in 1:nblocks
                 print(io, blk_id2)
                 for blk_id1 in 1:nblocks
+                    if blk_id1 <= blk_id2
+                        print(io, ",-")
+                        continue
+                    end
                     d = diff_phase(block_infos, fit, data_idx, blk_id1, blk_id2)
                     print(io, ",$d")
                 end
