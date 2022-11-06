@@ -115,18 +115,20 @@ function save_tables(prefix, names, block_infos, block_counts, fit)
         name = replace(name, r"\.[^.]*$"=>"")
         open("$(prefix)_$(name).csv", "w") do io
             nblocks = block_counts[data_idx]
-            for blk_id1 in 1:nblocks
+            print(io, "phase diff (cycle)")
+            for blk_id1 in 2:nblocks
                 print(io, ",$blk_id1")
             end
             println(io)
-            for blk_id2 in 1:nblocks
+            for blk_id2 in 1:(nblocks - 1)
                 print(io, blk_id2)
-                for blk_id1 in 1:nblocks
+                for blk_id1 in 2:nblocks
                     if blk_id1 <= blk_id2
                         print(io, ",-")
                         continue
                     end
-                    d = diff_phase(block_infos, fit, data_idx, blk_id1, blk_id2)
+                    # Compute ϕ1 - ϕ2
+                    d = diff_phase(block_infos, fit, data_idx, blk_id2, blk_id1)
                     print(io, ",$d")
                 end
                 println(io)
