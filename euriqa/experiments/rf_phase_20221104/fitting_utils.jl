@@ -5,6 +5,7 @@ push!(LOAD_PATH, joinpath(@__DIR__, "../../lib"))
 using HDF5
 using Statistics
 using NaCsData.Fitting: fit_data
+using NaCsCalc.Format: Unc
 
 load_data(fname) = h5open(fname) do io
     ts = read(io, "time")
