@@ -109,7 +109,6 @@ function fit_multi_phases(tblocks, vblocks)
     p_ests = estimate_sin2pi_parameter.(tblocks, vblocks)
 
     p_init = Float64[]
-    # first parameter is the global frequency
     push!(p_init, mean([p[1] for p in p_ests]))
     push!(p_init, mean([p[2] for p in p_ests]))
     push!(p_init, mean([p[3] for p in p_ests]))
