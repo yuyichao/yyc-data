@@ -7,8 +7,9 @@ using Statistics
 using NaCsData.Fitting: fit_data
 
 load_data(fname) = h5open(fname) do io
-    return (time=read(io, "time"), value=read(io, "value"),
-            tscale=read(io, "tscale"), vscale=read(io, "vscale"))
+    ts = read(io, "time")
+    vs = read(io, "value")
+    return (time=ts ./ read(io, "tscale"), value=vs ./ read(io, "vscale"))
 end
 
 function shrink_block(block, r_start, r_end)
@@ -19,7 +20,7 @@ function shrink_block(block, r_start, r_end)
 end
 
 function find_blocks(data)
-    threshold = 20
+    threshold = 0.04
     min_size = 50
     end_threshold = 100
 
