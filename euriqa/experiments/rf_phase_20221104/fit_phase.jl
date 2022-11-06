@@ -116,16 +116,16 @@ function save_tables(prefix, names, block_infos, block_counts, fit)
         open("$(prefix)_$(name).csv", "w") do io
             nblocks = block_counts[data_idx]
             for blk_id1 in 1:nblocks
-                print(",$blk_id1")
+                print(io, ",$blk_id1")
             end
-            println()
+            println(io)
             for blk_id2 in 1:nblocks
-                print(blk_id2)
+                print(io, blk_id2)
                 for blk_id1 in 1:nblocks
                     d = diff_phase(block_infos, fit, data_idx, blk_id1, blk_id2)
-                    print(",$d")
+                    print(io, ",$d")
                 end
-                println()
+                println(io)
             end
         end
     end
