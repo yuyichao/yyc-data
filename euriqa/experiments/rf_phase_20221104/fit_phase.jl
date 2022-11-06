@@ -3,11 +3,11 @@
 include("fitting_utils.jl")
 
 const names_C2 = ["C2Trace00000.h5", "C2Trace00001.h5", "C2Trace00002.h5",
-                  "C2Trace00003.h5", "C2Trace00005.h5", "C2Trace00006.h5",
+                  "C2Trace00003.h5", "C2Trace00006.h5", "C2Trace00005.h5",
                   "C2Trace00007.h5", "C2Trace00008.h5", "C2Trace00009.h5",
                   "C2Trace00010.h5"]
 const names_C3 = ["C3Trace00000.h5", "C3Trace00001.h5", "C3Trace00002.h5",
-                  "C3Trace00003.h5", "C3Trace00004.h5", "C3Trace00005.h5",
+                  "C3Trace00003.h5", "C3Trace00005.h5", "C3Trace00004.h5",
                   "C3Trace00007.h5", "C3Trace00008.h5", "C3Trace00009.h5",
                   "C3Trace00010.h5"]
 
@@ -139,3 +139,35 @@ end
 
 save_tables("$(prefix)phase_diff", names_C2, block_infos_C2, block_counts_C2, fit_C2)
 save_tables("$(prefix)phase_diff", names_C3, block_infos_C3, block_counts_C3, fit_C3)
+
+const pairs_of_interest = [(1, 1, 2, 0),
+                           (1, 3, 4, 500),
+                           (1, 5, 6, 1000),
+                           (2, 1, 2, 1500),
+                           (2, 3, 4, 1600),
+                           (3, 1, 2, 2000),
+                           (4, 1, 2, 3000),
+                           (5, 1, 2, 4000),
+                           (6, 1, 2, 9000),
+                           (7, 1, 2, 5000),
+                           (8, 1, 2, 6000),
+                           (9, 1, 2, 7000),
+                           (10, 1, 2, 8000)]
+
+function save_pair_table(fname, pairs_info, block_infos_C2, block_counts_C2, fit_C2,
+                         block_infos_C3, block_counts_C3, fit_C3)
+    open(fname, "w") do io
+        println(io, "time (us),phase global (cycle),phase ind2 (cycle),phase diff (cycle)")
+        for (data_idx, blk_id1, blk_id2, us) in pairs_info
+            d_C2 = diff_phase(block_infos_C2, fit_C2, data_idx, blk_id1, blk_id2)
+            d_C3 = diff_phase(block_infos_C3, fit_C3, data_idx, blk_id1, blk_id2)
+            diff = d_C2 - d_C3
+            diff = Unc(mod(diff.a + 0.5, 1) - 0.5, diff.s)
+            println(io, "$us,$d_C2,$d_C3,$diff")
+        end
+    end
+end
+
+save_pair_table("$(prefix)pulse_phase.csv",
+                pairs_of_interest, block_infos_C2, block_counts_C2, fit_C2,
+                block_infos_C3, block_counts_C3, fit_C3)
