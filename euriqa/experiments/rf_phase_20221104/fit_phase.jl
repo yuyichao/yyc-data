@@ -29,7 +29,8 @@ function collect_blocks(data_set, r_start=0, r_end=1)
         idx_blocks = find_blocks(data)
         push!(block_counts, length(idx_blocks))
         for (block_idx, (tb, vb)) in enumerate(zip(get_tvblocks(data, idx_blocks)...))
-            toffset = (tb[1] + tb[end]) / 2
+            # toffset = (tb[1] + tb[end]) / 2
+            toffset = tb[1]
             push!(tblocks, shrink_block(tb .- toffset, r_start, r_end))
             push!(vblocks, shrink_block(vb, r_start, r_end))
             push!(block_infos, BlockInfo(data_idx, block_idx, toffset))
