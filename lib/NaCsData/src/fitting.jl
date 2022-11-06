@@ -63,12 +63,13 @@ function fit_data(model, xs, ratios, uncs, p0; plotx=nothing, plot_lo=nothing,
                            plot_hi=plot_hi, plot_scale=plot_scale, plot_npts=plot_npts)
     param = fit.param
     try
-        unc = sqrt.(diag(estimate_covar(fit)))
-        return (param=param, unc=unc,
+        covar = estimate_covar(fit)
+        unc = sqrt.(diag(covar))
+        return (param=param, unc=unc, covar=covar,
                 uncs=Unc.(param, unc, Sci),
                 plotx=plotx, ploty=plotx === false ? false : model(plotx, param))
     catch
-        return (param=param, unc=nothing, uncs=param,
+        return (param=param, unc=nothing, covar=nothing, uncs=param,
                 plotx=plotx, ploty=plotx === false ? false : model(plotx, param))
     end
 end
