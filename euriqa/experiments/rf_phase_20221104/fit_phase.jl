@@ -2,6 +2,9 @@
 
 include("fitting_utils.jl")
 
+using PyPlot
+using NaCsPlot
+
 const names_C2 = ["C2Trace00000.h5", "C2Trace00001.h5", "C2Trace00002.h5",
                   "C2Trace00003.h5", "C2Trace00006.h5", "C2Trace00005.h5",
                   "C2Trace00007.h5", "C2Trace00008.h5", "C2Trace00009.h5",
@@ -30,6 +33,9 @@ function collect_blocks(data_set, r_start=0, r_end=1)
         push!(block_counts, length(idx_blocks))
         for (block_idx, (tb, vb)) in enumerate(zip(get_tvblocks(data, idx_blocks)...))
             # toffset = (tb[1] + tb[end]) / 2
+            # This time offset produce a more linear-phase-shift-free fit.
+            # There isn't anything physical about such a shift and I'm too lazy
+            # to figure out a way get rid of it more reliably...
             toffset = tb[1]
             push!(tblocks, shrink_block(tb .- toffset, r_start, r_end))
             push!(vblocks, shrink_block(vb, r_start, r_end))
@@ -110,6 +116,7 @@ end
 #              block_infos_sC3, fit_sC3)
 
 const prefix = joinpath(@__DIR__, "data/")
+const img_prefix = joinpath(@__DIR__, "imgs/")
 
 function save_tables(prefix, names, block_infos, block_counts, fit)
     for (data_idx, name) in enumerate(names)
@@ -149,14 +156,21 @@ const pairs_of_interest = [(1, 1, 2, 0),
                            (3, 1, 2, 2000),
                            (4, 1, 2, 3000),
                            (5, 1, 2, 4000),
-                           (6, 1, 2, 9000),
                            (7, 1, 2, 5000),
                            (8, 1, 2, 6000),
                            (9, 1, 2, 7000),
-                           (10, 1, 2, 8000)]
+                           (10, 1, 2, 8000),
+                           (6, 1, 2, 9000)]
 
 function save_pair_table(fname, pairs_info, block_infos_C2, block_counts_C2, fit_C2,
                          block_infos_C3, block_counts_C3, fit_C3)
+    uss = Float64[]
+    d_C2s = Float64[]
+    d_C2_uncs = Float64[]
+    d_C3s = Float64[]
+    d_C3_uncs = Float64[]
+    diffs = Float64[]
+    diff_uncs = Float64[]
     open(fname, "w") do io
         println(io, "time (us),phase global (cycle),phase ind2 (cycle),phase diff (cycle)")
         for (data_idx, blk_id1, blk_id2, us) in pairs_info
@@ -165,10 +179,33 @@ function save_pair_table(fname, pairs_info, block_infos_C2, block_counts_C2, fit
             diff = d_C2 - d_C3
             diff = Unc(mod(diff.a + 0.5, 1) - 0.5, diff.s)
             println(io, "$us,$d_C2,$d_C3,$diff")
+            push!(uss, us)
+            push!(d_C2s, d_C2.a)
+            push!(d_C2_uncs, d_C2.s)
+            push!(d_C3s, d_C3.a)
+            push!(d_C3_uncs, d_C3.s)
+            push!(diffs, diff.a)
+            push!(diff_uncs, diff.s)
         end
     end
+    return uss, d_C2s, d_C2_uncs, d_C3s, d_C3_uncs, diffs, diff_uncs
 end
 
-save_pair_table("$(prefix)pulse_phase.csv",
-                pairs_of_interest, block_infos_C2, block_counts_C2, fit_C2,
-                block_infos_C3, block_counts_C3, fit_C3)
+const uss, d_C2s, d_C2_uncs, d_C3s, d_C3_uncs, diffs, diff_uncs =
+    save_pair_table("$(prefix)pulse_phase.csv",
+                    pairs_of_interest, block_infos_C2, block_counts_C2, fit_C2,
+                    block_infos_C3, block_counts_C3, fit_C3)
+
+
+figure()
+errorbar(uss, d_C2s, d_C2_uncs, label="global")
+errorbar(uss, d_C3s, d_C3_uncs, label="ind2")
+errorbar(uss, diffs, diff_uncs, label="diff")
+grid()
+legend(ncol=3, fontsize=12)
+xlabel("Wait time (\$\\mu s\$)")
+ylabel("Phase (cycle)")
+tight_layout()
+NaCsPlot.maybe_save("$(img_prefix)pulse_phase")
+
+NaCsPlot.maybe_show()
