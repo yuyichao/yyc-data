@@ -162,6 +162,10 @@ const pairs_of_interest = [(1, 1, 2, 0),
                            (10, 1, 2, 8000),
                            (6, 1, 2, 9000)]
 
+function model_linphase(x, p)
+    return mod.(p[1] .+ p[2] .* x .+ 0.5, 1) .- 0.5
+end
+
 function save_pair_table(fname, pairs_info, block_infos_C2, block_counts_C2, fit_C2,
                          block_infos_C3, block_counts_C3, fit_C3)
     uss = Float64[]
@@ -171,21 +175,32 @@ function save_pair_table(fname, pairs_info, block_infos_C2, block_counts_C2, fit
     d_C3_uncs = Float64[]
     diffs = Float64[]
     diff_uncs = Float64[]
+    for (data_idx, blk_id1, blk_id2, us) in pairs_info
+        d_C2 = diff_phase(block_infos_C2, fit_C2, data_idx, blk_id1, blk_id2)
+        d_C3 = diff_phase(block_infos_C3, fit_C3, data_idx, blk_id1, blk_id2)
+        diff = d_C2 - d_C3
+        diff = Unc(mod(diff.a + 0.5, 1) - 0.5, diff.s)
+        push!(uss, us)
+        push!(d_C2s, d_C2.a)
+        push!(d_C2_uncs, d_C2.s)
+        push!(d_C3s, d_C3.a)
+        push!(d_C3_uncs, d_C3.s)
+        push!(diffs, diff.a)
+        push!(diff_uncs, diff.s)
+    end
+
+    fit_C2 = fit_data(model_linphase, uss, d_C2s, d_C2_uncs, [0.0, 0.00005], plotx=false)
+    fit_C3 = fit_data(model_linphase, uss, d_C3s, d_C3_uncs, [0.0, 0.00005], plotx=false)
+
+    for i in 1:length(uss)
+        d_C2s[i] = mod(d_C2s[i] - fit_C2.param[2] * uss[i] + 0.5, 1) - 0.5
+        d_C3s[i] = mod(d_C3s[i] - fit_C3.param[2] * uss[i] + 0.5, 1) - 0.5
+    end
+
     open(fname, "w") do io
         println(io, "time (us),phase global (cycle),phase ind2 (cycle),phase diff (cycle)")
-        for (data_idx, blk_id1, blk_id2, us) in pairs_info
-            d_C2 = diff_phase(block_infos_C2, fit_C2, data_idx, blk_id1, blk_id2)
-            d_C3 = diff_phase(block_infos_C3, fit_C3, data_idx, blk_id1, blk_id2)
-            diff = d_C2 - d_C3
-            diff = Unc(mod(diff.a + 0.5, 1) - 0.5, diff.s)
-            println(io, "$us,$d_C2,$d_C3,$diff")
-            push!(uss, us)
-            push!(d_C2s, d_C2.a)
-            push!(d_C2_uncs, d_C2.s)
-            push!(d_C3s, d_C3.a)
-            push!(d_C3_uncs, d_C3.s)
-            push!(diffs, diff.a)
-            push!(diff_uncs, diff.s)
+        for (us, d_C2, d_C2_unc, d_C3, d_C3_unc, diff, diff_unc) in zip(uss, d_C2s, d_C2_uncs, d_C3s, d_C3_uncs, diffs, diff_uncs)
+            println(io, "$us,$(Unc(d_C2, d_C2_unc)),$(Unc(d_C3, d_C3_unc)),$(Unc(diff, diff_unc))")
         end
     end
     return uss, d_C2s, d_C2_uncs, d_C3s, d_C3_uncs, diffs, diff_uncs
