@@ -7,3 +7,6 @@
 [submodule "nacs/presentations/thesis"]
 	path = nacs/presentations/thesis
 	url = git@github.com:yuyichao/grad-thesis
+[submodule "euriqa/calculations/phoenix_voltages"]
+	path = euriqa/calculations/phoenix_voltages
+	url = git@github.com:euriqa-brassboard/phoenix_voltages
