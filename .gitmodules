@@ -10,3 +10,6 @@
 [submodule "euriqa/calculations/phoenix_voltages"]
 	path = euriqa/calculations/phoenix_voltages
 	url = git@github.com:euriqa-brassboard/phoenix_voltages
+[submodule "bec5/presentations/undergrad-thesis"]
+	path = bec5/presentations/undergrad-thesis
+	url = git@github.com:yuyichao/undergrad-thesis
