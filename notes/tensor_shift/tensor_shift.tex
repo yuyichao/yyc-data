@@ -1,0 +1,294 @@
+\documentclass[10pt,fleqn]{article}
+% \usepackage[journal=rsc]{chemstyle}
+% \usepackage{mhchem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{esint}
+\usepackage{bbm}
+\usepackage{amscd}
+\usepackage{picinpar}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{indentfirst}
+\usepackage{wrapfig}
+\usepackage{units}
+\usepackage{textcomp}
+\usepackage[utf8x]{inputenc}
+% \usepackage{feyn}
+\usepackage{feynmp}
+\usepackage{xkeyval}
+\usepackage{xargs}
+\usepackage{verbatim}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes
+}
+
+\DeclareGraphicsRule{*}{mps}{*}{}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\ue}{\mathrm{e}}
+\newcommand{\ui}{\mathrm{i}}
+\newcommand{\res}{\mathrm{Res}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\dsum}{\displaystyle\sum}
+\newcommand{\dprod}{\displaystyle\prod}
+\newcommand{\dlim}{\displaystyle\lim}
+\newcommand{\dint}{\displaystyle\int}
+\newcommand{\fsno}[1]{{\!\not\!{#1}}}
+\newcommand{\eqar}[1]
+{
+  \begin{align*}
+    #1
+  \end{align*}
+}
+\newcommand{\texp}[2]{\ensuremath{{#1}\times10^{#2}}}
+\newcommand{\dexp}[2]{\ensuremath{{#1}\cdot10^{#2}}}
+\newcommand{\eval}[2]{{\left.{#1}\right|_{#2}}}
+\newcommand{\paren}[1]{{\left({#1}\right)}}
+\newcommand{\lparen}[1]{{\left({#1}\right.}}
+\newcommand{\rparen}[1]{{\left.{#1}\right)}}
+\newcommand{\abs}[1]{{\left|{#1}\right|}}
+\newcommand{\sqr}[1]{{\left[{#1}\right]}}
+\newcommand{\crly}[1]{{\left\{{#1}\right\}}}
+\newcommand{\angl}[1]{{\left\langle{#1}\right\rangle}}
+\newcommand{\tpdiff}[4][{}]{{\paren{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}_{#4}}}
+\newcommand{\tpsdiff}[4][{}]{{\paren{\frac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pdiff}[3][{}]{{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\diff}[3][{}]{{\frac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psdiff}[3][{}]{{\frac{\partial^{#1}}{\partial {#3}{}^{#1}} {#2}}}
+\newcommand{\sdiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\newcommand{\tpddiff}[4][{}]{{\left(\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}\right)_{#4}}}
+\newcommand{\tpsddiff}[4][{}]{{\paren{\dfrac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pddiff}[3][{}]{{\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\ddiff}[3][{}]{{\dfrac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psddiff}[3][{}]{{\frac{\partial^{#1}}{\partial{}^{#1} {#3}} {#2}}}
+\newcommand{\sddiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{fontenc}
+% \usepackage{tipa}
+\usepackage{ulem}
+\usepackage{color}
+\usepackage{cancel}
+\newcommand{\hcancel}[2][black]{\setbox0=\hbox{#2}%
+  \rlap{\raisebox{.45\ht0}{\textcolor{#1}{\rule{\wd0}{1pt}}}}#2}
+\pagestyle{fancy}
+\setlength{\headheight}{67pt}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+\fancyhead[R]{}
+\renewcommand{\footruleskip}{0pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand\pgfmathsinandcos[3]{%
+  \pgfmathsetmacro#1{sin(#3)}%
+  \pgfmathsetmacro#2{cos(#3)}%
+}
+\newcommand\LongitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % azimuth
+  \tikzset{#1/.estyle={cm={\cost,\sint*\sinEl,0,\cosEl,(0,0)}}}
+}
+\newcommand\LatitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % latitude
+  \pgfmathsetmacro\yshift{\cosEl*\sint}
+  \tikzset{#1/.estyle={cm={\cost,0,0,\cost*\sinEl,(0,\yshift)}}} %
+}
+\newcommand\DrawLongitudeCircle[2][1]{
+  \LongitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{atan(sin(#2)*cos(\angEl)/sin(\angEl))} %
+  \draw[current plane] (\angVis:1) arc (\angVis:\angVis+180:1);
+  \draw[current plane,dashed] (\angVis-180:1) arc (\angVis-180:\angVis:1);
+}
+\newcommand\DrawLatitudeCircleArrow[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane,decoration={markings, mark=at position 0.6 with {\arrow{<}}},postaction={decorate},line width=.6mm] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed,line width=.6mm] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\DrawLatitudeCircle[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\coil[1]{
+  {\rh * cos(\t * pi r)}, {\apart * (2 * #1 + \t) + \rv * sin(\t * pi r)}
+}
+\makeatletter
+\define@key{DrawFromCenter}{style}[{->}]{
+  \tikzset{DrawFromCenterPlane/.style={#1}}
+}
+\define@key{DrawFromCenter}{r}[1]{
+  \def\@R{#1}
+}
+\define@key{DrawFromCenter}{center}[(0, 0)]{
+  \def\@Center{#1}
+}
+\define@key{DrawFromCenter}{theta}[0]{
+  \def\@Theta{#1}
+}
+\define@key{DrawFromCenter}{phi}[0]{
+  \def\@Phi{#1}
+}
+\presetkeys{DrawFromCenter}{style, r, center, theta, phi}{}
+\newcommand*\DrawFromCenter[1][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
+  }
+}
+\newcommand*\DrawFromCenterText[2][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+  }
+}
+\makeatother
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
+  post length=0.2cm, snake, amplitude=.4mm,
+  segment length=2mm},thick, ->]
+%% document-wide tikz options and styles
+\tikzset{%
+  >=latex, % option for nice arrows
+  inner sep=0pt,%
+  outer sep=2pt,%
+  mark coordinate/.style={inner sep=0pt,outer sep=0pt,minimum size=3pt,
+    fill=black,circle}%
+}
+\addtolength{\hoffset}{-1.3cm}
+\addtolength{\voffset}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{2.5cm}
+\renewcommand{\footskip}{10pt}
+\setlength{\headwidth}{\textwidth}
+\setlength{\headsep}{20pt}
+\setlength{\marginparwidth}{0pt}
+\parindent=0pt
+\title{Light shift and effective B field}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\maketitle
+
+\section{Goal}
+Derive and clarify some effects related to vector and tensor light shifts
+as well as a few different places they may appear in an experiment.
+Most, if not all of the discussion will be limited to E1 transitions.
+
+\section{Source of circular polarization}
+As we saw, a laser beam with circular polarization
+could create a non-zero vector light shift.
+In an experiment, this circular polarization could be generated
+for an otherwise linearly polarized light by birefringence of material
+as the beam passes through them, and from reflection off of optical coating
+that introduces non-trivial phase shift between different polarization components.
+\footnote{Note that while Fresnel equations generally do not introduce
+  non-trivial phase shift between S and P polarizations
+  when the index of refraction is completely real (i.e. no absorption),
+  except maybe for total internal reflection,
+  this does not hold true anymore when interference between multiple reflected beams
+  is involved, which is generally the case for optical coatings.
+  As such, unless the incident beam is (almost) normal to the surface,
+  in which case the symmetry prevents any polarization change from occuring,
+  a dielectric mirror will generally change the polarization of a linear light
+  if the polarization isn't purely S or P initially.}\\
+
+The circular polarization may also happen, however,
+for an otherwise perfectly linearly polarized light, near the focus of a beam
+with large NA, paricularly for optical tweezers or other focused beams
+for individual addressing. This is because a beam with a tight focus breaks
+the paraxial approximation such that the beam cannot be treated
+as a scalar field anymore. The field on the edge of the beam have significantly
+different $k$ vectors and therefore different polarization vectors as well.
+As shown in Fig. \ref{circ-pol:focus}, the polarization on the two edges of the beam
+acquires an axial component due to the large angle between the $k$ vector
+and the optical axis. While the two sides of the beam are generally
+far away from each other and their different polarization directions cause
+little problem, this is not the case anymore near the focus as the edge of the beam
+changes direction from converging to diverging.\\
+
+A point on the side of the focus is therefore affected by the combination
+of the two edge polarizations and varies rapidly within roughly a Rayleigh length.
+Although not a perfect analog, the effect this may cause can be understood
+by looking at the interference between two plane waves at an angle
+with in-plane polarization. Depending on the position (and therefore relative phase)
+the polarization will vary between in-plane linear and in-plane elliptical.
+For a normal focused beam, it turns out that the point next to the focus
+in the focal point would have an in-plane elliptical polarization.
+From symmetry, in the ideal case, the polarization in the center of the focus
+is still exactly linear and the rotation direction of the circular polarization
+on the two sides of the focus are opposite.\\
+
+Base on the previous discussions, this corresponds to having
+an effective magnetic field that is out of the plane,
+i.e. perpendicular to both the optical axis and the polarization.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \draw[->,line width=1.5,red] (3, 3/2) -- +(-0.4, 0.8);
+    \draw[->,line width=1.5,blue] (-3, 3/2) -- +(0.4, 0.8);
+
+    \draw[->,line width=1.5,blue] (0, 0.4) -- +(0.4, 0.8);
+    \draw[->,line width=1.5,red] (0, 0.4) -- +(-0.4, 0.8);
+
+  \draw[->,line width=1.5,blue!50!red] ($(0, 1.6) + (-190:0.3 and 0.6)$(P) arc
+  (-190:190:0.3 and 0.6);
+  \draw[<-,line width=1.5,blue!50!red] ($(0, -1.6) + (-190:0.3 and 0.6)$(P) arc
+  (-190:190:0.3 and 0.6);
+
+    \draw[domain=-5:5,smooth,variable=\x,line width=2]
+    plot ({\x}, {0.5 * sqrt((\x)^2 + 0.3)});
+    \draw[domain=-5:5,smooth,variable=\x,line width=2]
+    plot ({\x}, {-0.5 * sqrt((\x)^2 + 0.3)});
+  \end{tikzpicture}
+  \caption{Transverse circular polarization near the focus of a tighly focused beam.
+    The red and blue error shows the polarization vector on the same edge
+    of a tightly focused beam before and after the focus.
+    Near the focus though, the polarization becomes a superposition of the two
+    creating the in-plane elliptical polarization next to the focus.}
+  \label{circ-pol:focus}
+\end{figure}
+
+\end{document}
