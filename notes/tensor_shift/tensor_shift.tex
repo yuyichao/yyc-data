@@ -218,6 +218,101 @@ Most, if not all of the discussion will be limited to E1 transitions.
 I'm not really looking for the most mathematically straight forward derivation,
 rather trying to see this from different angle for better understanding.
 
+\section{Some useful formulas}
+
+\subsection{Spherical component of vector}
+
+Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
+every 3D vector (operator) can be equivalently expressed as a rank-1 spherical tensor,
+\eqar{
+  V_0=&V_z\\
+  V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
+}
+
+In particular, when applied to the angular momentum operator,
+\eqar{
+  J_0=&J_z\\
+  J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
+  =&\mp\frac{J_{\pm}}{\sqrt2}
+}
+
+where $J_{\pm}$ are the angular momentum raising and lowering operators.
+
+\subsection{Wigner-Eckart theorem}
+This describes the relation between matrix elements of a vector/tensor operator
+in the angular momentum basis.
+The matrix element for different angular momentum states are related to each other
+with Clebsch-Gordan coefficients.
+\eqar{
+  \langle j,m|T_q^{(k)}|j',m' \rangle=&\langle j',k;m',q|j,m\rangle\langle j||T^{(k)}||j'\rangle
+}
+where $T_q^{(k)}$ is the $q$-th component of
+the spherical tensor operator $T^{(k)}$ of rank $k$.
+This is the result of rotation symmetry between all the matrix elements.\\
+
+Equivalently, this also means that no matter what the tensor operator is,
+it's matrix elements in this (between these) subspace
+differs from that of a different tensor operator only by a constant factor.
+(Note that this factor could depend on the $j$ and $j'$ (just not $m$ and $m'$)
+and it can of course be $0$ as well).
+
+\subsection{Projection theorem}
+A special case for the Wigner-Echart theorem is when $j=j'$.
+In this case we can plug in the angular momentum operator $J$
+(this would otherwise result in vanishing matrix elements if $j\neq j'$
+since $J$ conserves, well, $j$).
+\eqar{
+  \langle j,m|J_q|j,m' \rangle=&\langle j,1;m',q|j,m\rangle\langle j||J||j\rangle\\
+  \propto&\langle j,1;m',q|j,m\rangle
+}
+
+We can verify this explicitly
+\eqar{
+  \langle j,m|J_0|j,m'\rangle=&\langle j,m|m'|j,m'\rangle\\
+  =&m'\delta_{mm'}\\
+  \langle j,m|J_{\pm1}|j,m'\rangle=&\mp\frac{1}{\sqrt2}\langle j,m|J_{\pm}|j,m'\rangle\\
+  =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\langle j,m|j,m'\pm1\rangle\\
+  =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\delta_{m,m'\pm1}
+}
+Using the explicit formula for the CG coefficients,
+\eqar{
+  \langle j,1;m',q|j,m\rangle=&\delta_{m,m'+q}\sqrt{\frac{(2j+1)(j+j-1)!(j-j+1)!(j+1-j)!}{(j+1+j+1)!}}\\
+  &\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}\\
+  &\sum_k\frac{(-1)^k}{k!(j+1-j-k)!(j-m'-k)!(1+q-k)!(j-1+m+k)!(j-j-q+k)!}\\
+  =&\delta_{m,m'+q}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}}{2\sqrt{(j+1)j}}\\
+  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+q-k)!(j-1+m'+k)!(-q+k)!}
+}
+For $q=0$
+\eqar{
+  \langle j,1;m',0|j,m\rangle=&\delta_{mm'}
+  \frac{\sqrt{(j+m)!(j-m)!(j-m)!(j+m)!}}{2\sqrt{(j+1)j}}\\
+  &\sum_{k=0,1}\frac{(-1)^k}{k!(1-k)!(j-m-k)!(1-k)!(j-1+m+k)!k!}\\
+  =&\delta_{mm'}\frac{(j-m)!(j+m)!}{2\sqrt{(j+1)j}}
+  \paren{\frac{1}{(j-m)!(j-1+m)!}-\frac{1}{(j-m-1)!(j+m)!}}\\
+  =&m\frac{\delta_{mm'}}{\sqrt{j(j+1)}}
+}
+For $q=\pm1$
+\eqar{
+  \langle j,1;m',\pm1|j,m\rangle=&\delta_{m,m'\pm1}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1\mp1)!(1\pm1)!}}{2\sqrt{(j+1)j}}\\
+  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m+k)!(\mp1+k)!}\\
+  =&\frac{\delta_{m,m'\pm1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'\pm1)!(j-m'\mp1)!(j-m')!(j+m')!}{2}}\\
+  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m'+k)!(\mp1+k)!}
+}
+$q=1$
+\eqar{
+  \langle j,1;m',1|j,m\rangle=&\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2}}\\
+  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+1-k)!(j-1+m'+k)!(-1+k)!}\\
+  =&-\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2(j-m'-1)!(j-m'-1)!(j+m')!(j+m')!}}\\
+  =&-\sqrt{\frac{(j+m'+1)(j-m')}{2}}\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\\
+}
+$q=-1$
+\eqar{
+  \langle j,1;m',-1|j,m\rangle=&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2}}\\
+  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(-k)!(j-1+m'+k)!(1+k)!}\\
+  =&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2(j-m')!(j-m')!(j+m'-1)!(j+m'-1)!}}\\
+  =&\sqrt{\frac{(j-m'+1)(j+m')}{2}}\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}
+}
+
 \section{Vector and tensor light shift}
 
 \section{Vector light shift as effective magnetic field}
