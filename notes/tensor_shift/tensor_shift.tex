@@ -47,9 +47,9 @@
 \newcommand{\fsno}[1]{{\!\not\!{#1}}}
 \newcommand{\eqar}[1]
 {
-  \begin{align*}
+  \begin{align}
     #1
-  \end{align*}
+  \end{align}
 }
 \newcommand{\texp}[2]{\ensuremath{{#1}\times10^{#2}}}
 \newcommand{\dexp}[2]{\ensuremath{{#1}\cdot10^{#2}}}
@@ -223,7 +223,8 @@ rather trying to see this from different angle for better understanding.
 \subsection{Spherical component of vector}
 
 Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
-every 3D vector (operator) can be equivalently expressed as a rank-1 spherical tensor,
+every 3D vector (operator) can be equivalently expressed
+as a rank-$1$ spherical tensor,
 \eqar{
   V_0=&V_z\\
   V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
@@ -232,10 +233,11 @@ every 3D vector (operator) can be equivalently expressed as a rank-1 spherical t
 In particular, when applied to the angular momentum operator,
 \eqar{
   J_0=&J_z\\
-  J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
-  =&\mp\frac{J_{\pm}}{\sqrt2}
+  \begin{split}
+    J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
+    =&\mp\frac{J_{\pm}}{\sqrt2}
+  \end{split}
 }
-
 where $J_{\pm}$ are the angular momentum raising and lowering operators.
 
 \subsection{Wigner-Eckart theorem}
@@ -254,64 +256,140 @@ Equivalently, this also means that no matter what the tensor operator is,
 it's matrix elements in this (between these) subspace
 differs from that of a different tensor operator only by a constant factor.
 (Note that this factor could depend on the $j$ and $j'$ (just not $m$ and $m'$)
-and it can of course be $0$ as well).
+and it can of course be $0$ as well), i.e.
+\eqar{
+  \langle j,m|{T_1}_q^{(k)}|j',m'\rangle\propto&\langle j,m|{T_2}_q^{(k)}|j',m'\rangle
+}
 
-\subsection{Projection theorem}
+\subsection{When $j=j'$}
 A special case for the Wigner-Echart theorem is when $j=j'$.
 In this case we can plug in the angular momentum operator $J$
 (this would otherwise result in vanishing matrix elements if $j\neq j'$
 since $J$ conserves, well, $j$).
 \eqar{
-  \langle j,m|J_q|j,m' \rangle=&\langle j,1;m',q|j,m\rangle\langle j||J||j\rangle\\
-  \propto&\langle j,1;m',q|j,m\rangle
+  \begin{split}
+    \langle j,m|J_q|j,m' \rangle=&\langle j,1;m',q|j,m\rangle\langle j||J||j\rangle\\
+    \propto&\langle j,1;m',q|j,m\rangle
+  \end{split}
+}
+This allow us to replace the CG coefficents with the angular momentum operator, i.e.,
+\eqar{
+  \label{eq:jj:prop1}
+  \langle j,m|V_q|j,m'\rangle\propto&\langle j,m|J_q|j,m'\rangle
+}
+which could make some calculation/expression significantly simpler.\\
+
+This relation basically states that within the subspace of a single $j$,
+we can treat any vector operator as proportional to the angular momentum.
+The proportionality factor can then be obtained from the dot product
+with angular momentum, i.e. the projection of the vector onto angular momentum.
+
+\subsubsection{$m=0$ selection rule}
+The selection rule for $m=m'=0$ transition directly follows from this relation
+since,
+\eqar{
+  \begin{split}
+    \langle j,m|V_0|j,m\rangle\propto&\langle j,m|J_0|j,m\rangle\\
+    =&\langle j,m|J_z|j,m\rangle\\
+    =&m
+  \end{split}
+}
+which is $0$ when $m=0$.
+
+\subsubsection{Projection theorem}
+We can use this to derive the projection theorem.
+Explicitly writing down the proportionality factor in Eq. \ref{eq:jj:prop1}, we have,
+\eqar{
+  \langle j,m|V_q|j,m'\rangle=&c\langle j,m|J_q|j,m'\rangle
+}
+Multiply both sides with the angular momentum matrix element
+and sum over all $m'$ and $q$
+\eqar{
+  \sum_{m',q}\langle j,m|V_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle=&c\sum_{m',q}\langle j,m|J_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle\\
+  \sum_q\langle j,m|V_qV_q^\dagger|j,m''\rangle=&c\sum_q\langle j,m|J_qJ_q^\dagger|j,m''\rangle\\
+  \begin{split}
+    \langle j,m|(\vec V\cdot \vec J)|j,m''\rangle=&c\langle j,m|J^2|j,m''\rangle\\
+    =&c j(j+1)
+  \end{split}
+}
+Therefore we have
+\eqar{
+  c=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\\
+  \langle j,m|V_q|j,m'\rangle=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\langle j,m|J_q|j,m'\rangle
 }
 
-We can verify this explicitly
+\subsubsection{Explicit calculation}
+Just for completeness, we can verify this relation between angular momentum
+and CG coefficients explicitly.
+This part can be ignored without affecting the understanding of the rest.
+
+First the expression using angular momentum operators,
 \eqar{
-  \langle j,m|J_0|j,m'\rangle=&\langle j,m|m'|j,m'\rangle\\
-  =&m'\delta_{mm'}\\
-  \langle j,m|J_{\pm1}|j,m'\rangle=&\mp\frac{1}{\sqrt2}\langle j,m|J_{\pm}|j,m'\rangle\\
-  =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\langle j,m|j,m'\pm1\rangle\\
-  =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\delta_{m,m'\pm1}
+  \begin{split}
+    \langle j,m|J_0|j,m'\rangle=&\langle j,m|m'|j,m'\rangle\\
+    =&m'\delta_{mm'}
+  \end{split}\\
+  \begin{split}
+    \langle j,m|J_{\pm1}|j,m'\rangle=&\mp\frac{1}{\sqrt2}\langle j,m|J_{\pm}|j,m'\rangle\\
+    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\langle j,m|j,m'\pm1\rangle\\
+    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\delta_{m,m'\pm1}
+  \end{split}
 }
+
 Using the explicit formula for the CG coefficients,
 \eqar{
-  \langle j,1;m',q|j,m\rangle=&\delta_{m,m'+q}\sqrt{\frac{(2j+1)(j+j-1)!(j-j+1)!(j+1-j)!}{(j+1+j+1)!}}\\
-  &\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}\\
-  &\sum_k\frac{(-1)^k}{k!(j+1-j-k)!(j-m'-k)!(1+q-k)!(j-1+m+k)!(j-j-q+k)!}\\
-  =&\delta_{m,m'+q}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}}{2\sqrt{(j+1)j}}\\
-  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+q-k)!(j-1+m'+k)!(-q+k)!}
+  \begin{split}
+    \langle j,1;m',q|j,m\rangle=&\delta_{m,m'+q}\sqrt{\frac{(2j+1)(j+j-1)!(j-j+1)!(j+1-j)!}{(j+1+j+1)!}}\\
+                                &\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}\\
+                                &\sum_k\frac{(-1)^k}{k!(j+1-j-k)!(j-m'-k)!(1+q-k)!(j-1+m+k)!(j-j-q+k)!}\\
+    =&\delta_{m,m'+q}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}}{2\sqrt{(j+1)j}}\\
+                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+q-k)!(j-1+m'+k)!(-q+k)!}
+  \end{split}
 }
 For $q=0$
 \eqar{
-  \langle j,1;m',0|j,m\rangle=&\delta_{mm'}
-  \frac{\sqrt{(j+m)!(j-m)!(j-m)!(j+m)!}}{2\sqrt{(j+1)j}}\\
-  &\sum_{k=0,1}\frac{(-1)^k}{k!(1-k)!(j-m-k)!(1-k)!(j-1+m+k)!k!}\\
-  =&\delta_{mm'}\frac{(j-m)!(j+m)!}{2\sqrt{(j+1)j}}
-  \paren{\frac{1}{(j-m)!(j-1+m)!}-\frac{1}{(j-m-1)!(j+m)!}}\\
-  =&m\frac{\delta_{mm'}}{\sqrt{j(j+1)}}
+  \begin{split}
+    \langle j,1;m',0|j,m\rangle=&\delta_{mm'}
+                                  \frac{\sqrt{(j+m)!(j-m)!(j-m)!(j+m)!}}{2\sqrt{(j+1)j}}\\
+                                &\sum_{k=0,1}\frac{(-1)^k}{k!(1-k)!(j-m-k)!(1-k)!(j-1+m+k)!k!}\\
+    =&\delta_{mm'}\frac{(j-m)!(j+m)!}{2\sqrt{(j+1)j}}
+       \paren{\frac{1}{(j-m)!(j-1+m)!}-\frac{1}{(j-m-1)!(j+m)!}}\\
+    =&m\frac{\delta_{mm'}}{\sqrt{j(j+1)}}
+  \end{split}
 }
 For $q=\pm1$
 \eqar{
-  \langle j,1;m',\pm1|j,m\rangle=&\delta_{m,m'\pm1}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1\mp1)!(1\pm1)!}}{2\sqrt{(j+1)j}}\\
-  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m+k)!(\mp1+k)!}\\
-  =&\frac{\delta_{m,m'\pm1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'\pm1)!(j-m'\mp1)!(j-m')!(j+m')!}{2}}\\
-  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m'+k)!(\mp1+k)!}
+  \begin{split}
+    \langle j,1;m',\pm1|j,m\rangle=&\delta_{m,m'\pm1}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1\mp1)!(1\pm1)!}}{2\sqrt{(j+1)j}}\\
+                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m+k)!(\mp1+k)!}\\
+    =&\frac{\delta_{m,m'\pm1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'\pm1)!(j-m'\mp1)!(j-m')!(j+m')!}{2}}\\
+                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m'+k)!(\mp1+k)!}
+  \end{split}
 }
-$q=1$
+For $q=1$
 \eqar{
-  \langle j,1;m',1|j,m\rangle=&\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2}}\\
-  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+1-k)!(j-1+m'+k)!(-1+k)!}\\
-  =&-\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2(j-m'-1)!(j-m'-1)!(j+m')!(j+m')!}}\\
-  =&-\sqrt{\frac{(j+m'+1)(j-m')}{2}}\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\\
+  \begin{split}
+    \langle j,1;m',1|j,m\rangle=&\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2}}\\
+                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+1-k)!(j-1+m'+k)!(-1+k)!}\\
+    =&-\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2(j-m'-1)!(j-m'-1)!(j+m')!(j+m')!}}\\
+    =&-\sqrt{\frac{(j+m'+1)(j-m')}{2}}\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\\
+  \end{split}
 }
-$q=-1$
+For $q=-1$
 \eqar{
-  \langle j,1;m',-1|j,m\rangle=&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2}}\\
-  &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(-k)!(j-1+m'+k)!(1+k)!}\\
-  =&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2(j-m')!(j-m')!(j+m'-1)!(j+m'-1)!}}\\
-  =&\sqrt{\frac{(j-m'+1)(j+m')}{2}}\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}
+  \begin{split}
+    \langle j,1;m',-1|j,m\rangle=&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2}}\\
+                                 &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(-k)!(j-1+m'+k)!(1+k)!}\\
+    =&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2(j-m')!(j-m')!(j+m'-1)!(j+m'-1)!}}\\
+    =&\sqrt{\frac{(j-m'+1)(j+m')}{2}}\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}
+  \end{split}
 }
+Comparing the result from the two methods,
+we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
+\eqar{
+  \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle
+}
+
 
 \section{Vector and tensor light shift}
 
@@ -374,10 +452,10 @@ i.e. perpendicular to both the optical axis and the polarization.
     \draw[->,line width=1.5,blue] (0, 0.4) -- +(0.4, 0.8);
     \draw[->,line width=1.5,red] (0, 0.4) -- +(-0.4, 0.8);
 
-  \draw[->,line width=1.5,blue!50!red] ($(0, 1.6) + (-190:0.3 and 0.6)$(P) arc
-  (-190:190:0.3 and 0.6);
-  \draw[<-,line width=1.5,blue!50!red] ($(0, -1.6) + (-190:0.3 and 0.6)$(P) arc
-  (-190:190:0.3 and 0.6);
+    \draw[->,line width=1.5,blue!50!red] ($(0, 1.6) + (-190:0.3 and 0.6)$(P) arc
+    (-190:190:0.3 and 0.6);
+    \draw[<-,line width=1.5,blue!50!red] ($(0, -1.6) + (-190:0.3 and 0.6)$(P) arc
+    (-190:190:0.3 and 0.6);
 
     \draw[domain=-5:5,smooth,variable=\x,line width=2]
     plot ({\x}, {0.5 * sqrt((\x)^2 + 0.3)});
