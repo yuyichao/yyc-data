@@ -1,14 +1,15 @@
 # A next-generation trapped ion quantum computing system
 
+
 The first generation of a universal trapped ion integrated quantum processor,
-constructed in a collaboration between universities and industrial partners,
+constructed in a collaboration between our group and industrial partners,
 was used to perform quantum algorithms with high-fidelity on 13 qubits,
 and high-fidelity quantum gates with up to 23 qubits.
 
-In this work we discuss progress of commissioning
+In this work we discuss the progress of commissioning
 the second-generation trapped-ion universal quantum computer.
 We present the initial characterization of the system,
-including the heating rate, coherence time, background collision rate,
+including the heating rates, coherence times, background collision rate,
 cross talk and other factors contributing to the gate fidelity.
 These results showcase the design improvements made in this generation,
 such as a new generation micro-fabricated surface ion trap
