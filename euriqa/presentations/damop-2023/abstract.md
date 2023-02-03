@@ -11,9 +11,9 @@ the second-generation trapped-ion universal quantum computer.
 We present the initial characterization of the system,
 including the heating rates, coherence times, background collision rate,
 cross talk and other factors contributing to the gate fidelity.
-These results showcase the design improvements made in this generation,
+These results showcase the design improvements in the system,
 such as a new generation micro-fabricated surface ion trap
-from Sandia National Laboratories, upgraded Raman system
-built in collaboration with L3Harris and an improved vaccum system.
+from Sandia National Laboratories, an upgraded Raman optical addressing system
+built in collaboration with L3Harris and an improved vacuum system.
 
 This work is supported by the ARO with funding from the IARPA LogiQ program, the NSF Practical Fully-Connected Quantum Computer program, the DOE program on Quantum Computing in Chemical and Material Sciences, the AFOSR MURI on Quantum Measurement and Verification, and the AFOSR MURI on Interactive Quantum Computation and Communication Protocols.
