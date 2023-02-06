@@ -1,5 +1,7 @@
 # A next-generation trapped ion quantum computing system
 
+Yichao Yu, Liudmila Zukas, Lei Feng, Marko Cetina, Crystal Noel, Debopriyo Biswas, Andrew Risinger, Vivian Zhang, Keqin Yan, Bahaa Harraz, Grant Eberle, Alexander Kozhanov, Christopher R Monroe
+
 
 The first generation of a universal trapped ion integrated quantum processor,
 constructed in a collaboration between our group and industrial partners,
