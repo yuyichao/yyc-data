@@ -16,7 +16,7 @@ function load_positions(name)
 end
 
 const pos_m1 = load_positions("m1_20230206")
-const pos_m3 = load_positions("m3_20230206")
+const pos_m3 = load_positions("m3_20230206_2")
 
 const npos_m1 = size(pos_m1, 1)
 const npos_m3 = size(pos_m3, 1)
@@ -55,4 +55,19 @@ end
 fit = fit_data(model, 1:(npos_m1 + npos_m3), zeros(npos_m1 + npos_m3),
                zeros(9), plotx=false)
 
-@show fit.uncs
+function div_unc(a, b, cov)
+    c = a / b
+    v = [1 / b, -a / b^2]
+    return Unc(c, sqrt(v' * cov * v))
+end
+
+println("""
+α_pzt = $(fit.uncs[1])
+y0_1′ = $(fit.uncs[3])
+b_1′ = $(fit.uncs[5])
+b_1′ / y0_1′ = $(div_unc(fit.param[5], fit.param[3], fit.covar[[5, 3], [5, 3]]))
+
+y0_3′ = $(fit.uncs[7])
+b_3′ = $(fit.uncs[9])
+b_3′ / y0_3′ = $(div_unc(fit.param[9], fit.param[7], fit.covar[[9, 7], [9, 7]]))
+""")
