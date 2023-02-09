@@ -33,7 +33,7 @@ end
 # M1: α_pzt, y0, y0′, b, b′
 # M3: y0, y0′, b, b′
 
-function model_single(idx, α_pzt, y0_1, y0′_1, b_1, b′_1, y0_3, y0′_3, b_3, b′_3)
+function model_single_point(idx, α_pzt, y0_1, y0′_1, b_1, b′_1, y0_3, y0′_3, b_3, b′_3)
     if idx <= npos_m1
         return model_single(pos_m1[idx, 3], pos_m1[idx, 1] * α_pzt + pos_m1[idx, 2],
                             y0_1, y0′_1, b_1, b′_1) - pos_m1[idx, 4]
@@ -49,7 +49,8 @@ end
 
 function model(idx, p)
     α_pzt, y0_1, y0′_1, b_1, b′_1, y0_3, y0′_3, b_3, b′_3 = p
-    return model_single.(idx, α_pzt, y0_1, y0′_1, b_1, b′_1, y0_3, y0′_3, b_3, b′_3)
+    return model_single_point.(idx, α_pzt, y0_1, y0′_1, b_1, b′_1,
+                               y0_3, y0′_3, b_3, b′_3)
 end
 
 fit = fit_data(model, 1:(npos_m1 + npos_m3), zeros(npos_m1 + npos_m3),
