@@ -283,9 +283,7 @@
 \addtobeamertemplate{background}{\box\@backgroundblock}{}
 \makeatother
 
-% \def\timeleft{15:00->14:55}
-
-\title{Laser cooling}
+\title{Lamb-Dicke regime/approximation}
 \date{}
 \author{Yichao Yu}
 \institute{Journal Club}
@@ -308,5 +306,29 @@
     \titlepage
   \end{frame}
 }
+
+\begin{frame}{Doppler effect}
+  \begin{center}
+    \begin{tikzpicture}
+      \draw[blue,line width=1] (0, 0) circle (1.2);
+      \draw[line width=1] (-0.45, -0.9) -- (0.45, -0.9);
+      \draw[line width=1] (-0.45, 0.9) -- (0.45, 0.9);
+      \draw[red,->,snakearrow] (0, -0.9) -- node[right=0.1] {$\hbar\omega$} (0, 0.9);
+
+      \visible<2-3>{
+        \draw[red,->,snakearrow,line width=1.5] (-4, 0) --
+        node[above=0.1] {$\omega$} (-1.6, 0);
+      }
+
+      \visible<3->{
+        \draw[->,blue,line width=2] (-1, -1.5) -- node[below=0.1] {$v$} (1, -1.5);
+      }
+      \visible<4->{
+        \draw[red,->,snakearrow,line width=1.5] (-4, 0) --
+        node[above=0.1] {$\omega+\dfrac{\omega v}{c}$} (-1.6, 0);
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
 
 \end{document}
