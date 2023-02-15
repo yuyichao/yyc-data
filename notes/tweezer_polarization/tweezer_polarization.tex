@@ -298,4 +298,26 @@ These two would guarantee a transverse circular polarization.
   \nabla^2\vec E=&\frac{1}{c^2}\pdiff[2]{\vec E}{t}
 }
 
+Scalar wave equation for,
+\eqar{
+  \nabla^2u=&\frac{1}{c^2}\pdiff[2]{u}{t}
+}
+If the wave is monotonic, we can write it out as
+$u(\vec r, t)=u_0(\vec r)\ue^{\ui\omega t}$, in which case the wave equation becomes,
+\eqar{
+  \nabla^2u_0=&k^2 u_0
+}
+where $k\equiv\dfrac{\omega}{c}$.
+We can define the flux of the wave $\vec j\equiv u_0^*\nabla u_0-u_0\nabla u_0^*$,
+we have,
+\eqar{
+  \begin{split}
+    \nabla\cdot\vec j=&\nabla\cdot\paren{u_0^*\nabla u_0-u_0\nabla u_0^*}\\
+    =&\nabla u_0^*\cdot\nabla u_0-\nabla u_0\cdot\nabla u_0^*+u_0^*\nabla^2 u_0-u_0\nabla^2 u_0^*\\
+    =&u_0^*k^2 u_0-u_0k^2 u_0^*\\
+    =&0
+  \end{split}
+}
+i.e. $\vec j$ is a continuous flow that cannot terminate in free space.
+
 \end{document}
