@@ -471,17 +471,39 @@
 
 \begin{frame}{Lamb-Dicke parameter}
   \begin{center}
-    \[\langle n|\ue^{\ui k\hat x}|n+\Delta n\rangle\]
-    \visible<2->{
-      \[\hat x=\sqrt{\frac{\hbar}{2m\omega}}\paren{a+a^\dagger}\]
-    }
-    \visible<3->{
-      \[k\hat x=\eta\paren{a+a^\dagger}\]
-      \[\eta\equiv k\sqrt{\frac{\hbar}{2m\omega}}=kz_0\]
+    \begin{columns}
+      \column{5.8cm}
+      \[\langle n|\ue^{\ui k\hat x}|n+\Delta n\rangle\]
+      \visible<2->{
+        \[\hat x=\sqrt{\frac{\hbar}{2m\omega}}\paren{a+a^\dagger}=z_0\paren{a+a^\dagger}\]
+      }
+      \visible<3->{
+        \[k\hat x=\eta\paren{a+a^\dagger}\]
+        \[\eta\equiv kz_0=k\sqrt{\frac{\hbar}{2m\omega}}\]
+      }
+      \column{5.8cm}
+      \visible<4->{
+        \[\eta=\frac{2\pi z_0}{\lambda}\]
+      }
+      \visible<4->{
+        \[\eta=\sqrt{\frac{\omega_R}{\omega_m}}\]
+      }
+    \end{columns}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Lamb-Dicke parameter}
+  \begin{center}
+    \eqar{
+      &\langle n|\ue^{\ui k\hat x}|n+\Delta n\rangle\\
+      =&\ue^{-\eta^2/2}\eta^{\Delta n}
     }
   \end{center}
 \end{frame}
 
 \end{document}
+
+% Ratio of wavefunction and wavelength -> when the atom is hotter.
+
 % &\langle n|\ue^{\ui k\hat x}|n+\Delta n\rangle\\
 % =&\langle n|\exp\paren{\ui\eta\paren{a+a^\dagger}}|n+\Delta n\rangle
