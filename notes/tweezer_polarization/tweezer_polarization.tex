@@ -194,7 +194,7 @@
 \setlength{\headsep}{20pt}
 \setlength{\marginparwidth}{0pt}
 \parindent=0pt
-\title{Transverse circular polarization in tightly focused beam}
+\title{Sideway circular polarization in tightly focused beam}
 
 \ifpdf
   % Ensure reproducible output
@@ -212,7 +212,7 @@
 \maketitle
 
 \section{Goal}
-Trying to accurately understand the origin of the transverse circular polarization
+Trying to accurately understand the origin of the sideway circular polarization
 on the side of the focus of a tighly focused beam.
 
 \section{Qualitative description}
@@ -244,7 +244,7 @@ that rotates in a plane parallel to the optical axis, especially near the focus.
     \draw[domain=-5:5,smooth,variable=\x,line width=2]
     plot ({\x}, {-0.5 * sqrt((\x)^2 + 0.3)});
   \end{tikzpicture}
-  \caption{Transverse circular polarization near the focus of a tighly focused beam.
+  \caption{Sideway circular polarization near the focus of a tighly focused beam.
     The red and blue error shows the polarization vector on the same edge
     of a tightly focused beam before and after the focus.}
   \label{circ-pol:focus}
@@ -254,7 +254,7 @@ We can qualitatively see this happening by looking at the field
 on the edge of the beam.
 The two edges have significantly different $k$ vectors
 and therefore different polarization vectors as well.
-As shown in Fig. \ref{circ-pol:focus}, the polarization on the two edges of the beam
+As shown in Fig.~\ref{circ-pol:focus}, the polarization on the two edges of the beam
 acquires an axial component due to the large angle between the $k$ vector
 and the optical axis. While the two sides of the beam are generally
 far away from each other and their different polarization directions cause
@@ -266,24 +266,79 @@ or even axial polarization component, which would be the topic of the next secti
 
 \section{Semi-quantitative explanation}
 
-Full quantitative understanding of the transverse circular polarization
+Full quantitative understanding of the sideway circular polarization
 near the focus of the beam requires a full calculation of the vector field.
 It is possible, however, to understand why such a polarization exists
 based on some continuity and symmetry considerations.
 
 \subsection{General idea}
 We can see from the far field (away from the focus)
-that the axial polarization does exist.
+that the axial polarization does exist~(Fig.~\ref{circ-pol:focus}).
 We can therefore break down the proof of the existance of
-the transverse circular polarization in two steps.
+the sideway circular polarization in two steps.
 \begin{enumerate}
-\item Axial polarization also exist on the focal plane.
-\item The axial polarization has to be out-of-phase with the transverse polarization.
+\item Show that the axial polarization also exist on the focal plane.
+\item Prove that the axial polarization has to be out-of-phase
+  with the sideway polarization.
 \end{enumerate}
-These two would guarantee a transverse circular polarization.
+These two would guarantee a sideway circular polarization.
 
 \subsection{Existance of axial polarization on the focal plane}
+Even though the three components of the electric field are related to one another,
+they do all satisfy the scalar wave equation on their own~(Appendex~\ref{app:wave-eq}).
+This allows us to consider the propagation of each components independent of other ones.
 
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \draw[->,line width=1.5,red] (3, 3/2) -- +(-0.4, 0.8);
+    \draw[->,line width=1.5,blue] (-3, 3/2) -- +(0.4, 0.8);
+
+    \draw[domain=-5:5,smooth,variable=\x,line width=2]
+    plot ({\x}, {0.5 * sqrt((\x)^2 + 0.3)});
+    \draw[domain=-5:5,smooth,variable=\x,line width=2]
+    plot ({\x}, {-0.5 * sqrt((\x)^2 + 0.3)});
+
+    \draw[->,line width=2] (-2.5, -3) -- node[above] {Wave propagation direction}
+    (2.5, -3);
+
+    \draw[dashed,line width=2] (-4, 2.5) node[above] {$P_0$} -- (-4, -2.5);
+    \draw[dashed,line width=2] (0, 1.5) node[above] {$P_1$} -- (0, -1.5);
+
+    \draw[->,line width=1.5] (-4.4, 1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, 1.2);
+    \draw[->,line width=1.5] (-4.4, 0) node[left] {$\vec j_{\perp}$} -- (-3.6, 0);
+    \draw[->,line width=1.5] (-4.4, -1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, -1.2);
+  \end{tikzpicture}
+  \caption{Scalar wave flux~(Appendix~\ref{app:wave-flux})
+    for the transverse $\vec j_{\perp}$ and the longitudinal
+    $\vec j_{\parallel}$ component of the field.
+    In a plane far from the focus, $P_0$ we can verify that
+    the flux for both components points to the right
+    creating a net positive flux from left to right.
+    For this reason, the net flux for both components should be non-null
+    at all other parallel planes, including the focal plane $P_1$.}
+  \label{circ-pol:continuity}
+\end{figure}
+
+% TODO: plot the flux through P_0
+
+For a traveling wave from left to right~(Fig.~\ref{circ-pol:continuity}),
+we can consider the flux of this scalar wave~(Appendix~\ref{app:wave-flux})
+through a vertical plane. Since the flux is always in the direction
+of the beam propagation (i.e. phase gradient), the net flux for both components
+through a plane in the far field $P_0$ point to the right.
+This means that the flux for both fields, and therefore the value of both fields
+are non-null somewhere on the focal plane $P_1$.
+We can therefore reasonably expect that there are points on the focal plane
+where both fields are non-zero.
+
+\subsection{Phase between the transverse and longitudinal polarization on the focal plane}
+
+\clearpage
+\appendix
+\section{Wave equation for electric field}
+\label{app:wave-eq}
+From the Maxwell equation,
 \eqar{
   \begin{split}
     \nabla\times\paren{\nabla\times\vec E}=&-\nabla\times\pdiff{\vec B}{t}\\
@@ -295,20 +350,28 @@ These two would guarantee a transverse circular polarization.
     =&\nabla\paren{\nabla\cdot\vec E}-\nabla^2\vec E\\
     =&-\nabla^2\vec E
   \end{split}\\
-  \nabla^2\vec E=&\frac{1}{c^2}\pdiff[2]{\vec E}{t}
+  \nabla^2\vec E=&\frac{1}{c^2}\pdiff[2]{\vec E}{t}\label{app:eq:e-wave-eq}
 }
+Equation~\ref{app:eq:e-wave-eq} contains no mixing between the different components
+of the electric field which shows that each compoments of the electric field
+all satisfy the scalar wave equation.
 
-Scalar wave equation for,
+\section{Continuity equation for scalar wave}
+\label{app:wave-flux}
+Consider a complex scalar wave $u(\vec r, t)$, it satisfy the wave equation,
 \eqar{
   \nabla^2u=&\frac{1}{c^2}\pdiff[2]{u}{t}
 }
-If the wave is monotonic, we can write it out as
-$u(\vec r, t)=u_0(\vec r)\ue^{\ui\omega t}$, in which case the wave equation becomes,
+If the wave is monotonic\footnote{
+  We'll consider only a monotonic field to simplify the math but a time-dependenty
+  continuity equation for a generic scalar wave also exists.},
+we can write it out as $u(\vec r, t)=u_0(\vec r)\ue^{\ui\omega t}$,
+in which case the wave equation becomes,
 \eqar{
   \nabla^2u_0=&k^2 u_0
 }
-where $k\equiv\dfrac{\omega}{c}$.
-We can define the flux of the wave $\vec j\equiv u_0^*\nabla u_0-u_0\nabla u_0^*$,
+where the wave vector $k\equiv\dfrac{\omega}{c}$.
+We can now define the flux of the wave $\vec j\equiv u_0^*\nabla u_0-u_0\nabla u_0^*$,
 we have,
 \eqar{
   \begin{split}
@@ -319,5 +382,9 @@ we have,
   \end{split}
 }
 i.e. $\vec j$ is a continuous flow that cannot terminate in free space.
+
+For a plane wave, this vector $\vec j$ points in the direction of the wave propagation.
+Generically, this points in the direction of the phase gradient
+(i.e. ``local'' propagation direction).
 
 \end{document}
