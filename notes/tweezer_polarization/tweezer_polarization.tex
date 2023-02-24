@@ -293,13 +293,14 @@ independent of other ones.\\
 \begin{figure}[h]
   \centering
   \begin{tikzpicture}
-    \draw[->,line width=1.5,red] (3, 3/2) -- +(-0.4, 0.8);
-    \draw[->,line width=1.5,blue] (-3, 3/2) -- +(0.4, 0.8);
-
     \draw[domain=-5:5,smooth,variable=\x,line width=2]
     plot ({\x}, {0.5 * sqrt((\x)^2 + 0.3)});
     \draw[domain=-5:5,smooth,variable=\x,line width=2]
     plot ({\x}, {-0.5 * sqrt((\x)^2 + 0.3)});
+
+    \draw[->,line width=1.5,black] (-2.95, 3/2 + 0.1) -- +(0.4, 0.8);
+    \draw[->,line width=1.5,blue] (-2.95, 3/2 + 0.1) -- +(0, 0.8);
+    \draw[->,line width=1.5,red] (-2.95, 3/2 + 0.1) -- +(0.4, 0);
 
     \draw[->,line width=2] (-2.5, -3) -- node[above] {Wave propagation direction}
     (2.5, -3);
@@ -307,9 +308,17 @@ independent of other ones.\\
     \draw[dashed,line width=2] (-4, 2.5) node[above] {$P_0$} -- (-4, -2.5);
     \draw[dashed,line width=2] (0, 1.5) node[above] {$P_1$} -- (0, -1.5);
 
-    \draw[->,line width=1.5] (-4.4, 1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, 1.2);
-    \draw[->,line width=1.5] (-4.4, 0) node[left] {$\vec j_{\perp}$} -- (-3.6, 0);
-    \draw[->,line width=1.5] (-4.4, -1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, -1.2);
+    \draw[red,->,line width=1.5] (-4.4, 1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, 1.2);
+    \draw[blue,->,line width=1.5] (-4.4, 0) node[left] {$\vec j_{\perp}$} -- (-3.6, 0);
+    \draw[red,->,line width=1.5] (-4.4, -1.2) node[left] {$\vec j_{\parallel}$} -- (-3.6, -1.2);
+
+    \draw[line width=1] (-7, -3) -- (-7, 3) node[blue,above] {\Large $j_{\perp}$};
+    \draw[blue,domain=-3:3,smooth,variable=\y,line width=2]
+    plot ({exp(-(\y / 2.3)^2)^2 - 7}, {\y});
+
+    \draw[line width=1] (-8.5, -3) -- (-8.5, 3) node[red,above] {\Large $j_{\parallel}$};
+    \draw[red,domain=-3:3,smooth,variable=\y,line width=2]
+    plot ({(0.7 * \y * exp(-(\y / 2.3)^2))^2 - 8.5}, {\y});
   \end{tikzpicture}
   \caption{Scalar wave flux~(Appendix~\ref{app:wave-flux})
     for the transverse $\vec j_{\perp}$ and the longitudinal
@@ -317,12 +326,16 @@ independent of other ones.\\
     In a plane far from the focus, $P_0$ we can verify that
     the flux for both components points to the right
     creating a net positive flux from left to right.
+    (The plot on the left shows the approximate distribution of the flux
+    through $P_0$ for both polarizations.)
     For this reason, the net flux for both components should be non-null
-    at all other parallel planes, including the focal plane $P_1$.}
+    at all other parallel planes, including the focal plane $P_1$.
+    In fact, the relative amplitude profile, and therefore the flux,
+    remains relatively unchanged across different planes,
+    only the overall sizes are different.
+    See also section~\ref{sec:semi:hermite}.}
   \label{fig:continuity}
 \end{figure}
-
-% TODO: plot the flux through P_0
 
 For a traveling wave from left to right~(Fig.~\ref{fig:continuity}),
 we can consider the flux of this scalar wave~(Appendix~\ref{app:wave-flux})
@@ -395,6 +408,7 @@ but the polarization should still be elliptical and the straight ellipse
 may be achieved on a nearby plane/point.\\
 
 \subsection{Approximate the axial polarization using Hermite-Gaussian modes}
+\label{sec:semi:hermite}
 In the far field, the wavefront of the axial polarization is approximately
 $x \tilde A(x, y)$ where $\tilde A(x, y)$ is the wavefront for
 the transverse polarization and we are assuming that the polarization is along $\hat x$.
