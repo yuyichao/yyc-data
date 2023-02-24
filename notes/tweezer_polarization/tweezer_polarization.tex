@@ -213,7 +213,7 @@
 
 \section{Goal}
 Trying to accurately understand the origin of the sideway circular polarization
-on the side of the focus of a tighly focused beam.
+on the side of the focus of a tighly focused beam.\\
 
 \section{Qualitative description}
 For a collimated light beam, the polarization vector is generally within
@@ -262,14 +262,14 @@ little problem, this is not the case anymore near the focus as the edge of the b
 changes direction from converging to diverging and the polarization in that area
 (next to the focus in the focal plane) would have a polarization somewhere in between.
 This of course doesn't guarantee that there are any circular polarization
-or even axial polarization component, which would be the topic of the next section.
+or even axial polarization component, which would be the topic of the next section.\\
 
 \section{Semi-quantitative explanation}
 
 Full quantitative understanding of the sideway circular polarization
 near the focus of the beam requires a full calculation of the vector field.
 It is possible, however, to understand why such a polarization exists
-based on some continuity and symmetry considerations.
+based on some continuity and symmetry considerations.\\
 
 \subsection{General idea}
 We can see from the far field (away from the focus)
@@ -281,13 +281,14 @@ the sideway circular polarization in two steps.
 \item Prove that the axial polarization has to be out-of-phase
   with the transverse polarization.
 \end{enumerate}
-These two would guarantee a sideway circular polarization.
+These two would guarantee a sideway circular polarization.\\
 
 \subsection{Existance of axial polarization on the focal plane}
 \label{sec:semi:axial-pol}
 Even though the three components of the electric field are related to one another,
 they do all satisfy the scalar wave equation on their own~(Appendex~\ref{app:wave-eq}).
-This allows us to consider the propagation of each components independent of other ones.
+This allows us to consider the propagation of each components
+independent of other ones.\\
 
 \begin{figure}[h]
   \centering
@@ -331,7 +332,7 @@ through a plane in the far field $P_0$ point to the right.
 This means that the flux for both fields, and therefore the value of both fields
 are non-null somewhere on the focal plane $P_1$.
 We can therefore reasonably expect that there are points on the focal plane
-where both fields are non-zero.
+where both fields are non-zero.\\
 
 \subsection{Phase between the transverse and longitudinal polarization on the focal plane}
 \label{sec:semi:axial-phase}
@@ -340,7 +341,7 @@ the focal plane.\footnote{I believe the existance of such field
   is a reasonably assumption to make, given the time reversal symmetry of EM field.}
 More specifically, this means that the mirror reflection of the beam about
 the focal plane should result in the same beam propagating backward
-(i.e. mirror reflection plus time reversal should result in the same field).
+(i.e. mirror reflection plus time reversal should result in the same field).\\
 
 \begin{figure}[h]
   \centering
@@ -384,14 +385,14 @@ components, this require the polarization itself to be symmetric under
 this transformation. Any in phase component between the two polarization directions
 would break such symmetry. In fact, the symmetry is only preserved
 if the two components are off by a phase $\pm\dfrac{\pi}{2}$,
-or when the polarization is a straight ellipse~(Fig.~\ref{fig:symmetry}).
+or when the polarization is a straight ellipse~(Fig.~\ref{fig:symmetry}).\\
 
 The result will of course not fully applicable to physical beam
 without the perfect symmetry but the general result should still apply.
 In another word, the point next to the focus on the focal plane may not have
 a straight elliptical polarization (i.e. a perfectly out-of-phase axial compoment)
 but the polarization should still be elliptical and the straight ellipse
-may be achieved on a nearby plane/point.
+may be achieved on a nearby plane/point.\\
 
 \subsection{Approximate the axial polarization using Hermite-Gaussian modes}
 In the far field, the wavefront of the axial polarization is approximately
@@ -401,7 +402,16 @@ Therefore, when the beam (i.e. the normal, transversely polarized portion)
 is a Gaussian beam, the longitudinal polarization is approximately a $\mathrm{TEM}_{10}$
 Gaussian mode
 \footnote{\url{https://en.wikipedia.org/wiki/Gaussian_beam\#Hermite-Gaussian_modes}},
-and we should be able to use it to check the properties we've predicted above.
+and we should be able to use it to check the properties we've predicted above~(Fig.~\ref{fig:hermite-gaussian}).\\
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=8cm]{imgs/Hermite-gaussian.png}
+  \caption{Power distribution of some Hermite Gaussian modes.
+    The wavefront of the longitudinal polarization for a focused $\mathrm{TEM}_{00}$
+    can be approximated by the $\mathrm{TEM}_{10}$ mode.}
+  \label{fig:hermite-gaussian}
+\end{figure}
 
 Compared to the normal Gaussian beam (i.e. the $\mathrm{TEM}_{00}$ mode)
 there are two main differences that we care about.
@@ -444,7 +454,7 @@ From the Maxwell equation,
 }
 Equation~\ref{app:eq:e-wave-eq} contains no mixing between the different components
 of the electric field which shows that each compoments of the electric field
-all satisfy the scalar wave equation.
+all satisfy the scalar wave equation.\\
 
 \section{Continuity equation for scalar wave}
 \label{app:wave-flux}
@@ -475,6 +485,6 @@ i.e. $\vec j$ is a continuous flow that cannot terminate in free space.
 
 For a plane wave, this vector $\vec j$ points in the direction of the wave propagation.
 Generically, this points in the direction of the phase gradient
-(i.e. ``local'' propagation direction).
+(i.e. ``local'' propagation direction).\\
 
 \end{document}
