@@ -247,14 +247,14 @@ that rotates in a plane parallel to the optical axis, especially near the focus.
   \caption{Sideway circular polarization near the focus of a tighly focused beam.
     The red and blue error shows the polarization vector on the same edge
     of a tightly focused beam before and after the focus.}
-  \label{circ-pol:focus}
+  \label{fig:focus}
 \end{figure}
 
 We can qualitatively see this happening by looking at the field
 on the edge of the beam.
 The two edges have significantly different $k$ vectors
 and therefore different polarization vectors as well.
-As shown in Fig.~\ref{circ-pol:focus}, the polarization on the two edges of the beam
+As shown in Fig.~\ref{fig:focus}, the polarization on the two edges of the beam
 acquires an axial component due to the large angle between the $k$ vector
 and the optical axis. While the two sides of the beam are generally
 far away from each other and their different polarization directions cause
@@ -273,7 +273,7 @@ based on some continuity and symmetry considerations.
 
 \subsection{General idea}
 We can see from the far field (away from the focus)
-that the axial polarization does exist~(Fig.~\ref{circ-pol:focus}).
+that the axial polarization does exist~(Fig.~\ref{fig:focus}).
 We can therefore break down the proof of the existance of
 the sideway circular polarization in two steps.
 \begin{enumerate}
@@ -284,6 +284,7 @@ the sideway circular polarization in two steps.
 These two would guarantee a sideway circular polarization.
 
 \subsection{Existance of axial polarization on the focal plane}
+\label{sec:semi:axial-pol}
 Even though the three components of the electric field are related to one another,
 they do all satisfy the scalar wave equation on their own~(Appendex~\ref{app:wave-eq}).
 This allows us to consider the propagation of each components independent of other ones.
@@ -317,12 +318,12 @@ This allows us to consider the propagation of each components independent of oth
     creating a net positive flux from left to right.
     For this reason, the net flux for both components should be non-null
     at all other parallel planes, including the focal plane $P_1$.}
-  \label{circ-pol:continuity}
+  \label{fig:continuity}
 \end{figure}
 
 % TODO: plot the flux through P_0
 
-For a traveling wave from left to right~(Fig.~\ref{circ-pol:continuity}),
+For a traveling wave from left to right~(Fig.~\ref{fig:continuity}),
 we can consider the flux of this scalar wave~(Appendix~\ref{app:wave-flux})
 through a vertical plane. Since the flux is always in the direction
 of the beam propagation (i.e. phase gradient), the net flux for both components
@@ -333,6 +334,7 @@ We can therefore reasonably expect that there are points on the focal plane
 where both fields are non-zero.
 
 \subsection{Phase between the transverse and longitudinal polarization on the focal plane}
+\label{sec:semi:axial-phase}
 In this subsection we'll discuss a beam that's perfectly symmetric around
 the focal plane.\footnote{I believe the existance of such field
   is a reasonably assumption to make, given the time reversal symmetry of EM field.}
@@ -375,14 +377,14 @@ the focal plane should result in the same beam propagating backward
     that is not aligned with or perpendicular to the reflection plane (left).
     However, it will maintain an elliptical polarization
     if the axis of ellipse is straight (right).}
-  \label{circ-pol:symmetry}
+  \label{fig:symmetry}
 \end{figure}
 For a point on the focal plane with both longitudinal and transverse polarization
 components, this require the polarization itself to be symmetric under
 this transformation. Any in phase component between the two polarization directions
 would break such symmetry. In fact, the symmetry is only preserved
 if the two components are off by a phase $\pm\dfrac{\pi}{2}$,
-or when the polarization is a straight ellipse~(Fig.~\ref{circ-pol:symmetry}).
+or when the polarization is a straight ellipse~(Fig.~\ref{fig:symmetry}).
 
 The result will of course not fully applicable to physical beam
 without the perfect symmetry but the general result should still apply.
@@ -390,6 +392,37 @@ In another word, the point next to the focus on the focal plane may not have
 a straight elliptical polarization (i.e. a perfectly out-of-phase axial compoment)
 but the polarization should still be elliptical and the straight ellipse
 may be achieved on a nearby plane/point.
+
+\subsection{Approximate the axial polarization using Hermite-Gaussian modes}
+In the far field, the wavefront of the axial polarization is approximately
+$x \tilde A(x, y)$ where $\tilde A(x, y)$ is the wavefront for
+the transverse polarization and we are assuming that the polarization is along $\hat x$.
+Therefore, when the beam (i.e. the normal, transversely polarized portion)
+is a Gaussian beam, the longitudinal polarization is approximately a $\mathrm{TEM}_{10}$
+Gaussian mode
+\footnote{\url{https://en.wikipedia.org/wiki/Gaussian_beam\#Hermite-Gaussian_modes}},
+and we should be able to use it to check the properties we've predicted above.
+
+Compared to the normal Gaussian beam (i.e. the $\mathrm{TEM}_{00}$ mode)
+there are two main differences that we care about.
+\begin{enumerate}
+\item The amplitude profile of its wavefront is proportional to
+  $x\ue^{-(x^2+y^2)/w^2}$ instead of $\ue^{-(x^2+y^2)/w^2}$
+  for the normal ($\mathrm{TEM}_{00}$) mode.
+  Note that the amplitude profile remains this shape and non-zero,
+  which is consistent with our conclusion in section~\ref{sec:semi:axial-pol}.
+\item The phase of the beam is different. Compared to a plain wave,
+  which has a phase $\ue^{\ui kz}$ in the propagation direction,
+  a focused beam picks up an additional phase, the so-called ``Gouy phase'',
+  in the form $N\arctan\paren{z/z_R}$ where $z_R$ is the Rayleigh range of the beam.
+  For the normal $\mathrm{TEM}_{00}$ mode, $N$ is $1$
+  and for the $\mathrm{TEM}_{10}$ mode, $N$ is $2$.
+  The longitudinal and transverse field are in phase in the far field
+  and so they acquire a relative $\dfrac{\pi}{2}$ phase after propagating to the focus.
+  This phase is exactly the same as the one we found in
+  section~\ref{sec:semi:axial-phase},
+  which explains the sideway elliptical polarization.
+\end{enumerate}
 
 \clearpage
 \appendix
