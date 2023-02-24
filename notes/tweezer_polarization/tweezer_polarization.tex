@@ -279,7 +279,7 @@ the sideway circular polarization in two steps.
 \begin{enumerate}
 \item Show that the axial polarization also exist on the focal plane.
 \item Prove that the axial polarization has to be out-of-phase
-  with the sideway polarization.
+  with the transverse polarization.
 \end{enumerate}
 These two would guarantee a sideway circular polarization.
 
@@ -333,6 +333,63 @@ We can therefore reasonably expect that there are points on the focal plane
 where both fields are non-zero.
 
 \subsection{Phase between the transverse and longitudinal polarization on the focal plane}
+In this subsection we'll discuss a beam that's perfectly symmetric around
+the focal plane.\footnote{I believe the existance of such field
+  is a reasonably assumption to make, given the time reversal symmetry of EM field.}
+More specifically, this means that the mirror reflection of the beam about
+the focal plane should result in the same beam propagating backward
+(i.e. mirror reflection plus time reversal should result in the same field).
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \begin{scope}[shift={(-3, 0)}]
+      \node[above] at (-1.5, 1.5) {Original};
+      \node[above,align=center] at (1.5, 1.5) {Reflected and\\time reversed};
+      \draw[dashed,line width=2] (0, 1.5) -- (0, -1.5);
+
+      \draw[red,->,line width=2] (-1.5 - 0.2, 0.75 - 0.5) -- (-1.5 + 0.2, 0.75 + 0.5);
+      \draw[blue,->,line width=2] (1.5 + 0.2, 0.75 - 0.5) -- (1.5 - 0.2, 0.75 + 0.5);
+
+      \draw[red,->,line width=2] (-1.5 + 0.2, -0.75 - 0.5) -- (-1.5 - 0.2, -0.75 + 0.5);
+      \draw[blue,->,line width=2] (1.5 - 0.2, -0.75 - 0.5) -- (1.5 + 0.2, -0.75 + 0.5);
+    \end{scope}
+
+    \begin{scope}[shift={(3, 0)}]
+      \node[above] at (-1.5, 1.5) {Original};
+      \node[above,align=center] at (1.5, 1.5) {Reflected and\\time reversed};
+      \draw[dashed,line width=2] (0, 1.5) -- (0, -1.5);
+
+      \draw[red,->,line width=2] ($(-1.5, 0.75) + (-190:0.2 and 0.5)$(P) arc
+      (-190:195:0.2 and 0.5);
+      \draw[blue,->,line width=2] ($(1.5, 0.75) + (-190:0.2 and 0.5)$(P) arc
+      (-190:195:0.2 and 0.5);
+
+      \draw[red,->,line width=2] ($(-1.5, -0.75) + (190:0.2 and 0.5)$(P) arc
+      (190:-195:0.2 and 0.5);
+      \draw[blue,->,line width=2] ($(1.5, -0.75) + (190:0.2 and 0.5)$(P) arc
+      (190:-195:0.2 and 0.5);
+    \end{scope}
+  \end{tikzpicture}
+  \caption{Time reversal and spacial reflection changes linear polarization
+    that is not aligned with or perpendicular to the reflection plane (left).
+    However, it will maintain an elliptical polarization
+    if the axis of ellipse is straight (right).}
+  \label{circ-pol:symmetry}
+\end{figure}
+For a point on the focal plane with both longitudinal and transverse polarization
+components, this require the polarization itself to be symmetric under
+this transformation. Any in phase component between the two polarization directions
+would break such symmetry. In fact, the symmetry is only preserved
+if the two components are off by a phase $\pm\dfrac{\pi}{2}$,
+or when the polarization is a straight ellipse~(Fig.~\ref{circ-pol:symmetry}).
+
+The result will of course not fully applicable to physical beam
+without the perfect symmetry but the general result should still apply.
+In another word, the point next to the focus on the focal plane may not have
+a straight elliptical polarization (i.e. a perfectly out-of-phase axial compoment)
+but the polarization should still be elliptical and the straight ellipse
+may be achieved on a nearby plane/point.
 
 \clearpage
 \appendix
