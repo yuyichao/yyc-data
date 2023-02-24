@@ -64,8 +64,6 @@ text(47, 0.51, "\$\\Delta n\\!\\!=\\!\\!\\!-\\!2\$", color="C2")
 text(80, 0.46, "\$\\Delta n\\!\\!=\\!\\!\\!-\\!3\$", color="C3")
 gca()[:get_yaxis]()[:set_label_coords](-0.105, 0.5)
 xlabel("Motional state \$n\$")
-
-NaCsPlot.maybe_save(joinpath(@__DIR__, "sideband_coupling"))
-
+NaCsPlot.maybe_save(joinpath(@__DIR__, "../imgs/sideband_coupling"))
 
 NaCsPlot.maybe_show()
