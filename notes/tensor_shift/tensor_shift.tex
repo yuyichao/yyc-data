@@ -393,82 +393,58 @@ we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
 
 \section{Vector and tensor light shift}
 
+\subsection{Direct derivation}
+The coupling between state $|F,m_F\rangle$ and $|F',m_F'\rangle$
+\eqar{
+  \langle F,m_F|d_q|F',m_F'\rangle=&\langle F||\mathbf{d}||F'\rangle\langle F,m_F|F',1;m_F',q\rangle\\
+  =&\langle F||\mathbf{d}||F'\rangle (-1)^{F'-1+m_F}\sqrt{2F+1}
+  \begin{pmatrix}
+    F'&1&F\\
+    m_F'&q&m_F
+  \end{pmatrix}
+}
+where $F$ and $m_F$ ($F'$ and $m_F'$) are the total angular momentum and its projection
+for the initial (final) state. $d$ is the dipole operator and $q$ is the label
+for the spherical harmonic component ($-1$, $0$, or $1$).
+$q=\pm1$ corresponds to the $\sigma^\pm$ polarization/transition
+and $q=0$ corresponds to the $\pi$ polarization/transition.\\
+
+% Shift
+From this, we can first calculate the stark shift for a pure
+($\sigma^+$, $\pi$ or $\sigma^-$) polarization.
+We only care about a single polarization and a single pair of state for each shift
+so there's no summation. We'll also ignore the detuning
+and all of the other pre-factors since we only care about
+the ratio between different states/polaritions.
+\eqar{
+  \Delta E\propto&\langle F,m_F|d_q|F',m_F'\rangle\langle F',m_F'|d_q|F,m_F\rangle\\
+  =&\langle F||\mathbf{d}||F'\rangle^2\abs{\langle F,m_F|F',1;m_F',q\rangle}^2\\
+  =&\langle F||\mathbf{d}||F'\rangle^2\paren{2F+1}
+  \begin{pmatrix}
+    F'&1&F\\
+    m_F'&q&m_F
+  \end{pmatrix}^2
+}
+
+% Full matrix
+Amplitude of the light $A_q$
+
+\eqar{
+  &\langle F,m_F|H|F',m_F'\rangle\\
+  \propto&\sum_{F'',m_F'',q,q'}\langle F,m_F|A_qd_q|F'',m_F''\rangle\langle F'',m_F''|A_{q'}^*d_{q'}|F',m_F'\rangle\\
+  \propto&\sum_{F'',m_F'',q,q'}A_qA_{q'}^*\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
+  =&\sum_{k,p}T_p^k\sum_{F'',m_F'',q,q'}\langle k,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
+  =&T_0^0\sum_{F'',m_F'',q,q'}\langle 0,0|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
+  &+\sum_{p}T_p^1\sum_{F'',m_F'',q,q'}\langle 1,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
+  &+\sum_{p}T_p^2\sum_{F'',m_F'',q,q'}\langle 2,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle
+}
+
+\eqar{
+  \langle F,m_F|V_q|F',m_F'\rangle=&\langle F||V||F'\rangle\langle F,1;m_F,q|F',m_F'\rangle\\
+  \langle F,m_F|F_q|F,m_F'\rangle=&\langle F,m_F|F_q|F,m_F'\rangle
+}
+
 \section{Vector light shift as effective magnetic field}
-
-\section{Source of circular polarization}
-As we saw, a laser beam with circular polarization
-could create a non-zero vector light shift.
-In an experiment, this circular polarization could be generated
-for an otherwise linearly polarized light by birefringence of material
-as the beam passes through them, and from reflection off of optical coating
-that introduces non-trivial phase shift between different polarization components.
-\footnote{Note that while Fresnel equations generally do not introduce
-  non-trivial phase shift between S and P polarizations
-  when the index of refraction is completely real (i.e. no absorption),
-  except maybe for total internal reflection,
-  this does not hold true anymore when interference between multiple reflected beams
-  is involved, which is generally the case for optical coatings.
-  As such, unless the incident beam is (almost) normal to the surface,
-  in which case the symmetry prevents any polarization change from occuring,
-  a dielectric mirror will generally change the polarization of a linear light
-  if the polarization isn't purely S or P initially.}\\
-
-The circular polarization may also happen, however,
-for an otherwise perfectly linearly polarized light, near the focus of a beam
-with large NA, paricularly for optical tweezers or other focused beams
-for individual addressing. This is because a beam with a tight focus breaks
-the paraxial approximation such that the beam cannot be treated
-as a scalar field anymore. The field on the edge of the beam have significantly
-different $k$ vectors and therefore different polarization vectors as well.
-As shown in Fig. \ref{circ-pol:focus}, the polarization on the two edges of the beam
-acquires an axial component due to the large angle between the $k$ vector
-and the optical axis. While the two sides of the beam are generally
-far away from each other and their different polarization directions cause
-little problem, this is not the case anymore near the focus as the edge of the beam
-changes direction from converging to diverging.\\
-
-A point on the side of the focus is therefore affected by the combination
-of the two edge polarizations and varies rapidly within roughly a Rayleigh length.
-Although not a perfect analog, the effect this may cause can be understood
-by looking at the interference between two plane waves at an angle
-with in-plane polarization. Depending on the position (and therefore relative phase)
-the polarization will vary between in-plane linear and in-plane elliptical.
-For a normal focused beam, it turns out that the point next to the focus
-in the focal point would have an in-plane elliptical polarization.
-From symmetry, in the ideal case, the polarization in the center of the focus
-is still exactly linear and the rotation direction of the circular polarization
-on the two sides of the focus are opposite.\\
-
-Base on the previous discussions, this corresponds to having
-an effective magnetic field that is out of the plane,
-i.e. perpendicular to both the optical axis and the polarization.
-
-\begin{figure}[h]
-  \centering
-  \begin{tikzpicture}
-    \draw[->,line width=1.5,red] (3, 3/2) -- +(-0.4, 0.8);
-    \draw[->,line width=1.5,blue] (-3, 3/2) -- +(0.4, 0.8);
-
-    \draw[->,line width=1.5,blue] (0, 0.4) -- +(0.4, 0.8);
-    \draw[->,line width=1.5,red] (0, 0.4) -- +(-0.4, 0.8);
-
-    \draw[->,line width=1.5,blue!50!red] ($(0, 1.6) + (-190:0.3 and 0.6)$(P) arc
-    (-190:190:0.3 and 0.6);
-    \draw[<-,line width=1.5,blue!50!red] ($(0, -1.6) + (-190:0.3 and 0.6)$(P) arc
-    (-190:190:0.3 and 0.6);
-
-    \draw[domain=-5:5,smooth,variable=\x,line width=2]
-    plot ({\x}, {0.5 * sqrt((\x)^2 + 0.3)});
-    \draw[domain=-5:5,smooth,variable=\x,line width=2]
-    plot ({\x}, {-0.5 * sqrt((\x)^2 + 0.3)});
-  \end{tikzpicture}
-  \caption{Transverse circular polarization near the focus of a tighly focused beam.
-    The red and blue error shows the polarization vector on the same edge
-    of a tightly focused beam before and after the focus.
-    Near the focus though, the polarization becomes a superposition of the two
-    creating the in-plane elliptical polarization next to the focus.}
-  \label{circ-pol:focus}
-\end{figure}
 
 \section{Mitigating the effect of transverse circular polarization in optical tweezers}
 
