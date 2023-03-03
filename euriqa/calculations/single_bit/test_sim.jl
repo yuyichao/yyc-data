@@ -1,5 +1,9 @@
 #!/usr/bin/julia
 
+function xy_to_polar(x, y)
+    return hypot(x, y), atan(y, x)
+end
+
 function xy_rotation(ψ, θ)
     #   e^(i * (σ_x cosθ + σ_y sinθ) ψ / 2)
     # = cos(ψ / 2) + i * sin(ψ / 2) * (σ_x cosθ + σ_y sinθ)
