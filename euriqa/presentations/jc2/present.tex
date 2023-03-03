@@ -620,7 +620,7 @@
               \eqar{
                 &\ue^{\ui\eta\paren{a+a^\dagger}}a^\dagger a\ue^{-\ui\eta\paren{a+a^\dagger}}\\
                 =&(a^\dagger + \ui\eta)(a-\ui\eta)\\
-                =&n+\eta^2+pk/m
+                =&n+\eta^2+pk/m\omega
               }
             }
           \end{block}
@@ -630,8 +630,23 @@
   \end{center}
 \end{frame}
 
-\end{document}
+\begin{frame}{Sideband spectroscopy}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[align=left,text width=10cm,below] at (0, 0)
+      {
+        For thermal distribution
+        \eqar{
+          p_n\propto&\paren{\frac{\bar n}{\bar n + 1}}^n\\
+          h_{blue}=&\sum_n p_n \sin^2\paren{\Omega_{n,n+1}t/2}\\
+          h_{red}=&\sum_n p_n \sin^2\paren{\Omega_{n,n-1}t/2}\\
+          =&\sum_n p_n \sin^2\paren{\Omega_{n-1,n}t/2}\\
+          =&\frac{\bar n}{\bar n + 1}\sum_n p_n \sin^2\paren{\Omega_{n,n+1}t/2}\\
+          =&\frac{\bar n}{\bar n + 1}h_{blue}
+        }
+      };
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
 
-% LD approximation
-% For motional spectroscopy
-% For MS gate (not needed for uwave gate)
+\end{document}
