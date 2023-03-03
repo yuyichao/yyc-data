@@ -512,11 +512,67 @@
   \end{center}
 \end{frame}
 
+\begin{frame}{Lamb-Dicke approximation/regime}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[align=center,text width=10cm,below] at (0, 0) {\[\ue^{\ui\eta\paren{a+a^\dagger}}=1+\ui\eta\paren{a+a^\dagger}-\dfrac{\eta^2}{2}\paren{a+a^\dagger}^2+\mathcal{O}(\eta^3)\]};
+      \visible<2->{
+        \node[align=center,below] at (0, -1.6)
+        {When $\eta\ll1$:\ \ \ \(\ue^{\ui\eta\paren{a+a^\dagger}}\approx1+\ui\eta\paren{a+a^\dagger}\)};
+      }
+      \visible<3>{
+        \node[align=left,text width=10cm,below] at (0, -2.8)
+        {
+          To the first order,
+          \eqar{
+            \langle n|\ue^{\ui\eta\paren{a+a^\dagger}}|n\rangle\approx&1\\
+            \langle n+1|\ue^{\ui\eta\paren{a+a^\dagger}}|n\rangle\approx&\ui\eta\sqrt{n}\\
+            \langle n-1|\ue^{\ui\eta\paren{a+a^\dagger}}|n\rangle\approx&\ui\eta\sqrt{n+1}
+          }
+        };
+      }
+      \visible<4->{
+        \node[align=left,text width=10cm,below] at (0, -2.8)
+        {
+          To the second order,
+          \eqar{
+            \langle n|\ue^{\ui\eta\paren{a+a^\dagger}}|n\rangle\approx&1-\frac{\eta^2\paren{2n+1}}{2}
+          }
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Lamb-Dicke approximation/regime}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[align=left,text width=10cm,below] at (0, 0)
+      {
+        \eqar{
+          \langle n|\ue^{\ui\eta\paren{a+a^\dagger}}|n\rangle\approx&1-\frac{\eta^2\paren{2n+1}}{2}
+        }
+      };
+      \visible<2->{
+        \node[align=center,text width=10cm,below] at (0, -1.7) {
+          Wavefunction spread,
+          \[\langle n|x^2|n\rangle=z_0^2\paren{2n+1}\]
+        };
+      }
+      \visible<3->{
+        \node[align=center,text width=10cm,below] at (0, -3.2)
+        {
+          \[\eta_{eff}\equiv\eta\sqrt{2n+1}\]
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 \end{document}
 
 % Sideband coupling
 % OP heating (remaining in the same state vs heating)
-% Effective LD parameter (wavefunction get larger)
 
 % LD approximation
 % For motional spectroscopy
