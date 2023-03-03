@@ -544,7 +544,7 @@
   \end{center}
 \end{frame}
 
-\begin{frame}{Lamb-Dicke approximation/regime}
+\begin{frame}{Lamb-Dicke approximation / regime}
   \begin{center}
     \begin{tikzpicture}
       \node[align=left,text width=10cm,below] at (0, 0)
@@ -569,10 +569,68 @@
   \end{center}
 \end{frame}
 
-\end{document}
+\begin{frame}{Scattering / optical pumping heating}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[align=left,text width=10cm,below] at (0, 0)
+      {
+        Probability of remaining in $n$: $P_0\approx1-\eta_{eff}^2/2$
+      };
+      \visible<2->{
+        \node[align=left,text width=10cm,below] at (0, -1) {
+          Average energy gain,
+          \eqar{
+            \bar n'=&\langle n|\ue^{\ui\eta\paren{a+a^\dagger}}a^\dagger a\ue^{-\ui\eta\paren{a+a^\dagger}}|n\rangle\\
+            =&\langle n|\ue^{\ui\eta a^\dagger}\ue^{\ui\eta a}a^\dagger a\ue^{-\ui\eta a}\ue^{-\ui\eta a^\dagger}|n\rangle\\
+            =&\langle n|\ue^{\ui\eta a^\dagger}\paren{a^\dagger\ue^{\ui\eta a} + \ui\eta\ue^{\ui\eta a}}\ue^{-\ui\eta a}\paren{\ue^{-\ui\eta a^\dagger}a-\ui\eta\ue^{-\ui\eta a^\dagger}}|n\rangle\\
+            =&\langle n|(a^\dagger + \ui\eta)(a-\ui\eta)|n\rangle\\
+            =&n+\eta^2
+          }
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
 
-% Sideband coupling
-% OP heating (remaining in the same state vs heating)
+\begin{frame}{Scattering / optical pumping heating}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[align=left,text width=10cm,below] at (0, 0)
+      {
+        \begin{block}{Questions}
+          \begin{itemize}
+          \item Is energy gain always a constant?
+          \item Is there a $\Delta n$ upper bound on when $\langle n|\ue^{\ui\eta\paren{a+a^\dagger}}|n+\Delta n\rangle\neq0$?
+          \end{itemize}
+        \end{block}
+      };
+      \visible<2->{
+        \node[align=left,text width=10cm,below] at (0, -3)
+        {
+          \begin{block}{}
+            Coherence between $n$, momentum distribution.
+            \only<2>{
+              \eqar{
+                &\langle\alpha|\ue^{\ui\eta\paren{a+a^\dagger}}a^\dagger a\ue^{-\ui\eta\paren{a+a^\dagger}}|\alpha\rangle\\
+                =&\langle\alpha|(a^\dagger + \ui\eta)(a-\ui\eta)|\alpha\rangle\\
+                =&\abs{\alpha-\ui\eta}^2
+              }
+            }
+            \only<3->{
+              \eqar{
+                &\ue^{\ui\eta\paren{a+a^\dagger}}a^\dagger a\ue^{-\ui\eta\paren{a+a^\dagger}}\\
+                =&(a^\dagger + \ui\eta)(a-\ui\eta)\\
+                =&n+\eta^2+pk/m
+              }
+            }
+          \end{block}
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\end{document}
 
 % LD approximation
 % For motional spectroscopy
