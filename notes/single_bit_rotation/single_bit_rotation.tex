@@ -299,4 +299,35 @@ For the second case,
   &-\sigma_z\sin\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}+\sigma_z\sin\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}
 }
 
+\clearpage
+\appendix
+\section{Decompose an arbitray single qubit rotation into an $xy$ rotation
+  and a $z$ rotation}
+
+Arbitrary single qubit rotation,
+\eqar{
+  U=&a_0 + x_0 \sigma_x + y_0 \sigma_y + z_0 \sigma_z
+}
+$xy$ rotation followed by $z$ rotation
+\eqar{
+  U=&U_{xy} U_z\\
+  =&\paren{a_1 + x_1 \sigma_x + y_1 \sigma_y}\paren{\cos\theta + \sin\theta \sigma_z}\\
+  =&a_1\cos\theta + a_1\sin\theta \sigma_z + \cos\theta x_1 \sigma_x + \sin\theta x_1 \sigma_x\sigma_z + \cos\theta y_1 \sigma_y + \sin\theta y_1 \sigma_y\sigma_z\\
+  =&a_1\cos\theta + \paren{\cos\theta x_1 + \ui \sin\theta y_1} \sigma_x + \paren{\cos\theta y_1 - \ui \sin\theta x_1} \sigma_y + a_1\sin\theta \sigma_z
+}
+\eqar{
+  a_0=&a_1\cos\theta\\
+  x_0=&x_1\cos\theta + \ui y_1\sin\theta\\
+  y_0=&y_1\cos\theta - \ui x_1\sin\theta\\
+  z_0=&a_1\sin\theta
+}
+so we have
+\eqar{
+  a_1=&\sqrt{a_0^2+z_0^2}\\
+  \cos\theta=&\frac{a_0}{\sqrt{a_0^2+z_0^2}}\\
+  \sin\theta=&\frac{z_0}{\sqrt{a_0^2+z_0^2}}\\
+  x_1=&\frac{a_0x_0-\ui z_0y_0}{a_0^2 - z_0^2}\sqrt{a_0^2+z_0^2}\\
+  y_1=&\frac{a_0y_0+\ui z_0x_0}{a_0^2 - z_0^2}\sqrt{a_0^2+z_0^2}
+}
+
 \end{document}
