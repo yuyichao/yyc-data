@@ -14,7 +14,7 @@ function decompose_sigmas(M)
     Z = (M[1, 1] - M[2, 2]) / 2
     X = (M[1, 2] + M[2, 1]) / 2
     Y = (M[1, 2] - M[2, 1]) * im / 2
-    return I, X, Y, Z
+    return Complex(I), Complex(X), Complex(Y), Complex(Z)
 end
 
 function xy_rotation(ψ, θ)
@@ -38,8 +38,12 @@ end
 function decompose_xy_z(M)
     a0, x0, y0, z0 = decompose_sigmas(M)
 
-    # TODO a1 == 0
     a1 = sqrt(a0^2 - z0^2)
+    if a1 == 0
+        # This has to be the case if the decomposition is possible.
+        return (compose_sigmas(a0, x0, y0, z0),
+                compose_sigmas(one(typeof(a1)), 0, 0, 0))
+    end
     cosθ = a0 / a1
     isinθ = z0 / a1
     x1 = (a0 * x0 - im * z0 * y0) / a1
