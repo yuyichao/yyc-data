@@ -39,15 +39,24 @@ function decompose_xy_z(M)
     a0, x0, y0, z0 = decompose_sigmas(M)
 
     a1 = sqrt(a0^2 - z0^2)
+    one_v = one(typeof(a1))
+    zero_v = zero(typeof(a1))
+
     if a1 == 0
         # This has to be the case if the decomposition is possible.
-        return (compose_sigmas(a0, x0, y0, z0),
-                compose_sigmas(one(typeof(a1)), 0, 0, 0))
+        return ((a0, x0, y0, z0),
+                (one_v, zero_v, zero_v, zero_v))
     end
     cosθ = a0 / a1
     isinθ = z0 / a1
     x1 = (a0 * x0 - im * z0 * y0) / a1
     y1 = (a0 * y0 + im * z0 * x0) / a1
 
-    return compose_sigmas(a1, x1, y1, 0), compose_sigmas(cosθ, 0, 0, isinθ)
+    return (a1, x1, y1, zero_v), (cosθ, zero_v, zero_v, isinθ)
+end
+
+function equivalent_xy_angle(M)
+    σ_xy, = decompose_xy_z(M)
+    tanψ_2 = sqrt(abs(σ_xy[2]^2 + σ_xy[3]^2)) / abs(σ_xy[1])
+    return atan(tanψ_2) * 2
 end
