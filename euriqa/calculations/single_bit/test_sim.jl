@@ -4,6 +4,19 @@ function xy_to_polar(x, y)
     return hypot(x, y), atan(y, x)
 end
 
+function compose_sigmas(I, X, Y, Z)
+    return [I + Z X - im * Y
+            X + im * Y I - Z]
+end
+
+function decompose_sigmas(M)
+    I = (M[1, 1] + M[2, 2]) / 2
+    Z = (M[1, 1] - M[2, 2]) / 2
+    X = (M[1, 2] + M[2, 1]) / 2
+    Y = (M[1, 2] - M[2, 1]) * im / 2
+    return I, X, Y, Z
+end
+
 function xy_rotation(ψ, θ)
     #   e^(i * (σ_x cosθ + σ_y sinθ) ψ / 2)
     # = cos(ψ / 2) + i * sin(ψ / 2) * (σ_x cosθ + σ_y sinθ)
@@ -13,4 +26,24 @@ function xy_rotation(ψ, θ)
     sinψ_2, cosψ_2 = sincos(ψ / 2)
     return [cosψ_2 sinψ_2 * (im * cosθ + sinθ)
             sinψ_2 * (im * cosθ - sinθ) cosψ_2]
+end
+
+function z_rotation(ψ)
+    #   e^(i * σ_z ψ / 2)
+    # = cos(ψ / 2) + i * sin(ψ / 2) * σ_z
+    sinψ_2, cosψ_2 = sincos(ψ / 2)
+    return compose_sigmas(cosψ_2, 0, 0, im * sinψ_2)
+end
+
+function decompose_xy_z(M)
+    a0, x0, y0, z0 = decompose_sigmas(M)
+
+    # TODO a1 == 0
+    a1 = sqrt(a0^2 - z0^2)
+    cosθ = a0 / a1
+    isinθ = z0 / a1
+    x1 = (a0 * x0 - im * z0 * y0) / a1
+    y1 = (a0 * y0 + im * z0 * x0) / a1
+
+    return compose_sigmas(a1, x1, y1, 0), compose_sigmas(cosθ, 0, 0, isinθ)
 end
