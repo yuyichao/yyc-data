@@ -1,12 +1,19 @@
 #!/usr/bin/julia
 
+using StaticArrays
+
 function xy_to_polar(x, y)
     return hypot(x, y), atan(y, x)
 end
 
+function polar_to_xy(r, θ)
+    sinθ, cosθ = sincos(θ)
+    return r * cosθ, r * sinθ
+end
+
 function compose_sigmas(I, X, Y, Z)
-    return [I + Z X - im * Y
-            X + im * Y I - Z]
+    return SA[I + Z X - im * Y
+              X + im * Y I - Z]
 end
 
 function decompose_sigmas(M)
@@ -17,27 +24,43 @@ function decompose_sigmas(M)
     return Complex(I), Complex(X), Complex(Y), Complex(Z)
 end
 
-function xy_rotation(ψ, θ)
+function compose_xy_rot(ψ, θ)
     #   e^(i * (σ_x cosθ + σ_y sinθ) ψ / 2)
     # = cos(ψ / 2) + i * sin(ψ / 2) * (σ_x cosθ + σ_y sinθ)
     # = [cos(ψ / 2)                    i * sin(ψ / 2) (cosθ - i sinθ)
     #    i * sin(ψ / 2) (cosθ + i sinθ)  cos(ψ / 2)]
     sinθ, cosθ = sincos(θ)
     sinψ_2, cosψ_2 = sincos(ψ / 2)
-    return [cosψ_2 sinψ_2 * (im * cosθ + sinθ)
-            sinψ_2 * (im * cosθ - sinθ) cosψ_2]
+    return SA[cosψ_2 sinψ_2 * (im * cosθ + sinθ)
+              sinψ_2 * (im * cosθ - sinθ) cosψ_2]
 end
 
-function z_rotation(ψ)
+function decompose_xy_rot((a0, x0, y0, z0)::NTuple{4})
+    abs_a0 = abs(a0)
+    g = abs_a0 / a0
+    x0 = x0 * g
+    y0 = y0 * g
+    z0 = z0 * g
+    a0 = abs_a0
+    ψ_2 = atan(sqrt(abs2(x0) + abs2(y0)), a0)
+    θ = atan(imag(y0), imag(x0))
+    return ψ_2 * 2, θ
+end
+@inline decompose_xy_rot(M::AbstractMatrix) = decompose_xy_rot(decompose_sigmas(M))
+
+function compose_z_rot(ψ)
     #   e^(i * σ_z ψ / 2)
     # = cos(ψ / 2) + i * sin(ψ / 2) * σ_z
     sinψ_2, cosψ_2 = sincos(ψ / 2)
     return compose_sigmas(cosψ_2, 0, 0, im * sinψ_2)
 end
 
-function decompose_xy_z(M)
-    a0, x0, y0, z0 = decompose_sigmas(M)
+function decompose_z_rot((a0, x0, y0, z0)::NTuple{4})
+    return atan(imag(z0 / a0)) * 2
+end
+@inline decompose_z_rot(M::AbstractMatrix) = decompose_z_rot(decompose_sigmas(M))
 
+function decompose_xy_z((a0, x0, y0, z0)::NTuple{4})
     a1 = sqrt(a0^2 - z0^2)
     one_v = one(typeof(a1))
     zero_v = zero(typeof(a1))
@@ -54,9 +77,4 @@ function decompose_xy_z(M)
 
     return (a1, x1, y1, zero_v), (cosθ, zero_v, zero_v, isinθ)
 end
-
-function equivalent_xy_angle(M)
-    σ_xy, = decompose_xy_z(M)
-    tanψ_2 = sqrt(abs(σ_xy[2]^2 + σ_xy[3]^2)) / abs(σ_xy[1])
-    return atan(tanψ_2) * 2
-end
+@inline decompose_xy_z(M::AbstractMatrix) = decompose_xy_z(decompose_sigmas(M))
