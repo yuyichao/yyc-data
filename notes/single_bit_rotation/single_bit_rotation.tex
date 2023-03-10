@@ -306,15 +306,30 @@ Given the same total pulse lens (i.e. total rotation angle for all the pulses),
 we'd like to maximize the total effective rotation angle to make the pulse sequence
 the most efficient.\\
 
-For the $\cos\psi_2=1$ case, the final rotation is
-\eqar{
-  U=&\exp\paren{\ui\psi_1\sigma_1/2}\exp\paren{\ui\psi_3\sigma_3/2}\\
-  =&\paren{\cos\frac{\psi_1}{2}+\ui\sigma_x\cos\theta_1\sin\frac{\psi_1}{2}+\ui\sigma_y\sin\theta_1\sin\frac{\psi_1}{2}}\paren{\cos\frac{\psi_3}{2}+\ui\sigma_x\cos\theta_3\sin\frac{\psi_3}{2}+\ui\sigma_y\sin\theta_3\sin\frac{\psi_3}{2}}\\
-  =&\cos\frac{\psi_1}{2}\cos\frac{\psi_3}{2}+\ui\sigma_x\cos\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}+\ui\sigma_y\sin\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
-  &+\ui\sigma_x\cos\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}-\cos\theta_1\cos\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}-\ui\sigma_z\cos\theta_1\sin\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
-  &+\ui\sigma_y\sin\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}+\ui\sigma_z\sin\theta_1\cos\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}-\sin\theta_1\sin\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
-}
-% TODO
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=9cm]{imgs/three_pulses.pdf}
+  \caption{Minimum angle required to implement a total rotation angle.
+    Rotation around $z$ is ignored in the final rotation angle and only rotation
+    around an axis in the $xy$ plane is shown.
+    The exact axis is also omitted from the plot since it can be changed to any
+    desired direction by changing the axis of all the rotations at the same time.
+    The legend shows the length of the middle pulse which is chosen to be $\pi$
+    for the $\cos\psi_2=-1$ case and $2\pi$ for the $\cos\psi_2=1$.
+    The dashed line shows the corresponding total pulse length for the SK1(-like)
+    pulse sequence where the first (or the last) pulse
+    has the desired rotation angle.}
+  \label{fig:three-pulses}
+\end{figure}
+
+Fig.~\ref{fig:three-pulses} shows the result of numerically optimizing
+the pulse sequnece by computing the maximum achievable rotation angle
+for a fixed total rotation angle (time). Two cases that corresponds to
+the minimum length second pulse are shown i.e. $\psi_2=\pi$ and $\psi_2=2\pi$.
+The dashed line shows the comparison to the corresponding SK1(-like) pulse sequence.
+Since the total pulse sequence length must be at least
+twice the length of the second pulse, the improvement on top of the SK1 sequence
+is not very significant and is at most about $10\%$.
 
 \clearpage
 \appendix
