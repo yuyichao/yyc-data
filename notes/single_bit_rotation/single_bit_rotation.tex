@@ -298,6 +298,23 @@ For the second case,
   &-\sigma_y\cos\theta_1\sin\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}-\sigma_y\sin\theta_1\cos\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
   &-\sigma_z\sin\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}+\sigma_z\sin\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}
 }
+(Seems possible to achieve pure $x-y$ plane rotation though not sure if there's a way
+to express the condition in a concise way.)
+
+\subsection{Maximizing the final rotation angle}
+Given the same total pulse lens (i.e. total rotation angle for all the pulses),
+we'd like to maximize the total effective rotation angle to make the pulse sequence
+the most efficient.\\
+
+For the $\cos\psi_2=1$ case, the final rotation is
+\eqar{
+  U=&\exp\paren{\ui\psi_1\sigma_1/2}\exp\paren{\ui\psi_3\sigma_3/2}\\
+  =&\paren{\cos\frac{\psi_1}{2}+\ui\sigma_x\cos\theta_1\sin\frac{\psi_1}{2}+\ui\sigma_y\sin\theta_1\sin\frac{\psi_1}{2}}\paren{\cos\frac{\psi_3}{2}+\ui\sigma_x\cos\theta_3\sin\frac{\psi_3}{2}+\ui\sigma_y\sin\theta_3\sin\frac{\psi_3}{2}}\\
+  =&\cos\frac{\psi_1}{2}\cos\frac{\psi_3}{2}+\ui\sigma_x\cos\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}+\ui\sigma_y\sin\theta_3\cos\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
+  &+\ui\sigma_x\cos\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}-\cos\theta_1\cos\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}-\ui\sigma_z\cos\theta_1\sin\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
+  &+\ui\sigma_y\sin\theta_1\sin\frac{\psi_1}{2}\cos\frac{\psi_3}{2}+\ui\sigma_z\sin\theta_1\cos\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}-\sin\theta_1\sin\theta_3\sin\frac{\psi_1}{2}\sin\frac{\psi_3}{2}\\
+}
+% TODO
 
 \clearpage
 \appendix
