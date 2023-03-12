@@ -157,7 +157,7 @@ function try_map_stable(pitches)
     options = get_pitch_options.(sorted_pitches)
     all_res = Vector{NTuple{2,Int}}[]
     if any(isempty, options) || length(options) > 6
-        return all_res
+        return
     end
     nnotes = length(options)
     find_cover_nth!(all_res, Vector{NTuple{2,Int}}(undef, nnotes),
@@ -168,7 +168,7 @@ function try_map_stable(pitches)
     # end
     all_res = _all_res
     if isempty(all_res)
-        return all_res, NTuple{2,Int}[]
+        return
     end
     fcs = finger_count.(all_res)
     min_finger = minimum(fcs)
@@ -177,4 +177,53 @@ function try_map_stable(pitches)
     # sort!(all_res, by=cost_func, rev=true)
     idx_map = Dict(pitch=>id for (id, pitch) in enumerate(sorted_pitches))
     return [[res[idx_map[p]] for p in pitches] for res in all_res]
+end
+
+function try_map_stable2_mid(pitches, times, total_t, group_start)
+    if length(group_start) < 2
+        return
+    end
+    mid_time = total_t ÷ 2
+    min_diff_from_mid = mid_time
+    mid_start = 0
+    for idx in group_start
+        t = times[idx]
+        d = abs(t - mid_time)
+        if d < min_diff_from_mid
+            mid_start = idx
+            min_diff_from_mid = d
+        end
+    end
+    res1 = try_map_stable(pitches[1:mid_start - 1])
+    if res1 !== nothing
+        res2 = try_map_stable(pitches[mid_start:end])
+        if res2 !== nothing
+            return res1, res2
+        end
+    end
+    return
+end
+
+function try_map_stable_n(pitches, group_start)
+    res = Vector{Vector{NTuple{2,Int}}}[]
+    grp_id = 1
+    ngrp = length(group_start)
+    while grp_id <= ngrp
+        found = false
+        for i in ngrp:-1:grp_id
+            idx1 = group_start[grp_id]
+            idx2 = i == ngrp ? length(pitches) : (group_start[i + 1] - 1)
+            seg = try_map_stable(pitches[idx1:idx2])
+            if seg !== nothing
+                found = true
+                push!(res, seg)
+                grp_id = i + 1
+                break
+            end
+        end
+        if !found
+            return
+        end
+    end
+    return res
 end

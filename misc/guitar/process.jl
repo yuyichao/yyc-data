@@ -41,7 +41,11 @@ const all_pitches = collect_all_pitches(root)
 # end
 
 function try_map_all(offset=0)
-    for measure in measures
+    single_count = 0
+    double_count = 0
+    group_count = 0
+    failed_count = 0
+    for (mid, measure) in enumerate(measures)
         notes = findall("note", measure)
         pitches = Int[]
         times = Int[]
@@ -74,10 +78,27 @@ function try_map_all(offset=0)
                 end
             end
         end
-        @show group_start
-        @show cur_t
-        @show try_map_stable(pitches)
+        # @show group_start
+        # @show cur_t
+        single = try_map_stable(pitches)
+        # @show single
+        if single === nothing
+            double = try_map_stable2_mid(pitches, times, cur_t, group_start)
+            if double === nothing
+                group = try_map_stable_n(pitches, group_start)
+                if group === nothing
+                    failed_count += 1
+                else
+                    group_count += 1
+                end
+            else
+                double_count += 1
+            end
+        else
+            single_count += 1
+        end
     end
+    @show single_count, double_count, group_count, failed_count
 end
 
 try_map_all(-3)
