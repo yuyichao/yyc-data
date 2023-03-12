@@ -131,15 +131,20 @@ const max_pitch_diff = 21
 const max_avail_pitch = base_pitches[end] + max_pitch_diff
 const min_avail_pitch = base_pitches[1]
 
+struct NoteMapping
+    str::Int
+    pos::Int
+end
+
 function _get_all_options()
-    options = Vector{NTuple{2,Int}}[]
+    options = Vector{NoteMapping}[]
     for i in 1:(base_pitches[end] + max_pitch_diff)
-        opts = NTuple{2,Int}[]
+        opts = NoteMapping[]
         push!(options, opts)
         for (str_id, base) in enumerate(base_pitches)
             diff = i - base
             if 0 <= diff <= max_pitch_diff
-                push!(opts, (str_id, diff))
+                push!(opts, NoteMapping(str_id, diff))
             end
         end
     end
@@ -147,7 +152,7 @@ function _get_all_options()
 end
 
 const pitch_options = _get_all_options()
-const _empty_option = NTuple{2,Int}[]
+const _empty_option = NoteMapping[]
 
 get_pitch_options(pitch) = get(pitch_options, pitch, _empty_option)
 
@@ -158,7 +163,7 @@ function find_cover_nth!(all_res, current, used, options, n)
         return
     end
     for opt in options[n]
-        str_id = opt[1]
+        str_id = opt.str
         if used[str_id]
             continue
         end
@@ -173,7 +178,7 @@ function max_pos_diff(option)
     min_pos = 21
     max_pos = 1
     for opt in option
-        pos = opt[2]
+        pos = opt.pos
         if pos == 0
             continue
         end
@@ -191,25 +196,25 @@ function max_pos_diff(option)
 end
 
 function finger_count(option)
-    option = sort(option, by=x->(x[2], x[1]))
+    option = sort(option, by=x->(x.pos, x.str))
     count = 0
     used_string = 0
     pressed = 0
     for opt in option
-        if opt[1] == 0
-            used_string = max(used_string, opt[2])
+        if opt.str == 0
+            used_string = max(used_string, opt.pos)
             continue
         end
         # We are already pressing this position in a row
-        if pressed == opt[2]
-            used_string = max(used_string, opt[2])
+        if pressed == opt.pos
+            used_string = max(used_string, opt.pos)
             continue
         end
-        if opt[1] > used_string
-            pressed = opt[2]
+        if opt.str > used_string
+            pressed = opt.pos
         end
         count += 1
-        used_string = max(used_string, opt[2])
+        used_string = max(used_string, opt.pos)
     end
     return count
 end
@@ -219,12 +224,12 @@ end
 function try_map_single(pitches)
     sorted_pitches = sort!(collect(Set(pitches)))
     options = get_pitch_options.(sorted_pitches)
-    all_res = Vector{NTuple{2,Int}}[]
+    all_res = Vector{NoteMapping}[]
     if any(isempty, options) || length(options) > 6
         return
     end
     nnotes = length(options)
-    find_cover_nth!(all_res, Vector{NTuple{2,Int}}(undef, nnotes),
+    find_cover_nth!(all_res, Vector{NoteMapping}(undef, nnotes),
                     falses(6), options, 1)
     _all_res = [res for res in all_res if max_pos_diff(res) <= 2]
     # if isempty(_all_res)
@@ -268,7 +273,7 @@ function try_map_double(pitches, times, total_t, group_start)
 end
 
 function try_map_group(pitches, group_start)
-    res = Vector{Vector{NTuple{2,Int}}}[]
+    res = Vector{Vector{NoteMapping}}[]
     grp_id = 1
     ngrp = length(group_start)
     while grp_id <= ngrp

@@ -21,6 +21,12 @@ mutable struct CostCounter
     end
 end
 
+struct NoteID
+    mid::Int
+    noteidx::Int
+    pitchidx::Int
+end
+
 function map_measure(info, mid, counter, offset)
     pitches = info.pitches .+ offset
     single = try_map_single(pitches)
