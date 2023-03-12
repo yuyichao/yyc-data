@@ -21,65 +21,69 @@ mutable struct CostCounter
     end
 end
 
-function try_map_all(offset=0)
-    counter = CostCounter()
-    for (mid, measure) in enumerate(measures)
-        notes = findall("note", measure)
-        pitches = Int[]
-        times = Int[]
-        group_start = Int[]
-        cur_t = 0
-        for note in notes
-            pitch = findfirst("pitch", note)
-            if pitch !== nothing
-                push!(pitches, parse_pitch_node(pitch) + offset)
-            end
-            idx = length(pitches)
-            is_chord = false
-            if findfirst("chord", note) !== nothing
-                is_chord = true
-                if pitch !== nothing
-                    push!(times, times[end])
-                end
-            else
-                if pitch !== nothing
-                    push!(times, cur_t)
-                end
-                cur_t += parse(Int, nodecontent(findfirst("duration", note)))
-            end
-            if pitch !== nothing
-                beam = findfirst("beam", note)
-                tied = findfirst("notations/tied", note)
-                if (beam === nothing || strip(nodecontent(beam)) == "begin") &&
-                    (tied === nothing || tied["type"] == "start")
-                    push!(group_start, idx)
-                end
-            end
+function map_measure(measure, mid, counter, offset)
+    notes = findall("note", measure)
+    pitches = Int[]
+    times = Int[]
+    group_start = Int[]
+    cur_t = 0
+    for note in notes
+        pitch = findfirst("pitch", note)
+        if pitch !== nothing
+            push!(pitches, parse_pitch_node(pitch) + offset)
         end
-        single = try_map_stable(pitches)
-        if single === nothing
-            double = try_map_stable2_mid(pitches, times, cur_t, group_start)
-            if double === nothing
-                group = try_map_stable_n(pitches, group_start)
-                if group === nothing
-                    fine = try_map_stable_fine(pitches, times)
-                    if fine === nothing
-                        counter.failed += 1
-                    else
-                        counter.max_split = max(counter.max_split, length(fine))
-                        counter.fine += 1
-                    end
-                else
-                    counter.max_split = max(counter.max_split, length(group))
-                    counter.group += 1
-                end
-            else
-                counter.max_split = max(counter.max_split, 2)
-                counter.double += 1
+        idx = length(pitches)
+        is_chord = false
+        if findfirst("chord", note) !== nothing
+            is_chord = true
+            if pitch !== nothing
+                push!(times, times[end])
             end
         else
-            counter.single += 1
+            if pitch !== nothing
+                push!(times, cur_t)
+            end
+            cur_t += parse(Int, nodecontent(findfirst("duration", note)))
         end
+        if pitch !== nothing
+            beam = findfirst("beam", note)
+            tied = findfirst("notations/tied", note)
+            if (beam === nothing || strip(nodecontent(beam)) == "begin") &&
+                (tied === nothing || tied["type"] == "start")
+                push!(group_start, idx)
+            end
+        end
+    end
+    single = try_map_single(pitches)
+    if single === nothing
+        double = try_map_double(pitches, times, cur_t, group_start)
+        if double === nothing
+            group = try_map_group(pitches, group_start)
+            if group === nothing
+                fine = try_map_group_fine(pitches, times)
+                if fine === nothing
+                    counter.failed += 1
+                else
+                    counter.max_split = max(counter.max_split, length(fine))
+                    counter.fine += 1
+                end
+            else
+                counter.max_split = max(counter.max_split, length(group))
+                counter.group += 1
+            end
+        else
+            counter.max_split = max(counter.max_split, 2)
+            counter.double += 1
+        end
+    else
+        counter.single += 1
+    end
+end
+
+function try_map_all(measures, offset=0)
+    counter = CostCounter()
+    for (mid, measure) in enumerate(measures)
+        map_measure(measure, mid, counter, offset)
     end
     @show counter
 end
@@ -95,5 +99,5 @@ end
 
 for offset in min_offset:max_offset
     @show offset
-    try_map_all(offset)
+    try_map_all(measures, offset)
 end

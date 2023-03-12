@@ -2,6 +2,7 @@
 
 using EzXML
 
+# Basic conversion functions
 function pitch_to_num(step, octave, alter=0)
     if step == "C"
         num = 0
@@ -54,6 +55,7 @@ function num_to_pitch(num)
     end
 end
 
+# Document utilities
 function parse_pitch_node(pitch)
     step = strip(nodecontent(findfirst("step", pitch)))
     octave = parse(Int, nodecontent(findfirst("octave", pitch)))
@@ -70,6 +72,7 @@ function collect_all_pitches(root)
     return sort!(collect(pitches))
 end
 
+# Properties of guitar
 const base_pitches = [pitch_to_num("E", 2), pitch_to_num("A", 2),
                       pitch_to_num("D", 3), pitch_to_num("G", 3),
                       pitch_to_num("B", 3), pitch_to_num("E", 4)]
@@ -97,6 +100,7 @@ const _empty_option = NTuple{2,Int}[]
 
 get_pitch_options(pitch) = get(pitch_options, pitch, _empty_option)
 
+# For finding note to technique options.
 function find_cover_nth!(all_res, current, used, options, n)
     if n > length(options)
         push!(all_res, copy(current))
@@ -161,7 +165,7 @@ end
 
 # Try to map all the pitches to a stable position that is no more than
 # 2-3 positions apart other than 0
-function try_map_stable(pitches)
+function try_map_single(pitches)
     sorted_pitches = sort!(collect(Set(pitches)))
     options = get_pitch_options.(sorted_pitches)
     all_res = Vector{NTuple{2,Int}}[]
@@ -183,12 +187,11 @@ function try_map_stable(pitches)
     min_finger = minimum(fcs)
     # all_res = all_res[fcs .<= min_finger + 1]
     all_res = all_res[fcs .<= min_finger]
-    # sort!(all_res, by=cost_func, rev=true)
     idx_map = Dict(pitch=>id for (id, pitch) in enumerate(sorted_pitches))
     return [[res[idx_map[p]] for p in pitches] for res in all_res]
 end
 
-function try_map_stable2_mid(pitches, times, total_t, group_start)
+function try_map_double(pitches, times, total_t, group_start)
     if length(group_start) < 2
         return
     end
@@ -203,9 +206,9 @@ function try_map_stable2_mid(pitches, times, total_t, group_start)
             min_diff_from_mid = d
         end
     end
-    res1 = try_map_stable(pitches[1:mid_start - 1])
+    res1 = try_map_single(pitches[1:mid_start - 1])
     if res1 !== nothing
-        res2 = try_map_stable(pitches[mid_start:end])
+        res2 = try_map_single(pitches[mid_start:end])
         if res2 !== nothing
             return res1, res2
         end
@@ -213,7 +216,7 @@ function try_map_stable2_mid(pitches, times, total_t, group_start)
     return
 end
 
-function try_map_stable_n(pitches, group_start)
+function try_map_group(pitches, group_start)
     res = Vector{Vector{NTuple{2,Int}}}[]
     grp_id = 1
     ngrp = length(group_start)
@@ -222,7 +225,7 @@ function try_map_stable_n(pitches, group_start)
         for i in ngrp:-1:grp_id
             idx1 = group_start[grp_id]
             idx2 = i == ngrp ? length(pitches) : (group_start[i + 1] - 1)
-            seg = try_map_stable(pitches[idx1:idx2])
+            seg = try_map_single(pitches[idx1:idx2])
             if seg !== nothing
                 found = true
                 push!(res, seg)
@@ -237,7 +240,7 @@ function try_map_stable_n(pitches, group_start)
     return res
 end
 
-function try_map_stable_fine(pitches, times)
+function try_map_group_fine(pitches, times)
     group_start = Int[1]
     for i in 2:length(pitches)
         if pitches[i] == pitches[i - 1] || times[i] == times[i - 1]
@@ -245,5 +248,5 @@ function try_map_stable_fine(pitches, times)
         end
         push!(group_start, i)
     end
-    return try_map_stable_n(pitches, group_start)
+    return try_map_group(pitches, group_start)
 end
