@@ -382,3 +382,18 @@ function map_measure(segments, info, mid, counter, offset)
     end
     counter.failed += 1
 end
+
+struct MapAllResult
+    offset::Int
+    counter::CostCounter
+    segments::Vector{SegmentMappings}
+    MapAllResult(offset) = new(offset, CostCounter(), SegmentMappings[])
+end
+
+function map_all_measures(measures, offset=0)
+    res = MapAllResult(offset)
+    for (mid, measure) in enumerate(measures)
+        map_measure(res.segments, measure, mid, res.counter, offset)
+    end
+    return res
+end
