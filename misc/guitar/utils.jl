@@ -72,6 +72,57 @@ function collect_all_pitches(root)
     return sort!(collect(pitches))
 end
 
+struct MeasureInfo
+    node::EzXML.Node
+    notes::Vector{EzXML.Node}
+    # The following fields only consider note with non-empty pitch
+    # This includes the group start index, which indexes into the pitch
+    # and not the notes.
+    pitch_noteidx::Vector{Int}
+    pitches::Vector{Int}
+    times::Vector{Int}
+    group_start::Vector{Int}
+    total_time::Int
+    function MeasureInfo(node)
+        notes = findall("note", node)
+        pitch_noteidx = Int[]
+        pitches = Int[]
+        times = Int[]
+        group_start = Int[]
+        total_time = 0
+        for (noteidx, note) in enumerate(notes)
+            pitch = findfirst("pitch", note)
+            if pitch !== nothing
+                push!(pitch_noteidx, noteidx)
+                push!(pitches, parse_pitch_node(pitch))
+            end
+            idx = length(pitches)
+            is_chord = false
+            if findfirst("chord", note) !== nothing
+                is_chord = true
+                if pitch !== nothing
+                    push!(times, times[end])
+                end
+            else
+                if pitch !== nothing
+                    push!(times, total_time)
+                end
+                total_time += parse(Int, nodecontent(findfirst("duration", note)))
+            end
+            if pitch !== nothing
+                beam = findfirst("beam", note)
+                tied = findfirst("notations/tied", note)
+                if (beam === nothing || strip(nodecontent(beam)) == "begin") &&
+                    (tied === nothing || tied["type"] == "start")
+                    push!(group_start, idx)
+                end
+            end
+        end
+        return new(node, notes, pitch_noteidx, pitches, times,
+                   group_start, total_time)
+    end
+end
+
 # Properties of guitar
 const base_pitches = [pitch_to_num("E", 2), pitch_to_num("A", 2),
                       pitch_to_num("D", 3), pitch_to_num("G", 3),

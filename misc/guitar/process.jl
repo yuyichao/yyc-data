@@ -7,7 +7,7 @@ const infile = ARGS[1]
 const doc = readxml(infile)
 const root = doc.root
 
-const measures = findall("part/measure", root)
+const measures = MeasureInfo.(findall("part/measure", root))
 
 mutable struct CostCounter
     single::Int
@@ -21,46 +21,15 @@ mutable struct CostCounter
     end
 end
 
-function map_measure(measure, mid, counter, offset)
-    notes = findall("note", measure)
-    pitches = Int[]
-    times = Int[]
-    group_start = Int[]
-    cur_t = 0
-    for note in notes
-        pitch = findfirst("pitch", note)
-        if pitch !== nothing
-            push!(pitches, parse_pitch_node(pitch) + offset)
-        end
-        idx = length(pitches)
-        is_chord = false
-        if findfirst("chord", note) !== nothing
-            is_chord = true
-            if pitch !== nothing
-                push!(times, times[end])
-            end
-        else
-            if pitch !== nothing
-                push!(times, cur_t)
-            end
-            cur_t += parse(Int, nodecontent(findfirst("duration", note)))
-        end
-        if pitch !== nothing
-            beam = findfirst("beam", note)
-            tied = findfirst("notations/tied", note)
-            if (beam === nothing || strip(nodecontent(beam)) == "begin") &&
-                (tied === nothing || tied["type"] == "start")
-                push!(group_start, idx)
-            end
-        end
-    end
+function map_measure(info, mid, counter, offset)
+    pitches = info.pitches .+ offset
     single = try_map_single(pitches)
     if single === nothing
-        double = try_map_double(pitches, times, cur_t, group_start)
+        double = try_map_double(pitches, info.times, info.total_time, info.group_start)
         if double === nothing
-            group = try_map_group(pitches, group_start)
+            group = try_map_group(pitches, info.group_start)
             if group === nothing
-                fine = try_map_group_fine(pitches, times)
+                fine = try_map_group_fine(pitches, info.times)
                 if fine === nothing
                     counter.failed += 1
                 else
@@ -97,7 +66,7 @@ if min_offset > max_offset
     error("Pitch range too wide")
 end
 
-for offset in min_offset:max_offset
+@time for offset in min_offset:max_offset
     @show offset
     try_map_all(measures, offset)
 end
