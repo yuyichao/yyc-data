@@ -266,13 +266,14 @@ function try_map_double(pitches, times, total_t, group_start)
     if res1 !== nothing
         res2 = try_map_single(pitches[mid_start:end])
         if res2 !== nothing
-            return res1, res2
+            return (mid_start - 1, length(pitches) - mid_start + 1), (res1, res2)
         end
     end
     return
 end
 
 function try_map_group(pitches, group_start)
+    lens = Int[]
     res = Vector{Vector{NoteMapping}}[]
     grp_id = 1
     ngrp = length(group_start)
@@ -284,6 +285,7 @@ function try_map_group(pitches, group_start)
             seg = try_map_single(pitches[idx1:idx2])
             if seg !== nothing
                 found = true
+                push!(lens, idx2 - idx1 + 1)
                 push!(res, seg)
                 grp_id = i + 1
                 break
@@ -293,7 +295,7 @@ function try_map_group(pitches, group_start)
             return
         end
     end
-    return res
+    return lens, res
 end
 
 function try_map_group_fine(pitches, times)
@@ -305,4 +307,78 @@ function try_map_group_fine(pitches, times)
         push!(group_start, i)
     end
     return try_map_group(pitches, group_start)
+end
+
+mutable struct CostCounter
+    single::Int
+    double::Int
+    group::Int
+    fine::Int
+    failed::Int
+    max_split::Int
+    function CostCounter()
+        return new(0, 0, 0, 0, 0, 1)
+    end
+end
+
+struct NoteID
+    mid::Int
+    noteidx::Int
+    pitchidx::Int
+end
+
+struct SegmentMappings
+    notes::Vector{NoteID}
+    options::Vector{Vector{NoteMapping}}
+end
+
+function map_measure(segments, info, mid, counter, offset)
+    pitches = info.pitches .+ offset
+    noteids = [NoteID(mid, info.pitch_noteidx[i], i) for i in 1:length(pitches)]
+    single = try_map_single(pitches)
+    if single !== nothing
+        counter.single += 1
+        push!(segments, SegmentMappings(noteids, single))
+        return
+    end
+    double = try_map_double(pitches, info.times, info.total_time, info.group_start)
+    if double !== nothing
+        counter.max_split = max(counter.max_split, 2)
+        counter.double += 1
+        (n1, n2), (res1, res2) = double
+        push!(segments, SegmentMappings(noteids[1:n1], res1))
+        push!(segments, SegmentMappings(noteids[n1 + 1:end], res2))
+        return
+    end
+    group = try_map_group(pitches, info.group_start)
+    if group !== nothing
+        lens, group = group
+        ngrp = length(group)
+        counter.max_split = max(counter.max_split, ngrp)
+        counter.group += 1
+        istart = 1
+        for i in 1:ngrp
+            istart_next = istart + lens[i]
+            push!(segments, SegmentMappings(noteids[istart:istart_next - 1],
+                                            group[i]))
+            istart = istart_next
+        end
+        return
+    end
+    fine = try_map_group_fine(pitches, info.times)
+    if fine !== nothing
+        lens, group = fine
+        ngrp = length(group)
+        counter.max_split = max(counter.max_split, ngrp)
+        counter.fine += 1
+        istart = 1
+        for i in 1:ngrp
+            istart_next = istart + lens[i]
+            push!(segments, SegmentMappings(noteids[istart:istart_next - 1],
+                                            group[i]))
+            istart = istart_next
+        end
+        return
+    end
+    counter.failed += 1
 end
