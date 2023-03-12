@@ -19,49 +19,26 @@ end
 
 const all_pitches = collect_all_pitches(root)
 
-function cost_func(option)
-    min_press = 7
-    for opt in option
-        str_id, pos = opt
-        if pos == 0
-            continue
-        end
-        if str_id < min_press
-            min_press = str_id
-        end
-    end
-    min_use = 7
-    for opt in option
-        str_id, pos = opt
-        if str_id < min_use
-            min_use = str_id
-        end
-    end
-    return (min_press, min_use)
-end
-
-# Try to map all the pitches to a stable position that is no more than
-# 2-3 positions apart other than 0
-function try_map_stable(pitches)
-    sorted_pitches = sort!(collect(Set(pitches)))
-    options = get_pitch_options.(sorted_pitches)
-    all_res = Vector{NTuple{2,Int}}[]
-    if any(isempty, options) || length(options) > 6
-        return all_res
-    end
-    nnotes = length(options)
-    find_cover_nth!(all_res, Vector{NTuple{2,Int}}(undef, nnotes),
-                    falses(6), options, 1)
-    all_res = [res for res in all_res if max_pos_diff(res) <= 2]
-    if isempty(all_res)
-        all_res = [res for res in all_res if max_pos_diff(res) <= 3]
-    end
-    sort!(all_res, by=cost_func, rev=true)
-    idx_map = Dict(pitch=>id for (id, pitch) in enumerate(sorted_pitches))
-    return ([[res[idx_map[p]] for p in pitches] for res in all_res],
-            [(minimum(r[2] for r in res if r[2] != 0),
-              maximum(r[2] for r in res if r[2] != 0)) for res in all_res])
-end
+# function cost_func(option)
+#     min_press = 7
+#     for opt in option
+#         str_id, pos = opt
+#         if pos == 0
+#             continue
+#         end
+#         if str_id < min_press
+#             min_press = str_id
+#         end
+#     end
+#     min_use = 7
+#     for opt in option
+#         str_id, pos = opt
+#         if str_id < min_use
+#             min_use = str_id
+#         end
+#     end
+#     return (min_press, min_use)
+# end
 
 function try_map_all(offset=0)
     for measure in measures
@@ -90,7 +67,9 @@ function try_map_all(offset=0)
             end
             if pitch !== nothing
                 beam = findfirst("beam", note)
-                if beam === nothing || strip(nodecontent(beam)) == "begin"
+                tied = findfirst("notations/tied", note)
+                if (beam === nothing || strip(nodecontent(beam)) == "begin") &&
+                    (tied === nothing || tied["type"] == "start")
                     push!(group_start, idx)
                 end
             end

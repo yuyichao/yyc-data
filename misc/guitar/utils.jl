@@ -125,3 +125,56 @@ function max_pos_diff(option)
     end
     return max_pos - min_pos
 end
+
+function finger_count(option)
+    option = sort(option, by=x->(x[2], x[1]))
+    count = 0
+    used_string = 0
+    pressed = 0
+    for opt in option
+        if opt[1] == 0
+            used_string = max(used_string, opt[2])
+            continue
+        end
+        # We are already pressing this position in a row
+        if pressed == opt[2]
+            used_string = max(used_string, opt[2])
+            continue
+        end
+        if opt[1] > used_string
+            pressed = opt[2]
+        end
+        count += 1
+        used_string = max(used_string, opt[2])
+    end
+    return count
+end
+
+# Try to map all the pitches to a stable position that is no more than
+# 2-3 positions apart other than 0
+function try_map_stable(pitches)
+    sorted_pitches = sort!(collect(Set(pitches)))
+    options = get_pitch_options.(sorted_pitches)
+    all_res = Vector{NTuple{2,Int}}[]
+    if any(isempty, options) || length(options) > 6
+        return all_res
+    end
+    nnotes = length(options)
+    find_cover_nth!(all_res, Vector{NTuple{2,Int}}(undef, nnotes),
+                    falses(6), options, 1)
+    _all_res = [res for res in all_res if max_pos_diff(res) <= 2]
+    # if isempty(_all_res)
+    #     _all_res = [res for res in all_res if max_pos_diff(res) <= 3]
+    # end
+    all_res = _all_res
+    if isempty(all_res)
+        return all_res, NTuple{2,Int}[]
+    end
+    fcs = finger_count.(all_res)
+    min_finger = minimum(fcs)
+    # all_res = all_res[fcs .<= min_finger + 1]
+    all_res = all_res[fcs .<= min_finger]
+    # sort!(all_res, by=cost_func, rev=true)
+    idx_map = Dict(pitch=>id for (id, pitch) in enumerate(sorted_pitches))
+    return [[res[idx_map[p]] for p in pitches] for res in all_res]
+end
