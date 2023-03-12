@@ -9,44 +9,20 @@ const root = doc.root
 
 const measures = findall("part/measure", root)
 
-function collect_all_pitches(root)
-    pitches = Set{Int}()
-    for pitch in findall("//pitch", root)
-        push!(pitches, parse_pitch_node(pitch))
+mutable struct CostCounter
+    single::Int
+    double::Int
+    group::Int
+    fine::Int
+    failed::Int
+    max_split::Int
+    function CostCounter()
+        return new(0, 0, 0, 0, 0, 1)
     end
-    return sort!(collect(pitches))
 end
 
-const all_pitches = collect_all_pitches(root)
-
-# function cost_func(option)
-#     min_press = 7
-#     for opt in option
-#         str_id, pos = opt
-#         if pos == 0
-#             continue
-#         end
-#         if str_id < min_press
-#             min_press = str_id
-#         end
-#     end
-#     min_use = 7
-#     for opt in option
-#         str_id, pos = opt
-#         if str_id < min_use
-#             min_use = str_id
-#         end
-#     end
-#     return (min_press, min_use)
-# end
-
 function try_map_all(offset=0)
-    single_count = 0
-    double_count = 0
-    group_count = 0
-    fine_count = 0
-    failed_count = 0
-    max_split = 1
+    counter = CostCounter()
     for (mid, measure) in enumerate(measures)
         notes = findall("note", measure)
         pitches = Int[]
@@ -88,27 +64,36 @@ function try_map_all(offset=0)
                 if group === nothing
                     fine = try_map_stable_fine(pitches, times)
                     if fine === nothing
-                        failed_count += 1
+                        counter.failed += 1
                     else
-                        max_split = max(max_split, length(fine))
-                        fine_count += 1
+                        counter.max_split = max(counter.max_split, length(fine))
+                        counter.fine += 1
                     end
                 else
-                    max_split = max(max_split, length(group))
-                    group_count += 1
+                    counter.max_split = max(counter.max_split, length(group))
+                    counter.group += 1
                 end
             else
-                max_split = max(max_split, 2)
-                double_count += 1
+                counter.max_split = max(counter.max_split, 2)
+                counter.double += 1
             end
         else
-            single_count += 1
+            counter.single += 1
         end
     end
-    @show single_count, double_count, group_count, fine_count, max_split, failed_count
+    @show counter
 end
 
-for i in 0:20
-    @show i
-    try_map_all(-i)
+const all_pitches = collect_all_pitches(root)
+
+const min_offset = min_avail_pitch - all_pitches[1]
+const max_offset = max_avail_pitch - all_pitches[end]
+
+if min_offset > max_offset
+    error("Pitch range too wide")
+end
+
+for offset in min_offset:max_offset
+    @show offset
+    try_map_all(offset)
 end

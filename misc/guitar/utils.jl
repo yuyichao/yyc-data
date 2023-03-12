@@ -62,11 +62,20 @@ function parse_pitch_node(pitch)
     return pitch_to_num(step, octave, alter)
 end
 
+function collect_all_pitches(root)
+    pitches = Set{Int}()
+    for pitch in findall("//pitch", root)
+        push!(pitches, parse_pitch_node(pitch))
+    end
+    return sort!(collect(pitches))
+end
+
 const base_pitches = [pitch_to_num("E", 2), pitch_to_num("A", 2),
                       pitch_to_num("D", 3), pitch_to_num("G", 3),
                       pitch_to_num("B", 3), pitch_to_num("E", 4)]
 const max_pitch_diff = 21
 const max_avail_pitch = base_pitches[end] + max_pitch_diff
+const min_avail_pitch = base_pitches[1]
 
 function _get_all_options()
     options = Vector{NTuple{2,Int}}[]
