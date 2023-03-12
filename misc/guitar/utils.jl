@@ -227,3 +227,14 @@ function try_map_stable_n(pitches, group_start)
     end
     return res
 end
+
+function try_map_stable_fine(pitches, times)
+    group_start = Int[1]
+    for i in 2:length(pitches)
+        if pitches[i] == pitches[i - 1] || times[i] == times[i - 1]
+            continue
+        end
+        push!(group_start, i)
+    end
+    return try_map_stable_n(pitches, group_start)
+end
