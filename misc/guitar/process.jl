@@ -3,6 +3,7 @@
 include("utils.jl")
 
 const infile = ARGS[1]
+const outfile = ARGS[2]
 
 const doc = readxml(infile)
 const root = doc.root
@@ -125,5 +126,64 @@ end
 
 pick_segments(map_all_result)
 
-@show [length(segment.options) for segment in map_all_result.segments]
-@show prod(big(length(segment.options)) for segment in map_all_result.segments)
+function set_node_content(parent, name, content)
+    node = findfirst(name, parent)
+    if node === nothing
+        return addelement!(parent, name, content)
+    else
+        setnodecontent!(node, content)
+        return node
+    end
+end
+
+function update_doc!(measures, result)
+    for seg in result.segments
+        note_ids = seg.notes
+        option = seg.options[1]
+        if result.offset != 0
+            for (i, (note_id, opt)) in enumerate(zip(note_ids, option))
+                measure = measures[note_id.mid]
+                origin_pitch = measure.pitches[note_id.pitchidx]
+                new_pitch = origin_pitch + result.offset
+                step, octave, alter = num_to_pitch(new_pitch)
+                note = measure.notes[note_id.noteidx]
+                pitch = findfirst("pitch", note)
+                @assert pitch !== nothing
+                setnodecontent!(findfirst("step", pitch), step)
+                setnodecontent!(findfirst("octave", pitch), string(octave))
+                alter_node = findfirst("alter", pitch)
+                if alter == 0
+                    if alter_node !== nothing
+                        unlink!(alter_node)
+                    end
+                else
+                    if alter_node === nothing
+                        addelement!(pitch, "alter", string(alter))
+                    else
+                        setnodecontent!(alter_node, string(alter))
+                    end
+                end
+            end
+        end
+        for (i, (note_id, opt)) in enumerate(zip(note_ids, option))
+            measure = measures[note_id.mid]
+            note = measure.notes[note_id.noteidx]
+            notations = findfirst("notations", note)
+            if notations === nothing
+                notations = addelement!(note, "notations", "")
+            end
+            technical = findfirst("technical", notations)
+            if technical === nothing
+                technical = addelement!(notations, "technical", "")
+            end
+            set_node_content(technical, "string", string(7 - opt.str))
+            set_node_content(technical, "fret", string(opt.pos))
+        end
+    end
+end
+
+update_doc!(measures, map_all_result)
+
+open(outfile, "w") do io
+    print(io, doc)
+end
