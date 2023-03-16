@@ -44,83 +44,52 @@ function cost_func(mapping1, mapping2)
     return maxdist - 2 * overlap
 end
 
-function _pick_segments(result, start_idx, end_idx)
-    sz = end_idx - start_idx + 1
-    min_idxs = zeros(Int, sz)
-    min_cost = typemax(Int)
-    all_cost = Vector{Matrix{Int}}(undef, sz + 1)
-    lens = [length(result.segments[i].options) for i in start_idx:end_idx]
-    for i in 1:sz + 1
-        sz1 = i == 1 ? 1 : lens[i - 1]
-        sz2 = i == sz + 1 ? 1 : lens[i]
-        i1 = i + start_idx - 2
-        i2 = i + start_idx - 1
-        if i1 < 1 || i2 > length(result.segments)
-            all_cost[i] = zeros(Int, sz1, sz2)
-            continue
-        end
-        cost_mat = Matrix{Int}(undef, sz1, sz2)
-        all_cost[i] = cost_mat
-        for idx2 in 1:sz2
-            for idx1 in 1:sz1
-                cost_mat[idx1, idx2] = cost_func(result.segments[i1].options[idx1],
-                                                 result.segments[i2].options[idx2])
-            end
-        end
-    end
-    if true
-        # Brute force search...
-        # Good enough for now...
-        idxs = ones(Int, sz)
-        while all(idxs .<= lens)
-            cost = 0
-            for i in 1:sz + 1
-                idx1 = i == 1 ? 1 : idxs[i - 1]
-                idx2 = i == sz + 1 ? 1 : idxs[i]
-                cost += all_cost[i][idx1, idx2]
-            end
-            if cost < min_cost
-                min_idxs .= idxs
-                min_cost = cost
-            end
-            for i in sz:-1:1
-                idxs[i] += 1
-                if idxs[i] <= lens[i]
-                    break
-                end
-                if i == 1
-                    break
-                end
-                idxs[i] = 1
-            end
-        end
-        for i in 1:sz
-            idx = min_idxs[i]
-            options = result.segments[i + start_idx - 1].options
-            options[1] = options[idx]
-            resize!(options, 1)
-        end
-    end
-end
-
 function pick_segments(result)
-    start_idx = 0
-    for (i, seg) in enumerate(result.segments)
-        if length(seg.options) == 1
-            if start_idx == 0
-                continue
+    paths = Tuple{Int,Vector{Int}}[]
+    local prev_options
+    for seg in result.segments
+        options = seg.options
+        if isempty(paths)
+            # Special case for the first element
+            for i in 1:length(options)
+                push!(paths, (0, [i]))
             end
-            _pick_segments(result, start_idx, i - 1)
-            start_idx = 0
+            prev_options = options
             continue
         end
-        if start_idx == 0
-            start_idx = i
+        new_paths = Tuple{Int,Vector{Int}}[]
+        for (oidx, option) in enumerate(options)
+            min_cost = typemax(Int)
+            min_pidx = 0
+            for (pidx, (prev_cost, path)) in enumerate(paths)
+                prev_option = prev_options[pidx]
+                cost = prev_cost + cost_func(prev_option, option)
+                if cost < min_cost
+                    min_cost = cost
+                    min_pidx = pidx
+                end
+            end
+            push!(new_paths, (min_cost, [paths[min_pidx][2]; oidx]))
+        end
+        paths = new_paths
+        prev_options = options
+    end
+    local optimal_path
+    if length(paths) <= 1
+        optimal_path = paths[1][2]
+    else
+        min_cost = typemax(Int)
+        for (pidx, (cost, path)) in enumerate(paths)
+            if cost < min_cost
+                min_cost = cost
+                optimal_path = path
+            end
         end
     end
-    if start_idx != 0
-        _pick_segments(result, start_idx, length(result.segments))
-        start_idx = 0
+    for (i, p) in enumerate(optimal_path)
+        options = result.segments[i].options
+        options[1] = options[p]
+        resize!(options, 1)
     end
 end
 
