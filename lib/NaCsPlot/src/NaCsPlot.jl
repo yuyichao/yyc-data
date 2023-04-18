@@ -16,7 +16,7 @@ function __init__()
         pygui(false)
     end
     copy!(PyObject(rcParams), matplotlib."rcParams")
-    rcParams["svg.hashsalt"] = 19680801
+    rcParams["svg.hashsalt"] = "19680801"
     fontsize(20)
     ticksize(15)
     copy!(hist, PyPlot.matplotlib.pyplot.hist)
