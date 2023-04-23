@@ -22,6 +22,17 @@ function add_J₋!(M::AbstractMatrix{T}, scale=1) where T
     return M
 end
 
+function add_Jz!(M::AbstractMatrix{T}, scale=1) where T
+    (s1, s2) = size(M)
+    @assert s1 == s2
+    J = (s1 - 1) / T(2)
+    for i in 1:s1
+        m = i - J - 1
+        M[i, i] += m * T(scale)
+    end
+    return M
+end
+
 # J+ = Jx + i Jy
 # J- = Jx - i Jy
 
