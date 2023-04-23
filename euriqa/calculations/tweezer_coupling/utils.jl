@@ -43,7 +43,7 @@ function add_Jx!(M::AbstractMatrix{T}, scale=1) where T
 end
 
 # (J+ - J-) / 2i = Jy
-function add_Jx!(M::AbstractMatrix{T}, scale=1) where T
+function add_Jy!(M::AbstractMatrix{T}, scale=1) where T
     add_J₊!(M, scale / T(2im))
     add_J₋!(M, -scale / T(2im))
 end
