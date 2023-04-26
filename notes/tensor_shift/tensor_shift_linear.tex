@@ -194,7 +194,7 @@
 \setlength{\headsep}{20pt}
 \setlength{\marginparwidth}{0pt}
 \parindent=0pt
-\title{Effect of tensor shift from linear polarization}
+\title{Effect of a slight change in polarization on light shift}
 
 \ifpdf
   % Ensure reproducible output
@@ -211,7 +211,55 @@
 
 \maketitle
 
-Tensor shift hamiltonian
+\section{Goal}
+Vector and tensor light shift from an optical tweezer can cause coupling
+between different angular momentum states that were not allowed without it.
+This effect can be different if the tweezer polarization changes between site.\\
+
+While it's fairly easy to control when there's only vector light shift,
+just use linear polarization, the effect can be much more complex
+when tensor light shift terms. It's of course always possible to turn off
+all of the coupling with perfect $\pi$ polarization (since it doesn't break
+rotational symmetry around $z$ and therefore doesn't couple different $m_F$ states)
+but non-$\pi$ linear polarization could still have nontrivial
+effects in the experiment.\\
+
+Questions to answer,
+\begin{enumerate}
+\item Can the solution for vector light shift, i.e. using pure linear polarization,
+  eliminate all the unwanted coupling in the presence of
+  tensor light shift~(section~\ref{lin-pol}).
+\item For a single tweezer, can the effect from different source,
+  e.g. circularity of polarization, angle of polarization, angle of B field,
+  cancel out each other and to what level,
+  i.e. is it possible to achieve ``optimal'' result without $\pi$ polarization.
+\item If yes, is it possible to have local optimal
+  (e.g. cancellation of some terms at a condition that doesn't cancel all terms),
+  and if that's the case, what is the best way to align everything.
+\item In general, what is the condition for the coupling to the wrong state
+  being insensitive to certain type of change in the polarization.
+  E.g. is there a magic certain polarization that is at least first order insensitive
+  to arbitrary small angle rotation
+  (i.e. linear polarization when there's only vector shift).
+\end{enumerate}
+
+We'll mainly (only) consider the state mixing for a single state.
+This is fine since the system we want to study here, $^{171}\mathrm{Yb}$ neutral,
+has a $J=0, I=1/2$ ground state that should have a very small (if any) vector
+shift. Any existing vector shift should also be factored
+into a slightly tweaked excited state vector shift (at least to the first order).\\
+
+We'll also mostly consider the coupling for spontaneous emission.
+For darkness of state during OP, one could almost always adjust the OP polarization
+to cancel out any unwanted coupling.\\
+
+\section{Linear polarization}
+\label{lin-pol}
+
+Assuming the polarization of the tweezer is linear and selecting the quantization axis
+for the ground state, we'd like to see what coupling could be
+caused by a linear polarization that is not pure-$\pi$. As mentioned above,
+this can only be caused by the tensor term. Tensor shift hamiltonian,
 \eqar{
   H\propto&\frac{3}{2}\crly{\vec{u}^*\cdot\vec F,\vec{u}\cdot\vec F}-\vec F^2
 }
@@ -230,8 +278,8 @@ without loss of generality)
     H\propto&3\paren{\cos\theta F_z+\sin\theta F_x}^2-\vec F^2\\
     =&3\paren{\cos^2\theta F_z^2+\sin\theta\cos\theta\paren{F_zF_x+F_xF_z}+\sin^2\theta F_x^2}-\vec F^2\\
     \approx&3\paren{\cos^2\theta F_z^2+\frac{1}{2}\sin\theta\cos\theta\paren{F_zF_++F_zF_-+F_+F_z+F_-F_z}}-\vec F^2\\
-    =&3\paren{\cos^2\theta m_F^2+\frac{1}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}}-F(F+1)^2\\
-    =&3\cos^2\theta m_F^2-F(F+1)^2+\frac{3}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}
+    =&3\paren{\cos^2\theta m_F^2+\frac{1}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}}-F(F+1)\\
+    =&3\cos^2\theta m_F^2-F(F+1)+\frac{3}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}
   \end{split}
 }
 Here we've ignored the second order term (in $\theta$)
@@ -240,6 +288,6 @@ and calculated the matrix element in the $z$ basis.\\
 The result shows that the tensor light shift can cause a first order coupling between
 the neighboring $m_F$ state when the polarization is not $\pi$
 even if it remains linear. This is different from vector light shift
-which only have non-trivial effect for circular polarization.
+which only have non-trivial effect for circular polarization.\\
 
 \end{document}
