@@ -232,7 +232,8 @@ Questions to answer,
 \item For a single tweezer, can the effect from different source,
   e.g. circularity of polarization, angle of polarization, angle of B field,
   cancel out each other and to what level,
-  i.e. is it possible to achieve ``optimal'' result without $\pi$ polarization.
+  i.e. is it possible to achieve ``optimal'' result
+  without $\pi$ polarization~(section~\ref{general-pol}).
 \item If yes, is it possible to have local optimal
   (e.g. cancellation of some terms at a condition that doesn't cancel all terms),
   and if that's the case, what is the best way to align everything.
@@ -261,14 +262,15 @@ is simply proportional to any non-diagonal element in the Hamiltonian.\\
 Assuming the polarization of the tweezer is linear and selecting the quantization axis
 for the ground state, we'd like to see what coupling could be
 caused by a linear polarization that is not pure-$\pi$. As mentioned above,
-this can only be caused by the tensor term. Tensor shift hamiltonian,
+this can only be caused by the tensor term.
+Tensor shift hamiltonian ignoring constant terms that causes no coupling,
 \eqar{
-  H\propto&\frac{3}{2}\crly{\vec{u}^*\cdot\vec F,\vec{u}\cdot\vec F}-\vec F^2
+  H\propto&\crly{\vec{u}^*\cdot\vec F,\vec{u}\cdot\vec F}
 }
 
 For linear polarization $\vec{u}=\vec{u}^*$
 \eqar{
-  H\propto&3\paren{\vec{u}\cdot\vec F}^2-\vec F^2
+  H\propto&2\paren{\vec{u}\cdot\vec F}^2
 }
 
 If the polarization is very closed to $\pi$ but off by a small angle $\theta$
@@ -277,11 +279,11 @@ without loss of generality)
 \eqar{
   \vec{u}=&\cos\theta \hat z + \sin\theta \hat x\\
   \begin{split}
-    H\propto&3\paren{\cos\theta F_z+\sin\theta F_x}^2-\vec F^2\\
-    =&3\paren{\cos^2\theta F_z^2+\sin\theta\cos\theta\paren{F_zF_x+F_xF_z}+\sin^2\theta F_x^2}-\vec F^2\\
-    \approx&3\paren{\cos^2\theta F_z^2+\frac{1}{2}\sin\theta\cos\theta\paren{F_zF_++F_zF_-+F_+F_z+F_-F_z}}-\vec F^2\\
-    =&3\paren{\cos^2\theta m_F^2+\frac{1}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}}-F(F+1)\\
-    =&3\cos^2\theta m_F^2-F(F+1)+\frac{3}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}
+    H\propto&2\paren{\cos\theta F_z+\sin\theta F_x}^2\\
+    =&2\paren{\cos^2\theta F_z^2+\sin\theta\cos\theta\paren{F_zF_x+F_xF_z}+\sin^2\theta F_x^2}\\
+    \approx&2\paren{\cos^2\theta F_z^2+\frac{1}{2}\sin\theta\cos\theta\paren{F_zF_++F_zF_-+F_+F_z+F_-F_z}}\\
+    =&2\paren{\cos^2\theta m_F^2+\frac{1}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}}\\
+    =&2\cos^2\theta m_F^2+\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}
   \end{split}
 }
 Here we've ignored the second order term (in $\theta$)
@@ -291,5 +293,49 @@ The result shows that the tensor light shift can cause a first order coupling be
 the neighboring $m_F$ state when the polarization is not $\pi$
 even if it remains linear. This is different from vector light shift
 which only have non-trivial effect for circular polarization.\\
+
+\section{General polarization}
+\label{general-pol}
+Tensor term for generic polarization,
+\eqar{
+  \begin{split}
+    H\propto&\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\paren{u_xF_x+u_yF_y+u_zF_z}+\paren{u_xF_x+u_yF_y+u_zF_z}\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\\
+    =&2\abs{u_x}^2F_x^2+2\abs{u_y}^2F_y^2+2\abs{u_z}^2F_z^2\\
+            &+2\mathrm{Re}\paren{u_xu_y^*}\paren{F_xF_y+F_yF_x}
+              +2\mathrm{Re}\paren{u_xu_z^*}\paren{F_xF_z+F_zF_x}
+              +2\mathrm{Re}\paren{u_yu_z^*}\paren{F_yF_z+F_zF_y}\\
+    =&\abs{u_x}^2\frac{\paren{F_++F_-}^2}{2}-\abs{u_y}^2\frac{\paren{F_+-F_-}^2}{2}+2\abs{u_z}^2F_z^2\\
+            &+\frac{\mathrm{Re}\paren{u_xu_y^*}}{2\ui}\paren{\paren{F_++F_-}\paren{F_+-F_-}+\paren{F_+-F_-}\paren{F_++F_-}}\\
+            &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
+              -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
+    =&\frac{\paren{\abs{u_x}^2-\abs{u_y}^2}\paren{F_-^2+F_+^2}
+       +\paren{\abs{u_x}^2+\abs{u_y}^2}\paren{F_+F_-+F_-F_+}}{2}+2\abs{u_z}^2F_z^2
+       +\frac{\mathrm{Re}\paren{u_xu_y^*}}{\ui}\paren{F_+^2+F_-^2}\\
+            &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
+              -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
+  \end{split}
+}
+Ignoring all the diagonal terms in $z$ basis calculate the matrix element,
+\eqar{
+  \begin{split}
+    H'=&\paren{\frac{\abs{u_x}^2-\abs{u_y}^2}{2}
+         -\ui\mathrm{Re}\paren{u_xu_y^*}}\paren{F_+^2+F_-^2}\\
+       &+\paren{\mathrm{Re}\paren{u_xu_z^*}-\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F+1}F_+
+         +\paren{\mathrm{Re}\paren{u_xu_z^*}+\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F-1}F_-\\
+  \end{split}
+}
+We can see that unless $\dfrac{\abs{u_x}^2-\abs{u_y}^2}{2}$,
+$\mathrm{Re}\paren{u_xu_y^*}$, $\mathrm{Re}\paren{u_xu_z^*}$ and
+$\mathrm{Re}\paren{u_yu_z^*}$ are all zero the effect of
+the tensor shift will not be zero.
+Moreover, since the term that contains a single $F_+$ or $F_-$
+contains $m_F$ dependent pre-factor, they cannot be fully cancelled
+by the vector term which only contains terms that are proportional to $F_+$ or $F_-$
+without $m_F$ dependent pre-factor.
+It is possible, however, for the effect to be cancelled for the stretched state
+since they are coupled by only a single $F_\pm$ term and the coefficient can
+in principle be tweaked to zero. For this to work in the experiment,
+the second order (i.e. $F_+^2$ and $F_-^$) terms from the tensor effect
+still need to be zero (the vector term cannot cancel them out).
 
 \end{document}
