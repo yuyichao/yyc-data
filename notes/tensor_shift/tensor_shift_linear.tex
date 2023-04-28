@@ -265,12 +265,12 @@ caused by a linear polarization that is not pure-$\pi$. As mentioned above,
 this can only be caused by the tensor term.
 Tensor shift hamiltonian ignoring constant terms that causes no coupling,
 \eqar{
-  H\propto&\crly{\vec{u}^*\cdot\vec F,\vec{u}\cdot\vec F}
+  H_t\propto&\crly{\vec{u}^*\cdot\vec F,\vec{u}\cdot\vec F}
 }
 
 For linear polarization $\vec{u}=\vec{u}^*$
 \eqar{
-  H\propto&2\paren{\vec{u}\cdot\vec F}^2
+  H_t\propto&2\paren{\vec{u}\cdot\vec F}^2
 }
 
 If the polarization is very closed to $\pi$ but off by a small angle $\theta$
@@ -279,7 +279,7 @@ without loss of generality)
 \eqar{
   \vec{u}=&\cos\theta \hat z + \sin\theta \hat x\\
   \begin{split}
-    H\propto&2\paren{\cos\theta F_z+\sin\theta F_x}^2\\
+    H_t\propto&2\paren{\cos\theta F_z+\sin\theta F_x}^2\\
     =&2\paren{\cos^2\theta F_z^2+\sin\theta\cos\theta\paren{F_zF_x+F_xF_z}+\sin^2\theta F_x^2}\\
     \approx&2\paren{\cos^2\theta F_z^2+\frac{1}{2}\sin\theta\cos\theta\paren{F_zF_++F_zF_-+F_+F_z+F_-F_z}}\\
     =&2\paren{\cos^2\theta m_F^2+\frac{1}{2}\sin\theta\cos\theta\paren{\paren{2m_F+1}F_++\paren{2m_F-1}F_-}}\\
@@ -299,43 +299,90 @@ which only have non-trivial effect for circular polarization.\\
 Tensor term for generic polarization,
 \eqar{
   \begin{split}
-    H\propto&\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\paren{u_xF_x+u_yF_y+u_zF_z}+\paren{u_xF_x+u_yF_y+u_zF_z}\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\\
+    H_t\propto&\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\paren{u_xF_x+u_yF_y+u_zF_z}+\paren{u_xF_x+u_yF_y+u_zF_z}\paren{u_x^*F_x+u_y^*F_y+u_z^*F_z}\\
     =&2\abs{u_x}^2F_x^2+2\abs{u_y}^2F_y^2+2\abs{u_z}^2F_z^2\\
-            &+2\mathrm{Re}\paren{u_xu_y^*}\paren{F_xF_y+F_yF_x}
-              +2\mathrm{Re}\paren{u_xu_z^*}\paren{F_xF_z+F_zF_x}
-              +2\mathrm{Re}\paren{u_yu_z^*}\paren{F_yF_z+F_zF_y}\\
+              &+2\mathrm{Re}\paren{u_xu_y^*}\paren{F_xF_y+F_yF_x}
+                +2\mathrm{Re}\paren{u_xu_z^*}\paren{F_xF_z+F_zF_x}
+                +2\mathrm{Re}\paren{u_yu_z^*}\paren{F_yF_z+F_zF_y}\\
     =&\abs{u_x}^2\frac{\paren{F_++F_-}^2}{2}-\abs{u_y}^2\frac{\paren{F_+-F_-}^2}{2}+2\abs{u_z}^2F_z^2\\
-            &+\frac{\mathrm{Re}\paren{u_xu_y^*}}{2\ui}\paren{\paren{F_++F_-}\paren{F_+-F_-}+\paren{F_+-F_-}\paren{F_++F_-}}\\
-            &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
-              -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
+              &+\frac{\mathrm{Re}\paren{u_xu_y^*}}{2\ui}\paren{\paren{F_++F_-}\paren{F_+-F_-}+\paren{F_+-F_-}\paren{F_++F_-}}\\
+              &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
+                -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
     =&\frac{\paren{\abs{u_x}^2-\abs{u_y}^2}\paren{F_-^2+F_+^2}
        +\paren{\abs{u_x}^2+\abs{u_y}^2}\paren{F_+F_-+F_-F_+}}{2}+2\abs{u_z}^2F_z^2
        +\frac{\mathrm{Re}\paren{u_xu_y^*}}{\ui}\paren{F_+^2+F_-^2}\\
-            &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
-              -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
+              &+\mathrm{Re}\paren{u_xu_z^*}\paren{\paren{F_++F_-}F_z+F_z\paren{F_++F_-}}
+                -\ui\mathrm{Re}\paren{u_yu_z^*}\paren{\paren{F_+-F_-}F_z+F_z\paren{F_+-F_-}}\\
   \end{split}
 }
 Ignoring all the diagonal terms in $z$ basis calculate the matrix element,
 \eqar{
   \begin{split}
-    H'=&\paren{\frac{\abs{u_x}^2-\abs{u_y}^2}{2}
-         -\ui\mathrm{Re}\paren{u_xu_y^*}}\paren{F_+^2+F_-^2}\\
-       &+\paren{\mathrm{Re}\paren{u_xu_z^*}-\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F+1}F_+
-         +\paren{\mathrm{Re}\paren{u_xu_z^*}+\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F-1}F_-\\
+    H_t'=&\paren{\frac{\abs{u_x}^2-\abs{u_y}^2}{2}
+           -\ui\mathrm{Re}\paren{u_xu_y^*}}\paren{F_+^2+F_-^2}\\
+         &+\paren{\mathrm{Re}\paren{u_xu_z^*}-\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F+1}F_+
+           +\paren{\mathrm{Re}\paren{u_xu_z^*}+\ui\mathrm{Re}\paren{u_yu_z^*}}\paren{2m_F-1}F_-\\
   \end{split}
 }
 We can see that unless $\dfrac{\abs{u_x}^2-\abs{u_y}^2}{2}$,
 $\mathrm{Re}\paren{u_xu_y^*}$, $\mathrm{Re}\paren{u_xu_z^*}$ and
 $\mathrm{Re}\paren{u_yu_z^*}$ are all zero the effect of
-the tensor shift will not be zero.
+the tensor shift will not be zero (which requires $u_x=u_y=0$
+or pure $\pi$ polarization).\\
+
 Moreover, since the term that contains a single $F_+$ or $F_-$
 contains $m_F$ dependent pre-factor, they cannot be fully cancelled
 by the vector term which only contains terms that are proportional to $F_+$ or $F_-$
 without $m_F$ dependent pre-factor.
 It is possible, however, for the effect to be cancelled for the stretched state
 since they are coupled by only a single $F_\pm$ term and the coefficient can
-in principle be tweaked to zero. For this to work in the experiment,
-the second order (i.e. $F_+^2$ and $F_-^$) terms from the tensor effect
+in principle be cancelled by the vector term. For this to work in the experiment,
+the second order (i.e. $F_+^2$ and $F_-^2$) terms from the tensor effect
 still need to be zero (the vector term cannot cancel them out).
+This requires both $\dfrac{\abs{u_x}^2-\abs{u_y}^2}{2}$ and
+$\mathrm{Re}\paren{u_xu_y^*}$ to be $0$, or in another word $u_x=\pm\ui u_y$.\\
+
+The vector term
+\eqar{
+  \begin{split}
+    H_v\propto&\ui\paren{\vec{u}\times\vec{u}^*}\cdot\vec F\\
+    =&2\mathrm{Im}\paren{u_y^*u_z}F_x
+       +2\mathrm{Im}\paren{u_z^*u_x}F_y
+       +2\mathrm{Im}\paren{u_x^*u_y}F_z\\
+    =&\mathrm{Im}\paren{u_y^*u_z}\paren{F_++F_-}
+       -\ui\mathrm{Im}\paren{u_z^*u_x}\paren{F_+-F_-}
+       +2\mathrm{Im}\paren{u_x^*u_y}F_z\\
+    =&\paren{\mathrm{Im}\paren{u_y^*u_z}-\ui\mathrm{Im}\paren{u_z^*u_x}}F_+
+       +\paren{\mathrm{Im}\paren{u_y^*u_z}+\ui\mathrm{Im}\paren{u_z^*u_x}}F_-
+       +2\mathrm{Im}\paren{u_x^*u_y}F_z
+  \end{split}
+}
+
+Assuming $u_x=\pm\ui u_y$, define $\mathcal{R}\equiv\mathrm{Re}\paren{u_xu_z^*}$,
+$\mathcal{I}\equiv\mathrm{Im}\paren{u_xu_z^*}$
+\eqar{
+  \mathrm{Re}\paren{u_yu_z^*}=&\pm\mathcal{I}\\
+  \mathrm{Im}\paren{u_y^*u_z}=&\pm\mathcal{R}
+}
+
+Off diagonal terms,
+\eqar{
+  \begin{split}
+    H_v'=&\pm\paren{\mathcal{R}\mp\ui\mathcal{I}}F_+
+       \pm\paren{\mathcal{R}\pm\ui\mathcal{I}}F_-
+  \end{split}\\
+  \begin{split}
+    H_t'=&\paren{\mathcal{R}\mp\ui\mathcal{I}}\paren{2m_F+1}F_+
+           +\paren{\mathcal{R}\pm\ui\mathcal{I}}\paren{2m_F-1}F_-
+  \end{split}
+}
+
+The coefficient in front of the $F_+$ and $F_-$ terms are the same
+(or at least have the same polarization dependency).
+This means that the effect of the two cannot be cancelled out
+by adjusting the polarization (of the tweezer) but may be cancelled out
+by selecting the right wavelength. It also means that unless the wavelength is magic
+(for this particular coupling), the only good coupling for a single tweezer
+is $\pi$.
 
 \end{document}
