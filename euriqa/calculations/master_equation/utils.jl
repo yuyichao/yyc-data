@@ -36,8 +36,8 @@ end
 function add_C!(sys::System{T}, C) where T
     N = sys.N
     M = sys.M
-    L = C * C'
-    # d ρᵢⱼ/dt = (C ρ C†)ᵢⱼ - (C C† ρ + ρ C C†)ᵢⱼ / 2
+    L = C' * C
+    # d ρᵢⱼ/dt = (C ρ C†)ᵢⱼ - (C† C ρ + ρ C† C)ᵢⱼ / 2
     #          = ∑ₖₗ Cᵢₖ Cⱼₗ* ρₖₗ  - ∑ₖ(Lᵢₖ ρₖⱼ + ρᵢₖ Lₖⱼ) / 2
     for i in 1:N
         for j in 1:N
