@@ -61,8 +61,8 @@ function H_add_E!(H, E, i)
 end
 
 function H_add_Ω!(H, Ω, i, j)
-    H[i, j] += Ω
-    H[j, i] += conj(Ω)
+    H[i, j] += Ω / 2
+    H[j, i] += conj(Ω / 2)
     return H
 end
 
