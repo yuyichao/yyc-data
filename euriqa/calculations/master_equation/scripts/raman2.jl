@@ -18,7 +18,6 @@ function get_sys(det, Ω₁, Ω₂)
     return sys
 end
 
-const ts = range(0, 40, 10001)
 const dets = 2π * range(-0.8, 0.8, 10001)
 const ρ0 = [1 0 0; 0 0 0; 0 0 0]
 
