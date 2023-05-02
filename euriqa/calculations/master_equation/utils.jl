@@ -68,7 +68,7 @@ end
 
 new_C(sys::System{T}) where T = zeros(T, (sys.N, sys.N))
 
-function C_add_decay!(C, Γ, to, from)
-    C[to, from] = sqrt(Γ)
+function C_add_decay!(C, Γ, to, from, scale=1)
+    C[to, from] = sqrt(Γ) * scale
     return C
 end
