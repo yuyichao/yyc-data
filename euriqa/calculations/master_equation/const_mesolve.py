@@ -116,10 +116,14 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
             output.expect.append(e_ops(t, rho))
 
         for m in range(n_expt_op):
-            if not isinstance(e_ops[m], Qobj) and callable(e_ops[m]):
-                output.expect[m][t_idx] = e_ops[m](t, rho_t)
+            op = e_ops[m]
+            if not isinstance(op, Qobj) and callable(op):
+                output.expect[m][t_idx] = op(t, rho_t)
                 continue
-            output.expect[m][t_idx] = expect(e_ops[m], rho)
+            if op.isherm and rho0.isherm:
+                output.expect[m][t_idx] = expect(e_ops[m], rho).real
+            else:
+                output.expect[m][t_idx] = expect(e_ops[m], rho)
 
     if e_ops_dict:
         output.expect = {e: output.expect[n] for n, e in enumerate(e_ops_dict.keys())}
