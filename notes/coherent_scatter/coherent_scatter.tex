@@ -237,8 +237,111 @@ Hamiltonian,
 \eqar{
   H=&\frac12\paren{\delta\sigma_z+\Omega\sigma_x}
 }
-For scattering, we'll assume that the state $\dfrac{|0\rangle+|1\rangle}{\sqrt2}$
+For scattering, we'll assume that the state
+$|\psi_s\rangle\equiv\dfrac{|0\rangle+|1\rangle}{\sqrt2}$
 scatters at a rate of $\gamma$ with a $50$/$50$ branching ratio back to
 the $|0\rangle$ and $|1\rangle$ states.
+
+\section{Steady state solution in the eigen basis of the Hamiltonian}
+The eigen states of the Hamiltonian is,
+\eqar{
+  |\psi_1\rangle=&
+  \begin{pmatrix}
+    -\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
+    \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+  \end{pmatrix}\\
+  |\psi_2\rangle=&
+  \begin{pmatrix}
+    \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
+    \sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+  \end{pmatrix}
+}
+Since there is no coupling between these two states and there's no coherence
+in the scattering final state (because of the $50$/$50$ branching ratio)
+we can complete ignore any coherence between these two states and simply treat
+this using a scattering rate equation. The overlap between these two states
+and the scattering state $|\psi_s\rangle$ is,
+\eqar{
+  \langle\psi_1|\psi_s\rangle=&\frac{1}{2}\paren{\sqrt{1+\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}-\sqrt{1-\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}}\\
+  \langle\psi_2|\psi_s\rangle=&\frac{1}{2}\paren{\sqrt{1+\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}+\sqrt{1-\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}}
+}
+Scattering rates,
+\eqar{
+  \begin{split}
+    \gamma_1=&\gamma\abs{\langle\psi_1|\psi_s\rangle}^2\\
+    =&\frac{\gamma}{4}\paren{\sqrt{1+\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}-\sqrt{1-\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}}^2\\
+    =&\frac{\gamma}{4}\paren{1+\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}+1-\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}
+       -2\sqrt{1+\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}\sqrt{1-\dfrac{\delta}{\sqrt{\delta^2+\Omega^2}}}}\\
+    =&\frac{\gamma}{2}\paren{1-\dfrac{\Omega}{\sqrt{\delta^2+\Omega^2}}}
+  \end{split}\\
+  \begin{split}
+    \gamma_2=&\gamma\abs{\langle\psi_2|\psi_s\rangle}^2\\
+    =&\frac{\gamma}{2}\paren{1+\dfrac{\Omega}{\sqrt{\delta^2+\Omega^2}}}
+  \end{split}
+}
+Since the branching ratio for the scattering is still $50$/$50$ in this basis,
+the population ratio at steady state is the inverse of the scattering rate ratio
+of the two states.
+\eqar{
+  \begin{split}
+    \dfrac{p_{\psi_1}}{p_{\psi_2}}=&\frac{\gamma_2}{\gamma_1}\\
+    =&\frac{\sqrt{\delta^2+\Omega^2}+\Omega}{\sqrt{\delta^2+\Omega^2}-\Omega}
+  \end{split}\\
+  p_{\psi_1}=&\frac{\sqrt{\delta^2+\Omega^2}+\Omega}{2\sqrt{\delta^2+\Omega^2}}\\
+  p_{\psi_2}=&\frac{\sqrt{\delta^2+\Omega^2}-\Omega}{2\sqrt{\delta^2+\Omega^2}}\\
+}
+The density matrix
+\eqar{
+  \begin{split}
+    \rho=&|\psi_1\rangle p_{\psi_1}\langle\psi_1|+|\psi_2\rangle p_{\psi_2}\langle\psi_2|\\
+    =&\begin{pmatrix}
+        -\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}&\sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+      \end{pmatrix}
+       \frac{\sqrt{\delta^2+\Omega^2}+\Omega}{2\sqrt{\delta^2+\Omega^2}}
+       \begin{pmatrix}
+         -\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
+         \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+       \end{pmatrix}+\\
+    &\begin{pmatrix}
+       \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}&\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+      \end{pmatrix}
+       \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{2\sqrt{\delta^2+\Omega^2}}
+       \begin{pmatrix}
+         \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
+         \sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+       \end{pmatrix}\\
+    =&\begin{pmatrix}
+        \sqrt{\delta^2+\Omega^2}-\delta&-\Omega\\
+        -\Omega&\sqrt{\delta^2+\Omega^2}+\delta
+      \end{pmatrix}
+       \frac{\sqrt{\delta^2+\Omega^2}+\Omega}{4\paren{\delta^2+\Omega^2}}+\\
+    &\begin{pmatrix}
+       \sqrt{\delta^2+\Omega^2}+\delta&\Omega\\
+       \Omega&\sqrt{\delta^2+\Omega^2}-\delta
+     \end{pmatrix}
+      \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{4\paren{\delta^2+\Omega^2}}\\
+    =&\begin{pmatrix}
+        \paren{\sqrt{\delta^2+\Omega^2}-\delta}\paren{\sqrt{\delta^2+\Omega^2}+\Omega}&-\Omega\paren{\sqrt{\delta^2+\Omega^2}+\Omega}\\
+        -\Omega\paren{\sqrt{\delta^2+\Omega^2}+\Omega}&\paren{\sqrt{\delta^2+\Omega^2}+\delta}\paren{\sqrt{\delta^2+\Omega^2}+\Omega}
+      \end{pmatrix}
+       \frac{1}{4\paren{\delta^2+\Omega^2}}+\\
+    &\begin{pmatrix}
+       \paren{\sqrt{\delta^2+\Omega^2}+\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}\\
+       \Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\paren{\sqrt{\delta^2+\Omega^2}-\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}
+     \end{pmatrix}
+      \frac{1}{4\paren{\delta^2+\Omega^2}}\\
+    =&\begin{pmatrix}
+        \delta^2+\Omega^2-\delta\Omega&-\Omega^2\\
+        -\Omega^2&\delta^2+\Omega^2+\delta\Omega
+      \end{pmatrix}
+       \frac{1}{2\paren{\delta^2+\Omega^2}}\\
+  \end{split}
+}
+In another word, the population of $|0\rangle$ and $|1\rangle$
+\eqar{
+  p_0=&\frac12\paren{1-\frac{\delta\Omega}{\paren{\delta^2+\Omega^2}}}\\
+  p_1=&\frac12\paren{1+\frac{\delta\Omega}{\paren{\delta^2+\Omega^2}}}
+}
+showing the asymmetry between the two states when the detuning changes sign.
 
 \end{document}
