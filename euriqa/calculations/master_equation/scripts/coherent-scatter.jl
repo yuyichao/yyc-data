@@ -76,6 +76,10 @@ function get_22_coherent(Ω, Δ, γ, t)
     return real(propagate(sys, ρ0, t)[2, 2])
 end
 
+function get_22_steady(Ω, Δ, γ, t)
+    return (1 + Δ * Ω / (Δ^2 + Ω^2)) / 2
+end
+
 const prefix = joinpath(@__DIR__, "../imgs/coherent-scatter")
 
 figure()
@@ -104,5 +108,16 @@ legend(fontsize=10, ncol=4)
 xlabel("Detuning")
 ylabel("p")
 NaCsPlot.maybe_save("$(prefix)_det")
+
+figure()
+plot(dets, get_22_coherent.(2π * 0.1, dets, 2π * 0.02, 100), "C0", label="t=100")
+plot(dets, get_22_steady.(2π * 0.1, dets, 2π * 0.02, 100), "C1--",
+     label="steady (analytic)")
+ylim([0, 1])
+grid()
+legend(fontsize=10, ncol=4)
+xlabel("Detuning")
+ylabel("p")
+NaCsPlot.maybe_save("$(prefix)_det_theory")
 
 NaCsPlot.maybe_show()
