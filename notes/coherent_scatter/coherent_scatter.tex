@@ -23,6 +23,7 @@
 \usepackage{verbatim}
 \usepackage{pgfplots}
 \usepackage{hyperref}
+\usepackage{twoopt}
 \usetikzlibrary{
   arrows,
   calc,
@@ -163,14 +164,14 @@
     \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
   }
 }
-\newcommand*\DrawFromCenterText[2][]{
+\newcommandtwoopt*\DrawFromCenterText[3][][]{
   \setkeys{DrawFromCenter}{#1}{
     \pgfmathsinandcos\sint\cost{\@Theta}
     \pgfmathsinandcos\sinp\cosp{\@Phi}
     \pgfmathsinandcos\sinA\cosA{\angEl}
     \pgfmathsetmacro\DX{\@R*\cost*\cosp}
     \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
-    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node[#2] {#3};
   }
 }
 \makeatother
@@ -302,34 +303,34 @@ The density matrix
          -\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
          \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
        \end{pmatrix}+\\
-    &\begin{pmatrix}
-       \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}&\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
-      \end{pmatrix}
-       \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{2\sqrt{\delta^2+\Omega^2}}
-       \begin{pmatrix}
-         \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
-         \sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
-       \end{pmatrix}\\
+         &\begin{pmatrix}
+            \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}&\sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+          \end{pmatrix}
+           \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{2\sqrt{\delta^2+\Omega^2}}
+           \begin{pmatrix}
+             \sqrt{\dfrac12+\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}\\
+             \sqrt{\dfrac12-\dfrac{\delta}{2\sqrt{\delta^2+\Omega^2}}}
+           \end{pmatrix}\\
     =&\begin{pmatrix}
         \sqrt{\delta^2+\Omega^2}-\delta&-\Omega\\
         -\Omega&\sqrt{\delta^2+\Omega^2}+\delta
       \end{pmatrix}
        \frac{\sqrt{\delta^2+\Omega^2}+\Omega}{4\paren{\delta^2+\Omega^2}}+\\
-    &\begin{pmatrix}
-       \sqrt{\delta^2+\Omega^2}+\delta&\Omega\\
-       \Omega&\sqrt{\delta^2+\Omega^2}-\delta
-     \end{pmatrix}
-      \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{4\paren{\delta^2+\Omega^2}}\\
+         &\begin{pmatrix}
+            \sqrt{\delta^2+\Omega^2}+\delta&\Omega\\
+            \Omega&\sqrt{\delta^2+\Omega^2}-\delta
+          \end{pmatrix}
+           \frac{\sqrt{\delta^2+\Omega^2}-\Omega}{4\paren{\delta^2+\Omega^2}}\\
     =&\begin{pmatrix}
         \paren{\sqrt{\delta^2+\Omega^2}-\delta}\paren{\sqrt{\delta^2+\Omega^2}+\Omega}&-\Omega\paren{\sqrt{\delta^2+\Omega^2}+\Omega}\\
         -\Omega\paren{\sqrt{\delta^2+\Omega^2}+\Omega}&\paren{\sqrt{\delta^2+\Omega^2}+\delta}\paren{\sqrt{\delta^2+\Omega^2}+\Omega}
       \end{pmatrix}
        \frac{1}{4\paren{\delta^2+\Omega^2}}+\\
-    &\begin{pmatrix}
-       \paren{\sqrt{\delta^2+\Omega^2}+\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}\\
-       \Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\paren{\sqrt{\delta^2+\Omega^2}-\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}
-     \end{pmatrix}
-      \frac{1}{4\paren{\delta^2+\Omega^2}}\\
+         &\begin{pmatrix}
+            \paren{\sqrt{\delta^2+\Omega^2}+\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}\\
+            \Omega\paren{\sqrt{\delta^2+\Omega^2}-\Omega}&\paren{\sqrt{\delta^2+\Omega^2}-\delta}\paren{\sqrt{\delta^2+\Omega^2}-\Omega}
+          \end{pmatrix}
+           \frac{1}{4\paren{\delta^2+\Omega^2}}\\
     =&\begin{pmatrix}
         \delta^2+\Omega^2-\delta\Omega&-\Omega^2\\
         -\Omega^2&\delta^2+\Omega^2+\delta\Omega
@@ -353,6 +354,156 @@ showing the asymmetry between the two states when the detuning changes sign.\\
 \end{figure}
 
 We can compare this with the numerical simulation
-result~(Fig.~\ref{fig:compare-steady}) showing very good agreement.
+result~(Fig.~\ref{fig:compare-steady}) showing very good agreement.\\
+
+\section{Qualitative discussion based on EIT}
+From the previous calculation, we can see that the density matrix in the $z$ basis
+has non-diagonal terms meaning that there is actually coherence
+between the $|0\rangle$ and $|1\rangle$ states.
+This agrees with the observation that the selection of scattering state
+being important in causing the asymmetry.\\
+
+We also see, as we expected, that when $\delta=0$ the steady state density matrix
+represents a pure state $|\psi_d\rangle=\dfrac{|0\rangle-|1\rangle}{\sqrt2}$
+which is the EIT dark state. For $\delta\neq0$,
+the steady state is not the dark state but it remains fairly closed to the dark state
+for small detuning where the asymmetry is the most pronounced.
+This suggests that the dark state (and the eigen basis for scattering)
+is likely a better starting point / basis to understand the scattering process
+and potentially the asymmetry.\\
+
+
+We'll start by looking at the unitary evolution of the dark state $|\psi_d\rangle$
+and see if there's any asymmetry when $\delta$ changes sign.\\
+
+If the initial state of the system is the dark state $|\psi_d\rangle$,
+the time derivative of the wavefunction is,
+\eqar{
+  \begin{split}
+    \diff{|\psi\rangle}{t}=&-\ui H|\psi_d\rangle\\
+    =&-\frac{\ui}2\paren{\delta\sigma_z+\Omega\sigma_x}\dfrac{|0\rangle-|1\rangle}{\sqrt2}\\
+    =&-\frac{\ui}{2\sqrt2}\paren{\paren{\delta-\Omega}|0\rangle+\paren{\delta+\Omega}|1\rangle}
+  \end{split}
+}
+While I'm not sure how it affects the dynamic yet, this indeed shows some asymmetry
+between $|0\rangle$ and $|1\rangle$ depending on if $\delta$ and $\Omega$
+have the same sign or not. The amplitude of the derivative on $|1\rangle$ is larger
+than that on $|0\rangle$ if the two have the same sign,
+and smaller if the signs are different.\\
+
+The change in the amplitude of both the $|0\rangle$ and the $|1\rangle$ states
+are out-of-phase with their original amplitude so there isn't any first order change
+in the state probabilities at $t=0$. We can calculate the second order change
+to the wavefunction,
+\eqar{
+  \begin{split}
+    \diff[2]{|\psi\rangle}{t}=&-H^2|\psi_d\rangle\\
+    =&-\frac{1}{4}\paren{\delta\sigma_z+\Omega\sigma_x}^2\dfrac{|0\rangle-|1\rangle}{\sqrt2}\\
+    =&-\frac{1}{4\sqrt2}\paren{\delta^2+\Omega^2}\paren{|0\rangle-|1\rangle}\\
+  \end{split}
+}
+And from this the second order change to the $|0\rangle$ probability,
+\eqar{
+  \begin{split}
+    \diff[2]{\abs{\langle0|\psi\rangle}^2}{t}=&\diff{}{t}\paren{\langle0|\psi\rangle\diff{\langle\psi|0\rangle}{t}+\diff{\langle0|\psi\rangle}{t}\langle\psi|0\rangle}\\
+    =&\langle0|\psi\rangle\diff[2]{\langle\psi|0\rangle}{t}
+       +\diff[2]{\langle0|\psi\rangle}{t}\langle\psi|0\rangle
+       +2\diff{\langle0|\psi\rangle}{t}\diff{\langle\psi|0\rangle}{t}\\
+    =&\frac{1}{4}\paren{\delta-\Omega}^2-\frac{1}{4}\paren{\delta^2+\Omega^2}\\
+    =&\frac{\delta\Omega}{2}
+  \end{split}
+}
+i.e. depending on the sign of $\delta\Omega$ the time evolution of the dark state
+will put more or less population in the $|0\rangle$ state.
+Indeed, we can see this clearly if we simply look at the time evolution
+on the Bloch sphere~(Fig.~\ref{fig:darkstate-rotation}).
+The initial vector is at $-\hat x$ (blue arrow).
+The hamiltonian corresponds to a rotation around the vector
+$\delta\hat x+\Omega\hat z$ (red dotted arrow).
+Depending on the sign of $\delta$ (actually $\delta\Omega$),
+the rotation axis (and therefore the time evolution of the state
+shown by the blue dashed circle) may be either above or below the equator.\\
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=1.6]
+    \def\R{2.5} % sphere radius
+    \def\angEl{20} % elevation angle
+    \def\angX{110} % X axis angle
+    \filldraw[ball color=white] (0,0) circle (\R);
+    \DrawFromCenterText[r=1, center={(3.2, -2.3)}, theta=90, style={->}][above]{$z$}
+    \DrawFromCenterText[r=1, center={(3.2, -2.3)}, theta=180, style={->}][left]{$y$}
+    \DrawFromCenterText[r=1.5, center={(3.2, -2.3)}, theta=0, phi=\angX, style={->}][above left]{$x$}
+
+    \def\angRot{13} % Rotation axis angle
+
+    \DrawFromCenter[r={-\R * 1.9}, phi={\angX-180}, theta={-\angRot},
+    style={red!80!white, line width=2.1, dotted}]
+    \node at ({\R * cos(\angRot) * cos(\angX)},
+    {\R * (sin(\angRot) + cos(\angRot) * sin(\angX) * sin(\angEl))})
+    [red!70!white, circle,fill,inner sep=2.7pt] {};
+
+    \foreach \t in {-60,-30,...,60} {\DrawLatitudeCircle[\R]{\t}}
+    \foreach \t in {0,-60,...,-120} {\DrawLongitudeCircle[\R]{\t}}
+
+    \draw[domain=-160:20,smooth,variable=\t,blue,line width=2.1,dashed,>=stealth]
+    plot ({\R * (sin(\angRot) * cos(\t) -
+      (cos(\angRot)^2+sin(\angRot)^2 * sin(\t)) * cos(\angX))},
+    {\R * (sin(\angRot) * cos(\angRot) * (sin(\t) - 1) -
+      (cos(\angRot)^2+sin(\angRot)^2 * sin(\t)) * sin(\angX) * sin(\angEl))});
+
+    \DrawFromCenter[r={\R * 1.9}, phi={\angX-180}, theta={-\angRot},
+    style={->, >=stealth, red, line width=2.1, dotted}]
+
+    \node at ({-\R * cos(\angRot) * cos(\angX)},
+    {\R * (-sin(\angRot) - cos(\angRot) * sin(\angX) * sin(\angEl))})
+    [red, circle,fill,inner sep=3pt] {};
+
+    \DrawFromCenter[r=\R, phi={\angX-180}, style={->, blue, line width=1mm}]
+
+    \draw[->,domain=20:200,smooth,variable=\t,blue,line width=2.1,dashed,>=stealth]
+    plot ({\R * (sin(\angRot) * cos(\t) -
+      (cos(\angRot)^2+sin(\angRot)^2 * sin(\t)) * cos(\angX))},
+    {\R * (sin(\angRot) * cos(\angRot) * (sin(\t) - 1) -
+      (cos(\angRot)^2+sin(\angRot)^2 * sin(\t)) * sin(\angX) * sin(\angEl))});
+  \end{tikzpicture}
+  \caption{Unitary evolution of the dark state on the Bloch sphere.
+    The blue arrow represent the dark state $|\psi_d\rangle$
+    and the red dotted arrow is the rotation axis determined by the Hamiltonian.
+    The blue dashed circle is the trajectory the state make on the Bloch sphere.}
+  \label{fig:darkstate-rotation}
+\end{figure}
+
+Based on these observation, here is a semi-quatitative explaination of this phenomena.
+\begin{enumerate}
+\item The scattering process preferentially pumps the system into the dark state
+  $\dfrac{|0\rangle-|1\rangle}{\sqrt2}$.
+\item The Hamiltonian rotates the system around the axis $\delta\hat x+\Omega\hat z$
+  on the Bloch sphere, which is out of the equator plane when $\delta\neq0$.
+\item The interaction between these two effects means that the system
+  is being pumped towards one side of the rotation axis
+  and since the rotation axis is tilted the resulting state will have an uneven
+  distribution between the $|0\rangle$ and $|1\rangle$ states.
+\end{enumerate}
+In short, the symmetry in $x$ is broken by the scattering/optical pumping term
+and this asymmetry is projected onto $z$ by the Hamiltonian.\\
+
+This can also explain the rough shape of the asymmetry. As $\delta$ increases,
+the coupling between $x$ and $z$ increases and there's more asymmetry
+in the steady state population. The coupling maximizes when $\delta=\Omega$
+(i.e. $45^\circ$ tilted axis) after which point the steady state population
+asymmetry decreases again.\\
+
+We could also extend this explaination to other system configurations as well.
+If somehow the initial state of the scattering is random but the final state
+is always $\dfrac{|0\rangle+|1\rangle}{\sqrt2}$, this would result in an optical
+pumping effects towards $+x$ direction which would produce an asymmetry
+in the population in the other direction (confirmed by simulation).
+Similarly, if the OP process (either because of the initial or final state)
+is along the $y$ axis, there will be no asymmetry based on the detuning
+since it is orthogonal to the rotation axis.
+There will, however, still be an asymmetry in the population
+since the rotation caused by the Hamiltonian will move the dark state
+closed to one of the poles.
 
 \end{document}
