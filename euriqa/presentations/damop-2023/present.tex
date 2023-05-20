@@ -266,6 +266,150 @@
   \end{frame}
 }
 
+%% Yb ions
+% So just as an overview, in our group,
+% we build quantum computers using trapped Yb 171 ions.
+% As many people here may know, we pick these ions since they have
+% a favorable internal structure to be used as qubits.
+% It has a J=1/2 and I=1/2 electronic ground state
+% which gives us a pair of mF=0 clock states
+% that are insensitive to the B field to the first order.
+% These states have a really long coherence time and
+% people have measured a T_2 of as long as ~1hr.
+% The Yb ion also has a strong and mostly cycling optical transition at 369nm
+% which we can use for fast imaging, state preparation and detection with high fidelity.
+% There is occasional leak into a D3/2 state with 50ms life time,
+% but it can be pumped back with a 935nm IR light fairly easily.
+
+\begin{frame}{$^{171}\text{Yb}^+$ qubit}
+  \begin{center}
+    \begin{columns}
+      \column{6.5cm}
+      \begin{block}{}
+        \begin{itemize}
+        \item<1-> Long coherence time: $T_2\approx1 \text{hr}$\\
+          {\scriptsize Wang, et al., Nat Commun 12, 233 (2021)}\\
+          \vspace{1em}
+        \item<2-> High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mathrm{\mu s}$
+        \item<2-> High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mathrm{\mu s}$\\
+          \vspace{0.5em}
+          {\scriptsize Harty, et al., PRL. 113, 22051, (2014)}
+          {\scriptsize Christensen, et al., NPJ Quantum Inf. 6, 35 (2020)}
+        \end{itemize}
+      \end{block}
+      \column{5cm}
+      \begin{tikzpicture}
+        \begin{scope}[scale=0.8]
+          \draw[line width=1] (-0.6, -3) -- node[above right] {$|\!\downarrow\rangle$} (0.6, -3);
+          \draw[line width=1] (-2.1, -2.15) -- (-0.9, -2.15);
+          \draw[line width=1] (-0.6, -2) --
+          node[above right] {$|\!\uparrow\rangle$} (0.6, -2);
+          \draw[line width=1] (0.9, -1.85) -- (2.1, -1.85);
+          \node[left] at (-2.1, -2.5) {$^2\mathrm{S}_{1/2}$};
+
+          \visible<2->{
+            \begin{scope}[shift={(0, 6)}]
+              \draw[line width=1] (-0.6, -3) -- (0.6, -3);
+              \draw[line width=1] (-2.1, -2.1) -- (-0.9, -2.1);
+              \draw[line width=1] (-0.6, -2) -- (0.6, -2);
+              \draw[line width=1] (0.9, -1.9) -- (2.1, -1.9);
+              \node[left] at (-2.1, -2.5) {$^2\mathrm{P}_{1/2}$};
+            \end{scope}
+
+            \draw[snakearrow,line width=1,blue] (0, -2.5) --
+            node[right] {$369$ nm} (0, 3.5);
+          }
+        \end{scope}
+      \end{tikzpicture}
+    \end{columns}
+  \end{center}
+\end{frame}
+
+% We trap our ions in a chain above a surface trap, which give us
+% fine control on the axial position of the ions using the surface electrodes.
+% For coherent manipulation of these qubit states,
+% we use a commercial pulsed laser at 355nm.
+% These laser systems requires relatively low maintenance,
+% which reduces the down time of our experiment,
+% and comparing to using CW lasers, they provide much higher power,
+% up to a few watts, allowing us to achieve fast gate operation.
+% Finally, in order to entangle these qubits, we use the momentum kicks
+% from our Raman beam to implement a MS gate on the radial mode of
+% the shared motional state of the ion chain.
+
+% Figures:
+% * Surface trap
+% * Paladin
+
+\begin{frame}{$^{171}\text{Yb}^+$ chain and coherent manipulation}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (3, 2.5) {\includegraphics[width=5cm]{imgs/Phoenix_with_ion}};
+      \visible<2->{
+        \node at (3, -1.5) {\includegraphics[width=5cm]{imgs/Paladin_Breadboard}};
+        \begin{scope}[shift={(-3, 0)}]
+          \draw[line width=1] (-1.0, -3) -- node[above] {\small $|0, 0\rangle$} (1.0, -3);
+          \draw[line width=1] (-1.0, -2) -- node[above] {\small $|1, 0\rangle$} (1.0, -2);
+          \draw[line width=1] (-1.5, 2.5) node[left] {$^2\mathrm{P}_{1/2}$} -- (1.5, 2.5);
+          \draw[line width=1,dashed] (-1.5, 3) -- (1.5, 3);
+          \draw[line width=1] (-1.5, 4) node[left] {$^2\mathrm{P}_{3/2}$} -- (1.5, 4);
+          \draw[blue,<->,line width=1] (-0.8, -3) -- node[left] {$355$ nm} (0, 3);
+          \draw[blue,<->,line width=1] (0.8, -2) -- (0, 3);
+
+          \draw[<->,dashed,line width=0.5] (0.95, -2) --
+          node[right] {$12.6$ GHz} (0.95, -3);
+          \draw[<->,dashed,line width=0.5] (1.2, 2.5) --
+          node[right] {$33$ THz} (1.2, 3);
+          \draw[<->,dashed,line width=0.5] (1.2, 3) --
+          node[right] {$66$ THz} (1.2, 4);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+%% First generation system
+% Based on these principles, our first generation EURIQA system,
+% short for Error-corrected Universal Reconfigurable
+% Ion-trap Quantum Archetype, is able to
+% achieve high fidelity single and two-qubit operations on 15-24 qubits
+% The system can be, as the name suggests, universally reconfigured/reprogrammed to run
+% different kinds of circuits and it's even stable and autonomous enough
+% for us to run almost completely remotely.
+% There has already been many results from this experiment,
+% and you can hear more about them in many other talks in this conference
+% as shown in this list.
+
+% Figures:
+% * EURIQA picture
+
+\begin{frame}{$1^{\text{st}}$ generation EURIQA system}
+  \begin{center}
+    \textbf{E}rror-corrected \textbf{U}niversal \textbf{R}econfigurable
+    \textbf{I}on-trap \textbf{Q}uantum \textbf{A}rchetype
+    \begin{columns}
+      \column{5.2cm}
+      \includegraphics[width=5cm]{imgs/Breadboard_box}
+      \column{6.3cm}
+      \begin{block}{}
+        \begin{itemize}
+        \item 15-24 usable qubits
+        \item<2-> High fidelity single ($99.9\ \%$) and two-qubit ($99\ \%$) gates
+        \item<3-> Universal reconfigurable
+        \item<4-> Remote operations
+        \end{itemize}
+      \end{block}
+      \visible<5->{
+        \scriptsize
+        \begin{itemize}
+        \item K02: Quantum Simulations and Computations with Ion Trap Systems
+        \item Z05: Search for Millicharged Dark Matter with Trapped-Ion Quantum Processor
+        \end{itemize}
+      }
+    \end{columns}
+  \end{center}
+\end{frame}
+
 \begin{frame}{}
 \end{frame}
 
