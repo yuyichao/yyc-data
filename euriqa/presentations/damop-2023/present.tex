@@ -473,6 +473,70 @@
   \end{center}
 \end{frame}
 
+%% Phoenix trap
+% One of the main issues that limits the gate fidelity and ion numbers
+% in the 1st generation experiment is the heating of ions from surface
+% electric field noise and that's indeed one of the main focus of the design change.
+
+% We use the Phoenix trap which is a new generation of the surface trap
+% from the Sandia National Lab. It has better wall metallization,
+% which should shield and reduce the field noise as well as reducing
+% charging and photovoltaic effect caused by stray laser beams hitting the trap.
+% All of these contributes to a lower heating rate that is a factor of 2-3
+% better than the previous generation.
+% It also comes with segmented outer electrodes which should allow us
+% to compensate for the micro-motion more precisely across the whole chain.
+
+% Additionally, the loading rate of the trap is also improved thanks to a larger
+% loading slot and a simpler trap geometry
+% allowing loading and shuttling of multiple ions simultaneously.
+
+% Figures:
+% * Phoenix
+% * Outer electrodes
+% * Loading slot
+
+\definecolor{trapyellow}{HTML}{ffe0a5}
+\definecolor{semgray}{HTML}{cccccc}
+
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Phoenix trap}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (3, 2) {\includegraphics[width=4.8cm]{imgs/Phoenix}};
+      \visible<4->{
+        \fill[semgray,opacity=0.6] (1.8, 2.115) -- (-4.65, -0.3875)
+        -- (-0.35, -3.6125) -- (1.9, 2.115) -- cycle;
+      }
+      \visible<2-3>{
+        \node at (-2.5, -2) {\includegraphics[width=6.6cm]{imgs/heating-rate}};
+      }
+      \node[text width=6.5cm] at (-3, 2) {
+        \begin{itemize}
+        \item<2-> Better metallization
+          \begin{itemize}
+          \item Reducing noise
+          \item Less charging/photovoltaic effect
+          \end{itemize}
+          \begin{center}
+            {\small 30 quanta/s heating rate @ 3 MHz}\\
+            {\scriptsize Measured by Sandia}
+          \end{center}
+        \item<3-> Segmented outer electrodes
+        \item<4-> Better and faster ion loading
+        \end{itemize}
+      };
+      \visible<3->{
+        \fill[trapyellow,opacity=0.6] (2.85, 2.115) -- (0.9, -1) -- (5.7, -1)
+        -- (3.15, 2.115) -- cycle;
+        \node at (3.3, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
+      }
+      \visible<4->{
+        \node at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 \begin{frame}{}
 \end{frame}
 
