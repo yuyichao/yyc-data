@@ -365,11 +365,9 @@
 % short for Error-corrected Universal Reconfigurable
 % Ion-trap Quantum Archetype, is able to
 % achieve high fidelity single and two-qubit operations on 15-24 qubits
-% The system can be, as the name suggests, universally reconfigured/reprogrammed to run
-% different kinds of circuits and it's even stable and autonomous enough
-% for us to run almost completely remotely.
-% There has already been many results from this experiment,
-% and you can hear more about them in many other talks in this conference
+% The system can not only run universally quantum circuit with high fidelity
+% but is also a good platform for quantum simulation and even precision measurements.
+% You can hear more about them in many other talks in this conference
 % as shown in this list including one happening in a different room right now.
 
 % Figures:
@@ -383,41 +381,33 @@
       \column{5.2cm}
       \includegraphics[width=5cm]{imgs/Breadboard_box}
       \column{6.3cm}
-      \begin{block}{}
-        \begin{itemize}
-        \item 15-24 usable qubits
-        \item<2-> High fidelity single ($99.9\ \%$) and two-qubit ($99\ \%$) gates
-        \item<3-> Universal reconfigurable
-        \item<4-> Remote operations
-        \end{itemize}
-      \end{block}
-      \visible<5->{
-        \scriptsize
-        \begin{itemize}
-        \item K02: Quantum Simulations and Computations with Ion Trap Systems
-        \item Z05: Search for Millicharged Dark Matter with Trapped-Ion Quantum Processor
-        \end{itemize}
+      \visible<2->{
+        \begin{block}{}
+          \begin{itemize}
+          \item 15-24 usable qubits
+          \item High fidelity single ($99.9\ \%$) and two-qubit ($99\ \%$) gates
+          \end{itemize}
+        \end{block}
+        \vspace{1cm}
+        {
+          \scriptsize
+          \begin{itemize}
+          \item K02: Quantum Simulations and Computations with Ion Trap Systems
+          \item Z05: Search for Millicharged Dark Matter with Trapped-Ion Quantum Processor
+          \end{itemize}
+        }
       }
     \end{columns}
   \end{center}
 \end{frame}
 
 %% Second generation system
-% During the operation of the first system, however, we have identified
-% a few limitations that affects the maximum size and fidelity of
-% the circuits we run. This is why we are building the second generation EURIQA
-% system that is designed to improve on most of these limitations
-% based on what we've learnt. You can see an overview of some of the new features here
-% and this is what I'm going to focus on for the rest of the talk.
-
-% TODO: reword. Less about the difference, more about the characterization
-
-% Figures:
-% * Whole system rendering
-% * Phoenix
-% * Harris
-% * Vacuum
-% * AOSense
+% Following the success of the first system, we've designed and built
+% the second generation EURIQA system to improve upon some of the limitations
+% and address some of the lessons we've learnt from the first one
+% with some of the new features listed here.
+% The majority of the system has been assembled and I'm going to focus on
+% our initial tweak up and characterization of the system for the rest of the talk.
 
 \begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
   \begin{center}
@@ -436,9 +426,6 @@
       \node[align=center,font=\tiny] at (3.9, 2.7)
       {\includegraphics[width=2.6cm]{imgs/Vacuum_stack_photo}\\
         Improved vacuum system};
-      \node[align=center,font=\tiny] at (3.9, -2.5)
-      {\includegraphics[width=2.4cm]{imgs/AOSense_external}\\
-        CW lasers};
     \end{tikzpicture}
   \end{center}
 \end{frame}
