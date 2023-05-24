@@ -585,14 +585,24 @@
 % Imaging
 % TODO:
 % Scripts
-% Text
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Imaging system}
   \begin{center}
     \begin{tikzpicture}
-      \node at (-3, -2) {\includegraphics[width=6cm]{imgs/imaging_combined.pdf}};
-      \node at (3, 2) {\includegraphics[width=6cm]{imgs/pmt-array.png}};
-      \node at (-3, 2) {\includegraphics[width=6cm]{imgs/photon-gear}};
+      \node at (-3.2, 2) {\includegraphics[width=4.5cm]{imgs/photon-gear}};
+      \visible<2->{
+        \node at (-3, -2) {\includegraphics[width=6cm]{imgs/imaging_combined.pdf}};
+      }
+      \visible<3->{
+        \node at (2.8, -0.2) {\includegraphics[width=6cm]{imgs/pmt-array.png}};
+      }
+      \node[text width=5.7cm] at (3, 3.6) {
+        \begin{itemize}
+        \item<1-> NA=0.63 lens.
+        \item<2-> 32 channel fiber bundle for individual detection.
+        \item<3-> Crosstalk between neighboring channels: $0.05 \%$
+        \end{itemize}
+      };
     \end{tikzpicture}
   \end{center}
 \end{frame}
