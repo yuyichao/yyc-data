@@ -12,19 +12,19 @@ using PyPlot
 using DataStructures
 using LsqFit
 
-const name_369, data_369 =
+const name_369, (data_369,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003835-F1OPRateScan.h5"))
-const name_935_1, data_935_1 =
+const name_935_1, (data_935_1,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003174-DF2OPRateScan.h5"))
-const name_935_2, data_935_2 =
+const name_935_2, (data_935_2,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003176-DF2OPRateScan.h5"))
-const name_935_3, data_935_3 =
+const name_935_3, (data_935_3,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003177-DF2OPRateScan.h5"))
-const name_935fix, data_935fix =
+const name_935fix, (data_935fix,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000005317-DF2OPRateScan.h5"))
-const name_depump0, data_depump0 =
+const name_depump0, (data_depump0,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003179-MFDepumpRateScan.h5"))
-const name_depump1, data_depump1 =
+const name_depump1, (data_depump1,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000003668-MFDepumpRateScan.h5"))
 
 const data_935 = [data_935_1; data_935_2; data_935_3;]

@@ -6,6 +6,17 @@ function load_dax_scan1(fname::AbstractString)
     h5open(load_dax_scan1, fname)
 end
 
+function _convert_count(pmt_counts, thresh, si=1)
+    nparams = length(pmt_counts)
+    counts = Matrix{Int}(undef, nparams, 2)
+    for i in 1:nparams
+        pmt_count = @view pmt_counts[i][si, :]
+        counts[i, 1] = length(pmt_count)
+        counts[i, 2] = count(>=(thresh), pmt_count)
+    end
+    return counts
+end
+
 # 1D scan, single parameter, single measurement, single ion
 function load_dax_scan1(fd)
     thresh = read(fd, "archive/system.pmt.state_detection_threshold")
@@ -16,15 +27,12 @@ function load_dax_scan1(fd)
     nparams = length(params)
     pmt_counts = read(fd, "datasets/histogram_context/histogram/raw")
     actual_nparams = length(pmt_counts)
+    pmt_counts_ary = Vector{Matrix{Int}}(undef, actual_nparams)
     if nparams == actual_nparams
-        counts = Matrix{Int}(undef, nparams, 2)
         for i in 1:nparams
-            pmt_count = pmt_counts[string(i - 1)]
-            counts[i, 1] = length(pmt_count)
-            counts[i, 2] = count(>=(thresh), pmt_count)
+            pmt_counts_ary[i] = pmt_counts[string(i - 1)]
         end
     else
-        counts = Matrix{Int}(undef, actual_nparams, 2)
         new_params = similar(params, actual_nparams)
         idx = 0
         for i in 1:nparams
@@ -32,11 +40,14 @@ function load_dax_scan1(fd)
             (k in keys(pmt_counts)) || continue
             idx += 1
             new_params[idx] = params[i]
-            pmt_count = pmt_counts[k]
-            counts[idx, 1] = length(pmt_count)
-            counts[idx, 2] = count(>=(thresh), pmt_count)
+            pmt_counts_ary[idx] = pmt_counts[k]
         end
         params = new_params
+        nparams = actual_nparams
     end
-    return (param_name,), CountData(params, counts)
+    @assert nparams > 0
+    nsites = size(pmt_counts_ary[1], 1)
+    return (param_name,), [CountData(params, _convert_count(pmt_counts_ary,
+                                                            thresh, si))
+                           for si in 1:nsites]
 end

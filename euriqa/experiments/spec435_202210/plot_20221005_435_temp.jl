@@ -15,7 +15,7 @@ using LsqFit
 using Printf
 using SpecialFunctions
 
-const name_435_rabi, data_435_rabi =
+const name_435_rabi, (data_435_rabi,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006520-Rabi435.h5"))
 
 const prefix = joinpath(@__DIR__, "imgs", "data_20221005_435_temp")

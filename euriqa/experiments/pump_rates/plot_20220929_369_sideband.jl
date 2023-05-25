@@ -14,17 +14,17 @@ using LsqFit
 using Printf
 using SpecialFunctions
 
-const name_369_1_1, data_369_1_1 =
+const name_369_1_1, (data_369_1_1,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006041-F1OPRateScan.h5"))
-const name_369_2, data_369_2 =
+const name_369_2, (data_369_2,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006042-F1OPRateScan.h5"))
-const name_369_3_1, data_369_3_1 =
+const name_369_3_1, (data_369_3_1,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006043-F1OPRateScan.h5"))
-const name_369_3_2, data_369_3_2 =
+const name_369_3_2, (data_369_3_2,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006044-F1OPRateScan.h5"))
-const name_369_4, data_369_4 =
+const name_369_4, (data_369_4,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006045-F1OPRateScan.h5"))
-const name_369_1_2, data_369_1_2 =
+const name_369_1_2, (data_369_1_2,) =
     NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000006046-F1OPRateScan.h5"))
 
 const data_369_1 = [data_369_1_1; data_369_1_2]
