@@ -2,8 +2,8 @@
 
 using HDF5
 
-function load_dax_scan1(fname::AbstractString)
-    h5open(load_dax_scan1, fname)
+function load_dax_scan1(fname::AbstractString; thresh=nothing)
+    h5open(fh->load_dax_scan1(fh, thresh=thresh), fname)
 end
 
 function _convert_count(pmt_counts, thresh, si=1)
@@ -18,8 +18,10 @@ function _convert_count(pmt_counts, thresh, si=1)
 end
 
 # 1D scan, single parameter, single measurement, single ion
-function load_dax_scan1(fd)
-    thresh = read(fd, "archive/system.pmt.state_detection_threshold")
+function load_dax_scan1(fd; thresh=nothing)
+    if thresh === nothing
+        thresh = read(fd, "archive/system.pmt.state_detection_threshold")
+    end
     scan = delete!(read(fd, "datasets/scan"), "product")
     @assert length(scan) == 1
     param_name = first(keys(scan))
