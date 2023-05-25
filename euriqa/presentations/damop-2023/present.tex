@@ -608,13 +608,44 @@
 \end{frame}
 
 % Raman
+% * Use Raman for gate operations
+% * Global + individual (beam picture)
+% * Aligned the position and path length to observe a nice cross-beam Raman signal
+% * Individual addressing
+% * Crosstalk
+
 % TODO:
 % Scripts
-% Harris beam path photo
-% Individual Rabi flopping
+% Individual Spectrum
+% Beam profile
+% Crosstalk number
 
-\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman transition on ion}
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman addressing}
   \begin{center}
+    \begin{tikzpicture}
+      \node at (0, 0) {\includegraphics[width=8cm]{imgs/Brassboard_Raman.png}};
+
+      \node[rotate=90] at (4.5, 0) {\includegraphics[width=7cm]{imgs/Global_beam.png}};
+      \node[rotate=90] at (-4.5, 0) {\includegraphics[width=5.4cm]{imgs/Individual_beam.png}};
+      \visible<2->{
+        \fill[white,opacity=0.9] (-4.9, -3.6) rectangle (4.9, 3.6);
+      }
+
+      \node[text width=8cm] at (0, 3) {
+        \begin{itemize}
+        \item<1-> Counter-prop global and individual beams
+        \item<2-> Cross-beam Raman signal
+        \item<3-> Individual addressing\\
+          Nearest neighbor crosstalk: $2\%$.
+        \end{itemize}
+      };
+      \visible<2->{
+        \node at (-3, -1) {\includegraphics[width=5.5cm]{imgs/Raman_spectrum}};
+      }
+      \visible<3->{
+        \node at (3, -1) {\includegraphics[width=5.5cm]{imgs/Raman_profile}};
+      }
+    \end{tikzpicture}
   \end{center}
 \end{frame}
 
