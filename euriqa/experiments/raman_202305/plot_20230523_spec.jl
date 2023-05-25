@@ -15,7 +15,8 @@ using Printf
 using SpecialFunctions
 
 const name_spec, (data_spec,) =
-    NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000018928-RamanSpecGateScan.h5"))
+    NaCsData.load_dax_scan1(joinpath(@__DIR__, "data/000018928-RamanSpecGateScan.h5"),
+                            thresh=31)
 
 const prefix = joinpath(@__DIR__, "imgs", "data_20230523_spec")
 
@@ -40,7 +41,7 @@ figure()
 NaCsPlot.plot_loading_data(data_spec_shift, xscale=1e-3, fmt="C0o")
 plot((fit_spec.plotx .- fit_spec.param[3]) / 1000, fit_spec.ploty, color="C0")
 grid()
-ylim([0, 0.9])
+ylim([0, 0.85])
 xlabel("Detuning from resonance (kHz)")
 ylabel("\$P_{1}\$")
 NaCsPlot.maybe_save("$(prefix)")
