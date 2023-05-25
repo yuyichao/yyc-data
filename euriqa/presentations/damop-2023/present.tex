@@ -483,7 +483,7 @@
 % * Consistent with the value measured by Sandia
 
 % TODO:
-% Simplify
+% Simplify script
 
 % One of the main issues that limits the gate fidelity and ion numbers
 % in the 1st generation experiment is the heating of ions from surface
@@ -616,9 +616,6 @@
 
 % TODO:
 % Scripts
-% Individual Spectrum
-% Beam profile
-% Crosstalk number
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman addressing}
   \begin{center}
@@ -649,8 +646,6 @@
   \end{center}
 \end{frame}
 
-% TODO: update
-
 % With that
 {
   \usebackgroundtemplate{
@@ -659,23 +654,36 @@
   \begin{frame}{}
     \begin{center}
       \begin{tikzpicture}
-        \node[align=center,below,font=\tiny] at (-4.5, 0)
-        {\includegraphics[height=2cm]{imgs/members/Chris.jpg}\\Christopher R Monroe};
-        \node[align=center,below,font=\tiny] at (-1.5, 0)
-        {\includegraphics[height=2cm]{imgs/members/Alex.jpg}\\Alexander Kozhanov};
-        \node[align=center,below,font=\tiny] at (1.5, 0)
-        {\includegraphics[height=2cm]{imgs/members/Marko.jpg}\\Marko Cetina};
-        \node[align=center,below,font=\tiny] at (4.5, 0)
-        {\includegraphics[height=2cm]{imgs/members/Crystal.jpg}\\Crystal Noel};
+        \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (-5.8,0.05) rectangle (1.8,0.15);
+        \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (2.2,0.05) rectangle (5.8,0.15);
 
-        \node[align=center,below,font=\tiny] at (-4.5, -3)
-        {\includegraphics[height=2cm]{imgs/members/Lei.png}\\Lei Feng};
-        \node[align=center,below,font=\tiny] at (-1.5, -3)
-        {\includegraphics[height=2cm]{imgs/members/Mila.jpg}\\Liudmila Zhukas};
-        \node[align=center,below,font=\tiny] at (1.5, -3)
-        {\includegraphics[height=2cm]{imgs/members/Debo.jpg}\\Debopriyo Biswas};
-        \node[align=center,below,font=\tiny] at (4.5, -3)
-        {\includegraphics[height=2cm]{imgs/members/Drew.jpg}\\Andrew Risinger};
+        \node[align=center,below,font=\tiny] at (-5, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Chris.jpg}\\Christopher R Monroe};
+        \node[align=center,below,font=\tiny] at (-3, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Alex.jpg}\\Alexander Kozhanov};
+        \node[align=center,below,font=\tiny] at (-1, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Marko.jpg}\\Marko Cetina};
+        \node[align=center,below,font=\tiny] at (1, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Crystal.jpg}\\Crystal Noel};
+        \node[align=center,below,font=\tiny] at (3, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Lei.png}\\Lei Feng};
+        \node[align=center,below,font=\tiny] at (5, 0)
+        {\includegraphics[height=1.7cm]{imgs/members/Mila.jpg}\\Liudmila Zhukas};
+
+        \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (-5.8,0.05-3) rectangle (5.8,0.15-3);
+
+        \node[align=center,below,font=\tiny] at (-5, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Debo.jpg}\\Debopriyo Biswas};
+        \node[align=center,below,font=\tiny] at (-3, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Vivian.png}\\Vivian Zhang};
+        \node[align=center,below,font=\tiny] at (-1, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Keqin.jpg}\\Keqin Yan};
+        \node[align=center,below,font=\tiny] at (1, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Bahaa.jpg}\\Bahaa Harraz};
+        \node[align=center,below,font=\tiny] at (3, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Grant.jpg}\\Grant Eberle};
+        \node[align=center,below,font=\tiny] at (5, -3)
+        {\includegraphics[height=1.7cm]{imgs/members/Drew.jpg}\\Andrew Risinger};
       \end{tikzpicture}
     \end{center}
   \end{frame}
