@@ -260,6 +260,61 @@
 % _   * Coprop signal
 % _   * Cross beam Raman, sideband
 
+% * Using Yb ions for XYZ reasons
+% * First gen, making second gen with changes and characterizations
+% * One of the most basic requirement is the vacuum.
+% _ Improved the background pressure by using ABC compared to the previous generation.
+% _ In particular reduce reordering caused by background collision
+% _ which was one of the factors limiting the usable time on the experiment.
+% _ In fact, we could use the collision rate to measure pressure.
+% _ By putting ion in ..., any collision would cause ...
+% _ Watch the position of the ion constantly and record when it changes position
+% _ Measured to be .....
+% _ About 5-10 x better than the previous generation.
+% * Another very important ingredient is the trap.
+% _ We use a new generation of surface trap, the Phoenix trap, from Sandia.
+% _ Design features that allows better/faster loading
+% _ and more electrodes to allow more precise/flexible chain constrol.
+% _ More importantly, the surface electrical noise is improved
+% _ to reduce heating of the ion motion that is one of the main limiting factor
+% _ for the gate fidelity in the first gen system.
+% _ We measured this heating using narrow line .....
+% _ See the result plotted agains ....
+% _ Matches the lower heating rate reported by Sandia,
+% _ Green point showing the 1st gen result ~3x better.
+% _ Expect a corresponding improvement on our 2q fidelity.
+% * With the ion trapped and cooled, we can now take care of the ion as a qubit.
+% _ As previously mentioned, the qubit coherence for the mF=0 HF qubit is generally
+% _ very good due to it's natural low sensitivity to ....
+% _ Measured in our experiment using Ramsey spin-echo with microwave. (adjust phase)
+% _ Result here, T2 is ...
+% _ We believe it's due to residue B field fluctuation and can be further ....
+% * Just like the first system, universality is achieved via individual addressing
+% _ and detection of the ion internal state. We use the same high NA objective
+% _ to collect the photons from the ions. Then focused onto fiber bundle through
+% _ a second state imaging system to allow us to distinguish between the signal
+% _ from different ions.
+% _ Aligned the system and here you can see the signal we got on different PMT's
+% _ as we move a single ion across. The extinction is very good and we measured
+% _ a nearest neighbor xc of about 0.05%.
+% * With the coherence of the ion motion and internal state in control
+% _ and with the ability to detect the state of individual ions, the final main
+% _ ingredient for our quantum computer is the gate, which, as I mentioned earlier,
+% _ is realized using Raman transitions coupling the two qubit states.
+% _ Use counter-prop, which offers us less sensitivity to heating
+% _ and potentially faster gate speed compare to the previous generation.
+% _ Global on one side shared by all the ions and individual on the other side
+% _ for, well, individual addressing of each ions.
+% _ Can turn on multiple beams simutaniously as well thanks to the 32channel AOM
+% _ from L3Harris. Aligned the system and was able to see a nice cross-beam Raman
+% _ signal driven using both beams.
+% _ Just like for the individual detection, we measured the crosstalk between
+% _ the individual addressing beams and measured a crosstalk between neighbor ions
+% _ at about 2%. We expect the final fine alignment of the beam could improve this
+% _ a little bit and we'll implement XC cancellation which was shown in the previous
+% _ system to be able to cut this down by another 10x.
+
+
 %% Title
 % I'm Yichao from the Monroe group at Duke Quantum Center
 % and today I'll tell you about our second generation quantum computing experiment.
@@ -372,7 +427,7 @@
 % The system can not only run universally quantum circuit with high fidelity
 % but is also a good platform for quantum simulation and even precision measurements.
 % You can hear more about them in many other talks in this conference
-% as shown in this list including one happening in a different room right now.
+% as shown in this list including one happening in a different room in an hour.
 
 \begin{frame}{$1^{\text{st}}$ generation EURIQA system}
   \begin{center}
@@ -407,8 +462,9 @@
 % the second generation EURIQA system to improve upon some of the limitations
 % and address some of the lessons we've learnt from the first one
 % with some of the new features listed here.
-% The majority of the system has been assembled and I'm going to focus on
-% our initial tweak up and characterization of the system for the rest of the talk.
+% The majority of the system has been assembled and I'm going to highlight some of
+% these changes and focus on our initial tweak up and characterization
+% of the system for the rest of the talk.
 
 \begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
   \begin{center}
