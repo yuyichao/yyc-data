@@ -546,34 +546,31 @@
 \end{frame}
 
 %% Phoenix trap
-% * Heating from trap noise as main limiting factor.
-% * New trap that improve on control and loading but more importantly
-% _ reduced heating rate.
-% * Measured the heating rate by driving motion sensitive transition
-% _ using the 435 narrow line to the metastable D state.
-% * Plotted the dependency against the trap frequency.
-% * About 3x better than the first gen system
-% * Consistent with the value measured by Sandia
-
-% TODO:
-% Simplify script
-
-% One of the main issues that limits the gate fidelity and ion numbers
-% in the 1st generation experiment is the heating of ions from surface
-% electric field noise.
-
-% We use the Phoenix trap which is a new generation of the surface trap
-% from the Sandia National Lab. It has better wall metallization,
-% which should shield and reduce the field noise as well as reducing
-% charging and photovoltaic effect caused by stray laser beams hitting the trap.
-% All of these contributes to a lower heating rate that is a factor of 2-3
-% better than the previous generation.
-% It also comes with segmented outer electrodes which should allow us
-% to compensate for the micro-motion more precisely across the whole chain.
-
-% Additionally, the loading rate of the trap is also improved thanks to a larger
-% loading slot and a simpler trap geometry
-% allowing loading and shuttling of multiple ions simultaneously.
+% Another very important ingredient for an ion trap experiment is,
+% well, the trap itself. In our experiment, we use a new generation of surface trap,
+% called the Phoenix trap, from the Sandia national lab.
+% The trap incorporated several design features that allows better and faster loading
+% of the ion as well as a better electrode configuration to allow more precise
+% and more flexible ion chain constrol.
+%
+% However, more importantly, the fabrication process of the trap is improved
+% to reduce the electric field noise caused by the trap surface.
+% Such noise could cause heating of the ion motion and this,
+% especially the heating on the axial motional mode of the ion,
+% was one of the main limiting factor on the two qubit gate fidelity
+% on the first generation system.
+%
+% We measured the heating rate of the ion by holding the ion in the dark
+% for a variable length of time and then measure it's temperature
+% by driving a motion sensitive transition on the 435 nm line
+% to the metastable D state. The measured heating rate is plotted here as a function
+% of the trapping frequency. These numbers are consistent with the measurements
+% by Sandia and we can also compare it to what we measured on the first gen system
+% as shown by this green point here. Our heating rate appears to be about 3x better
+% than the first gen number which should give us an improvement in the 2 qubit gate
+% fidelity because of this, especially for long circuits.
+% We are very grateful that Sandia could make such a major improvement
+% in the trap design.
 
 \definecolor{trapyellow}{HTML}{ffe0a5}
 \definecolor{semgray}{HTML}{cccccc}
