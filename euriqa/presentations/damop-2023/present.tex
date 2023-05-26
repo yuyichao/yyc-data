@@ -614,8 +614,17 @@
 \end{frame}
 
 % T2
-% TODO:
-% Scripts
+% With the ion trapped and cooled, we can now take care of the qubit aspect of the ion.
+% As previously mentioned, the coherence time for the mF=0 hyperfine qubit is generally
+% very good due to it's natural low sensitivity to magnetic field fluctuation.
+% We measured this in our experiment using a standard microwave Ramsey experiment
+% with spin-echo and the sequence is shown here.
+% The decay of the oscillation contrast is plotted here as a function of the wait time.
+% which give us a coherence time of 2.7 seconds, not quite the world record but
+% plenty long enough for most of our circuits.
+% We believe this is currently limited by the residue sensitivity to B field noise
+% and it should further improve once we've implemented
+% the planned magnetic field shielding.
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Qubit coherence}
   \begin{center}
@@ -653,9 +662,16 @@
 \end{frame}
 
 % Imaging
-% TODO:
-% Scripts
-
+% Just like our first system, the universality is achieved via individual addressing
+% and detection of the ion internal state. Here we use
+% the same high numerical aperture objective to collect the photons from the ions.
+% The light is then focused onto an array of multi-mode fibers through a second
+% imaging stage to allow us to distinguish between the signal from different ions.
+%
+% This system was aligned and here you can see the signal we got on different
+% photo-multiplier tubes as we move a single ion across the trap axis.
+% The detection extinction is very good and we measured
+% a nearest neighbor cross-talk of about 0.05%.
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Imaging system}
   \begin{center}
     \begin{tikzpicture}
