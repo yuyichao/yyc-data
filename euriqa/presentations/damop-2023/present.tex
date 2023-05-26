@@ -488,14 +488,30 @@
 \end{frame}
 
 %% Vacuum system
-% * Better vacuum
-% * Use vacuum fired compoment
-% * Should reduce the ion-chain reordering rate
-% * Can use this to measure the vacuum
-% * Measurement result
-
-% TODO:
-% Scripts
+% One of the most basic requirement for an ion trapping experiment of course is
+% the vacuum. In this generation, we used vacuum fired component that has lower
+% Hydrogen content to reduce the vacuum background pressure.
+% In particular, this should reduce the rate of reordering of the ion chain
+% caused by collisions with background gas molecules,
+% which was one of the factors limiting the usable time
+% on the first generation experiment.
+%
+% In fact, we could measure this collision rate with the ion and infer
+% our vacuum pressure. The way this works is to create a double well protential
+% using our electrodes with a very weak barrier. If the barrier height
+% is significantly lower than the energy imparted on the ion
+% by a background collision, then every collision and the subsequent recooling
+% of the ion would essentially cause the ion to settle in one of the two wells
+% randomly with a 50/50 chance. The collision rate is therefore twice the rate
+% the ion changes site and the rate can be converted to pressure using the known
+% temperature and collision cross-section from the Hydrogen-dominated background gas.
+%
+% You can see the result of this measurement here on this plot.
+% This is a recording of the ion position (labelled as 1 and -1)
+% over just over a day. We get a site-hopping event every just under an hour.
+% This corresponds to a background pressure of about 1e-11 Torr,
+% which is about 5-10x better than what we got from a similar measurement
+% on the first gen experiment.
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Improved vacuum}
   \begin{center}
