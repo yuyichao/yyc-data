@@ -694,14 +694,29 @@
 \end{frame}
 
 % Raman
-% * Use Raman for gate operations
-% * Global + individual (beam picture)
-% * Aligned the position and path length to observe a nice cross-beam Raman signal
-% * Individual addressing
-% * Crosstalk
-
-% TODO:
-% Scripts
+% With the coherence of the ion motion and internal state under control
+% and with the ability to detect the state of individual ions,
+% the final main ingredient for our quantum computer is the quantum gate,
+% which, as I mentioned earlier, is realized using Raman transitions
+% coupling the two qubit states.
+% We use a counter-propagating Raman beam geomety parallel to the trap surface.
+% This offers us a weaker sensitivity to surface noise heating
+% and also potentially faster gate speed due to a larger momentum kick
+% compare to the previous generation. Just like the first generation,
+% we have a single global beam on one side shared by all the ions
+% and 32 individual beams on the other side for, well,
+% individual addressing of each individual ions.
+% We have aligned both of the beams onto the ions and you can see here is a nice
+% carrier spectrum driven by both the global and individual beams.
+% Just like for the individual detection, it's important that each of the individual
+% beams only addresses their corresponding ions. We can use a very similar method
+% to measure this as well by moving the ion and observe their response to different
+% individual beams. As you can see in this plot, the signals from different beams
+% are fairly well separated and we've measured a crosstalk between neighbor ions
+% at about 2% and between further ions to be almost negligible.
+% We expect the final fine alignment of the beam could improve this
+% a little bit and we'll implement crosstalk cancellation
+% which was shown in the previous system to be able to cut this down by another 10x.
 
 \begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman addressing}
   \begin{center}
