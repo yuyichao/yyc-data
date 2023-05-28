@@ -356,23 +356,23 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Imaging System}
-        \vspace{0.5cm}
+        \vspace{-0.6cm}
         \begin{center}
           \begin{tikzpicture}
-            \node at (0, 1) {\includegraphics[width=33cm]{imgs/imaging_system.png}};
-            \node[text width=28cm,align=left] at (-3.5, -12.5) {
+            \node at (0, 1.9) {\includegraphics[width=33cm]{imgs/imaging_combined.pdf}};
+            \node[text width=23cm,align=left] at (-6.5, -11) {
               \begin{itemize}
-              \item Imaging system for 32 ions, fixed 4.5 \unit{\micro\meter} spacing between ions
+              \item Imaging system for 32 ions
               \item Two stage imaging system with a total magnification of 27
               \item Minimized instrumental crosstalk by coupling fluorescence from each ion to the individual PMT module (Hamamatsu, H10682-210)
-              \item PhotonGear optical lens design (0.63 NA)\\
+              \item PhotonGear optical lens design (0.63 NA)
                 mounted on PI Hexapod for precise positioning
-              \item Zemax simulations: the resulting Strehl ratio\\
-                is >~0.95 for all 32 ions in the chain
+              \item Measured crosstalk between neighboring channels: $0.05 \%$
               \end{itemize}
             };
-            \node at (-6.5, -27) {\includegraphics[width=20cm]{imgs/zeemax_sim.png}};
-            \node at (11.5, -24) {\includegraphics[width=12cm]{imgs/hexapod.jpg}};
+            \node at (-6.5, -26) {\includegraphics[width=18cm]{imgs/pmt-array.png}};
+            \node at (11.5, -10.7) {\includegraphics[width=11cm]{imgs/photon-gear.jpg}};
+            \node at (11.5, -25.3) {\includegraphics[width=11cm]{imgs/hexapod.jpg}};
           \end{tikzpicture}
         \end{center}
         \vspace{0.5cm}
