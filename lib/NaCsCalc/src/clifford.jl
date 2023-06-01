@@ -428,7 +428,7 @@ function apply!(state::ErrorState, gate::Clifford1Q, a)
     return state
 end
 
-function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
+function apply!(state::ErrorState, gate::Clifford2Q, a, b)
     apply!(gate, @view(state.xs[a]), @view(state.zs[a]),
            @view(state.xs[b]), @view(state.zs[b]), state.rs)
     return state
