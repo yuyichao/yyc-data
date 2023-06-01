@@ -8,86 +8,86 @@ using NaCsCalc
 
 const Clf = NaCsCalc.Clifford
 
-function test_gate_1q(gate, inputs, outputs, sign)
+function test_gate(gate, inputs, outputs, sign)
     @test Clf.apply(gate, inputs..., false) === (outputs..., sign)
     @test Clf.apply(gate, inputs..., true) === (outputs..., !sign)
 end
 
 @testset "I" begin
-    test_gate_1q(Clf.IGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.IGate(), (true, false), (true, false), false)
-    test_gate_1q(Clf.IGate(), (true, true), (true, true), false)
-    test_gate_1q(Clf.IGate(), (false, true), (false, true), false)
+    test_gate(Clf.IGate(), (false, false), (false, false), false)
+    test_gate(Clf.IGate(), (true, false), (true, false), false)
+    test_gate(Clf.IGate(), (true, true), (true, true), false)
+    test_gate(Clf.IGate(), (false, true), (false, true), false)
 end
 
 @testset "X" begin
-    test_gate_1q(Clf.XGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.XGate(), (true, false), (true, false), false)
-    test_gate_1q(Clf.XGate(), (true, true), (true, true), true)
-    test_gate_1q(Clf.XGate(), (false, true), (false, true), true)
+    test_gate(Clf.XGate(), (false, false), (false, false), false)
+    test_gate(Clf.XGate(), (true, false), (true, false), false)
+    test_gate(Clf.XGate(), (true, true), (true, true), true)
+    test_gate(Clf.XGate(), (false, true), (false, true), true)
 
-    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
                  (false, false), (false, false), false)
-    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
                  (true, false), (true, false), false)
-    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
                  (true, true), (true, true), true)
-    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
                  (false, true), (false, true), true)
 end
 
 @testset "Y" begin
-    test_gate_1q(Clf.YGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.YGate(), (true, false), (true, false), true)
-    test_gate_1q(Clf.YGate(), (true, true), (true, true), false)
-    test_gate_1q(Clf.YGate(), (false, true), (false, true), true)
+    test_gate(Clf.YGate(), (false, false), (false, false), false)
+    test_gate(Clf.YGate(), (true, false), (true, false), true)
+    test_gate(Clf.YGate(), (true, true), (true, true), false)
+    test_gate(Clf.YGate(), (false, true), (false, true), true)
 end
 
 @testset "Z" begin
-    test_gate_1q(Clf.ZGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.ZGate(), (true, false), (true, false), true)
-    test_gate_1q(Clf.ZGate(), (true, true), (true, true), true)
-    test_gate_1q(Clf.ZGate(), (false, true), (false, true), false)
+    test_gate(Clf.ZGate(), (false, false), (false, false), false)
+    test_gate(Clf.ZGate(), (true, false), (true, false), true)
+    test_gate(Clf.ZGate(), (true, true), (true, true), true)
+    test_gate(Clf.ZGate(), (false, true), (false, true), false)
 
-    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
                  (false, false), (false, false), false)
-    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
                  (true, false), (true, false), true)
-    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
                  (true, true), (true, true), true)
-    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+    test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
                  (false, true), (false, true), false)
 end
 
 @testset "H" begin
-    test_gate_1q(Clf.HGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.HGate(), (true, false), (false, true), false)
-    test_gate_1q(Clf.HGate(), (true, true), (true, true), true)
-    test_gate_1q(Clf.HGate(), (false, true), (true, false), false)
+    test_gate(Clf.HGate(), (false, false), (false, false), false)
+    test_gate(Clf.HGate(), (true, false), (false, true), false)
+    test_gate(Clf.HGate(), (true, true), (true, true), true)
+    test_gate(Clf.HGate(), (false, true), (true, false), false)
 end
 
 @testset "S" begin
-    test_gate_1q(Clf.SGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.SGate(), (true, false), (true, true), false)
-    test_gate_1q(Clf.SGate(), (true, true), (true, false), true)
-    test_gate_1q(Clf.SGate(), (false, true), (false, true), false)
+    test_gate(Clf.SGate(), (false, false), (false, false), false)
+    test_gate(Clf.SGate(), (true, false), (true, true), false)
+    test_gate(Clf.SGate(), (true, true), (true, false), true)
+    test_gate(Clf.SGate(), (false, true), (false, true), false)
 
-    test_gate_1q(Clf.ISGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.ISGate(), (true, false), (true, true), true)
-    test_gate_1q(Clf.ISGate(), (true, true), (true, false), false)
-    test_gate_1q(Clf.ISGate(), (false, true), (false, true), false)
+    test_gate(Clf.ISGate(), (false, false), (false, false), false)
+    test_gate(Clf.ISGate(), (true, false), (true, true), true)
+    test_gate(Clf.ISGate(), (true, true), (true, false), false)
+    test_gate(Clf.ISGate(), (false, true), (false, true), false)
 end
 
 @testset "SX" begin
-    test_gate_1q(Clf.SXGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.SXGate(), (true, false), (true, false), false)
-    test_gate_1q(Clf.SXGate(), (true, true), (false, true), false)
-    test_gate_1q(Clf.SXGate(), (false, true), (true, true), true)
+    test_gate(Clf.SXGate(), (false, false), (false, false), false)
+    test_gate(Clf.SXGate(), (true, false), (true, false), false)
+    test_gate(Clf.SXGate(), (true, true), (false, true), false)
+    test_gate(Clf.SXGate(), (false, true), (true, true), true)
 
-    test_gate_1q(Clf.ISXGate(), (false, false), (false, false), false)
-    test_gate_1q(Clf.ISXGate(), (true, false), (true, false), false)
-    test_gate_1q(Clf.ISXGate(), (true, true), (false, true), true)
-    test_gate_1q(Clf.ISXGate(), (false, true), (true, true), false)
+    test_gate(Clf.ISXGate(), (false, false), (false, false), false)
+    test_gate(Clf.ISXGate(), (true, false), (true, false), false)
+    test_gate(Clf.ISXGate(), (true, true), (false, true), true)
+    test_gate(Clf.ISXGate(), (false, true), (true, true), false)
 end
 
 const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
