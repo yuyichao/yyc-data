@@ -90,6 +90,42 @@ end
     test_gate(Clf.ISXGate(), (false, true), (true, true), false)
 end
 
+@testset "CNOT" begin
+    test_gate(Clf.CNOTGate(), (false, false, false, false),
+              (false, false, false, false), false)
+    test_gate(Clf.CNOTGate(), (false, false, false, true),
+              (false, true, false, true), false)
+    test_gate(Clf.CNOTGate(), (false, false, true, false),
+              (false, false, true, false), false)
+    test_gate(Clf.CNOTGate(), (false, false, true, true),
+              (false, true, true, true), false)
+    test_gate(Clf.CNOTGate(), (false, true, false, false),
+              (false, true, false, false), false)
+    test_gate(Clf.CNOTGate(), (false, true, false, true),
+              (false, false, false, true), false)
+    test_gate(Clf.CNOTGate(), (false, true, true, false),
+              (false, true, true, false), false)
+    test_gate(Clf.CNOTGate(), (false, true, true, true),
+              (false, false, true, true), false)
+
+    test_gate(Clf.CNOTGate(), (true, false, false, false),
+              (true, false, true, false), false)
+    test_gate(Clf.CNOTGate(), (true, false, false, true),
+              (true, true, true, true), true)
+    test_gate(Clf.CNOTGate(), (true, false, true, false),
+              (true, false, false, false), false)
+    test_gate(Clf.CNOTGate(), (true, false, true, true),
+              (true, true, false, true), false)
+    test_gate(Clf.CNOTGate(), (true, true, false, false),
+              (true, true, true, false), false)
+    test_gate(Clf.CNOTGate(), (true, true, false, true),
+              (true, false, true, true), false)
+    test_gate(Clf.CNOTGate(), (true, true, true, false),
+              (true, true, false, false), false)
+    test_gate(Clf.CNOTGate(), (true, true, true, true),
+              (true, false, false, true), true)
+end
+
 const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
 
 @testset "inv" begin
