@@ -289,6 +289,93 @@ function measure_y!(state::StabilizerState, a)
     return res
 end
 
+function measure_zs!(state::StabilizerState, idxs)
+    if isempty(idxs)
+        return true, true
+    end
+    idx0 = idxs[1]
+    nidxs = length(idxs)
+    if nidxs == 1
+        return measure_z!(state, idx0)
+    end
+    for i in 2:nidxs
+        apply!(state, CNOTGate(), idxs[i], idx0)
+    end
+    res = measure_z!(state, idx0)
+    for i in 2:nidxs
+        apply!(state, CNOTGate(), idxs[i], idx0)
+    end
+    return res
+end
+
+function measure_xs!(state::StabilizerState, idxs)
+    for idx in idxs
+        apply!(state, HGate(), idx)
+    end
+    res = measure_zs!(state, idxs)
+    for idx in idxs
+        apply!(state, HGate(), idx)
+    end
+    return res
+end
+
+function measure_ys!(state::StabilizerState, idxs)
+    for idx in idxs
+        apply!(state, SGate(), idx)
+    end
+    res = measure_zs!(state, idxs)
+    for idx in idxs
+        apply!(state, ISGate(), idx)
+    end
+    return res
+end
+
+function measure_paulis!(state::StabilizerState, xs, zs)
+    @assert length(xs) == state.n
+    @assert length(zs) == state.n
+    local idx0
+    for i in 1:state.n
+        x = xs[i]
+        z = zs[i]
+        if x
+            if z
+                apply!(state, SGate(), idx)
+            else
+                apply!(state, HGate(), idx)
+            end
+        elseif !z
+            continue
+        end
+        if !@isdefined(idx0)
+            idx0 = i
+        else
+            apply!(state, CNOTGate(), i, idx0)
+        end
+    end
+    if !@isdefined(idx0)
+        return true, true
+    end
+    res = measure_z!(state, idx0)
+    for i in 1:state.n
+        x = xs[i]
+        z = zs[i]
+        if !x && !z
+            continue
+        end
+        if i != idx0
+            apply!(state, CNOTGate(), i, idx0)
+        end
+        if x
+            if z
+                apply!(state, ISGate(), idx)
+            else
+                apply!(state, HGate(), idx)
+            end
+        end
+    end
+    return res
+end
+
 function apply!(state::StabilizerState, gate::Clifford1Q, a)
     xas = state.xs[a]
     zas = state.zs[a]
