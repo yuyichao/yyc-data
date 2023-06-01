@@ -321,11 +321,11 @@ end
 
 function measure_ys!(state::StabilizerState, idxs)
     for idx in idxs
-        apply!(state, SGate(), idx)
+        apply!(state, SXGate(), idx)
     end
     res = measure_zs!(state, idxs)
     for idx in idxs
-        apply!(state, ISGate(), idx)
+        apply!(state, ISXGate(), idx)
     end
     return res
 end
@@ -339,9 +339,9 @@ function measure_paulis!(state::StabilizerState, xs, zs)
         z = zs[i]
         if x
             if z
-                apply!(state, SGate(), idx)
+                apply!(state, SXGate(), i)
             else
-                apply!(state, HGate(), idx)
+                apply!(state, HGate(), i)
             end
         elseif !z
             continue
@@ -367,9 +367,9 @@ function measure_paulis!(state::StabilizerState, xs, zs)
         end
         if x
             if z
-                apply!(state, ISGate(), idx)
+                apply!(state, ISXGate(), i)
             else
-                apply!(state, HGate(), idx)
+                apply!(state, HGate(), i)
             end
         end
     end
