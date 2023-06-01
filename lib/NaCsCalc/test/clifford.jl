@@ -18,6 +18,15 @@ end
     test_gate_1q(Clf.XGate(), (true, false), (true, false), false)
     test_gate_1q(Clf.XGate(), (true, true), (true, true), true)
     test_gate_1q(Clf.XGate(), (false, true), (false, true), true)
+
+    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+                 (false, false), (false, false), false)
+    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+                 (true, false), (true, false), false)
+    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+                 (true, true), (true, true), true)
+    test_gate_1q(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
+                 (false, true), (false, true), true)
 end
 
 @testset "Y" begin
@@ -32,6 +41,15 @@ end
     test_gate_1q(Clf.ZGate(), (true, false), (true, false), true)
     test_gate_1q(Clf.ZGate(), (true, true), (true, true), true)
     test_gate_1q(Clf.ZGate(), (false, true), (false, true), false)
+
+    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+                 (false, false), (false, false), false)
+    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+                 (true, false), (true, false), true)
+    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+                 (true, true), (true, true), true)
+    test_gate_1q(Clf.HGate() * Clf.XGate() * Clf.HGate(),
+                 (false, true), (false, true), false)
 end
 
 @testset "H" begin

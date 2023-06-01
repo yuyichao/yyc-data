@@ -80,6 +80,19 @@ Base.@propagate_inbounds @inline function apply!(::SXGate, xas, zas, rs)
     return
 end
 
+struct Composite1Q{G1<:Clifford1Q,G2<:Clifford1Q} <: Clifford1Q
+    g1::G1
+    g2::G2
+end
+Base.@propagate_inbounds @inline function apply!(gate::Composite1Q, xas, zas, rs)
+    apply!(gate.g1, xas, zas, rs)
+    apply!(gate.g2, xas, zas, rs)
+    return
+end
+function Base.:*(g1::G1, g2::G2) where {G1<:Clifford1Q,G2<:Clifford1Q}
+    return Composite1Q(g1, g2)
+end
+
 struct CNOTGate <: Clifford2Q
 end
 Base.@propagate_inbounds function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
