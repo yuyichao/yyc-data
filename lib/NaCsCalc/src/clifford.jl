@@ -403,4 +403,35 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
     return state
 end
 
+struct ErrorState
+    n::Int
+    xs::Vector{Bool}
+    zs::Vector{Bool}
+    rs::Base.RefValue{Bool}
+    function StabilizerState(n)
+        xs = fill(false, n)
+        zs = fill(false, n)
+        rs = Ref(false)
+        return new(n, xs, zs, rs)
+    end
+end
+
+function Base.empty!(state::ErrorState)
+    state.xs .= false
+    state.zs .= false
+    state.rs[] = false
+    return state
+end
+
+function apply!(state::ErrorState, gate::Clifford1Q, a)
+    apply!(gate, @view(state.xs[a]), @view(state.zs[a]), state.rs)
+    return state
+end
+
+function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
+    apply!(gate, @view(state.xs[a]), @view(state.zs[a]),
+           @view(state.xs[b]), @view(state.zs[b]), state.rs)
+    return state
+end
+
 end
