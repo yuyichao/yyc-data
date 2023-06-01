@@ -6,6 +6,19 @@ abstract type Clifford1Q end
 
 abstract type Clifford2Q end
 
+struct Composite1Q{G1<:Clifford1Q,G2<:Clifford1Q} <: Clifford1Q
+    g1::G1
+    g2::G2
+end
+Base.@propagate_inbounds @inline function apply!(gate::Composite1Q, xas, zas, rs)
+    apply!(gate.g1, xas, zas, rs)
+    apply!(gate.g2, xas, zas, rs)
+    return
+end
+function Base.:*(g1::Clifford1Q, g2::Clifford1Q)
+    return Composite1Q(g1, g2)
+end
+
 struct IGate <: Clifford1Q
 end
 @inline function apply!(::IGate, xas, zas, rs)
@@ -85,19 +98,6 @@ Base.@propagate_inbounds @inline function apply!(::SXGate, xas, zas, rs)
     rs[] = r ⊻ (~xa & za)
     xas[] = xa ⊻ za
     return
-end
-
-struct Composite1Q{G1<:Clifford1Q,G2<:Clifford1Q} <: Clifford1Q
-    g1::G1
-    g2::G2
-end
-Base.@propagate_inbounds @inline function apply!(gate::Composite1Q, xas, zas, rs)
-    apply!(gate.g1, xas, zas, rs)
-    apply!(gate.g2, xas, zas, rs)
-    return
-end
-function Base.:*(g1::G1, g2::G2) where {G1<:Clifford1Q,G2<:Clifford1Q}
-    return Composite1Q(g1, g2)
 end
 
 struct CNOTGate <: Clifford2Q
