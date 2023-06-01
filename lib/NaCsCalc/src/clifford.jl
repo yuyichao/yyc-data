@@ -356,7 +356,7 @@ function measure_paulis!(state::StabilizerState, xs, zs)
         return true, true
     end
     res = measure_z!(state, idx0)
-    for i in 1:state.n
+    for i in state.n:-1:1
         x = xs[i]
         z = zs[i]
         if !x && !z
