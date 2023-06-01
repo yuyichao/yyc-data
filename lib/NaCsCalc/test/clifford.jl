@@ -13,6 +13,13 @@ function test_gate_1q(gate, inputs, outputs, sign)
     @test Clf.apply(gate, inputs..., true) === (outputs..., !sign)
 end
 
+@testset "I" begin
+    test_gate_1q(Clf.IGate(), (false, false), (false, false), false)
+    test_gate_1q(Clf.IGate(), (true, false), (true, false), false)
+    test_gate_1q(Clf.IGate(), (true, true), (true, true), false)
+    test_gate_1q(Clf.IGate(), (false, true), (false, true), false)
+end
+
 @testset "X" begin
     test_gate_1q(Clf.XGate(), (false, false), (false, false), false)
     test_gate_1q(Clf.XGate(), (true, false), (true, false), false)
@@ -64,6 +71,11 @@ end
     test_gate_1q(Clf.SGate(), (true, false), (true, true), false)
     test_gate_1q(Clf.SGate(), (true, true), (true, false), true)
     test_gate_1q(Clf.SGate(), (false, true), (false, true), false)
+
+    test_gate_1q(Clf.ISGate(), (false, false), (false, false), false)
+    test_gate_1q(Clf.ISGate(), (true, false), (true, true), true)
+    test_gate_1q(Clf.ISGate(), (true, true), (true, false), false)
+    test_gate_1q(Clf.ISGate(), (false, true), (false, true), false)
 end
 
 @testset "SX" begin
@@ -71,6 +83,11 @@ end
     test_gate_1q(Clf.SXGate(), (true, false), (true, false), false)
     test_gate_1q(Clf.SXGate(), (true, true), (false, true), false)
     test_gate_1q(Clf.SXGate(), (false, true), (true, true), true)
+
+    test_gate_1q(Clf.ISXGate(), (false, false), (false, false), false)
+    test_gate_1q(Clf.ISXGate(), (true, false), (true, false), false)
+    test_gate_1q(Clf.ISXGate(), (true, true), (false, true), true)
+    test_gate_1q(Clf.ISXGate(), (false, true), (true, true), false)
 end
 
 const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
