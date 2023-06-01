@@ -113,4 +113,119 @@ function apply(gate::Clifford2Q, xa, za, xb, zb, r)
     return xas[], zas[], xbs[], zbs[], rs[]
 end
 
+struct StabilizerState
+    n::Int
+    xs::Vector{BitVector}
+    zs::Vector{BitVector}
+    rs::BitVector
+    function StabilizerState(n)
+        xs = [(x = falses(2 * n + 1); x[i] = true; x) for i in 1:n]
+        zs = [(z = falses(2 * n + 1); z[i + n] = true; z) for i in 1:n]
+        rs = falses(2 * n + 1)
+        return new(n, xs, zs, rs)
+    end
+end
+
+function init_state_0!(state::StabilizerState)
+    for (i, x) in enumerate(state.xs)
+        x.chunks .= 0
+        x[i] = true
+    end
+    for (i, z) in enumerate(state.zs)
+        z.chunks .= 0
+        z[i + state.n] = true
+    end
+    state.rs.chunks .= 0
+    return state
+end
+
+@inline function pauli_prod_phase(x1::Bool, z1::Bool, x2::Bool, z2::Bool)
+    return ifelse(x1, ifelse(z1, z2 - x2, z2 * (2 * x2 - 1)),
+                  ifelse(z1, x2 * (1 - 2 * z2), 0))
+end
+function clifford_rowsum!(state::StabilizerState, h, i)
+    gs = 0
+    for j in 1:state.n
+        gs += pauli_prod_phase(state.xs[j][i], state.zs[j][i],
+                               state.xs[j][h], state.zs[j][h])
+    end
+    gs += 2 * (state.rs[h] + state.rs[i])
+    state.rs[h] = (gs & 3) != 0
+    for j in 1:state.n
+        state.xs[j][h] = state.xs[j][i] ⊻ state.xs[j][h]
+        state.zs[j][h] = state.zs[j][i] ⊻ state.zs[j][h]
+    end
+    return state
+end
+
+# Randomly pick a result
+function measure_z!(state::StabilizerState, a)
+    n = state.n
+    local p
+    found_p = false
+    for _p in (n + 1):(2 * n)
+        if state.xs[a][_p]
+            p = _p
+            found_p = true
+            break
+        end
+    end
+    if found_p
+        for i in 1:(2 * n)
+            if i != p && state.xs[a][i]
+                clifford_rowsum!(state, i, p)
+            end
+        end
+        for i in 1:n
+            state.xs[i][p - n] = state.xs[i][p]
+            state.xs[i][p] = false
+            state.zs[i][p - n] = state.zs[i][p]
+            state.zs[i][p] = i == a
+        end
+        res = rand(Bool)
+        state.rs[p - n] = state.rs[p]
+        state.rs[p] = res
+        return res, false
+    else
+        for i in 1:n
+            state.xs[i][2 * n + 1] = false
+            state.zs[i][2 * n + 1] = false
+        end
+        state.rs[2 * n + 1] = false
+        for i in 1:n
+            if state.xs[a][i]
+                clifford_rowsum!(state, 2 * n + 1, i + n)
+            end
+        end
+        return state.rs[2 * n + 1], true
+    end
+end
+
+function apply!(state::StabilizerState, gate::Clifford1Q, a)
+    xas = state.xs[a]
+    zas = state.zs[a]
+    rs = state.rs
+    nchunks = length(state.rs.chunks)
+    @inbounds for i in 1:nchunks
+        apply!(gate, @view(xas.chunks[i]), @view(zas.chunks[i]),
+               @view(rs.chunks[i]))
+    end
+    return state
+end
+
+function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
+    xas = state.xs[a]
+    zas = state.zs[a]
+    xbs = state.xs[b]
+    zbs = state.zs[b]
+    rs = state.rs
+    nchunks = length(state.rs.chunks)
+    @inbounds for i in 1:nchunks
+        apply!(gate, @view(xas.chunks[i]), @view(zas.chunks[i]),
+               @view(xbs.chunks[i]), @view(zbs.chunks[i]),
+               @view(rs.chunks[i]))
+    end
+    return state
+end
+
 end
