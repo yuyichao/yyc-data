@@ -275,6 +275,20 @@ function measure_z!(state::StabilizerState, a)
     end
 end
 
+function measure_x!(state::StabilizerState, a)
+    apply!(state, HGate(), a)
+    res = measure_z!(state, a)
+    apply!(state, HGate(), a)
+    return res
+end
+
+function measure_y!(state::StabilizerState, a)
+    apply!(state, SXGate(), a)
+    res = measure_z!(state, a)
+    apply!(state, ISXGate(), a)
+    return res
+end
+
 function apply!(state::StabilizerState, gate::Clifford1Q, a)
     xas = state.xs[a]
     zas = state.zs[a]
