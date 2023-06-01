@@ -13,6 +13,7 @@ include("utils.jl")
 include("trap.jl")
 include("format.jl")
 include("atomic.jl")
+include("clifford.jl")
 
 export linspace
 import .Utils: linspace
