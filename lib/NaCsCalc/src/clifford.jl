@@ -6,6 +6,13 @@ abstract type Clifford1Q end
 
 abstract type Clifford2Q end
 
+struct IGate <: Clifford1Q
+end
+@inline function apply!(::IGate, xas, zas, rs)
+    return
+end
+@inline Base.inv(::IGate) = IGate()
+
 struct HGate <: Clifford1Q
 end
 # I -> I, X -> Z, Y -> -Y, Z -> X
