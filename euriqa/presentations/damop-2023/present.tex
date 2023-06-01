@@ -553,8 +553,11 @@
         -- (3.15, 2.115) -- cycle;
         \node[opacity=0.25] at (3.3, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
         \node[opacity=0.25] at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
-        \node at (0, -1.8) {\includegraphics[width=7cm]{imgs/heating-rate}};
+        \node at (-0.5, -1.8) {\includegraphics[width=7cm]{imgs/heating-rate}};
       }
+      \node[align=left,font=\tiny] at (3.8, -4.3)
+      {F01.00038 The Quantum Scientific Computing\\
+        \phantom{F01.00038} Open User Testbed (QSCOUT)};
     \end{tikzpicture}
   \end{center}
 \end{frame}
@@ -623,16 +626,20 @@
     \begin{tikzpicture}
       \node at (-3.2, 2) {\includegraphics[width=4.5cm]{imgs/photon-gear}};
       \visible<2->{
-        \node at (-3, -2) {\includegraphics[width=6cm]{imgs/imaging_combined.pdf}};
+        \node at (-3, -2.2) {\includegraphics[width=6cm]{imgs/imaging_combined.pdf}};
       }
       \visible<3->{
+        \fill[gray,opacity=0.4] (-5.75, -1.22) -- (-0.25, -1.22) -- (-4.74, -2.2) -- (-5.545, -2.2) -- cycle;
+        \node at (-3, -1.1) {\includegraphics[width=5.5cm]{imgs/fiber_bundle_tip_zoomin.png}};
+      }
+      \visible<4->{
         \node at (2.8, -0.2) {\includegraphics[width=6cm]{imgs/pmt-array.png}};
       }
       \node[text width=5.7cm] at (3, 3.6) {
         \begin{itemize}
         \item<1-> NA=0.63 lens.
         \item<2-> 32 channel fiber bundle for individual detection.
-        \item<3-> Crosstalk between neighboring channels: $0.05 \%$
+        \item<4-> Crosstalk between neighboring channels: $0.05 \%$
         \end{itemize}
       };
     \end{tikzpicture}
