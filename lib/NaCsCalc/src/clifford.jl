@@ -233,7 +233,7 @@ function clifford_rowsum!(state::StabilizerState, h, i)
 end
 
 # Randomly pick a result
-function measure_z!(state::StabilizerState, a)
+function measure_z!(state::StabilizerState, a; force=nothing)
     n = state.n
     local p
     found_p = false
@@ -256,7 +256,7 @@ function measure_z!(state::StabilizerState, a)
             state.zs[i][p - n] = state.zs[i][p]
             state.zs[i][p] = i == a
         end
-        res = rand(Bool)
+        res = force !== nothing ? force : rand(Bool)
         state.rs[p - n] = state.rs[p]
         state.rs[p] = res
         return res, false
@@ -275,62 +275,62 @@ function measure_z!(state::StabilizerState, a)
     end
 end
 
-function measure_x!(state::StabilizerState, a)
+function measure_x!(state::StabilizerState, a; force=nothing)
     apply!(state, HGate(), a)
-    res = measure_z!(state, a)
+    res = measure_z!(state, a; force=force)
     apply!(state, HGate(), a)
     return res
 end
 
-function measure_y!(state::StabilizerState, a)
+function measure_y!(state::StabilizerState, a; force=nothing)
     apply!(state, SXGate(), a)
-    res = measure_z!(state, a)
+    res = measure_z!(state, a; force=force)
     apply!(state, ISXGate(), a)
     return res
 end
 
-function measure_zs!(state::StabilizerState, idxs)
+function measure_zs!(state::StabilizerState, idxs; force=nothing)
     if isempty(idxs)
         return true, true
     end
     idx0 = idxs[1]
     nidxs = length(idxs)
     if nidxs == 1
-        return measure_z!(state, idx0)
+        return measure_z!(state, idx0; force=force)
     end
     for i in 2:nidxs
         apply!(state, CNOTGate(), idxs[i], idx0)
     end
-    res = measure_z!(state, idx0)
+    res = measure_z!(state, idx0; force=force)
     for i in 2:nidxs
         apply!(state, CNOTGate(), idxs[i], idx0)
     end
     return res
 end
 
-function measure_xs!(state::StabilizerState, idxs)
+function measure_xs!(state::StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, HGate(), idx)
     end
-    res = measure_zs!(state, idxs)
+    res = measure_zs!(state, idxs; force=force)
     for idx in idxs
         apply!(state, HGate(), idx)
     end
     return res
 end
 
-function measure_ys!(state::StabilizerState, idxs)
+function measure_ys!(state::StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, SXGate(), idx)
     end
-    res = measure_zs!(state, idxs)
+    res = measure_zs!(state, idxs; force=force)
     for idx in idxs
         apply!(state, ISXGate(), idx)
     end
     return res
 end
 
-function measure_paulis!(state::StabilizerState, xs, zs)
+function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
     @assert length(xs) == state.n
     @assert length(zs) == state.n
     local idx0
@@ -355,7 +355,7 @@ function measure_paulis!(state::StabilizerState, xs, zs)
     if !@isdefined(idx0)
         return true, true
     end
-    res = measure_z!(state, idx0)
+    res = measure_z!(state, idx0; force=force)
     for i in state.n:-1:1
         x = xs[i]
         z = zs[i]
