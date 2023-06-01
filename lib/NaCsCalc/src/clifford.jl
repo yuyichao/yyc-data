@@ -18,6 +18,7 @@ end
 function Base.:*(g1::Clifford1Q, g2::Clifford1Q)
     return Composite1Q(g1, g2)
 end
+@inline Base.inv(g::Composite1Q) = Composite1Q(inv(g.g2), inv(g.g1))
 
 struct IGate <: Clifford1Q
 end
@@ -25,6 +26,9 @@ end
     return
 end
 @inline Base.inv(::IGate) = IGate()
+Base.:*(g1::Clifford1Q, ::IGate) = g1
+Base.:*(::IGate, g2::Clifford1Q) = g2
+Base.:*(::IGate, ::IGate) = IGate()
 
 struct HGate <: Clifford1Q
 end
@@ -39,6 +43,48 @@ Base.@propagate_inbounds @inline function apply!(::HGate, xas, zas, rs)
     zas[] = xa
     return
 end
+@inline Base.inv(::HGate) = HGate()
+Base.:*(::HGate, ::HGate) = IGate()
+
+struct XGate <: Clifford1Q
+end
+# I -> I, X -> X, Y -> -Y, Z -> -Z
+Base.@propagate_inbounds @inline function apply!(::XGate, xas, zas, rs)
+    za = zas[]
+    r = rs[]
+
+    rs[] = r ⊻ za
+    return
+end
+@inline Base.inv(::XGate) = XGate()
+Base.:*(::XGate, ::XGate) = IGate()
+
+struct YGate <: Clifford1Q
+end
+# I -> I, X -> -X, Y -> Y, Z -> -Z
+Base.@propagate_inbounds @inline function apply!(::YGate, xas, zas, rs)
+    xa = xas[]
+    za = zas[]
+    r = rs[]
+
+    rs[] = r ⊻ (xa ⊻ za)
+    return
+end
+@inline Base.inv(::YGate) = YGate()
+Base.:*(::YGate, ::YGate) = IGate()
+
+struct ZGate <: Clifford1Q
+end
+# I -> I, X -> -X, Y -> -Y, Z -> Z
+Base.@propagate_inbounds @inline function apply!(::ZGate, xas, zas, rs)
+    xa = xas[]
+    r = rs[]
+
+    rs[] = r ⊻ xa
+    return
+end
+@inline Base.inv(::ZGate) = ZGate()
+Base.:*(::ZGate, ::ZGate) = IGate()
 
 struct SGate <: Clifford1Q
 end
@@ -52,40 +98,27 @@ Base.@propagate_inbounds @inline function apply!(::SGate, xas, zas, rs)
     zas[] = za ⊻ xa
     return
 end
-
-struct XGate <: Clifford1Q
+struct ISGate <: Clifford1Q
 end
-# I -> I, X -> X, Y -> -Y, Z -> -Z
-Base.@propagate_inbounds @inline function apply!(::XGate, xas, zas, rs)
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ za
-    return
-end
-
-struct YGate <: Clifford1Q
-end
-# I -> I, X -> -X, Y -> Y, Z -> -Z
-Base.@propagate_inbounds @inline function apply!(::YGate, xas, zas, rs)
+# I -> I, X -> -Y, Y -> X, Z -> Z
+Base.@propagate_inbounds @inline function apply!(::ISGate, xas, zas, rs)
     xa = xas[]
     za = zas[]
     r = rs[]
 
-    rs[] = r ⊻ (xa ⊻ za)
+    rs[] = r ⊻ (xa & ~za)
+    zas[] = za ⊻ xa
     return
 end
+@inline Base.inv(::SGate) = ISGate()
+@inline Base.inv(::ISGate) = SGate()
+Base.:*(::SGate, ::SGate) = ZGate()
+Base.:*(::ISGate, ::ISGate) = ZGate()
 
-struct ZGate <: Clifford1Q
-end
-# I -> I, X -> -X, Y -> -Y, Z -> Z
-Base.@propagate_inbounds @inline function apply!(::ZGate, xas, zas, rs)
-    xa = xas[]
-    r = rs[]
-
-    rs[] = r ⊻ xa
-    return
-end
+Base.:*(::SGate, ::ZGate) = ISGate()
+Base.:*(::ZGate, ::SGate) = ISGate()
+Base.:*(::ISGate, ::ZGate) = SGate()
+Base.:*(::ZGate, ::ISGate) = SGate()
 
 struct SXGate <: Clifford1Q
 end
@@ -99,6 +132,27 @@ Base.@propagate_inbounds @inline function apply!(::SXGate, xas, zas, rs)
     xas[] = xa ⊻ za
     return
 end
+struct ISXGate <: Clifford1Q
+end
+# I -> I, X -> X, Y -> -Z, Z -> Y
+Base.@propagate_inbounds @inline function apply!(::ISXGate, xas, zas, rs)
+    xa = xas[]
+    za = zas[]
+    r = rs[]
+
+    rs[] = r ⊻ (xa & za)
+    xas[] = xa ⊻ za
+    return
+end
+@inline Base.inv(::SXGate) = ISXGate()
+@inline Base.inv(::ISXGate) = SXGate()
+Base.:*(::SXGate, ::SXGate) = XGate()
+Base.:*(::ISXGate, ::ISXGate) = XGate()
+
+Base.:*(::SXGate, ::XGate) = ISXGate()
+Base.:*(::XGate, ::SXGate) = ISXGate()
+Base.:*(::ISXGate, ::XGate) = SXGate()
+Base.:*(::XGate, ::ISXGate) = SXGate()
 
 struct CNOTGate <: Clifford2Q
 end
