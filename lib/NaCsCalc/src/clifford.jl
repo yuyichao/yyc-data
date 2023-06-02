@@ -25,6 +25,9 @@ _nbits(::Type{Bool}) = 1
 _nbits(::Type{T}) where T = sizeof(T) * 8
 nbits(::Type{T}) where T = _nbits(eltype(T))
 
+count_ones(v::Bool) = Int(v)
+count_ones(v) = Base.count_ones(v)
+
 ## Single qubit gates
 # For these gates, we also support a variety of operations on them for convenience
 # including multiplication and inverse.
