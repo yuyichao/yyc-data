@@ -512,5 +512,11 @@ function pauli_commute(xas, zas, xbs, zbs)
     end
     return ~commute
 end
+pauli_commute(stra::PauliString, xbs, zbs) =
+    pauli_commute(stra.xs, stra.zs, xbs, zbs)
+pauli_commute(xas, zas, strb::PauliString) =
+    pauli_commute(xas, zas, strb.xs, strb.zs)
+pauli_commute(stra::PauliString, strb::PauliString) =
+    pauli_commute(stra.xs, stra.zs, strb.xs, strb.zs)
 
 end
