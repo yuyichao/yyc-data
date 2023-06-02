@@ -289,7 +289,7 @@ Base.@propagate_inbounds @inline function pauli_inject!(str::PauliString, x, z, 
     str.zs[i] ⊻= z
     return str
 end
-Base.@propagate_inbounds @inline inject_error!(str::PauliString, x, z, i) =
+Base.@propagate_inbounds @inline inject_pauli!(str::PauliString, x, z, i) =
     pauli_inject!(str, x, z, i)
 
 @inline function _cast_bits(::Type{T}, v) where T
@@ -619,7 +619,7 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
     return state
 end
 
-@inline function inject_error!(state::StabilizerState, x::Bool, z::Bool, i)
+@inline function inject_pauli!(state::StabilizerState, x::Bool, z::Bool, i)
     if x
         if z
             apply!(state, YGate(), i)
