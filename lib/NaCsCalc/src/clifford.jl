@@ -258,7 +258,7 @@ function Base.setindex!(str::PauliString, p, i)
 end
 
 # Ignore signs
-function pauli_inject(str::PauliString, p, i)
+@inline function pauli_inject!(str::PauliString, p, i)
     @assert p in ('I', 'X', 'Y', 'Z')
     x = p == 'X' || p == 'Y'
     z = p == 'Y' || p == 'Z'
@@ -266,6 +266,8 @@ function pauli_inject(str::PauliString, p, i)
     str.zs[i] ⊻= z
     return str
 end
+
+@inline inject_error!(str::PauliString, p, i) = pauli_inject!(str, p, i)
 
 struct StabilizerState
     n::Int
@@ -503,6 +505,21 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
                @view(rs.chunks[i]))
     end
     return state
+end
+
+@inline function inject_error!(state::StabilizerState, p, i)
+    if p == 'I'
+        # Nothing
+    elseif p == 'X'
+        apply!(state, XGate(), i)
+    elseif p == 'Y'
+        apply!(state, YGate(), i)
+    elseif p == 'Z'
+        apply!(state, ZGate(), i)
+    else
+        error("Unknown error type $p")
+    end
+    return str
 end
 
 function pauli_commute(xas, zas, xbs, zbs)
