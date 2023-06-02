@@ -187,6 +187,47 @@ function apply(gate::Clifford2Q, xa, za, xb, zb, r)
     return xas[], zas[], xbs[], zbs[], rs[]
 end
 
+struct PauliString
+    n::Int
+    xs::Vector{Bool}
+    zs::Vector{Bool}
+    rs::Base.RefValue{Bool}
+    function PauliString(n)
+        xs = fill(false, n)
+        zs = fill(false, n)
+        rs = Ref(false)
+        return new(n, xs, zs, rs)
+    end
+    function PauliString(n, xs, zs, rs)
+        return new(n, xs, zs, rs)
+    end
+end
+
+function Base.empty!(state::PauliString)
+    state.xs .= false
+    state.zs .= false
+    state.rs[] = false
+    return state
+end
+
+function apply!(state::PauliString, gate::Clifford1Q, a)
+    apply!(gate, @view(state.xs[a]), @view(state.zs[a]), state.rs)
+    return state
+end
+
+function apply!(state::PauliString, gate::Clifford2Q, a, b)
+    apply!(gate, @view(state.xs[a]), @view(state.zs[a]),
+           @view(state.xs[b]), @view(state.zs[b]), state.rs)
+    return state
+end
+
+function Base.show(io::IO, str::PauliString)
+    write(io, str.rs[] ? '-' : '+')
+    for (x, z) in zip(str.xs, str.zs)
+        write(io, x ? (z ? "Y" : "X") : (z ? "Z" : "I"))
+    end
+end
+
 struct StabilizerState
     n::Int
     xs::Vector{BitVector}
@@ -198,6 +239,12 @@ struct StabilizerState
         rs = falses(2 * n + 1)
         return new(n, xs, zs, rs)
     end
+end
+
+function get_stabilizer(state::StabilizerState, i)
+    n = state.n
+    return PauliString(n, [state.xs[j][i] for j in 1:n],
+                       [state.zs[j][i] for j in 1:n], state.rs[i])
 end
 
 function init_state_0!(state::StabilizerState)
@@ -400,37 +447,6 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
                @view(xbs.chunks[i]), @view(zbs.chunks[i]),
                @view(rs.chunks[i]))
     end
-    return state
-end
-
-struct ErrorState
-    n::Int
-    xs::Vector{Bool}
-    zs::Vector{Bool}
-    rs::Base.RefValue{Bool}
-    function StabilizerState(n)
-        xs = fill(false, n)
-        zs = fill(false, n)
-        rs = Ref(false)
-        return new(n, xs, zs, rs)
-    end
-end
-
-function Base.empty!(state::ErrorState)
-    state.xs .= false
-    state.zs .= false
-    state.rs[] = false
-    return state
-end
-
-function apply!(state::ErrorState, gate::Clifford1Q, a)
-    apply!(gate, @view(state.xs[a]), @view(state.zs[a]), state.rs)
-    return state
-end
-
-function apply!(state::ErrorState, gate::Clifford2Q, a, b)
-    apply!(gate, @view(state.xs[a]), @view(state.zs[a]),
-           @view(state.xs[b]), @view(state.zs[b]), state.rs)
     return state
 end
 
