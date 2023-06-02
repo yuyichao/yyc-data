@@ -434,4 +434,12 @@ function apply!(state::ErrorState, gate::Clifford2Q, a, b)
     return state
 end
 
+function pauli_commute(xas, zas, xbs, zbs)
+    commute = zero(eltype(xas))
+    for (xa, za, xb, zb) in zip(xas, zas, xbs, zbs)
+        commute ⊻= (xb & za) ⊻ (xa & zb)
+    end
+    return ~commute
+end
+
 end
