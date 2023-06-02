@@ -199,7 +199,7 @@ struct PauliString
         return new(n, xs, zs, rs)
     end
     function PauliString(n, xs, zs, rs)
-        return new(n, xs, zs, rs)
+        return new(n, xs, zs, Ref(rs))
     end
 end
 
@@ -280,10 +280,17 @@ struct StabilizerState
     end
 end
 
+function Base.show(io::IO, state::StabilizerState)
+    for i in 1:state.n
+        show(io, get_stabilizer(state, i))
+        println(io)
+    end
+end
+
 function get_stabilizer(state::StabilizerState, i)
     n = state.n
-    return PauliString(n, [state.xs[j][i] for j in 1:n],
-                       [state.zs[j][i] for j in 1:n], state.rs[i])
+    return PauliString(n, [state.xs[j][i + n] for j in 1:n],
+                       [state.zs[j][i + n] for j in 1:n], state.rs[i + n])
 end
 
 function init_state_0!(state::StabilizerState)
@@ -460,6 +467,15 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
         end
     end
     return res
+end
+
+function measure_paulis!(state::StabilizerState, str::PauliString; force=nothing)
+    if force !== nothing
+        force ⊻= str.rs[]
+    end
+    v, det = measure_paulis!(state, str.xs, str.ys; force=force)
+    v ⊻= str.rs[]
+    return v, det
 end
 
 function apply!(state::StabilizerState, gate::Clifford1Q, a)
