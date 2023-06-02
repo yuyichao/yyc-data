@@ -127,6 +127,46 @@ const _interactive = Ref(true)
 
 thread_rng() = Random.GLOBAL_RNG
 
+# Copied from randsubseq! from Base
+function rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where {T <: Union{Bool,Base.BitInteger}}
+    0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
+    if T === Bool
+        return rand(r) <= p
+    end
+    n = sizeof(T) * 8
+    p == 1 && return zero(T) - one(T)
+    S = zero(T)
+    p == 0 && return S
+    if p > 0.17 # empirical threshold for trivial O(n) algorithm to be better
+        for i = 1:n
+            S |= T(rand(r) <= p) << (i - 1)
+        end
+    else
+        # Skip through A, in order, from each element i to the next element i+s
+        # included in S. The probability that the next included element is
+        # s==k (k > 0) is (1-p)^(k-1) * p, and hence the probability (CDF) that
+        # s is in {1,...,k} is 1-(1-p)^k = F(k).   Thus, we can draw the skip s
+        # from this probability distribution via the discrete inverse-transform
+        # method: s = ceil(F^{-1}(u)) where u = rand(), which is simply
+        # s = ceil(log(rand()) / log1p(-p)).
+        # -log(rand()) is an exponential variate, so can use randexp().
+        L = -1 / log1p(-p) # L > 0
+        i = 0
+        while true
+            s = randexp(r) * L
+            s >= n - i && return S # compare before ceil to avoid overflow
+            i += ceil(Int, s)
+            S |= one(T) << (i - 1)
+        end
+        # [This algorithm is similar in spirit to, but much simpler than,
+        #  the one by Vitter for a related problem in "Faster methods for
+        #  random sampling," Comm. ACM Magazine 7, 703-718 (1984).]
+    end
+    return S
+end
+@inline rand_setbits(::Type{T}, p::Real) where T =
+    rand_setbits(Random.default_rng(), T, p)
+
 function __init__()
     interactive_str = get(ENV, "NACS_INTERACT", "true")
     if interactive_str == "false" || interactive_str == "0"
