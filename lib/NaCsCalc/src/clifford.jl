@@ -238,6 +238,7 @@ struct PauliString{T<:Union{Bool,Base.BitInteger}}
         return new{T}(n, xs, zs, Ref(rs))
     end
 end
+Base.eltype(::Type{PauliString{T}}) where T = T
 
 function Base.empty!(str::PauliString{T}) where T
     str.xs .= zero(T)
@@ -358,6 +359,7 @@ struct StabilizerState
         return new(n, xs, zs, rs)
     end
 end
+Base.eltype(::Type{StabilizerState}) = Bool
 
 function Base.show(io::IO, state::StabilizerState)
     for i in 1:state.n
