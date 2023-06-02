@@ -221,26 +221,28 @@ function apply(gate::Clifford2Q, xa, za, xb, zb, r)
     return xas[], zas[], xbs[], zbs[], rs[]
 end
 
-struct PauliString
+# A single or a set of independent pauli strings
+struct PauliString{T<:Union{Bool,Base.BitInteger}}
     n::Int
-    xs::Vector{Bool}
-    zs::Vector{Bool}
-    rs::Base.RefValue{Bool}
-    function PauliString(n)
-        xs = fill(false, n)
-        zs = fill(false, n)
-        rs = Ref(false)
-        return new(n, xs, zs, rs)
+    xs::Vector{T}
+    zs::Vector{T}
+    rs::Base.RefValue{T}
+    function PauliString{T}(n) where T
+        xs = zeros(T, n)
+        zs = zeros(T, n)
+        rs = Ref(zero(T))
+        return new{T}(n, xs, zs, rs)
     end
-    function PauliString(n, xs, zs, rs)
-        return new(n, xs, zs, Ref(rs))
+    function PauliString(n, xs::AbstractVector{T},
+                         zs::AbstractVector{T}, rs) where T<:Union{Bool,Base.BitInteger}
+        return new{T}(n, xs, zs, Ref(rs))
     end
 end
 
-function Base.empty!(str::PauliString)
-    str.xs .= false
-    str.zs .= false
-    str.rs[] = false
+function Base.empty!(str::PauliString{T}) where T
+    str.xs .= zero(T)
+    str.zs .= zero(T)
+    str.rs[] = zero(T)
     return str
 end
 
@@ -255,53 +257,32 @@ function apply!(str::PauliString, gate::Clifford2Q, a, b)
     return str
 end
 
-function Base.show(io::IO, str::PauliString)
+function Base.show(io::IO, str::PauliString{Bool})
     write(io, str.rs[] ? '-' : '+')
     for (x, z) in zip(str.xs, str.zs)
         write(io, x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I'))
     end
 end
-
-Base.sign(str::PauliString) = str.rs[] ? -1 : 1
-function Base.getindex(str::PauliString, i)
-    if i == 0
-        return str.rs[] ? '-' : '+'
-    end
-    x = str.xs[i]
-    z = str.zs[i]
-    return x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I')
-end
-
-function Base.setindex!(str::PauliString, p, i)
-    if i == 0
-        if p isa Char
-            @assert p in ('+', '-')
-            str.rs[] = p == '-'
-        else
-            @assert p in (-1, 1)
-            str.rs[] = p == -1
+function Base.show(io::IO, str::PauliString{T}) where T
+    for i in 0:(sizeof(T) * 8 - 1)
+        write(io, (str.rs[] >> i) != 0 ? '-' : '+')
+        for (x, z) in zip(str.xs, str.zs)
+            x = (x >> i) != 0
+            z = (z >> i) != 0
+            write(io, x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I'))
         end
-        return
+        println(io)
     end
-    @assert p in ('I', 'X', 'Y', 'Z')
-    x = p == 'X' || p == 'Y'
-    z = p == 'Y' || p == 'Z'
-    str.xs[i] = x
-    str.zs[i] = z
-    return
 end
 
 # Ignore signs
-@inline function pauli_inject!(str::PauliString, p, i)
-    @assert p in ('I', 'X', 'Y', 'Z')
-    x = p == 'X' || p == 'Y'
-    z = p == 'Y' || p == 'Z'
+Base.@propagate_inbounds @inline function pauli_inject!(str::PauliString, x, z, i)
     str.xs[i] ⊻= x
     str.zs[i] ⊻= z
     return str
 end
-
-@inline inject_error!(str::PauliString, p, i) = pauli_inject!(str, p, i)
+Base.@propagate_inbounds @inline inject_error!(str::PauliString, x, z, i) =
+    pauli_inject!(str, x, z, i)
 
 struct StabilizerState
     n::Int
@@ -505,7 +486,7 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
     return res
 end
 
-function measure_paulis!(state::StabilizerState, str::PauliString; force=nothing)
+function measure_paulis!(state::StabilizerState, str::PauliString{Bool}; force=nothing)
     if force !== nothing
         force ⊻= str.rs[]
     end
@@ -541,24 +522,42 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
     return state
 end
 
-@inline function inject_error!(state::StabilizerState, p, i)
-    if p == 'I'
-        # Nothing
-    elseif p == 'X'
-        apply!(state, XGate(), i)
-    elseif p == 'Y'
-        apply!(state, YGate(), i)
-    elseif p == 'Z'
+@inline function inject_error!(state::StabilizerState, x::Bool, z::Bool, i)
+    if x
+        if z
+            apply!(state, YGate(), i)
+        else
+            apply!(state, XGate(), i)
+        end
+    elseif z
         apply!(state, ZGate(), i)
-    else
-        error("Unknown error type $p")
     end
-    return str
+    return state
+end
+
+@inline function _cast_bits(::Type{T}, v)
+    if v isa T
+        return v
+    elseif v isa Bool
+        return v ? (zero(T) - one(T)) : zero(T)
+    else
+        return v % T
+    end
 end
 
 function pauli_commute(xas, zas, xbs, zbs)
-    commute = zero(eltype(xas))
+    TA = eltype(xas)
+    TB = eltype(xbs)
+    if sizeof(TA) !== sizeof(TB) && TA !== Bool && TB !== Bool
+        throw(ArgumentError("Pauli strings dimension mismatch"))
+    end
+    T = TA === Bool ? TB : TA
+    commute = zero(T)
     for (xa, za, xb, zb) in zip(xas, zas, xbs, zbs)
+        xa = _cast_bits(T, xa)
+        za = _cast_bits(T, za)
+        xb = _cast_bits(T, xb)
+        zb = _cast_bits(T, zb)
         commute ⊻= (xb & za) ⊻ (xa & zb)
     end
     return ~commute
