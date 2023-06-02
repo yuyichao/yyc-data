@@ -203,29 +203,68 @@ struct PauliString
     end
 end
 
-function Base.empty!(state::PauliString)
-    state.xs .= false
-    state.zs .= false
-    state.rs[] = false
-    return state
+function Base.empty!(str::PauliString)
+    str.xs .= false
+    str.zs .= false
+    str.rs[] = false
+    return str
 end
 
-function apply!(state::PauliString, gate::Clifford1Q, a)
-    apply!(gate, @view(state.xs[a]), @view(state.zs[a]), state.rs)
-    return state
+function apply!(str::PauliString, gate::Clifford1Q, a)
+    apply!(gate, @view(str.xs[a]), @view(str.zs[a]), str.rs)
+    return str
 end
 
-function apply!(state::PauliString, gate::Clifford2Q, a, b)
-    apply!(gate, @view(state.xs[a]), @view(state.zs[a]),
-           @view(state.xs[b]), @view(state.zs[b]), state.rs)
-    return state
+function apply!(str::PauliString, gate::Clifford2Q, a, b)
+    apply!(gate, @view(str.xs[a]), @view(str.zs[a]),
+           @view(str.xs[b]), @view(str.zs[b]), str.rs)
+    return str
 end
 
 function Base.show(io::IO, str::PauliString)
     write(io, str.rs[] ? '-' : '+')
     for (x, z) in zip(str.xs, str.zs)
-        write(io, x ? (z ? "Y" : "X") : (z ? "Z" : "I"))
+        write(io, x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I'))
     end
+end
+
+Base.sign(str::PauliString) = str.rs[] ? -1 : 1
+function Base.getindex(str::PauliString, i)
+    if i == 0
+        return str.rs[] ? '-' : '+'
+    end
+    x = str.xs[i]
+    z = str.zs[i]
+    return x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I')
+end
+
+function Base.setindex!(str::PauliString, p, i)
+    if i == 0
+        if p isa Char
+            @assert p in ('+', '-')
+            str.rs[] = p == '-'
+        else
+            @assert p in (-1, 1)
+            str.rs[] = p == -1
+        end
+        return
+    end
+    @assert p in ('I', 'X', 'Y', 'Z')
+    x = p == 'X' || p == 'Y'
+    z = p == 'Y' || p == 'Z'
+    str.xs[i] = x
+    str.zs[i] = z
+    return
+end
+
+# Ignore signs
+function pauli_inject(str::PauliString, p, i)
+    @assert p in ('I', 'X', 'Y', 'Z')
+    x = p == 'X' || p == 'Y'
+    z = p == 'Y' || p == 'Z'
+    str.xs[i] ⊻= x
+    str.zs[i] ⊻= z
+    return str
 end
 
 struct StabilizerState
