@@ -284,6 +284,57 @@ end
 Base.@propagate_inbounds @inline inject_error!(str::PauliString, x, z, i) =
     pauli_inject!(str, x, z, i)
 
+@inline function _cast_bits(::Type{T}, v) where T
+    if v isa T
+        return v
+    elseif v isa Bool
+        return v ? (zero(T) - one(T)) : zero(T)
+    else
+        return v % T
+    end
+end
+
+function pauli_commute(xas, zas, xbs, zbs)
+    TA = eltype(xas)
+    TB = eltype(xbs)
+    if sizeof(TA) !== sizeof(TB) && TA !== Bool && TB !== Bool
+        throw(ArgumentError("Pauli strings dimension mismatch"))
+    end
+    T = TA === Bool ? TB : TA
+    commute = ~zero(T)
+    for (xa, za, xb, zb) in zip(xas, zas, xbs, zbs)
+        xa = _cast_bits(T, xa)
+        za = _cast_bits(T, za)
+        xb = _cast_bits(T, xb)
+        zb = _cast_bits(T, zb)
+        commute ⊻= (xb & za) ⊻ (xa & zb)
+    end
+    return commute
+end
+pauli_commute(stra::PauliString, xbs, zbs) =
+    pauli_commute(stra.xs, stra.zs, xbs, zbs)
+pauli_commute(xas, zas, strb::PauliString) =
+    pauli_commute(xas, zas, strb.xs, strb.zs)
+pauli_commute(stra::PauliString, strb::PauliString) =
+    pauli_commute(stra.xs, stra.zs, strb.xs, strb.zs)
+
+function pauli_commute_x(stra::PauliString{T}, xbs) where T
+    zas = stra.zs
+    commute = ~zero(T)
+    for i in xbs
+        commute ⊻= zas[i]
+    end
+    return commute
+end
+function pauli_commute_z(stra::PauliString{T}, zbs) where T
+    xas = stra.xs
+    commute = ~zero(T)
+    for i in zbs
+        commute ⊻= xas[i]
+    end
+    return commute
+end
+
 struct StabilizerState
     n::Int
     xs::Vector{BitVector}
@@ -534,39 +585,5 @@ end
     end
     return state
 end
-
-@inline function _cast_bits(::Type{T}, v) where T
-    if v isa T
-        return v
-    elseif v isa Bool
-        return v ? (zero(T) - one(T)) : zero(T)
-    else
-        return v % T
-    end
-end
-
-function pauli_commute(xas, zas, xbs, zbs)
-    TA = eltype(xas)
-    TB = eltype(xbs)
-    if sizeof(TA) !== sizeof(TB) && TA !== Bool && TB !== Bool
-        throw(ArgumentError("Pauli strings dimension mismatch"))
-    end
-    T = TA === Bool ? TB : TA
-    commute = zero(T)
-    for (xa, za, xb, zb) in zip(xas, zas, xbs, zbs)
-        xa = _cast_bits(T, xa)
-        za = _cast_bits(T, za)
-        xb = _cast_bits(T, xb)
-        zb = _cast_bits(T, zb)
-        commute ⊻= (xb & za) ⊻ (xa & zb)
-    end
-    return ~commute
-end
-pauli_commute(stra::PauliString, xbs, zbs) =
-    pauli_commute(stra.xs, stra.zs, xbs, zbs)
-pauli_commute(xas, zas, strb::PauliString) =
-    pauli_commute(xas, zas, strb.xs, strb.zs)
-pauli_commute(stra::PauliString, strb::PauliString) =
-    pauli_commute(stra.xs, stra.zs, strb.xs, strb.zs)
 
 end
