@@ -329,7 +329,7 @@ end
     @test Clf.measure_y!(state, 1) === (v2, true)
     @test Clf.measure_y!(state, 2) === (v2 ⊻ v, true)
 
-    Clf.init_state_0!(state)
+    Clf.init_state_z!(state)
     @test Clf.measure_z!(state, 1) === (false, true)
     @test Clf.measure_z!(state, 2) === (false, true)
 

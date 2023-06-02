@@ -374,7 +374,7 @@ function get_stabilizer(state::StabilizerState, i)
                        [state.zs[j][i + n] for j in 1:n], state.rs[i + n])
 end
 
-function init_state_0!(state::StabilizerState)
+function init_state_z!(state::StabilizerState, v::Bool=false)
     for (i, x) in enumerate(state.xs)
         x.chunks .= 0
         x[i] = true
@@ -383,7 +383,20 @@ function init_state_0!(state::StabilizerState)
         z.chunks .= 0
         z[i + state.n] = true
     end
-    state.rs.chunks .= 0
+    state.rs.chunks .= _cast_bits(eltype(state.rs.chunks), v)
+    return state
+end
+
+function init_state_x!(state::StabilizerState, v::Bool=false)
+    for (i, x) in enumerate(state.xs)
+        x.chunks .= 0
+        x[i + state.n] = true
+    end
+    for (i, z) in enumerate(state.zs)
+        z.chunks .= 0
+        z[i] = true
+    end
+    state.rs.chunks .= _cast_bits(eltype(state.rs.chunks), v)
     return state
 end
 
