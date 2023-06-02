@@ -21,6 +21,10 @@ module Clifford
 # at the same time, we allow each of the bits to be packed into an integer
 # and we use bitwise operation to implement the gate in parallel.
 
+_nbits(::Type{Bool}) = 1
+_nbits(::Type{T}) where T = sizeof(T) * 8
+nbits(::Type{T}) where T = _nbits(eltype(T))
+
 ## Single qubit gates
 # For these gates, we also support a variety of operations on them for convenience
 # including multiplication and inverse.
