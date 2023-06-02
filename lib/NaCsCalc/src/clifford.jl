@@ -335,6 +335,17 @@ function pauli_commute_z(stra::PauliString{T}, zbs) where T
     return commute
 end
 
+# Assume that the expected value without any error is false
+function measure_stabilizer(str::PauliString, xs, zs, r)
+    return ~pauli_commute(str, xs, zs)
+end
+function measure_stabilizer_x(str::PauliString, xs, r)
+    return ~pauli_commute_x(str, xs)
+end
+function measure_stabilizer_z(str::PauliString, zs, r)
+    return ~pauli_commute_z(str, zs)
+end
+
 struct StabilizerState
     n::Int
     xs::Vector{BitVector}
@@ -544,6 +555,19 @@ function measure_paulis!(state::StabilizerState, str::PauliString{Bool}; force=n
     v, det = measure_paulis!(state, str.xs, str.ys; force=force)
     v ⊻= str.rs[]
     return v, det
+end
+
+function measure_stabilizer(state::StabilizerState, xs, zs, r)
+    v, det = measure_paulis!(state, xs, ys)
+    return v ⊻ r
+end
+function measure_stabilizer_x(state::StabilizerState, xs, r)
+    v, det = measure_xs!(state, xs)
+    return v ⊻ r
+end
+function measure_stabilizer_z(state::StabilizerState, zs, r)
+    v, det = measure_zs!(state, zs)
+    return v ⊻ r
 end
 
 function apply!(state::StabilizerState, gate::Clifford1Q, a)
