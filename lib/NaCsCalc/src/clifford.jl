@@ -21,9 +21,10 @@ module Clifford
 # at the same time, we allow each of the bits to be packed into an integer
 # and we use bitwise operation to implement the gate in parallel.
 
+## Single qubit gates
+# For these gates, we also support a variety of operations on them for convenience
+# including multiplication and inverse.
 abstract type Clifford1Q end
-
-abstract type Clifford2Q end
 
 struct Composite1Q{G1<:Clifford1Q,G2<:Clifford1Q} <: Clifford1Q
     g1::G1
@@ -39,6 +40,7 @@ function Base.:*(g1::Clifford1Q, g2::Clifford1Q)
 end
 @inline Base.inv(g::Composite1Q) = Composite1Q(inv(g.g2), inv(g.g1))
 
+# Identity
 struct IGate <: Clifford1Q
 end
 @inline function apply!(::IGate, xas, zas, rs)
@@ -49,6 +51,7 @@ Base.:*(g1::Clifford1Q, ::IGate) = g1
 Base.:*(::IGate, g2::Clifford1Q) = g2
 Base.:*(::IGate, ::IGate) = IGate()
 
+# Hadamard
 struct HGate <: Clifford1Q
 end
 # I -> I, X -> Z, Y -> -Y, Z -> X
@@ -65,6 +68,7 @@ end
 @inline Base.inv(::HGate) = HGate()
 Base.:*(::HGate, ::HGate) = IGate()
 
+# X
 struct XGate <: Clifford1Q
 end
 # I -> I, X -> X, Y -> -Y, Z -> -Z
@@ -78,6 +82,7 @@ end
 @inline Base.inv(::XGate) = XGate()
 Base.:*(::XGate, ::XGate) = IGate()
 
+# Y
 struct YGate <: Clifford1Q
 end
 # I -> I, X -> -X, Y -> Y, Z -> -Z
@@ -92,6 +97,7 @@ end
 @inline Base.inv(::YGate) = YGate()
 Base.:*(::YGate, ::YGate) = IGate()
 
+# Z
 struct ZGate <: Clifford1Q
 end
 # I -> I, X -> -X, Y -> -Y, Z -> Z
@@ -105,6 +111,7 @@ end
 @inline Base.inv(::ZGate) = ZGate()
 Base.:*(::ZGate, ::ZGate) = IGate()
 
+# Phase gate (sqrt(Z))
 struct SGate <: Clifford1Q
 end
 # I -> I, X -> Y, Y -> -X, Z -> Z
@@ -117,6 +124,7 @@ Base.@propagate_inbounds @inline function apply!(::SGate, xas, zas, rs)
     zas[] = za ⊻ xa
     return
 end
+# Inverse of phase gate
 struct ISGate <: Clifford1Q
 end
 # I -> I, X -> -Y, Y -> X, Z -> Z
@@ -139,6 +147,7 @@ Base.:*(::ZGate, ::SGate) = ISGate()
 Base.:*(::ISGate, ::ZGate) = SGate()
 Base.:*(::ZGate, ::ISGate) = SGate()
 
+# sqrt(X)
 struct SXGate <: Clifford1Q
 end
 # I -> I, X -> X, Y -> Z, Z -> -Y
@@ -151,6 +160,7 @@ Base.@propagate_inbounds @inline function apply!(::SXGate, xas, zas, rs)
     xas[] = xa ⊻ za
     return
 end
+# Inverse of sqrt(X)
 struct ISXGate <: Clifford1Q
 end
 # I -> I, X -> X, Y -> -Z, Z -> Y
@@ -173,6 +183,9 @@ Base.:*(::XGate, ::SXGate) = ISXGate()
 Base.:*(::ISXGate, ::XGate) = SXGate()
 Base.:*(::XGate, ::ISXGate) = SXGate()
 
+## Two qubit gates
+abstract type Clifford2Q end
+
 struct CNOTGate <: Clifford2Q
 end
 Base.@propagate_inbounds function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
@@ -188,6 +201,8 @@ Base.@propagate_inbounds function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
     return
 end
 
+# Gate operation function that takes and returns the values
+# rather than mutating them in place.
 function apply(gate::Clifford1Q, xa, za, r)
     xas = Ref(xa)
     zas = Ref(za)
