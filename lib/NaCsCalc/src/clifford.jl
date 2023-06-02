@@ -535,7 +535,7 @@ end
     return state
 end
 
-@inline function _cast_bits(::Type{T}, v)
+@inline function _cast_bits(::Type{T}, v) where T
     if v isa T
         return v
     elseif v isa Bool
