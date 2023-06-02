@@ -2,6 +2,25 @@
 
 module Clifford
 
+##
+# Implement simulation of clifford circuit using the stabilizer state description
+
+##
+# Gates
+#
+# Gate operations are implemented via their effect on pauli operators.
+# The pauli operator is described using two bits, `x` and `z`:
+#     x=0, z=0: I
+#     x=1, z=0: X
+#     x=1, z=1: Y
+#     x=0, z=1: Z
+# and the `r` carries the sign of the operator (e.g. `x=0`, `z=1`, `r=1` represents
+# the `-Z` operator).
+#
+# For efficient implementation of propagating multiple pauli strings/stabilizers
+# at the same time, we allow each of the bits to be packed into an integer
+# and we use bitwise operation to implement the gate in parallel.
+
 abstract type Clifford1Q end
 
 abstract type Clifford2Q end
