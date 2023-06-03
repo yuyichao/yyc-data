@@ -145,25 +145,25 @@ end
 # An logical error will happen if we end up flipping an odd number of rows
 # in this process (together with the error).
 # Therefore, using the function defined below, the probability for a logical error
-# is `p_np3(p_nm3(p))` where `p_nm3(p)` calculates the probability for a row
-# to be fixed incorrectly and calling `p_np3` on that returns the probability
-# for an odd number of rows to be flipped.
+# is `p_parity_err3(p_major_err3(p))` where `p_major_err3(p)` calculates
+# the probability for a row to be fixed incorrectly and calling `p_parity_err3`
+# on that returns the probability for an odd number of rows to be flipped.
 
 # Similarly, for Pauli-X error causing Z logical errors, we have stabilizers
 # to make sure the parity of each columns are the same and the logical operator
 # returns the parity of the columns. An logical error will therefore happen
 # when a majority of columns were fixed to the wrong parity. This has probability
-# `p_nm3(p_np3(p))` where `p_np3(p)` is the probability for a column
-# to have the wrong parity and calling `p_nm3` on it returns the probability
-# for the majority of columns to have the wrong parity.
+# `p_major_err3(p_parity_err3(p))` where `p_parity_err3(p)` is the probability
+# for a column to have the wrong parity and calling `p_major_err3` on it
+# returns the probability for the majority of columns to have the wrong parity.
 
 # Probability of the majority within 3 bits having error with probability p
-p_nm3(p) = p^3 + 3 * p * (1 - p)^2
+p_major_err3(p) = p^3 + 3 * p^2 * (1 - p)
 # Probability of an odd number within 3 bits having error with probability p
-p_np3(p) = p^3 + 3 * p^2 * (1 - p)
+p_parity_err3(p) = p^3 + 3 * p * (1 - p)^2
 
-p_xerr(p) = p_np3(p_nm3(p))
-p_zerr(p) = p_nm3(p_np3(p))
+p_xerr(p) = p_parity_err3(p_major_err3(p))
+p_zerr(p) = p_major_err3(p_parity_err3(p))
 
 const ps = range(0, 1, 501)
 
