@@ -205,7 +205,7 @@ abstract type Clifford2Q end
 
 struct CNOTGate <: Clifford2Q
 end
-Base.@propagate_inbounds function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
+Base.@propagate_inbounds @inline function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
     xa = xas[]
     xb = xbs[]
     za = zas[]
@@ -238,6 +238,14 @@ function apply(gate::Clifford2Q, xa, za, xb, zb, r)
     return xas[], zas[], xbs[], zbs[], rs[]
 end
 
+@noinline throw_qubit_bounderror(a) =
+    throw(ArgumentError("Qubit index $a out of bound."))
+@inline function check_qubit_bound(n, a)
+    if ((a - 1) % UInt) >= (n % UInt)
+        throw_qubit_bounderror(a)
+    end
+end
+
 # A single or a set of independent pauli strings
 struct PauliString{T<:Union{Bool,Base.BitInteger}}
     n::Int
@@ -264,14 +272,17 @@ function Base.empty!(str::PauliString{T}) where T
     return str
 end
 
-function apply!(str::PauliString, gate::Clifford1Q, a)
-    apply!(gate, @view(str.xs[a]), @view(str.zs[a]), str.rs)
+@inline function apply!(str::PauliString, gate::Clifford1Q, a)
+    @boundscheck check_qubit_bound(str.n, a)
+    @inbounds apply!(gate, @view(str.xs[a]), @view(str.zs[a]), str.rs)
     return str
 end
 
-function apply!(str::PauliString, gate::Clifford2Q, a, b)
-    apply!(gate, @view(str.xs[a]), @view(str.zs[a]),
-           @view(str.xs[b]), @view(str.zs[b]), str.rs)
+@inline function apply!(str::PauliString, gate::Clifford2Q, a, b)
+    @boundscheck check_qubit_bound(str.n, a)
+    @boundscheck check_qubit_bound(str.n, b)
+    @inbounds apply!(gate, @view(str.xs[a]), @view(str.zs[a]),
+                     @view(str.xs[b]), @view(str.zs[b]), str.rs)
     return str
 end
 
@@ -294,13 +305,12 @@ function Base.show(io::IO, str::PauliString{T}) where T
 end
 
 # Ignore signs
-Base.@propagate_inbounds @inline function pauli_inject!(str::PauliString, x, z, i)
-    str.xs[i] ⊻= x
-    str.zs[i] ⊻= z
+@inline function inject_pauli!(str::PauliString, x, z, i)
+    @boundscheck check_qubit_bound(str.n, i)
+    @inbounds str.xs[i] ⊻= x
+    @inbounds str.zs[i] ⊻= z
     return str
 end
-Base.@propagate_inbounds @inline inject_pauli!(str::PauliString, x, z, i) =
-    pauli_inject!(str, x, z, i)
 
 @inline function _cast_bits(::Type{T}, v) where T
     if v isa T
@@ -320,11 +330,12 @@ function pauli_commute(xas, zas, xbs, zbs)
     end
     T = TA === Bool ? TB : TA
     commute = ~zero(T)
-    for (xa, za, xb, zb) in zip(xas, zas, xbs, zbs)
-        xa = _cast_bits(T, xa)
-        za = _cast_bits(T, za)
-        xb = _cast_bits(T, xb)
-        zb = _cast_bits(T, zb)
+    n = length(xas)
+    @inbounds for i in 1:n
+        xa = _cast_bits(T, xas[i])
+        za = _cast_bits(T, zas[i])
+        xb = _cast_bits(T, xbs[i])
+        zb = _cast_bits(T, zbs[i])
         commute ⊻= (xb & za) ⊻ (xa & zb)
     end
     return commute
@@ -336,7 +347,8 @@ pauli_commute(xas, zas, strb::PauliString) =
 pauli_commute(stra::PauliString, strb::PauliString) =
     pauli_commute(stra.xs, stra.zs, strb.xs, strb.zs)
 
-function pauli_commute_x(stra::PauliString{T}, xbs) where T
+Base.@propagate_inbounds @inline function pauli_commute_x(stra::PauliString{T},
+                                                          xbs) where T
     zas = stra.zs
     commute = ~zero(T)
     for i in xbs
@@ -344,7 +356,8 @@ function pauli_commute_x(stra::PauliString{T}, xbs) where T
     end
     return commute
 end
-function pauli_commute_z(stra::PauliString{T}, zbs) where T
+Base.@propagate_inbounds @inline function pauli_commute_z(stra::PauliString{T},
+                                                          zbs) where T
     xas = stra.xs
     commute = ~zero(T)
     for i in zbs
@@ -357,10 +370,12 @@ end
 function measure_stabilizer(str::PauliString, xs, zs, r=false)
     return ~pauli_commute(str, xs, zs)
 end
-function measure_stabilizer_x(str::PauliString, xs, r=false)
+Base.@propagate_inbounds @inline function measure_stabilizer_x(str::PauliString,
+                                                               xs, r=false)
     return ~pauli_commute_x(str, xs)
 end
-function measure_stabilizer_z(str::PauliString, zs, r=false)
+Base.@propagate_inbounds @inline function measure_stabilizer_z(str::PauliString, zs,
+                                                               r=false)
     return ~pauli_commute_z(str, zs)
 end
 

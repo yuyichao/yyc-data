@@ -50,32 +50,33 @@ end
 
 function inject_error!(state, px, pz)
     Tele = eltype(state)
-    for i in 1:9
+    @inbounds for i in 1:9
         Clf.inject_pauli!(state, rand_setbits(Tele, px), rand_setbits(Tele, pz), i)
     end
 end
 
 function correct_error!(state)
     T = eltype(state)
-    stab_x_vals = map(stab->Clf.measure_stabilizer_x(state, stab), stab_xs)
-    stab_z_vals = map(stab->Clf.measure_stabilizer_z(state, stab), stab_zs)
+    stab_x_vals = map(stab->@inbounds(Clf.measure_stabilizer_x(state, stab)), stab_xs)
+    stab_z_vals = map(stab->@inbounds(Clf.measure_stabilizer_z(state, stab)), stab_zs)
 
-    Clf.inject_pauli!(state, stab_z_vals[1] & ~stab_z_vals[2], zero(T), 1)
-    Clf.inject_pauli!(state, stab_z_vals[1] & stab_z_vals[2], zero(T), 4)
-    Clf.inject_pauli!(state, ~stab_z_vals[1] & stab_z_vals[2], zero(T), 7)
+    @inbounds begin
+        Clf.inject_pauli!(state, stab_z_vals[1] & ~stab_z_vals[2], zero(T), 1)
+        Clf.inject_pauli!(state, stab_z_vals[1] & stab_z_vals[2], zero(T), 4)
+        Clf.inject_pauli!(state, ~stab_z_vals[1] & stab_z_vals[2], zero(T), 7)
 
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[1] & ~stab_x_vals[2], 1)
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[1] & stab_x_vals[2], 2)
-    Clf.inject_pauli!(state, zero(T), ~stab_x_vals[1] & stab_x_vals[2], 3)
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[1] & ~stab_x_vals[2], 1)
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[1] & stab_x_vals[2], 2)
+        Clf.inject_pauli!(state, zero(T), ~stab_x_vals[1] & stab_x_vals[2], 3)
 
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[3] & ~stab_x_vals[4], 4)
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[3] & stab_x_vals[4], 5)
-    Clf.inject_pauli!(state, zero(T), ~stab_x_vals[3] & stab_x_vals[4], 6)
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[3] & ~stab_x_vals[4], 4)
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[3] & stab_x_vals[4], 5)
+        Clf.inject_pauli!(state, zero(T), ~stab_x_vals[3] & stab_x_vals[4], 6)
 
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[5] & ~stab_x_vals[6], 7)
-    Clf.inject_pauli!(state, zero(T), stab_x_vals[5] & stab_x_vals[6], 8)
-    Clf.inject_pauli!(state, zero(T), ~stab_x_vals[5] & stab_x_vals[6], 9)
-
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[5] & ~stab_x_vals[6], 7)
+        Clf.inject_pauli!(state, zero(T), stab_x_vals[5] & stab_x_vals[6], 8)
+        Clf.inject_pauli!(state, zero(T), ~stab_x_vals[5] & stab_x_vals[6], 9)
+    end
     return
 end
 
@@ -89,13 +90,15 @@ end
 
 function collect_result_x(state, v, err_stat::ErrorStat)
     err_stat.xtot += Clf.nbits(eltype(state))
-    err_stat.xerr += Clf.count_ones(Clf.measure_stabilizer_x(state, logic_x, v))
+    err_stat.xerr += @inbounds Clf.count_ones(
+        Clf.measure_stabilizer_x(state, logic_x, v))
     return
 end
 
 function collect_result_z(state, v, err_stat::ErrorStat)
     err_stat.ztot += Clf.nbits(eltype(state))
-    err_stat.zerr += Clf.count_ones(Clf.measure_stabilizer_z(state, logic_z, v))
+    err_stat.zerr += @inbounds Clf.count_ones(
+        Clf.measure_stabilizer_z(state, logic_z, v))
     return
 end
 
