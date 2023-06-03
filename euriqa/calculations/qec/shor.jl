@@ -131,12 +131,12 @@ function simulate_idle(state, px, pz, n)
 end
 
 function calc_errors(state, ps, n)
-    xps = Float64[]
-    zps = Float64[]
-    for p in ps
+    xps = Vector{Float64}(undef, length(ps))
+    zps = Vector{Float64}(undef, length(ps))
+    for (i, p) in enumerate(ps)
         err_stat = simulate_idle(state, p, p, n)
-        push!(xps, err_stat.xerr / err_stat.xtot)
-        push!(zps, err_stat.zerr / err_stat.ztot)
+        xps[i] = err_stat.xerr / err_stat.xtot
+        zps[i] = err_stat.zerr / err_stat.ztot
     end
     return xps, zps
 end
