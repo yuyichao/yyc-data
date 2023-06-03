@@ -138,6 +138,33 @@ function calc_errors(state, ps, n)
     return xps, zps
 end
 
+# For Pauli-Z error causing X logical errors, we have stabilizers checking the parity
+# of every pairs in each row.
+# The logical operator is the parity of the three bits, one from each row.
+# During correction, we make sure that each row is back to having the same value.
+# An logical error will happen if we end up flipping an odd number of rows
+# in this process (together with the error).
+# Therefore, using the function defined below, the probability for a logical error
+# is `p_np3(p_nm3(p))` where `p_nm3(p)` calculates the probability for a row
+# to be fixed incorrectly and calling `p_np3` on that returns the probability
+# for an odd number of rows to be flipped.
+
+# Similarly, for Pauli-X error causing Z logical errors, we have stabilizers
+# to make sure the parity of each columns are the same and the logical operator
+# returns the parity of the columns. An logical error will therefore happen
+# when a majority of columns were fixed to the wrong parity. This has probability
+# `p_nm3(p_np3(p))` where `p_np3(p)` is the probability for a column
+# to have the wrong parity and calling `p_nm3` on it returns the probability
+# for the majority of columns to have the wrong parity.
+
+# Probability of the majority within 3 bits having error with probability p
+p_nm3(p) = p^3 + 3 * p * (1 - p)^2
+# Probability of an odd number within 3 bits having error with probability p
+p_np3(p) = p^3 + 3 * p^2 * (1 - p)
+
+p_xerr(p) = p_np3(p_nm3(p))
+p_zerr(p) = p_nm3(p_np3(p))
+
 const ps = range(0, 1, 501)
 
 const prefix = joinpath(@__DIR__, "imgs/shor")
@@ -145,14 +172,16 @@ const prefix = joinpath(@__DIR__, "imgs/shor")
 const state1 = Clf.StabilizerState(9)
 const state2 = Clf.PauliString{UInt}(9)
 
-const xps_state, zps_state = @time calc_errors(state1, ps, 3200 * 2)
-const xps_diff, zps_diff = @time calc_errors(state2, ps, 3200)
+const xps_state, zps_state = @time calc_errors(state1, ps, 3200)
+const xps_diff, zps_diff = @time calc_errors(state2, ps, 6400)
 
 figure()
-plot(ps, xps_state, label="x (state)")
-plot(ps, zps_state, label="z (state)")
-plot(ps, xps_diff, label="x (error)")
-plot(ps, zps_diff, label="z (error)")
+plot(ps, xps_state, "C0", label="x (state)", alpha=0.3)
+plot(ps, xps_diff, "C2", label="x (error)")
+plot(ps, p_xerr.(ps), "C4--", label="x (analytic)")
+plot(ps, zps_state, "C1", label="z (state)", alpha=0.3)
+plot(ps, zps_diff, "C3", label="z (error)")
+plot(ps, p_zerr.(ps), "C5--", label="z (analytic)")
 plot(ps, ps, "C0--")
 legend(fontsize=13, ncol=2)
 grid()
