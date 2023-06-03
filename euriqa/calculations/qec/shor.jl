@@ -173,10 +173,10 @@ const ps = range(0, 1, 501)
 const prefix = joinpath(@__DIR__, "imgs/shor")
 
 const state1 = Clf.StabilizerState(9)
-const state2 = Clf.PauliString{UInt}(9)
+const state2 = Clf.PauliString{UInt128}(9)
 
 const xps_state, zps_state = @time calc_errors(state1, ps, 3200)
-const xps_diff, zps_diff = @time calc_errors(state2, ps, 6400)
+const xps_diff, zps_diff = @time calc_errors(state2, ps, 3200)
 
 figure()
 plot(ps, xps_state, "C0", label="x (state)", alpha=0.3)
