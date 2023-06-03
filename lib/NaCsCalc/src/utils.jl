@@ -130,14 +130,14 @@ thread_rng() = Random.GLOBAL_RNG
 # Copied from randsubseq! from Base
 function rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where {T <: Union{Bool,Base.BitInteger}}
     0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
-    if T === Bool
+    @inline if T === Bool
         return rand(r) <= p
     end
     n = sizeof(T) * 8
     p == 1 && return zero(T) - one(T)
     S = zero(T)
     p == 0 && return S
-    if p > 0.17 # empirical threshold for trivial O(n) algorithm to be better
+    @inline if p > 0.17 # empirical threshold for trivial O(n) algorithm to be better
         for i = 1:n
             S |= T(rand(r) <= p) << (i - 1)
         end
@@ -155,7 +155,7 @@ function rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where {T <: Union{Bool
         while true
             s = randexp(r) * L
             s >= n - i && return S # compare before ceil to avoid overflow
-            i += ceil(Int, s)
+            i += unsafe_trunc(Int, ceil(s))
             S |= one(T) << (i - 1)
         end
         # [This algorithm is similar in spirit to, but much simpler than,
