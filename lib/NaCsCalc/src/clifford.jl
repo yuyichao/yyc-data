@@ -23,8 +23,18 @@ module Clifford
 
 _nbits(::Type{Bool}) = 1
 _nbits(::Type{T}) where T = sizeof(T) * 8
+"""
+    nbits(::Type)
+
+Return number of bits packed in the element type.
+"""
 nbits(::Type{T}) where T = _nbits(eltype(T))
 
+"""
+    count_ones(v)
+
+Like `Base.count_ones` but works for `Bool` as well.
+"""
 count_ones(v::Bool) = Int(v)
 count_ones(v) = Base.count_ones(v)
 
