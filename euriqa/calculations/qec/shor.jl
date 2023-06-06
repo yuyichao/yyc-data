@@ -117,9 +117,9 @@ end
 
 function simulate_idle(state, px, pz, n)
     err_stat = ErrorStat()
-    for isx in (false, true)
-        for v in (false, true)
-            while err_stat.xtot[] + err_stat.ztot[] < 4 * n
+    while err_stat.xtot[] + err_stat.ztot[] < 4 * n
+        for isx in (false, true)
+            for v in (false, true)
                 init!(state, isx, v)
                 inject_error!(state, px, pz)
                 correct_error!(state)
