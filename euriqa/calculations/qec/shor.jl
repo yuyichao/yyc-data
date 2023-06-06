@@ -119,7 +119,7 @@ function simulate_idle(state, px, pz, n)
     err_stat = ErrorStat()
     for isx in (false, true)
         for v in (false, true)
-            for i in 1:n
+            while err_stat.xtot[] + err_stat.ztot[] < 4 * n
                 init!(state, isx, v)
                 inject_error!(state, px, pz)
                 correct_error!(state)
@@ -176,7 +176,7 @@ const state1 = Clf.StabilizerState(9)
 const state2 = Clf.PauliString{UInt128}(9)
 
 const xps_state, zps_state = @time calc_errors(state1, ps, 3200)
-const xps_diff, zps_diff = @time calc_errors(state2, ps, 3200)
+const xps_diff, zps_diff = @time calc_errors(state2, ps, 3200 * 256)
 
 figure()
 plot(ps, xps_state, "C0", label="x (state)", alpha=0.3)
