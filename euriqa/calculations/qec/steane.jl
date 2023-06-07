@@ -159,33 +159,6 @@ function calc_errors(state, ps, n)
     return xps, zps
 end
 
-# # For Pauli-Z error causing X logical errors, we have stabilizers checking the parity
-# # of every pairs in each row.
-# # The logical operator is the parity of the three bits, one from each row.
-# # During correction, we make sure that each row is back to having the same value.
-# # An logical error will happen if we end up flipping an odd number of rows
-# # in this process (together with the error).
-# # Therefore, using the function defined below, the probability for a logical error
-# # is `p_parity_err3(p_major_err3(p))` where `p_major_err3(p)` calculates
-# # the probability for a row to be fixed incorrectly and calling `p_parity_err3`
-# # on that returns the probability for an odd number of rows to be flipped.
-
-# # Similarly, for Pauli-X error causing Z logical errors, we have stabilizers
-# # to make sure the parity of each columns are the same and the logical operator
-# # returns the parity of the columns. An logical error will therefore happen
-# # when a majority of columns were fixed to the wrong parity. This has probability
-# # `p_major_err3(p_parity_err3(p))` where `p_parity_err3(p)` is the probability
-# # for a column to have the wrong parity and calling `p_major_err3` on it
-# # returns the probability for the majority of columns to have the wrong parity.
-
-# # Probability of the majority within 3 bits having error with probability p
-# p_major_err3(p) = p^3 + 3 * p^2 * (1 - p)
-# # Probability of an odd number within 3 bits having error with probability p
-# p_parity_err3(p) = p^3 + 3 * p * (1 - p)^2
-
-# p_xerr(p) = p_parity_err3(p_major_err3(p))
-# p_zerr(p) = p_major_err3(p_parity_err3(p))
-
 const ps = range(0, 1, 501)
 
 const prefix = joinpath(@__DIR__, "imgs/steane")
@@ -197,19 +170,17 @@ const xps_state, zps_state = @time calc_errors(state1, ps, 3200)
 const xps_diff, zps_diff = @time calc_errors(state2, ps, 3200 * 256)
 
 figure()
-plot(ps, xps_state, "C0--", label="x (state)")
+plot(ps, xps_state, "C0", label="x (state)", alpha=0.3)
 plot(ps, xps_diff, "C2", label="x (error)")
-# plot(ps, p_xerr.(ps), "C4--", label="x (analytic)")
-plot(ps, zps_state, "C1--", label="z (state)")
+plot(ps, zps_state, "C1", label="z (state)", alpha=0.3)
 plot(ps, zps_diff, "C3", label="z (error)")
-# plot(ps, p_zerr.(ps), "C5--", label="z (analytic)")
 plot(ps, ps, "C0--")
 legend(fontsize=13, ncol=2)
 grid()
 xlabel("Physical Error")
 ylabel("Logical Error")
-# xlim([0, 1])
-# ylim([0, 1])
+xlim([0, 1])
+ylim([0, 1])
 title("Steane code [[7, 1, 3]]")
 NaCsPlot.maybe_save(prefix)
 
