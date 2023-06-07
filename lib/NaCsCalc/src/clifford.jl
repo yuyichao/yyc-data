@@ -2,6 +2,9 @@
 
 module Clifford
 
+using Random
+using ..Utils
+
 ##
 # Implement simulation of clifford circuit using the stabilizer state description
 
@@ -656,5 +659,55 @@ end
     end
     return state
 end
+
+mutable struct XYZErrorSelector
+    rand_bits::UInt64
+    bits_left::Int
+    XYZErrorSelector() = new(0, 0)
+end
+
+function rand_xyz(sel::XYZErrorSelector, r::AbstractRNG)
+    if sel.bits_left == 0
+        sel.rand_bits = rand(r, zero(UInt64):UInt64(UInt64(3)^36 - 1))
+        sel.bits_left = 40
+    end
+    sel.rand_bits, res = divrem(sel.rand_bits, 3)
+    sel.bits_left -= 1
+    return Int(res + 1)
+end
+
+function rand_depol_error(r::AbstractRNG, ::Type{T}, p, sel=XYZErrorSelector()) where T
+    0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
+    @inline if T === Bool
+        v = rand(r)
+        return v <= p * 2 / 3, p / 3 < p <= p
+    end
+    n = nbits(T)
+    S1 = zero(T)
+    S2 = zero(T)
+    p == 0 && return S1, S2
+    @inline if p > 0.17 # empirical threshold for trivial O(n) algorithm to be better
+        for i = 1:n
+            v = rand(r)
+            xerr = v <= p * 2 / 3
+            zerr = p / 3 < v <= p
+            S1 |= T(xerr) << (i - 1)
+            S2 |= T(zerr) << (i - 1)
+        end
+    else
+        S = Utils._rand_setbits(r, T, p)
+        for i in 1:nbits(T)
+            mask = T(1) << (i - 1)
+            if S & mask != 0
+                err_type = rand_xyz(sel, r)
+                S1 |= err_type in (1, 2) ? mask : zero(T)
+                S2 |= err_type in (2, 3) ? mask : zero(T)
+            end
+        end
+    end
+    return S1, S2
+end
+@inline rand_depol_error(::Type{T}, p::Real, sel=XYZErrorSelector()) where T =
+    rand_depol_error(Random.default_rng(), T, p, sel)
 
 end
