@@ -127,7 +127,11 @@ const _interactive = Ref(true)
 
 thread_rng() = Random.GLOBAL_RNG
 
-function _rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where T
+_nbits(::Type{Bool}) = 1
+_nbits(::Type{T}) where T = sizeof(T) * 8
+
+# Copied from randsubseq! from Base
+@inline function __rand_setbits(r::AbstractRNG, ::Type{T}, L) where T
     n = sizeof(T) * 8
     S = zero(T)
     # Skip through A, in order, from each element i to the next element i+s
@@ -138,7 +142,6 @@ function _rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where T
     # method: s = ceil(F^{-1}(u)) where u = rand(), which is simply
     # s = ceil(log(rand()) / log1p(-p)).
     # -log(rand()) is an exponential variate, so can use randexp().
-    L = -1 / log1p(-p) # L > 0
     i = 0
     while true
         s = randexp(r) * L
@@ -151,7 +154,67 @@ function _rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where T
     #  random sampling," Comm. ACM Magazine 7, 703-718 (1984).]
 end
 
-# Copied from randsubseq! from Base
+@inline function _rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where T
+    L = -1 / log1p(-p) # L > 0
+    return __rand_setbits(r, T, L)
+end
+
+mutable struct RandSetBits{T<:Union{Bool,Base.BitInteger},R<:AbstractRNG,P<:Real}
+    state::UInt128
+    ele_left::Int
+    # if p_L >= 0, it is the original probability
+    # if p_L < 0, it's 1 / log1p(-p) used for computing the amount to jump ahead.
+    const p_L::P
+    const rng::R
+    function RandSetBits{T}(r::R, p::P) where {T<:Union{Bool,Base.BitInteger},R<:AbstractRNG,P<:Real}
+        0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
+        if 0 < p <= 0.17 # empirical threshold for trivial O(n) algorithm to be better
+            p = 1 / log1p(-p) # L > 0
+        end
+        return new{T,R,P}(0, 0, p, r)
+    end
+    RandSetBits{T}(p::Real) where T<:Union{Bool,Base.BitInteger} =
+        RandSetBits{T}(Random.default_rng(), p)
+end
+
+function _new_state(sb::RandSetBits)
+    Te = UInt128
+    n = sizeof(Te) * 8
+    S = zero(Te)
+    r = sb.rng
+    p = sb.p_L
+    @inline if p >= 0
+        if p == 0
+            return S
+        elseif p == 1
+            return ~S
+        end
+        for i = 1:n
+            S |= Te(rand(r) <= p) << (i - 1)
+        end
+    else
+        S = __rand_setbits(r, Te, -p)
+    end
+    return S
+end
+
+@inline function Random.rand(sb::RandSetBits{T}) where T
+    Te = UInt128
+    @inline if sizeof(T) == sizeof(Te)
+        return _new_state(sb) % T
+    end
+    n = sizeof(Te) * 8
+    state = sb.state
+    if sb.ele_left == 0
+        sb.ele_left = n ÷ _nbits(T)
+        state = _new_state(sb)
+    end
+    sb.ele_left -= 1
+    res = state % T
+    sb.state = state >> _nbits(T)
+    return res
+end
+
 function rand_setbits(r::AbstractRNG, ::Type{T}, p::Real) where {T <: Union{Bool,Base.BitInteger}}
     0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
     @inline if T === Bool
