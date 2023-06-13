@@ -236,6 +236,92 @@ end
 @inline rand_setbits(::Type{T}, p::Real) where T =
     rand_setbits(Random.default_rng(), T, p)
 
+
+mutable struct RandDepol{T<:Union{Bool,Base.BitInteger},R<:AbstractRNG,P<:Real}
+    state_x::UInt128
+    state_z::UInt128
+    ele_left::Int
+    err_sel_left::Int
+    err_sel_state::UInt64
+    # if p_L >= 0, it is the original probability
+    # if p_L < 0, it's 1 / log1p(-p) used for computing the amount to jump ahead.
+    const p_L::P
+    const rng::R
+
+    function RandDepol{T}(r::R, p::P) where {T<:Union{Bool,Base.BitInteger},R<:AbstractRNG,P<:Real}
+        0 <= p <= 1 || throw(ArgumentError("probability $p not in [0,1]"))
+        if 0 < p <= 0.17 # empirical threshold for trivial O(n) algorithm to be better
+            p = 1 / log1p(-p) # L > 0
+        end
+        return new{T,R,P}(0, 0, 0, 0, 0, p, r)
+    end
+    RandDepol{T}(p::Real) where T<:Union{Bool,Base.BitInteger} =
+        RandDepol{T}(Random.default_rng(), p)
+end
+
+@inline function _rand_err_sel(rd::RandDepol)
+    @inline if rd.err_sel_left == 0
+        rd.err_sel_state = rand(rd.rng, zero(UInt64):UInt64(UInt64(3)^36 - 1))
+        rd.err_sel_left = 40
+    end
+    rd.err_sel_state, res = divrem(rd.err_sel_state, 3)
+    rd.err_sel_left -= 1
+    return res % Int
+end
+
+function _new_state(rd::RandDepol)
+    Te = UInt128
+    n = sizeof(Te) * 8
+    S1 = zero(Te)
+    S2 = zero(Te)
+    r = rd.rng
+    p = rd.p_L
+    @inline if p >= 0
+        if p == 0
+            return S1, S2
+        end
+        for i = 1:n
+            v = rand(r)
+            xerr = v <= p * 2 / 3
+            zerr = p / 3 < v <= p
+            S1 |= Te(xerr) << (i - 1)
+            S2 |= Te(zerr) << (i - 1)
+        end
+    else
+        i = 0
+        while true
+            s = randexp(r) * -p
+            s >= n - i && return S1, S2 # compare before ceil to avoid overflow
+            i += unsafe_trunc(Int, ceil(s))
+            err_type = _rand_err_sel(rd)
+            S1 |= Te(err_type <= 1) << (i - 1)
+            S2 |= Te(err_type >= 1) << (i - 1)
+        end
+    end
+    return S1, S2
+end
+
+@inline function Random.rand(rd::RandDepol{T}) where T
+    Te = UInt128
+    @inline if sizeof(T) == sizeof(Te)
+        x, z = _new_state(rd)
+        return x % T, z % T
+    end
+    n = sizeof(Te) * 8
+    state_x = rd.state_x
+    state_z = rd.state_z
+    if rd.ele_left == 0
+        rd.ele_left = n ÷ _nbits(T)
+        state_x, state_z = _new_state(rd)
+    end
+    rd.ele_left -= 1
+    res_x = state_x % T
+    res_z = state_z % T
+    rd.state_x = state_x >> _nbits(T)
+    rd.state_z = state_z >> _nbits(T)
+    return res_x, res_z
+end
+
 function __init__()
     interactive_str = get(ENV, "NACS_INTERACT", "true")
     if interactive_str == "false" || interactive_str == "0"
