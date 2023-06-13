@@ -3,7 +3,7 @@
 push!(LOAD_PATH, joinpath(@__DIR__, "../../lib"))
 
 using NaCsCalc
-using NaCsCalc.Utils: rand_setbits
+using NaCsCalc.Utils: RandSetBits, RandDepol
 using NaCsPlot
 using PyPlot
 
@@ -19,10 +19,9 @@ function init!(state::Clf.PauliString)
     empty!(state)
 end
 
-function inject_error!(state, p)
-    Tele = eltype(state)
+function inject_error!(state, rd)
     @inbounds for i in 1:7
-        xmask, zmask = Clf.rand_depol_error(Tele, p)
+        xmask, zmask = rand(rd)
         Clf.inject_pauli!(state, xmask, zmask, i)
     end
 end
@@ -37,14 +36,14 @@ function repeated_error(p, d)
     return min(perror, 1.0)
 end
 
-function measure_error(val::T, pmeasure) where T
-    return val ⊻ rand_setbits(T, pmeasure)
+@inline function measure_error(val, rm)
+    return val ⊻ rand(rm)
 end
 
-function correct_error!(state, pmeasure)
+function correct_error!(state, rm)
     T = eltype(state)
-    stab_x_vals = map(stab->@inbounds(measure_error(Clf.measure_stabilizer_x(state, stab), pmeasure)), stab_xs)
-    stab_z_vals = map(stab->@inbounds(measure_error(Clf.measure_stabilizer_z(state, stab), pmeasure)), stab_zs)
+    stab_x_vals = map(stab->@inbounds(measure_error(Clf.measure_stabilizer_x(state, stab), rm)), stab_xs)
+    stab_z_vals = map(stab->@inbounds(measure_error(Clf.measure_stabilizer_z(state, stab), rm)), stab_zs)
 
     @inbounds begin
         Clf.inject_pauli!(state, stab_z_vals[1] & ~stab_z_vals[2] & ~stab_z_vals[3],
@@ -100,10 +99,12 @@ end
 
 function simulate_idle(state, p, d, n, pmeasure)
     err_stat = ErrorStat()
+    rd = RandDepol{eltype(state)}(p)
+    rm = RandSetBits{eltype(state)}(pmeasure)
     while err_stat.tot[] < n
         init!(state)
-        inject_error!(state, p)
-        correct_error!(state, pmeasure)
+        inject_error!(state, rd)
+        correct_error!(state, rm)
         collect_results(state, err_stat)
     end
     return err_stat

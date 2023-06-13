@@ -3,7 +3,7 @@
 push!(LOAD_PATH, joinpath(@__DIR__, "../../lib"))
 
 using NaCsCalc
-using NaCsCalc.Utils: rand_setbits
+using NaCsCalc.Utils: RandDepol
 using NaCsPlot
 using PyPlot
 
@@ -19,10 +19,10 @@ function init!(state::Clf.PauliString)
     empty!(state)
 end
 
-function inject_error!(state, p)
+function inject_error!(state, rd)
     Tele = eltype(state)
     @inbounds for i in 1:7
-        xmask, zmask = Clf.rand_depol_error(Tele, p)
+        xmask, zmask = rand(rd)
         Clf.inject_pauli!(state, xmask, zmask, i)
     end
 end
@@ -86,9 +86,10 @@ end
 
 function simulate_idle(state, p, n)
     err_stat = ErrorStat()
+    rd = RandDepol{eltype(state)}(p)
     while err_stat.tot[] < n
         init!(state)
-        inject_error!(state, p)
+        inject_error!(state, rd)
         correct_error!(state)
         collect_results(state, err_stat)
     end
