@@ -3,7 +3,7 @@
 push!(LOAD_PATH, joinpath(@__DIR__, "../../lib"))
 
 using NaCsCalc
-using NaCsCalc.Utils: rand_setbits
+using NaCsCalc.Utils: RandSetBits
 using NaCsPlot
 using PyPlot
 
@@ -48,10 +48,9 @@ function init!(state::Clf.PauliString, isx, v)
     empty!(state)
 end
 
-function inject_error!(state, px, pz)
-    Tele = eltype(state)
+function inject_error!(state, sb)
     @inbounds for i in 1:7
-        Clf.inject_pauli!(state, rand_setbits(Tele, px), rand_setbits(Tele, pz), i)
+        Clf.inject_pauli!(state, rand(sb), rand(sb), i)
     end
 end
 
@@ -133,13 +132,14 @@ function collect_results(state::Clf.PauliString, isx, v, err_stat::ErrorStat)
     collect_result_z(state, false, err_stat)
 end
 
-function simulate_idle(state, px, pz, n)
+function simulate_idle(state, p, n)
     err_stat = ErrorStat()
+    sb = RandSetBits{eltype(state)}(p)
     while err_stat.xtot[] + err_stat.ztot[] < 4 * n
         for isx in (false, true)
             for v in (false, true)
                 init!(state, isx, v)
-                inject_error!(state, px, pz)
+                inject_error!(state, sb)
                 correct_error!(state)
                 collect_results(state, isx, v, err_stat)
             end
@@ -152,7 +152,7 @@ function calc_errors(state, ps, n)
     xps = Vector{Float64}(undef, length(ps))
     zps = Vector{Float64}(undef, length(ps))
     for (i, p) in enumerate(ps)
-        err_stat = simulate_idle(state, p, p, n)
+        err_stat = simulate_idle(state, p, n)
         xps[i] = err_stat.xerr / err_stat.xtot
         zps[i] = err_stat.zerr / err_stat.ztot
     end
