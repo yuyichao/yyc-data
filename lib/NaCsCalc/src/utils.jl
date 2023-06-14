@@ -262,7 +262,7 @@ end
 @inline function _rand_err_sel(rd::RandDepol)
     @inline if rd.err_sel_left == 0
         rd.err_sel_state = rand(rd.rng, zero(UInt64):UInt64(UInt64(3)^36 - 1))
-        rd.err_sel_left = 40
+        rd.err_sel_left = 36
     end
     rd.err_sel_state, res = divrem(rd.err_sel_state, 3)
     rd.err_sel_left -= 1
