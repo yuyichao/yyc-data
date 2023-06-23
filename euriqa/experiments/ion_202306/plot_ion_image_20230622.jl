@@ -82,7 +82,7 @@ const side_count_s2 = [integrate_circle(diff_img_s2,
 figure()
 errorbar(angles .* (180 / π), side_count ./ center,
          sqrt.(side_count_s2 ./ side_count.^2 .+ center_s2 / center.^2)
-         .* side_count ./ center)
+         .* abs.(side_count ./ center))
 grid()
 xlabel("Direction")
 ylabel("Crosstalk")
