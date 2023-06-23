@@ -70,23 +70,41 @@ const center = integrate_circle(diff_img, 784, 1520, r_fiber)
 const center_s2 = integrate_circle(diff_img_s2, 784, 1520, r_fiber)
 
 const angles = range(0, 2π, 181)
-const side_count = [integrate_circle(diff_img,
-                                     784 + d_fiber * cos(angle),
-                                     1520 + d_fiber * sin(angle), r_fiber)
-                    for angle in angles]
-const side_count_s2 = [integrate_circle(diff_img_s2,
-                                        784 + d_fiber * cos(angle),
-                                        1520 + d_fiber * sin(angle), r_fiber)
-                       for angle in angles]
+
+function compute_crosstalk(angles, r_fiber, d_fiber)
+    side_count = [integrate_circle(diff_img,
+                                   784 + d_fiber * cos(angle),
+                                   1520 + d_fiber * sin(angle), r_fiber)
+                  for angle in angles]
+    side_count_s2 = [integrate_circle(diff_img_s2,
+                                      784 + d_fiber * cos(angle),
+                                      1520 + d_fiber * sin(angle), r_fiber)
+                     for angle in angles]
+    xc = side_count ./ center
+    xc_s = sqrt.(side_count_s2 ./ side_count.^2 .+ center_s2 / center.^2) .* abs.(xc)
+    return xc, xc_s
+end
+
+const xc1, xc1_s = compute_crosstalk(angles, r_fiber, d_fiber)
+const xc2, xc2_s = compute_crosstalk(angles, r_fiber, d_fiber * 2)
+const xc3, xc3_s = compute_crosstalk(angles, r_fiber, d_fiber * 3)
+const xc5, xc5_s = compute_crosstalk(angles, r_fiber, d_fiber * 5)
+const xc8, xc8_s = compute_crosstalk(angles, r_fiber, d_fiber * 8)
+const xc13, xc13_s = compute_crosstalk(angles, r_fiber, d_fiber * 13)
 
 figure()
-errorbar(angles .* (180 / π), side_count ./ center,
-         sqrt.(side_count_s2 ./ side_count.^2 .+ center_s2 / center.^2)
-         .* abs.(side_count ./ center))
+errorbar(angles .* (180 / π), xc1 .* 100, xc1_s .* 100, label="dist 1")
+errorbar(angles .* (180 / π), xc2 .* 100, xc2_s .* 100, label="dist 2")
+errorbar(angles .* (180 / π), xc3 .* 100, xc3_s .* 100, label="dist 3")
+errorbar(angles .* (180 / π), xc5 .* 100, xc5_s .* 100, label="dist 5")
+errorbar(angles .* (180 / π), xc8 .* 100, xc8_s .* 100, label="dist 8")
+errorbar(angles .* (180 / π), xc13 .* 100, xc13_s .* 100, label="dist 13")
+legend(fontsize=13, ncol=3)
 grid()
-xlabel("Direction")
-ylabel("Crosstalk")
+xlabel("Direction (\$^\\circ\$)")
+ylabel("Crosstalk (%)")
 xlim([0, 360])
+ylim([0, 8])
 NaCsPlot.maybe_save("$(prefix)_crosstalk")
 
 NaCsPlot.maybe_show()
