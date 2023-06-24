@@ -382,13 +382,13 @@ end
 
 struct StabilizerState
     n::Int
-    xs::Vector{BitVector}
-    zs::Vector{BitVector}
-    rs::BitVector
+    xs::Vector{BitMatrix}
+    zs::Vector{BitMatrix}
+    rs::BitMatrix
     function StabilizerState(n)
-        xs = [(x = falses(2 * n + 1); x[i] = true; x) for i in 1:n]
-        zs = [(z = falses(2 * n + 1); z[i + n] = true; z) for i in 1:n]
-        rs = falses(2 * n + 1)
+        xs = [(x = falses(2 * n + 1, 1); x[i] = true; x) for i in 1:n]
+        zs = [(z = falses(2 * n + 1, 1); z[i + n] = true; z) for i in 1:n]
+        rs = falses(2 * n + 1, 1)
         return new(n, xs, zs, rs)
     end
 end
