@@ -474,6 +474,128 @@ function test_flip_base(n)
     end
 end
 
+function test_flip_base_x(n)
+    state = Clf.StabilizerState(n)
+    Clf.init_state_x!(state)
+
+    res = Bool[]
+    res0 = false
+    for i in 1:n - 1
+        v, det = Clf.measure_zs!(state, (i, i + 1))
+        @test !det
+        push!(res, v)
+        res0 ⊻= v
+    end
+    # At this point, the stabilizers are all pairs of ZZ and the global X
+    v, det = Clf.measure_zs!(state, (1, n))
+    @test det
+    @test v == res0
+    push!(res, v)
+    for i in 1:n
+        i2 = i == n ? 1 : i + 1
+        v, det = Clf.measure_zs!(state, (i, i2))
+        @test det
+        @test v == res[i]
+    end
+    for i in 1:n
+        for i2 in 1:n - 1
+            if i2 >= i
+                i2 += 1
+            end
+            v, det = Clf.measure_zs!(state, (i, i2))
+            @test det
+        end
+    end
+    v, det = Clf.measure_xs!(state, 1:n)
+    @test det
+    @test !v
+    res_zn2, det = Clf.measure_zs!(state, 1:(n & ~1))
+    @test det
+
+    res = Bool[]
+    res0 = false
+    res1 = false
+    for i in 1:n - 2
+        v, det = Clf.measure_xs!(state, (i, i + 1))
+        @test !det
+        push!(res, v)
+        res0 ⊻= v
+        if isodd(i)
+            res1 ⊻= v
+        end
+    end
+    v, det = Clf.measure_xs!(state, 1:n)
+    @test det
+    @test !v
+    # At this point, the first n-2 pairs of XX's are the stabilizer
+    # and so is the global X.
+    # For even n, the combination of the XX's means that
+    # X(1)...X(n-2) is also a stabilizer and therefore X(n-1)X(n) is as well.
+    # The last stablizer in this case is Z(1) ... Z(n)
+    # Otherwise, X(n) is an stablizer
+    # The last stablizer in this case is Z(1) ... Z(n - 1)
+    if iseven(n)
+        v, det = Clf.measure_xs!(state, (n - 1, n))
+        @test det
+        @test v == res1
+        push!(res, v)
+        res0 ⊻= v
+        v, det = Clf.measure_zs!(state, 1:n)
+        @test det
+        @test v == res_zn2
+        v, det = Clf.measure_xs!(state, (1, n))
+        @test det
+        @test v == res0
+        push!(res, v)
+    else
+        v, det = Clf.measure_x!(state, n)
+        @test det
+        @test v == res1
+        v, det = Clf.measure_zs!(state, 1:n - 1)
+        @test det
+        @test v == res_zn2
+
+        v, det = Clf.measure_xs!(state, (n - 1, n))
+        @test !det
+        res0 ⊻= v
+        push!(res, v)
+
+        v, det = Clf.measure_xs!(state, (1, n))
+        @test det
+        @test v == res0
+        push!(res, v)
+    end
+    for i in 1:n
+        i2 = i == n ? 1 : i + 1
+        v, det = Clf.measure_xs!(state, (i, i2))
+        @test det
+        @test v == res[i]
+    end
+    # At this point, all pairs of XX are the stabilizers
+    for i in 1:n
+        for i2 in 1:n - 1
+            if i2 >= i
+                i2 += 1
+            end
+            v, det = Clf.measure_xs!(state, (i, i2))
+            @test det
+        end
+    end
+    v, det = Clf.measure_xs!(state, 1:n)
+    @test det
+    @test !v
+    if iseven(n)
+        v, det = Clf.measure_zs!(state, 1:n)
+        @test det
+        @test v == res_zn2
+    else
+        for i in 1:n
+            v, det = Clf.measure_x!(state, n)
+            @test det
+        end
+    end
+end
+
 @testset "flip base" begin
     test_flip_base(4)
     test_flip_base(5)
@@ -483,8 +605,21 @@ end
     test_flip_base(32)
     test_flip_base(64)
     test_flip_base(65)
+    test_flip_base(127)
     test_flip_base(128)
     test_flip_base(129)
+
+    test_flip_base_x(4)
+    test_flip_base_x(5)
+    test_flip_base_x(16)
+    test_flip_base_x(17)
+    test_flip_base_x(31)
+    test_flip_base_x(32)
+    test_flip_base_x(64)
+    test_flip_base_x(65)
+    test_flip_base_x(127)
+    test_flip_base_x(128)
+    test_flip_base_x(129)
 end
 
 end
