@@ -380,6 +380,16 @@ Base.@propagate_inbounds @inline function measure_stabilizer_z(str::PauliString,
     return ~pauli_commute_z(str, zs)
 end
 
+@inline function _get_chunk_mask(::Type{T}, bitidx) where T
+    bitidx_0 = bitidx - 1
+    chunk = bitidx_0 ÷ (sizeof(T) * 8) + 1
+    subbitidx_0 = bitidx_0 % (sizeof(T) * 8)
+    mask = one(T) << subbitidx_0
+    return chunk, mask
+end
+@inline _getbit(chunk, mask) = chunk & mask != 0
+@inline _setbit(chunk, val, mask) = ifelse(val, chunk | mask, chunk & ~mask)
+
 struct StabilizerState
     n::Int
     xs::Vector{BitMatrix}
@@ -433,23 +443,122 @@ function init_state_x!(state::StabilizerState, v::Bool=false)
     return state
 end
 
+@inline function assume(v::Bool)
+    Base.llvmcall(
+        ("""
+         declare void @llvm.assume(i1)
+         define void @fw_assume(i8) alwaysinline
+         {
+             %v = trunc i8 %0 to i1
+             call void @llvm.assume(i1 %v)
+             ret void
+         }
+         """, "fw_assume"), Cvoid, Tuple{Bool}, v)
+end
+
 @inline function pauli_prod_phase(x1::Bool, z1::Bool, x2::Bool, z2::Bool)
     return ifelse(x1, ifelse(z1, z2 - x2, z2 * (2 * x2 - 1)),
                   ifelse(z1, x2 * (1 - 2 * z2), 0))
 end
 function clifford_rowsum!(state::StabilizerState, h, i)
+    ET = eltype(state.rs.chunks)
+    chunk_h, mask_h = _get_chunk_mask(ET, h)
+    chunk_i, mask_i = _get_chunk_mask(ET, i)
+    xss = state.xs
+    zss = state.zs
+
     gs = 0
-    for j in 1:state.n
-        gs += pauli_prod_phase(state.xs[j][i], state.zs[j][i],
-                               state.xs[j][h], state.zs[j][h])
+    @inbounds for j in 1:state.n
+        assume(isassigned(xss, j))
+        xs = xss[j].chunks
+        assume(isassigned(zss, j))
+        zs = zss[j].chunks
+        gs += pauli_prod_phase(_getbit(xs[chunk_i], mask_i),
+                               _getbit(zs[chunk_i], mask_i),
+                               _getbit(xs[chunk_h], mask_h),
+                               _getbit(zs[chunk_h], mask_h))
     end
-    gs += 2 * (state.rs[h] + state.rs[i])
-    state.rs[h] = (gs & 3) != 0
-    for j in 1:state.n
-        state.xs[j][h] = state.xs[j][i] ⊻ state.xs[j][h]
-        state.zs[j][h] = state.zs[j][i] ⊻ state.zs[j][h]
+    @inbounds begin
+        rs = state.rs.chunks
+        rh = rs[chunk_h]
+        ri = rs[chunk_i]
+        gs += 2 * (_getbit(rh, mask_h) + _getbit(ri, mask_i))
+        rs[chunk_h] = _setbit(rh, (gs & 3) != 0, mask_h)
+    end
+    @inbounds for j in 1:state.n
+        assume(isassigned(xss, j))
+        xs = xss[j].chunks
+        assume(isassigned(zss, j))
+        zs = zss[j].chunks
+
+        xi = xs[chunk_i]
+        xh = xs[chunk_h]
+        xs[chunk_h] = _setbit(xh, _getbit(xi, mask_i) ⊻ _getbit(xh, mask_h), mask_h)
+
+        zi = zs[chunk_i]
+        zh = zs[chunk_h]
+        zs[chunk_h] = _setbit(zh, _getbit(zi, mask_i) ⊻ _getbit(zh, mask_h), mask_h)
     end
     return state
+end
+
+@inline function _clear_workspace!(state::StabilizerState, n)
+    ET = eltype(state.rs.chunks)
+    chunk, mask = _get_chunk_mask(ET, 2 * n + 1)
+    xss = state.xs
+    zss = state.zs
+    @inbounds for i in 1:n
+        assume(isassigned(xss, i))
+        xs = xss[i].chunks
+        assume(isassigned(zss, i))
+        zs = zss[i].chunks
+        xs[chunk] &= ~mask
+        zs[chunk] &= ~mask
+    end
+    @inbounds state.rs.chunks[chunk] &= ~mask
+    return
+end
+
+@inline function _inject_zresult!(state::StabilizerState, n, a, p, res)
+    ET = eltype(state.rs.chunks)
+    chunk1, mask1 = _get_chunk_mask(ET, p - n)
+    chunk2, mask2 = _get_chunk_mask(ET, p)
+    xss = state.xs
+    zss = state.zs
+    @inbounds for i in 1:n
+        assume(isassigned(xss, i))
+        xs = xss[i].chunks
+        assume(isassigned(zss, i))
+        zs = zss[i].chunks
+
+        # state.xs[i][p - n] = state.xs[i][p]
+        # state.xs[i][p] = false
+        x2 = xs[chunk2]
+        xs[chunk2] = x2 & ~mask2
+        # Note that the load of x1 has to happen after the store of x2
+        # since the two may alias
+        xs[chunk1] = _setbit(xs[chunk1], (x2 & mask2) != 0, mask1)
+
+        # state.zs[i][p - n] = state.zs[i][p]
+        # state.zs[i][p] = i == a
+        z2 = zs[chunk2]
+        zs[chunk2] = _setbit(z2, i == a, mask2)
+        # Note that the load of z1 has to happen after the store of z2
+        # since the two may alias
+        zs[chunk1] = _setbit(zs[chunk1], (z2 & mask2) != 0, mask1)
+    end
+    # state.rs[p - n] = state.rs[p]
+    # state.rs[p] = res
+    @inbounds begin
+        rs = state.rs.chunks
+
+        r2 = rs[chunk2]
+        rs[chunk2] = _setbit(r2, res, mask2)
+        # Note that the load of r1 has to happen after the store of r2
+        # since the two may alias
+        rs[chunk1] = _setbit(rs[chunk1], (r2 & mask2) != 0, mask1)
+    end
+    return
 end
 
 # Randomly pick a result
@@ -470,22 +579,11 @@ function measure_z!(state::StabilizerState, a; force=nothing)
                 clifford_rowsum!(state, i, p)
             end
         end
-        for i in 1:n
-            state.xs[i][p - n] = state.xs[i][p]
-            state.xs[i][p] = false
-            state.zs[i][p - n] = state.zs[i][p]
-            state.zs[i][p] = i == a
-        end
         res = force !== nothing ? force : rand(Bool)
-        state.rs[p - n] = state.rs[p]
-        state.rs[p] = res
+        _inject_zresult!(state, n, a, p, res)
         return res, false
     else
-        for i in 1:n
-            state.xs[i][2 * n + 1] = false
-            state.zs[i][2 * n + 1] = false
-        end
-        state.rs[2 * n + 1] = false
+        _clear_workspace!(state, n)
         for i in 1:n
             if state.xs[a][i]
                 clifford_rowsum!(state, 2 * n + 1, i + n)
