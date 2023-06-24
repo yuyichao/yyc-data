@@ -380,11 +380,13 @@ Base.@propagate_inbounds @inline function measure_stabilizer_z(str::PauliString,
     return ~pauli_commute_z(str, zs)
 end
 
-@inline function _get_chunk_mask(::Type{T}, bitidx) where T
+const ChT = UInt64
+const _chunk_len = sizeof(ChT) * 8
+@inline function _get_chunk_mask(bitidx)
     bitidx_0 = bitidx - 1
-    chunk = bitidx_0 ÷ (sizeof(T) * 8) + 1
-    subbitidx_0 = bitidx_0 % (sizeof(T) * 8)
-    mask = one(T) << subbitidx_0
+    chunk = bitidx_0 ÷ _chunk_len + 1
+    subbitidx_0 = bitidx_0 % _chunk_len
+    mask = one(ChT) << subbitidx_0
     return chunk, mask
 end
 @inline _getbit(chunk, mask) = chunk & mask != 0
@@ -392,17 +394,39 @@ end
 
 struct StabilizerState
     n::Int
-    xs::Vector{BitMatrix}
-    zs::Vector{BitMatrix}
-    rs::BitMatrix
+    xs::Matrix{ChT}
+    zs::Matrix{ChT}
+    rs::Matrix{ChT}
     function StabilizerState(n)
-        xs = [(x = falses(2 * n + 1, 1); x[i] = true; x) for i in 1:n]
-        zs = [(z = falses(2 * n + 1, 1); z[i + n] = true; z) for i in 1:n]
-        rs = falses(2 * n + 1, 1)
+        nchunks = 2n ÷ _chunk_len + 1
+        xs = zeros(ChT, nchunks, n)
+        zs = zeros(ChT, nchunks, n)
+        rs = zeros(ChT, nchunks, 1)
+        @inbounds for i in 1:n
+            chunk1, mask1 = _get_chunk_mask(i)
+            xs[chunk1, i] = mask1
+            chunk2, mask2 = _get_chunk_mask(i + n)
+            zs[chunk2, i] = mask2
+        end
         return new(n, xs, zs, rs)
     end
 end
 Base.eltype(::Type{StabilizerState}) = Bool
+
+Base.@propagate_inbounds @inline function _getindex_x(state::StabilizerState, i, j)
+    chunk, mask = _get_chunk_mask(i)
+    return _getbit(state.xs[chunk, j], mask)
+end
+
+Base.@propagate_inbounds @inline function _getindex_z(state::StabilizerState, i, j)
+    chunk, mask = _get_chunk_mask(i)
+    return _getbit(state.zs[chunk, j], mask)
+end
+
+Base.@propagate_inbounds @inline function _getindex_r(state::StabilizerState, i)
+    chunk, mask = _get_chunk_mask(i)
+    return _getbit(state.rs[chunk], mask)
+end
 
 function Base.show(io::IO, state::StabilizerState)
     for i in 1:state.n
@@ -413,47 +437,41 @@ end
 
 function get_stabilizer(state::StabilizerState, i)
     n = state.n
-    return PauliString(n, [state.xs[j][i + n] for j in 1:n],
-                       [state.zs[j][i + n] for j in 1:n], state.rs[i + n])
+    return PauliString(n, [_getindex_x(state, i + n, j) for j in 1:n],
+                       [_getindex_z(state, i + n, j) for j in 1:n],
+                       _getindex_r(state, i + n))
 end
 
 function init_state_z!(state::StabilizerState, v::Bool=false)
-    for (i, x) in enumerate(state.xs)
-        x.chunks .= 0
-        x[i] = true
+    n = state.n
+    xs = state.xs
+    zs = state.zs
+    xs .= 0
+    zs .= 0
+    @inbounds for i in 1:n
+        chunk1, mask1 = _get_chunk_mask(i)
+        xs[chunk1, i] = mask1
+        chunk2, mask2 = _get_chunk_mask(i + n)
+        zs[chunk2, i] = mask2
     end
-    for (i, z) in enumerate(state.zs)
-        z.chunks .= 0
-        z[i + state.n] = true
-    end
-    state.rs.chunks .= _cast_bits(eltype(state.rs.chunks), v)
+    state.rs .= _cast_bits(ChT, v)
     return state
 end
 
 function init_state_x!(state::StabilizerState, v::Bool=false)
-    for (i, x) in enumerate(state.xs)
-        x.chunks .= 0
-        x[i + state.n] = true
+    n = state.n
+    xs = state.xs
+    zs = state.zs
+    xs .= 0
+    zs .= 0
+    @inbounds for i in 1:n
+        chunk1, mask1 = _get_chunk_mask(i)
+        zs[chunk1, i] = mask1
+        chunk2, mask2 = _get_chunk_mask(i + n)
+        xs[chunk2, i] = mask2
     end
-    for (i, z) in enumerate(state.zs)
-        z.chunks .= 0
-        z[i] = true
-    end
-    state.rs.chunks .= _cast_bits(eltype(state.rs.chunks), v)
+    state.rs .= _cast_bits(ChT, v)
     return state
-end
-
-@inline function assume(v::Bool)
-    Base.llvmcall(
-        ("""
-         declare void @llvm.assume(i1)
-         define void @fw_assume(i8) alwaysinline
-         {
-             %v = trunc i8 %0 to i1
-             call void @llvm.assume(i1 %v)
-             ret void
-         }
-         """, "fw_assume"), Cvoid, Tuple{Bool}, v)
 end
 
 @inline function pauli_prod_phase(x1::Bool, z1::Bool, x2::Bool, z2::Bool)
@@ -461,97 +479,74 @@ end
                   ifelse(z1, x2 * (1 - 2 * z2), 0))
 end
 function clifford_rowsum!(state::StabilizerState, h, i)
-    ET = eltype(state.rs.chunks)
-    chunk_h, mask_h = _get_chunk_mask(ET, h)
-    chunk_i, mask_i = _get_chunk_mask(ET, i)
-    xss = state.xs
-    zss = state.zs
-
+    chunk_h, mask_h = _get_chunk_mask(h)
+    chunk_i, mask_i = _get_chunk_mask(i)
+    xs = state.xs
+    zs = state.zs
     gs = 0
     @inbounds for j in 1:state.n
-        assume(isassigned(xss, j))
-        xs = xss[j].chunks
-        assume(isassigned(zss, j))
-        zs = zss[j].chunks
-        gs += pauli_prod_phase(_getbit(xs[chunk_i], mask_i),
-                               _getbit(zs[chunk_i], mask_i),
-                               _getbit(xs[chunk_h], mask_h),
-                               _getbit(zs[chunk_h], mask_h))
+        gs += pauli_prod_phase(_getbit(xs[chunk_i, j], mask_i),
+                               _getbit(zs[chunk_i, j], mask_i),
+                               _getbit(xs[chunk_h, j], mask_h),
+                               _getbit(zs[chunk_h, j], mask_h))
     end
     @inbounds begin
-        rs = state.rs.chunks
+        rs = state.rs
         rh = rs[chunk_h]
         ri = rs[chunk_i]
         gs += 2 * (_getbit(rh, mask_h) + _getbit(ri, mask_i))
         rs[chunk_h] = _setbit(rh, (gs & 3) != 0, mask_h)
     end
     @inbounds for j in 1:state.n
-        assume(isassigned(xss, j))
-        xs = xss[j].chunks
-        assume(isassigned(zss, j))
-        zs = zss[j].chunks
+        xi = xs[chunk_i, j]
+        xh = xs[chunk_h, j]
+        xs[chunk_h, j] = _setbit(xh, _getbit(xi, mask_i) ⊻ _getbit(xh, mask_h), mask_h)
 
-        xi = xs[chunk_i]
-        xh = xs[chunk_h]
-        xs[chunk_h] = _setbit(xh, _getbit(xi, mask_i) ⊻ _getbit(xh, mask_h), mask_h)
-
-        zi = zs[chunk_i]
-        zh = zs[chunk_h]
-        zs[chunk_h] = _setbit(zh, _getbit(zi, mask_i) ⊻ _getbit(zh, mask_h), mask_h)
+        zi = zs[chunk_i, j]
+        zh = zs[chunk_h, j]
+        zs[chunk_h, j] = _setbit(zh, _getbit(zi, mask_i) ⊻ _getbit(zh, mask_h), mask_h)
     end
     return state
 end
 
 @inline function _clear_workspace!(state::StabilizerState, n)
-    ET = eltype(state.rs.chunks)
-    chunk, mask = _get_chunk_mask(ET, 2 * n + 1)
-    xss = state.xs
-    zss = state.zs
+    chunk, mask = _get_chunk_mask(2 * n + 1)
+    xs = state.xs
+    zs = state.zs
     @inbounds for i in 1:n
-        assume(isassigned(xss, i))
-        xs = xss[i].chunks
-        assume(isassigned(zss, i))
-        zs = zss[i].chunks
-        xs[chunk] &= ~mask
-        zs[chunk] &= ~mask
+        xs[chunk, i] &= ~mask
+        zs[chunk, i] &= ~mask
     end
-    @inbounds state.rs.chunks[chunk] &= ~mask
+    @inbounds state.rs[chunk] &= ~mask
     return
 end
 
 @inline function _inject_zresult!(state::StabilizerState, n, a, p, res)
-    ET = eltype(state.rs.chunks)
-    chunk1, mask1 = _get_chunk_mask(ET, p - n)
-    chunk2, mask2 = _get_chunk_mask(ET, p)
-    xss = state.xs
-    zss = state.zs
+    chunk1, mask1 = _get_chunk_mask(p - n)
+    chunk2, mask2 = _get_chunk_mask(p)
+    xs = state.xs
+    zs = state.zs
     @inbounds for i in 1:n
-        assume(isassigned(xss, i))
-        xs = xss[i].chunks
-        assume(isassigned(zss, i))
-        zs = zss[i].chunks
-
         # state.xs[i][p - n] = state.xs[i][p]
         # state.xs[i][p] = false
-        x2 = xs[chunk2]
-        xs[chunk2] = x2 & ~mask2
+        x2 = xs[chunk2, i]
+        xs[chunk2, i] = x2 & ~mask2
         # Note that the load of x1 has to happen after the store of x2
         # since the two may alias
-        xs[chunk1] = _setbit(xs[chunk1], (x2 & mask2) != 0, mask1)
+        xs[chunk1, i] = _setbit(xs[chunk1, i], (x2 & mask2) != 0, mask1)
 
         # state.zs[i][p - n] = state.zs[i][p]
         # state.zs[i][p] = i == a
-        z2 = zs[chunk2]
-        zs[chunk2] = _setbit(z2, i == a, mask2)
+        z2 = zs[chunk2, i]
+        zs[chunk2, i] = _setbit(z2, i == a, mask2)
         # Note that the load of z1 has to happen after the store of z2
         # since the two may alias
-        zs[chunk1] = _setbit(zs[chunk1], (z2 & mask2) != 0, mask1)
+        zs[chunk1, i] = _setbit(zs[chunk1, i], (z2 & mask2) != 0, mask1)
     end
     # state.rs[p - n] = state.rs[p]
     # state.rs[p] = res
+    rs = state.rs
     @inbounds begin
-        rs = state.rs.chunks
-
         r2 = rs[chunk2]
         rs[chunk2] = _setbit(r2, res, mask2)
         # Note that the load of r1 has to happen after the store of r2
@@ -567,7 +562,7 @@ function measure_z!(state::StabilizerState, a; force=nothing)
     local p
     found_p = false
     for _p in (n + 1):(2 * n)
-        if state.xs[a][_p]
+        if _getindex_x(state, _p, a)
             p = _p
             found_p = true
             break
@@ -575,7 +570,7 @@ function measure_z!(state::StabilizerState, a; force=nothing)
     end
     if found_p
         for i in 1:(2 * n)
-            if i != p && state.xs[a][i]
+            if i != p && _getindex_x(state, i, a)
                 clifford_rowsum!(state, i, p)
             end
         end
@@ -585,11 +580,11 @@ function measure_z!(state::StabilizerState, a; force=nothing)
     else
         _clear_workspace!(state, n)
         for i in 1:n
-            if state.xs[a][i]
+            if _getindex_x(state, i, a)
                 clifford_rowsum!(state, 2 * n + 1, i + n)
             end
         end
-        return state.rs[2 * n + 1], true
+        return _getindex_r(state, 2 * n + 1), true
     end
 end
 
@@ -717,28 +712,24 @@ function measure_stabilizer_z(state::StabilizerState, zs, r=false)
 end
 
 function apply!(state::StabilizerState, gate::Clifford1Q, a)
-    xas = state.xs[a]
-    zas = state.zs[a]
+    xs = state.xs
+    zs = state.zs
     rs = state.rs
-    nchunks = length(state.rs.chunks)
+    nchunks = length(state.rs)
     @inbounds for i in 1:nchunks
-        apply!(gate, @view(xas.chunks[i]), @view(zas.chunks[i]),
-               @view(rs.chunks[i]))
+        apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
     end
     return state
 end
 
 function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
-    xas = state.xs[a]
-    zas = state.zs[a]
-    xbs = state.xs[b]
-    zbs = state.zs[b]
+    xs = state.xs
+    zs = state.zs
     rs = state.rs
-    nchunks = length(state.rs.chunks)
+    nchunks = length(state.rs)
     @inbounds for i in 1:nchunks
-        apply!(gate, @view(xas.chunks[i]), @view(zas.chunks[i]),
-               @view(xbs.chunks[i]), @view(zbs.chunks[i]),
-               @view(rs.chunks[i]))
+        apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
+               @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
     end
     return state
 end
