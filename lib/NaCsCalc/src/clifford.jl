@@ -474,36 +474,6 @@ function init_state_x!(state::StabilizerState, v::Bool=false)
     return state
 end
 
-@inline function pauli_prod_phase(x1::Bool, z1::Bool, x2::Bool, z2::Bool)
-    return ifelse(x1, ifelse(z1, z2 - x2, z2 * (2 * x2 - 1)),
-                  ifelse(z1, x2 * (1 - 2 * z2), 0))
-end
-@inline function clifford_rowsum!(state::StabilizerState, h, i)
-    chunk_h, mask_h = _get_chunk_mask(h)
-    chunk_i, mask_i = _get_chunk_mask(i)
-    xs = state.xs
-    zs = state.zs
-    gs = 0
-    @inbounds for j in 1:state.n
-        xi = xs[chunk_i, j]
-        xh = xs[chunk_h, j]
-        zi = zs[chunk_i, j]
-        zh = zs[chunk_h, j]
-        gs += pauli_prod_phase(_getbit(xi, mask_i), _getbit(zi, mask_i),
-                               _getbit(xh, mask_h), _getbit(zh, mask_h))
-        xs[chunk_h, j] = _setbit(xh, _getbit(xi, mask_i) ⊻ _getbit(xh, mask_h), mask_h)
-        zs[chunk_h, j] = _setbit(zh, _getbit(zi, mask_i) ⊻ _getbit(zh, mask_h), mask_h)
-    end
-    @inbounds begin
-        rs = state.rs
-        rh = rs[chunk_h]
-        ri = rs[chunk_i]
-        gs += 2 * (_getbit(rh, mask_h) + _getbit(ri, mask_i))
-        rs[chunk_h] = _setbit(rh, (gs & 3) != 0, mask_h)
-    end
-    return state
-end
-
 @inline function accumulate_pauli_prod_phase(hi, lo, x1, z1, x2, z2)
     v1 = x1 & z2
     v2 = x2 & z1
