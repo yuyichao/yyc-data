@@ -521,17 +521,15 @@ end
     @inbounds for j in 1:state.n
         xi = xs[chunk_i, j]
         xh = wxzs[j, 1]
-        xhb = xh != 0
         zi = zs[chunk_i, j]
         zh = wxzs[j, 2]
-        zhb = zh != 0
         hi, lo = _accum_pauli_prod_phase(hi, lo, xi, zi,
-                                         ifelse(xhb, ~zero(ChT), zero(ChT)),
-                                         ifelse(zhb, ~zero(ChT), zero(ChT)))
-        xhb ⊻= (count_ones(xi & mask_i) & 1) % UInt8
-        wxzs[j, 1] = xhb
-        zhb ⊻= (count_ones(zi & mask_i) & 1) % UInt8
-        wxzs[j, 2] = zhb
+                                         ifelse(xh != 0, ~zero(ChT), zero(ChT)),
+                                         ifelse(zh != 0, ~zero(ChT), zero(ChT)))
+        xh ⊻= (count_ones(xi & mask_i) & 1) % UInt8
+        wxzs[j, 1] = xh
+        zh ⊻= (count_ones(zi & mask_i) & 1) % UInt8
+        wxzs[j, 2] = zh
     end
     @inbounds begin
         rs = state.rs
