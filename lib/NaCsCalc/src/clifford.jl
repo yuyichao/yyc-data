@@ -426,7 +426,7 @@ end
 
 Base.@propagate_inbounds @inline function _getindex_r(state::StabilizerState, i)
     chunk, mask = _get_chunk_mask(i)
-    return _getbit(state.rs[chunk], mask)
+    return _getbit(state.rs[chunk, 1], mask)
 end
 
 function Base.show(io::IO, state::StabilizerState)
@@ -533,7 +533,7 @@ end
     end
     @inbounds begin
         rs = state.rs
-        ri = rs[chunk_i]
+        ri = rs[chunk_i, 1]
         hi = (hi ⊻ ri) & mask_i
         wrs[] ⊻= (count_ones(hi) & 1) % UInt8
     end
@@ -565,11 +565,11 @@ end
     # state.rs[p] = res
     rs = state.rs
     @inbounds begin
-        r2 = rs[chunk2]
-        rs[chunk2] = _setbit(r2, res, mask2)
+        r2 = rs[chunk2, 1]
+        rs[chunk2, 1] = _setbit(r2, res, mask2)
         # Note that the load of r1 has to happen after the store of r2
         # since the two may alias
-        rs[chunk1] = _setbit(rs[chunk1], (r2 & mask2) != 0, mask1)
+        rs[chunk1, 1] = _setbit(rs[chunk1, 1], (r2 & mask2) != 0, mask1)
     end
     return
 end
@@ -590,7 +590,7 @@ function measure_z!(state::StabilizerState, a; force=nothing)
         end
     end
     @inbounds if found_p
-        nchunks = length(state.rs)
+        nchunks = size(state.rs, 1)
         for i in 1:nchunks
             mask_i = state.xs[i, a]
             bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
@@ -772,7 +772,7 @@ function apply!(state::StabilizerState, gate::Clifford1Q, a)
     xs = state.xs
     zs = state.zs
     rs = state.rs
-    nchunks = length(state.rs)
+    nchunks = size(state.rs, 1)
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
     end
@@ -783,7 +783,7 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
     xs = state.xs
     zs = state.zs
     rs = state.rs
-    nchunks = length(state.rs)
+    nchunks = size(state.rs, 1)
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
                @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
