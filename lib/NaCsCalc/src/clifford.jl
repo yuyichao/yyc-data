@@ -332,7 +332,7 @@ function pauli_commute(xas, zas, xbs, zbs)
     T = TA === Bool ? TB : TA
     commute = ~zero(T)
     n = length(xas)
-    @inbounds for i in 1:n
+    @inbounds @simd for i in 1:n
         xa = _cast_bits(T, xas[i])
         za = _cast_bits(T, zas[i])
         xb = _cast_bits(T, xbs[i])
@@ -773,7 +773,7 @@ function apply!(state::StabilizerState, gate::Clifford1Q, a)
     zs = state.zs
     rs = state.rs
     nchunks = length(state.rs)
-    @inbounds for i in 1:nchunks
+    @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
     end
     return state
@@ -784,7 +784,7 @@ function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
     zs = state.zs
     rs = state.rs
     nchunks = length(state.rs)
-    @inbounds for i in 1:nchunks
+    @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
                @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
     end
