@@ -577,11 +577,12 @@ end
 # Randomly pick a result
 function measure_z!(state::StabilizerState, a; force=nothing)
     n = state.n
+    check_qubit_bound(n, a)
     p = 0
     chunk_p = 0
     mask_p = zero(ChT)
     found_p = false
-    for _p in (n + 1):(2 * n)
+    @inbounds for _p in (n + 1):(2 * n)
         chunk_p, mask_p = _get_chunk_mask(_p)
         if _getbit(state.xs[chunk_p, a], mask_p)
             p = _p
