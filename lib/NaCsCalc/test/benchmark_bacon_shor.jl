@@ -70,13 +70,13 @@ function test_bacon_shor(n)
     end
 end
 
-# 8.509 ms (9 allocations: 683.02 KiB)
+# 8.338 ms (10 allocations: 698.75 KiB)
 @btime test_bacon_shor(20)
-# 139.462 ms (9 allocations: 10.71 MiB)
+# 135.522 ms (10 allocations: 10.77 MiB)
 @btime test_bacon_shor(40)
-# 1.073 s (13 allocations: 54.53 MiB)
+# 1.036 s (13 allocations: 54.68 MiB)
 @btime test_bacon_shor(60)
-# 7.646 s (13 allocations: 173.05 MiB)
+# 7.498 s (13 allocations: 173.30 MiB)
 @btime test_bacon_shor(80)
-# 35.573 s (13 allocations: 424.08 MiB)
+# 35.569 s (13 allocations: 424.48 MiB)
 @btime test_bacon_shor(100)
