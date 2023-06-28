@@ -397,7 +397,7 @@ struct StabilizerState
     xs::Matrix{ChT}
     zs::Matrix{ChT}
     rs::Matrix{ChT}
-    wxzs::Matrix{UInt8}
+    wxzs::Matrix{ChT}
     function StabilizerState(n)
         nchunks = (2n - 1) ÷ _chunk_len + 1
         xs = zeros(ChT, nchunks, n)
@@ -409,7 +409,7 @@ struct StabilizerState
             chunk2, mask2 = _get_chunk_mask(i + n)
             zs[chunk2, i] = mask2
         end
-        return new(n, xs, zs, rs, Array{UInt8}(undef, n, 2))
+        return new(n, xs, zs, rs, Array{ChT}(undef, n, 2))
     end
 end
 Base.eltype(::Type{StabilizerState}) = Bool
@@ -523,21 +523,102 @@ end
         xh = wxzs[j, 1]
         zi = zs[chunk_i, j]
         zh = wxzs[j, 2]
-        hi, lo = _accum_pauli_prod_phase(hi, lo, xi, zi,
-                                         ifelse(xh != 0, ~zero(ChT), zero(ChT)),
-                                         ifelse(zh != 0, ~zero(ChT), zero(ChT)))
-        xh ⊻= (count_ones(xi & mask_i) & 1) % UInt8
-        wxzs[j, 1] = xh
-        zh ⊻= (count_ones(zi & mask_i) & 1) % UInt8
-        wxzs[j, 2] = zh
+        hi, lo = _accum_pauli_prod_phase(hi, lo, xi, zi, xh, zh)
+        wxzs[j, 1] = xh ⊻ (xi & mask_i)
+        wxzs[j, 2] = zh ⊻ (zi & mask_i)
     end
     @inbounds begin
-        rs = state.rs
-        ri = rs[chunk_i, 1]
-        hi = (hi ⊻ ri) & mask_i
-        wrs[] ⊻= (count_ones(hi) & 1) % UInt8
+        wrs[] ⊻= (hi ⊻ state.rs[chunk_i, 1]) & mask_i
     end
     return state
+end
+@inline function _clifford_rowsum3!(state::StabilizerState, wrs)
+    @assert sizeof(ChT) == 8
+    wxzs = state.wxzs
+    hi = zero(ChT)
+    lo = zero(ChT)
+    @inbounds for j in 1:state.n
+        x = wxzs[j, 1]
+        z = wxzs[j, 2]
+
+        x1 = (x >> 32) % UInt32
+        z1 = (z >> 32) % UInt32
+        x2 = x % UInt32
+        z2 = z % UInt32
+
+        xh = x1 % UInt64
+        zh = z1 % UInt64
+        xi = x2 % UInt64
+        zi = z2 % UInt64
+
+        x = x1 ⊻ x2
+        z = z1 ⊻ z2
+
+        x1 = x >> 16
+        z1 = z >> 16
+        x2 = x & 0x0000ffff
+        z2 = z & 0x0000ffff
+
+        xh |= (x1 % UInt64) << 32
+        zh |= (z1 % UInt64) << 32
+        xi |= (x2 % UInt64) << 32
+        zi |= (z2 % UInt64) << 32
+
+        x = x1 ⊻ x2
+        z = z1 ⊻ z2
+
+        x1 = x >> 8
+        z1 = z >> 8
+        x2 = x & 0x000000ff
+        z2 = z & 0x000000ff
+
+        xh |= (x1 % UInt64) << 48
+        zh |= (z1 % UInt64) << 48
+        xi |= (x2 % UInt64) << 48
+        zi |= (z2 % UInt64) << 48
+
+        x = x1 ⊻ x2
+        z = z1 ⊻ z2
+
+        x1 = x >> 4
+        z1 = z >> 4
+        x2 = x & 0x0000000f
+        z2 = z & 0x0000000f
+
+        xh |= (x1 % UInt64) << 56
+        zh |= (z1 % UInt64) << 56
+        xi |= (x2 % UInt64) << 56
+        zi |= (z2 % UInt64) << 56
+
+        x = x1 ⊻ x2
+        z = z1 ⊻ z2
+
+        x1 = x >> 2
+        z1 = z >> 2
+        x2 = x & 0x00000003
+        z2 = z & 0x00000003
+
+        xh |= (x1 % UInt64) << 60
+        zh |= (z1 % UInt64) << 60
+        xi |= (x2 % UInt64) << 60
+        zi |= (z2 % UInt64) << 60
+
+        x = x1 ⊻ x2
+        z = z1 ⊻ z2
+
+        x1 = x >> 1
+        z1 = z >> 1
+        x2 = x & 0x00000001
+        z2 = z & 0x00000001
+
+        xh |= (x1 % UInt64) << 62
+        zh |= (z1 % UInt64) << 62
+        xi |= (x2 % UInt64) << 62
+        zi |= (z2 % UInt64) << 62
+
+        hi, lo = _accum_pauli_prod_phase(hi, lo, xh, zh, xi, zi)
+    end
+    return (count_ones(wrs[] ⊻ hi) ⊻ (count_ones(lo) >> 1)) & 1 != 0
 end
 
 @inline function _inject_zresult!(state::StabilizerState, n, a, p, chunk2, mask2, res)
@@ -607,12 +688,14 @@ function measure_z!(state::StabilizerState, a; force=nothing)
         return res, false
     else
         nfullchunks, rembits = divrem(n, _chunk_len)
-        state.wxzs .= 0x0
-        wrs = Ref(0x0)
+        state.wxzs .= zero(ChT)
+        wrs = Ref(zero(ChT))
+        total_mask = zero(ChT)
         if rembits == 0
             for i in 1:nfullchunks
                 mask_i = state.xs[i, a]
                 if mask_i != 0
+                    total_mask |= mask_i
                     _clifford_rowsum2!(state, i + nfullchunks, mask_i, wrs)
                 end
             end
@@ -623,6 +706,7 @@ function measure_z!(state::StabilizerState, a; force=nothing)
                 mask_i = mask | (new_mask << rembits)
                 mask = new_mask >> (_chunk_len - rembits)
                 if mask_i != 0
+                    total_mask |= mask_i
                     _clifford_rowsum2!(state, i + nfullchunks, mask_i, wrs)
                 end
             end
@@ -631,6 +715,7 @@ function measure_z!(state::StabilizerState, a; force=nothing)
             rembits2 = rembits * 2
             mask_i &= (one(ChT) << rembits2) - one(ChT)
             if mask_i != 0
+                total_mask |= mask_i
                 _clifford_rowsum2!(state, 2 * nfullchunks + 1, mask_i, wrs)
             end
             if rembits2 > _chunk_len
@@ -638,11 +723,15 @@ function measure_z!(state::StabilizerState, a; force=nothing)
                 # Mask out the end of the range
                 mask_i &= (one(ChT) << (rembits2 - _chunk_len)) - one(ChT)
                 if mask_i != 0
+                    total_mask |= mask_i
                     _clifford_rowsum2!(state, 2 * nfullchunks + 2, mask_i, wrs)
                 end
             end
         end
-        return wrs[] != 0, true
+        if count_ones(total_mask) == 1
+            return wrs[] != 0, true
+        end
+        return _clifford_rowsum3!(state, wrs), true
     end
 end
 

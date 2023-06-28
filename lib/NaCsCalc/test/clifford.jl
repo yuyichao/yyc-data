@@ -634,4 +634,14 @@ end
     test_flip_base_x(129)
 end
 
+@testset "measure sign" begin
+    state = Clf.StabilizerState(3)
+    @test Clf.measure_z!(state, 3) === (false, true)
+    Clf.apply!(state, Clf.CNOTGate(), 2, 1)
+    Clf.apply!(state, Clf.CNOTGate(), 1, 3)
+    Clf.apply!(state, Clf.HGate(), 1)
+    Clf.apply!(state, Clf.CNOTGate(), 1, 2)
+    @test Clf.measure_z!(state, 3) === (false, true)
+end
+
 end
