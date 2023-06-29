@@ -644,4 +644,90 @@ end
     @test Clf.measure_z!(state, 3) === (false, true)
 end
 
+function test_deterministic_measure(nbit, ngates, nrep)
+    stabx = Vector{Bool}(undef, nbit)
+    stabz = Vector{Bool}(undef, nbit)
+    state = Clf.StabilizerState(nbit)
+    str = Clf.PauliString{UInt64}(nbit)
+    for i in 1:nrep
+        if rand(Bool)
+            Clf.init_state_z!(state)
+            str.zs .= rand.(UInt64)
+            str.xs .= zero(UInt64)
+        else
+            Clf.init_state_x!(state)
+            str.zs .= zero(UInt64)
+            str.xs .= rand.(UInt64)
+        end
+        str.rs[] = zero(UInt64)
+        for _ in 1:ngates
+            for i in 1:100
+                id = rand(1:16)
+                n1 = rand(1:nbit)
+                if id == 1
+                    # H
+                    Clf.apply!(state, Clf.HGate(), n1)
+                    Clf.apply!(str, Clf.HGate(), n1)
+                elseif id == 2
+                    # X
+                    Clf.apply!(state, Clf.XGate(), n1)
+                    Clf.apply!(str, Clf.XGate(), n1)
+                elseif id == 3
+                    # Y
+                    Clf.apply!(state, Clf.YGate(), n1)
+                    Clf.apply!(str, Clf.YGate(), n1)
+                elseif id == 4
+                    # Z
+                    Clf.apply!(state, Clf.ZGate(), n1)
+                    Clf.apply!(str, Clf.ZGate(), n1)
+                elseif id == 5
+                    # S
+                    Clf.apply!(state, Clf.SGate(), n1)
+                    Clf.apply!(str, Clf.SGate(), n1)
+                elseif id == 6
+                    # IS
+                    Clf.apply!(state, Clf.ISGate(), n1)
+                    Clf.apply!(str, Clf.ISGate(), n1)
+                elseif id == 7
+                    # SX
+                    Clf.apply!(state, Clf.SXGate(), n1)
+                    Clf.apply!(str, Clf.SXGate(), n1)
+                elseif id == 8
+                    # ISX
+                    Clf.apply!(state, Clf.ISXGate(), n1)
+                    Clf.apply!(str, Clf.ISXGate(), n1)
+                else
+                    # CNOT
+                    n2 = rand(1:(nbit - 1))
+                    if n2 >= n1
+                        n2 += 1
+                    end
+                    Clf.apply!(state, Clf.CNOTGate(), n1, n2)
+                    Clf.apply!(str, Clf.CNOTGate(), n1, n2)
+                end
+            end
+            for j in 0:(Clf.nbits(typeof(str)) - 1)
+                stabx .= ((str.xs .>> j) .& 1) .!= 0
+                stabz .= ((str.zs .>> j) .& 1) .!= 0
+                r = (str.rs[] >> j) & 1 != 0
+                v, det = Clf.measure_paulis!(state, stabx, stabz)
+                @test det
+                @test r == v
+            end
+        end
+    end
+end
+
+@testset "deterministic measurement" begin
+    test_deterministic_measure(10, 2000, 100)
+    test_deterministic_measure(31, 2000, 30)
+    test_deterministic_measure(32, 2000, 30)
+    test_deterministic_measure(33, 2000, 30)
+    test_deterministic_measure(63, 2000, 30)
+    test_deterministic_measure(64, 2000, 30)
+    test_deterministic_measure(65, 2000, 30)
+    test_deterministic_measure(97, 2000, 25)
+    test_deterministic_measure(128, 2000, 20)
+end
+
 end
