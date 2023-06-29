@@ -806,7 +806,7 @@ end
 
 function measure_zs!(state::StabilizerState, idxs; force=nothing)
     if isempty(idxs)
-        return true, true
+        return false, true
     end
     idx0 = idxs[1]
     nidxs = length(idxs)
@@ -868,7 +868,7 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
         end
     end
     if !@isdefined(idx0)
-        return true, true
+        return false, true
     end
     res = measure_z!(state, idx0; force=force)
     for i in state.n:-1:1
