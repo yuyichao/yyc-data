@@ -820,16 +820,18 @@ function measure_z!(state::StabilizerState, a; force=nothing)
 end
 
 function measure_x!(state::StabilizerState, a; force=nothing)
-    apply!(state, HGate(), a)
+    @boundscheck check_qubit_bound(state.n, a)
+    @inbounds apply!(state, HGate(), a)
     res = measure_z!(state, a; force=force)
-    apply!(state, HGate(), a)
+    @inbounds apply!(state, HGate(), a)
     return res
 end
 
 function measure_y!(state::StabilizerState, a; force=nothing)
-    apply!(state, SXGate(), a)
+    @boundscheck check_qubit_bound(state.n, a)
+    @inbounds apply!(state, SXGate(), a)
     res = measure_z!(state, a; force=force)
-    apply!(state, ISXGate(), a)
+    @inbounds apply!(state, ISXGate(), a)
     return res
 end
 
@@ -842,11 +844,14 @@ function measure_zs!(state::StabilizerState, idxs; force=nothing)
     if nidxs == 1
         return measure_z!(state, idx0; force=force)
     end
+    @boundscheck check_qubit_bound(state.n, idx0)
     for i in 2:nidxs
-        apply!(state, CNOTGate(), idxs[i], idx0)
+        idxi = @inbounds idxs[i]
+        @boundscheck check_qubit_bound(state.n, idxi)
+        apply!(state, CNOTGate(), idxi, idx0)
     end
     res = measure_z!(state, idx0; force=force)
-    for i in 2:nidxs
+    @inbounds for i in 2:nidxs
         apply!(state, CNOTGate(), idxs[i], idx0)
     end
     return res
@@ -856,8 +861,8 @@ function measure_xs!(state::StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, HGate(), idx)
     end
-    res = measure_zs!(state, idxs; force=force)
-    for idx in idxs
+    res = @inbounds measure_zs!(state, idxs; force=force)
+    @inbounds for idx in idxs
         apply!(state, HGate(), idx)
     end
     return res
@@ -867,8 +872,8 @@ function measure_ys!(state::StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, SXGate(), idx)
     end
-    res = measure_zs!(state, idxs; force=force)
-    for idx in idxs
+    res = @inbounds measure_zs!(state, idxs; force=force)
+    @inbounds for idx in idxs
         apply!(state, ISXGate(), idx)
     end
     return res
@@ -881,7 +886,7 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
     for i in 1:state.n
         x = xs[i]
         z = zs[i]
-        if x
+        @inbounds if x
             if z
                 apply!(state, SXGate(), i)
             else
@@ -893,14 +898,14 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
         if !@isdefined(idx0)
             idx0 = i
         else
-            apply!(state, CNOTGate(), i, idx0)
+            @inbounds apply!(state, CNOTGate(), i, idx0)
         end
     end
     if !@isdefined(idx0)
         return false, true
     end
     res = measure_z!(state, idx0; force=force)
-    for i in state.n:-1:1
+    @inbounds for i in state.n:-1:1
         x = xs[i]
         z = zs[i]
         if !x && !z
@@ -942,7 +947,8 @@ function measure_stabilizer_z(state::StabilizerState, zs, r=false)
     return v ⊻ r
 end
 
-@inline function inject_pauli!(state::StabilizerState, x::Bool, z::Bool, i)
+Base.@propagate_inbounds @inline function inject_pauli!(state::StabilizerState,
+                                                        x::Bool, z::Bool, i)
     if x
         if z
             apply!(state, YGate(), i)
