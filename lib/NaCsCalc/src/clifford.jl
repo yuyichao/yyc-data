@@ -414,6 +414,29 @@ struct StabilizerState
 end
 Base.eltype(::Type{StabilizerState}) = Bool
 
+function apply!(state::StabilizerState, gate::Clifford1Q, a)
+    xs = state.xs
+    zs = state.zs
+    rs = state.rs
+    nchunks = size(state.rs, 1)
+    @inbounds @simd ivdep for i in 1:nchunks
+        apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
+    end
+    return state
+end
+
+function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
+    xs = state.xs
+    zs = state.zs
+    rs = state.rs
+    nchunks = size(state.rs, 1)
+    @inbounds @simd ivdep for i in 1:nchunks
+        apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
+               @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
+    end
+    return state
+end
+
 Base.@propagate_inbounds @inline function _getindex_x(state::StabilizerState, i, j)
     chunk, mask = _get_chunk_mask(i)
     return _getbit(state.xs[chunk, j], mask)
@@ -911,29 +934,6 @@ end
 function measure_stabilizer_z(state::StabilizerState, zs, r=false)
     v, det = measure_zs!(state, zs)
     return v ⊻ r
-end
-
-function apply!(state::StabilizerState, gate::Clifford1Q, a)
-    xs = state.xs
-    zs = state.zs
-    rs = state.rs
-    nchunks = size(state.rs, 1)
-    @inbounds @simd ivdep for i in 1:nchunks
-        apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
-    end
-    return state
-end
-
-function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
-    xs = state.xs
-    zs = state.zs
-    rs = state.rs
-    nchunks = size(state.rs, 1)
-    @inbounds @simd ivdep for i in 1:nchunks
-        apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
-               @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
-    end
-    return state
 end
 
 @inline function inject_pauli!(state::StabilizerState, x::Bool, z::Bool, i)
