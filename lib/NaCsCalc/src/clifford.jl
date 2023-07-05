@@ -273,13 +273,14 @@ function Base.empty!(str::PauliString{T}) where T
     return str
 end
 
-@inline function apply!(str::PauliString, gate::Clifford1Q, a)
+Base.@propagate_inbounds @inline function apply!(str::PauliString, gate::Clifford1Q, a)
     @boundscheck check_qubit_bound(str.n, a)
     @inbounds apply!(gate, @view(str.xs[a]), @view(str.zs[a]), str.rs)
     return str
 end
 
-@inline function apply!(str::PauliString, gate::Clifford2Q, a, b)
+Base.@propagate_inbounds @inline function apply!(str::PauliString, gate::Clifford2Q,
+                                                 a, b)
     @boundscheck check_qubit_bound(str.n, a)
     @boundscheck check_qubit_bound(str.n, b)
     @inbounds apply!(gate, @view(str.xs[a]), @view(str.zs[a]),
@@ -414,7 +415,9 @@ struct StabilizerState
 end
 Base.eltype(::Type{StabilizerState}) = Bool
 
-function apply!(state::StabilizerState, gate::Clifford1Q, a)
+Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
+                                                 gate::Clifford1Q, a)
+    @boundscheck check_qubit_bound(state.n, a)
     xs = state.xs
     zs = state.zs
     rs = state.rs
@@ -425,7 +428,10 @@ function apply!(state::StabilizerState, gate::Clifford1Q, a)
     return state
 end
 
-function apply!(state::StabilizerState, gate::Clifford2Q, a, b)
+Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
+                                                 gate::Clifford2Q, a, b)
+    @boundscheck check_qubit_bound(state.n, a)
+    @boundscheck check_qubit_bound(state.n, b)
     xs = state.xs
     zs = state.zs
     rs = state.rs
