@@ -1160,6 +1160,31 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     return state
 end
 
+# Randomly pick a result
+@inline function measure_z!(state::InvStabilizerState, a; force=nothing)
+    n = state.n
+    check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    lane = VecRange{2}(0)
+    @inbounds for i in 1:2:nchunks
+        zx = xzs[lane + i, 3, a]
+        if reduce(|, zx) == 0
+            continue
+        end
+        @goto rand_measure
+    end
+    return @inbounds(rs[a, 2]), true
+
+    @label rand_measure
+    res = force !== nothing ? force : rand(Bool)
+
+    # TODO
+    return res, false
+end
+
 const _StabilizerState = Union{StabilizerState,InvStabilizerState}
 
 function measure_x!(state::_StabilizerState, a; force=nothing)
