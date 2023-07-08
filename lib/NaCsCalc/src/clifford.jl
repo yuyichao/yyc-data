@@ -895,7 +895,9 @@ function init_state_x!(state::InvStabilizerState, v::Bool=false)
     return state
 end
 
-function measure_x!(state::StabilizerState, a; force=nothing)
+const _StabilizerState = Union{StabilizerState,InvStabilizerState}
+
+function measure_x!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, HGate(), a)
     res = measure_z!(state, a; force=force)
@@ -903,7 +905,7 @@ function measure_x!(state::StabilizerState, a; force=nothing)
     return res
 end
 
-function measure_y!(state::StabilizerState, a; force=nothing)
+function measure_y!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, SXGate(), a)
     res = measure_z!(state, a; force=force)
@@ -911,7 +913,7 @@ function measure_y!(state::StabilizerState, a; force=nothing)
     return res
 end
 
-function measure_zs!(state::StabilizerState, idxs; force=nothing)
+function measure_zs!(state::_StabilizerState, idxs; force=nothing)
     if isempty(idxs)
         return false, true
     end
@@ -933,7 +935,7 @@ function measure_zs!(state::StabilizerState, idxs; force=nothing)
     return res
 end
 
-function measure_xs!(state::StabilizerState, idxs; force=nothing)
+function measure_xs!(state::_StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, HGate(), idx)
     end
@@ -944,7 +946,7 @@ function measure_xs!(state::StabilizerState, idxs; force=nothing)
     return res
 end
 
-function measure_ys!(state::StabilizerState, idxs; force=nothing)
+function measure_ys!(state::_StabilizerState, idxs; force=nothing)
     for idx in idxs
         apply!(state, SXGate(), idx)
     end
@@ -955,7 +957,7 @@ function measure_ys!(state::StabilizerState, idxs; force=nothing)
     return res
 end
 
-function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
+function measure_paulis!(state::_StabilizerState, xs, zs; force=nothing)
     @assert length(xs) == state.n
     @assert length(zs) == state.n
     local idx0
@@ -1001,7 +1003,7 @@ function measure_paulis!(state::StabilizerState, xs, zs; force=nothing)
     return res
 end
 
-function measure_paulis!(state::StabilizerState, str::PauliString{Bool}; force=nothing)
+function measure_paulis!(state::_StabilizerState, str::PauliString{Bool}; force=nothing)
     if force !== nothing
         force ⊻= str.rs[]
     end
@@ -1010,20 +1012,20 @@ function measure_paulis!(state::StabilizerState, str::PauliString{Bool}; force=n
     return v, det
 end
 
-function measure_stabilizer(state::StabilizerState, xs, zs, r=false)
+function measure_stabilizer(state::_StabilizerState, xs, zs, r=false)
     v, det = measure_paulis!(state, xs, ys)
     return v ⊻ r
 end
-function measure_stabilizer_x(state::StabilizerState, xs, r=false)
+function measure_stabilizer_x(state::_StabilizerState, xs, r=false)
     v, det = measure_xs!(state, xs)
     return v ⊻ r
 end
-function measure_stabilizer_z(state::StabilizerState, zs, r=false)
+function measure_stabilizer_z(state::_StabilizerState, zs, r=false)
     v, det = measure_zs!(state, zs)
     return v ⊻ r
 end
 
-Base.@propagate_inbounds @inline function inject_pauli!(state::StabilizerState,
+Base.@propagate_inbounds @inline function inject_pauli!(state::_StabilizerState,
                                                         x::Bool, z::Bool, i)
     if x
         if z
