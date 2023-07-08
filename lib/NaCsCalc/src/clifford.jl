@@ -1155,7 +1155,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         px2s = pointer(@view(xzs[1, 3, a]))
         pz2s = pointer(@view(xzs[1, 4, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        rs[b, 2] ⊻= rs[a, 2] ⊻ prod_phase != 0
+        rs[b, 2] ⊻= rs[a, 2] ⊻ (prod_phase != 0)
     end
     return state
 end
