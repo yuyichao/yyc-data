@@ -4,6 +4,7 @@ module Clifford
 
 using Random
 using ..Utils
+using SIMD
 
 ##
 # Implement simulation of clifford circuit using the stabilizer state description
@@ -893,6 +894,89 @@ function init_state_x!(state::InvStabilizerState, v::Bool=false)
     rs[:, 1] .= v
     rs[:, 2] .= false
     return state
+end
+
+@inline vcount_ones_u8(v::Vec{N,T}) where {N,T} =
+    count_ones(reinterpret(Vec{N * sizeof(T),UInt8}, v))
+
+@inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
+    VT8 = Vec{8,ChT}
+    VT4 = Vec{4,ChT}
+    VT2 = Vec{2,ChT}
+    hi = zero(VT8)
+    lo = zero(VT8)
+    nalign = n & ~7
+    # LLVM may think the vstore in the loop aliases the array pointer
+    # so we extract the array pointer out of the loop.
+    @inbounds for i in 1:8:nalign
+        x1 = vload(VT8, px1s + (i - 1) * 8)
+        x2 = vload(VT8, px2s + (i - 1) * 8)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s + (i - 1) * 8)
+        z1 = vload(VT8, pz1s + (i - 1) * 8)
+        z2 = vload(VT8, pz2s + (i - 1) * 8)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s + (i - 1) * 8)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi = hi ⊻ ((m ⊻ lo) & change)
+        lo = lo ⊻ change
+    end
+    clo = VT2((lo[1] ⊻ lo[3] ⊻ lo[5] ⊻ lo[7],
+               lo[2] ⊻ lo[4] ⊻ lo[6] ⊻ lo[8]))
+    chi = VT2((hi[1] ⊻ hi[3] ⊻ hi[5] ⊻ hi[7],
+               hi[2] ⊻ hi[4] ⊻ hi[6] ⊻ hi[8]))
+
+    px1s += nalign * 8
+    pz1s += nalign * 8
+    px2s += nalign * 8
+    pz2s += nalign * 8
+
+    if n & 4 != 0
+        x1 = vload(VT4, px1s)
+        x2 = vload(VT4, px2s)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s)
+        z1 = vload(VT4, pz1s)
+        z2 = vload(VT4, pz2s)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi4 = m & change
+        lo4 = change
+        clo ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+        px1s += 4
+        pz1s += 4
+        px2s += 4
+        pz2s += 4
+    end
+    if n & 2 != 0
+        x1 = vload(VT2, px1s)
+        x2 = vload(VT2, px2s)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s)
+        z1 = vload(VT2, pz1s)
+        z2 = vload(VT2, pz2s)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        chi ⊻= m & change
+        clo ⊻= change
+    end
+    cnt = vcount_ones_u8(clo) + vcount_ones_u8(chi) << 1
+    return reduce(+, cnt) & 0x3
 end
 
 const _StabilizerState = Union{StabilizerState,InvStabilizerState}
