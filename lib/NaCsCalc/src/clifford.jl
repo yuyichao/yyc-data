@@ -865,6 +865,36 @@ function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
                        state.rs[i, k])
 end
 
+function init_state_z!(state::InvStabilizerState, v::Bool=false)
+    n = state.n
+    xzs = state.xzs
+    xzs .= 0
+    @inbounds for i in 1:n
+        chunk, mask = _get_chunk_mask(i)
+        xzs[chunk, 1, i] = mask
+        xzs[chunk, 4, i] = mask
+    end
+    rs = state.rs
+    rs[:, 1] .= false
+    rs[:, 2] .= v
+    return state
+end
+
+function init_state_x!(state::InvStabilizerState, v::Bool=false)
+    n = state.n
+    xzs = state.xzs
+    xzs .= 0
+    @inbounds for i in 1:n
+        chunk, mask = _get_chunk_mask(i)
+        xzs[chunk, 2, i] = mask
+        xzs[chunk, 3, i] = mask
+    end
+    rs = state.rs
+    rs[:, 1] .= v
+    rs[:, 2] .= false
+    return state
+end
+
 function measure_x!(state::StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, HGate(), a)
