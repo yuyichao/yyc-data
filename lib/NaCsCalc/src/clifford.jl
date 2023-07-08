@@ -899,6 +899,19 @@ end
 @inline vcount_ones_u8(v::Vec{N,T}) where {N,T} =
     count_ones(reinterpret(Vec{N * sizeof(T),UInt8}, v))
 
+@inline function assume(v::Bool)
+    Base.llvmcall(
+        ("""
+         declare void @llvm.assume(i1)
+         define void @fw_assume(i8) alwaysinline
+         {
+             %v = trunc i8 %0 to i1
+             call void @llvm.assume(i1 %v)
+             ret void
+         }
+         """, "fw_assume"), Cvoid, Tuple{Bool}, v)
+end
+
 @inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
     VT8 = Vec{8,ChT}
     VT4 = Vec{4,ChT}
