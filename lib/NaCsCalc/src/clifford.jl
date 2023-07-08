@@ -819,6 +819,52 @@ function measure_z!(state::StabilizerState, a; force=nothing)
     end
 end
 
+struct InvStabilizerState
+    n::Int
+    xzs::Array{ChT,3}
+    rs::Matrix{Bool}
+    function InvStabilizerState(n)
+        # Align the chunk number to 2
+        nchunks = ((n - 1) ÷ (_chunk_len * 2) + 1) * 2
+        # XX,            XZ,            ZX,            ZZ
+        # X stab X term, X stab Z term, Z stab X term, Z stab Z term
+        xzs = zeros(ChT, nchunks, 4, n)
+        rs = zeros(Bool, n, 2)
+        @inbounds for i in 1:n
+            chunk, mask = _get_chunk_mask(i)
+            xzs[chunk, 1, i] = mask
+            xzs[chunk, 4, i] = mask
+        end
+        return new(n, xzs, rs)
+    end
+end
+Base.eltype(::Type{InvStabilizerState}) = Bool
+
+function Base.show(io::IO, state::InvStabilizerState)
+    for i in 1:state.n
+        print(io, "X[$i]: ")
+        show(io, get_inv_stabilizer(state, i, false))
+        println(io)
+        print(io, "Z[$i]: ")
+        show(io, get_inv_stabilizer(state, i, true))
+        println(io)
+    end
+end
+
+Base.@propagate_inbounds @inline function _getindex(state::InvStabilizerState,
+                                                    i, j, k)
+    chunk, mask = _get_chunk_mask(i)
+    return _getbit(state.xzs[chunk, j, k], mask)
+end
+
+function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
+    n = state.n
+    k = z ? 2 : 1
+    return PauliString(n, [_getindex(state, j, 2k - 1, i) for j in 1:n],
+                       [_getindex(state, j, 2k, i) for j in 1:n],
+                       state.rs[i, k])
+end
+
 function measure_x!(state::StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, HGate(), a)
