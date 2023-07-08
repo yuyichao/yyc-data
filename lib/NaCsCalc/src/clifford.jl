@@ -297,10 +297,10 @@ function Base.show(io::IO, str::PauliString{Bool})
 end
 function Base.show(io::IO, str::PauliString{T}) where T
     for i in 0:(sizeof(T) * 8 - 1)
-        write(io, (str.rs[] >> i) != 0 ? '-' : '+')
+        write(io, (str.rs[] >> i) & 1 != 0 ? '-' : '+')
         for (x, z) in zip(str.xs, str.zs)
-            x = (x >> i) != 0
-            z = (z >> i) != 0
+            x = (x >> i) & 1 != 0
+            z = (z >> i) & 1 != 0
             write(io, x ? (z ? 'Y' : 'X') : (z ? 'Z' : 'I'))
         end
         println(io)
