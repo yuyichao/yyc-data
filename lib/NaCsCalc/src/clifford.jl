@@ -992,6 +992,174 @@ end
     return reduce(+, cnt) & 0x3
 end
 
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::Composite1Q, a)
+    apply!(state, gate.g1, a)
+    apply!(state, gate.g2, a)
+    return state
+end
+@inline function apply!(state::InvStabilizerState, gate::IGate, a)
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::HGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds begin
+        @simd ivdep for i in 1:nchunks
+            xx = xzs[i, 1, a]
+            xz = xzs[i, 2, a]
+            zx = xzs[i, 3, a]
+            zz = xzs[i, 4, a]
+            xzs[i, 1, a] = zx
+            xzs[i, 2, a] = zz
+            xzs[i, 3, a] = xx
+            xzs[i, 4, a] = xz
+        end
+        rx = rs[a, 1]
+        rz = rs[a, 2]
+        rs[a, 2] = rx
+        rs[a, 1] = rz
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::XGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    rs = state.rs
+    @inbounds begin
+        rs[a, 2] = ~rs[a, 2]
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::YGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    rs = state.rs
+    @inbounds begin
+        rs[a, 1] = ~rs[a, 1]
+        rs[a, 2] = ~rs[a, 2]
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::ZGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    rs = state.rs
+    @inbounds begin
+        rs[a, 1] = ~rs[a, 1]
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::SGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds GC.@preserve xzs begin
+        px1s = pointer(@view(xzs[1, 1, a]))
+        pz1s = pointer(@view(xzs[1, 2, a]))
+        px2s = pointer(@view(xzs[1, 3, a]))
+        pz2s = pointer(@view(xzs[1, 4, a]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) == 0)
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::ISGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds GC.@preserve xzs begin
+        px1s = pointer(@view(xzs[1, 1, a]))
+        pz1s = pointer(@view(xzs[1, 2, a]))
+        px2s = pointer(@view(xzs[1, 3, a]))
+        pz2s = pointer(@view(xzs[1, 4, a]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) != 0)
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::SXGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds GC.@preserve xzs begin
+        px1s = pointer(@view(xzs[1, 3, a]))
+        pz1s = pointer(@view(xzs[1, 4, a]))
+        px2s = pointer(@view(xzs[1, 1, a]))
+        pz2s = pointer(@view(xzs[1, 2, a]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[a, 2] ⊻= rs[a, 1] ⊻ ((prod_phase - 0x1) != 0)
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::ISXGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds GC.@preserve xzs begin
+        px1s = pointer(@view(xzs[1, 3, a]))
+        pz1s = pointer(@view(xzs[1, 4, a]))
+        px2s = pointer(@view(xzs[1, 1, a]))
+        pz2s = pointer(@view(xzs[1, 2, a]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[a, 2] ⊻= rs[a, 1] ⊻ ((prod_phase - 0x1) == 0)
+    end
+    return state
+end
+
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::CNOTGate, a, b)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    @boundscheck check_qubit_bound(n, b)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    @inbounds GC.@preserve xzs begin
+        # Xa′ = Xa * Xb
+        px1s = pointer(@view(xzs[1, 1, a]))
+        pz1s = pointer(@view(xzs[1, 2, a]))
+        px2s = pointer(@view(xzs[1, 1, b]))
+        pz2s = pointer(@view(xzs[1, 2, b]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[a, 1] ⊻= rs[b, 1] ⊻ (prod_phase != 0)
+
+        # Zb′ = Za * Zb
+        px1s = pointer(@view(xzs[1, 3, b]))
+        pz1s = pointer(@view(xzs[1, 4, b]))
+        px2s = pointer(@view(xzs[1, 3, a]))
+        pz2s = pointer(@view(xzs[1, 4, a]))
+        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
+        rs[b, 2] ⊻= rs[a, 2] ⊻ prod_phase != 0
+    end
+    return state
+end
+
 const _StabilizerState = Union{StabilizerState,InvStabilizerState}
 
 function measure_x!(state::_StabilizerState, a; force=nothing)
