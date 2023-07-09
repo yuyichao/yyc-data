@@ -27,13 +27,13 @@ end
     test_gate(Clf.XGate(), (false, true), (false, true), true)
 
     test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
-                 (false, false), (false, false), false)
+              (false, false), (false, false), false)
     test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
-                 (true, false), (true, false), false)
+              (true, false), (true, false), false)
     test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
-                 (true, true), (true, true), true)
+              (true, true), (true, true), true)
     test_gate(Clf.HGate() * Clf.ZGate() * Clf.HGate(),
-                 (false, true), (false, true), true)
+              (false, true), (false, true), true)
 end
 
 @testset "Y" begin
@@ -50,13 +50,13 @@ end
     test_gate(Clf.ZGate(), (false, true), (false, true), false)
 
     test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
-                 (false, false), (false, false), false)
+              (false, false), (false, false), false)
     test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
-                 (true, false), (true, false), true)
+              (true, false), (true, false), true)
     test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
-                 (true, true), (true, true), true)
+              (true, true), (true, true), true)
     test_gate(Clf.HGate() * Clf.XGate() * Clf.HGate(),
-                 (false, true), (false, true), false)
+              (false, true), (false, true), false)
 end
 
 @testset "H" begin
@@ -155,206 +155,8 @@ end
     end
 end
 
-@testset "stablizer 1q" begin
-    state = Clf.StabilizerState(1)
-    @test Clf.measure_z!(state, 1) === (false, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_z!(state, 1) === (true, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_z!(state, 1) === (false, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_z!(state, 1) === (false, true)
-
-    v, det = Clf.measure_x!(state, 1)
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v, true)
-    @test Clf.measure_x!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_x!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_x!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_x!(state, 1) === (v, true)
-
-    v, det = Clf.measure_y!(state, 1)
-    @test !det
-    @test Clf.measure_y!(state, 1) === (v, true)
-    @test Clf.measure_y!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_y!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_y!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_y!(state, 1) === (v, true)
-
-    v, det = Clf.measure_z!(state, 1)
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v, true)
-    @test Clf.measure_z!(state, 1) === (v, true)
-    if v
-        Clf.apply!(state, Clf.XGate(), 1)
-    end
-    @test Clf.measure_z!(state, 1) === (false, true)
-
-    @test Clf.measure_zs!(state, [1]) === (false, true)
-
-    v, det = Clf.measure_xs!(state, [1])
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v, true)
-    @test Clf.measure_xs!(state, [1]) === (v, true)
-
-    v, det = Clf.measure_ys!(state, [1])
-    @test !det
-    @test Clf.measure_y!(state, 1) === (v, true)
-    @test Clf.measure_ys!(state, [1]) === (v, true)
-
-    v, det = Clf.measure_zs!(state, [1])
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v, true)
-    @test Clf.measure_zs!(state, [1]) === (v, true)
-
-    @test Clf.measure_paulis!(state, [false], [true]) === (v, true)
-
-    v, det = Clf.measure_paulis!(state, [true], [false])
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v, true)
-    @test Clf.measure_paulis!(state, [true], [false]) === (v, true)
-
-    v, det = Clf.measure_paulis!(state, [true], [true])
-    @test !det
-    @test Clf.measure_y!(state, 1) === (v, true)
-    @test Clf.measure_paulis!(state, [true], [true]) === (v, true)
-
-    v, det = Clf.measure_paulis!(state, [false], [true])
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v, true)
-    @test Clf.measure_paulis!(state, [false], [true]) === (v, true)
-end
-
-@testset "stablizer 2q" begin
-    state = Clf.StabilizerState(2)
-    @test Clf.measure_z!(state, 1) === (false, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_z!(state, 1) === (true, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_z!(state, 1) === (false, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_z!(state, 1) === (false, true)
-
-    @test Clf.measure_z!(state, 2) === (false, true)
-    Clf.apply!(state, Clf.XGate(), 2)
-    @test Clf.measure_z!(state, 2) === (true, true)
-    Clf.apply!(state, Clf.YGate(), 2)
-    @test Clf.measure_z!(state, 2) === (false, true)
-    Clf.apply!(state, Clf.ZGate(), 2)
-    @test Clf.measure_z!(state, 2) === (false, true)
-
-    v, det = Clf.measure_x!(state, 1)
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v, true)
-    @test Clf.measure_x!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_x!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_x!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_x!(state, 1) === (v, true)
-
-    v, det = Clf.measure_y!(state, 1)
-    @test !det
-    @test Clf.measure_y!(state, 1) === (v, true)
-    @test Clf.measure_y!(state, 1) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 1)
-    @test Clf.measure_y!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.YGate(), 1)
-    @test Clf.measure_y!(state, 1) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 1)
-    @test Clf.measure_y!(state, 1) === (v, true)
-
-    v, det = Clf.measure_z!(state, 1)
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v, true)
-    @test Clf.measure_z!(state, 1) === (v, true)
-    if v
-        Clf.apply!(state, Clf.XGate(), 1)
-    end
-    @test Clf.measure_z!(state, 1) === (false, true)
-
-    v, det = Clf.measure_x!(state, 2)
-    @test !det
-    @test Clf.measure_x!(state, 2) === (v, true)
-    @test Clf.measure_x!(state, 2) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 2)
-    @test Clf.measure_x!(state, 2) === (v, true)
-    Clf.apply!(state, Clf.YGate(), 2)
-    @test Clf.measure_x!(state, 2) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 2)
-    @test Clf.measure_x!(state, 2) === (v, true)
-
-    v, det = Clf.measure_y!(state, 2)
-    @test !det
-    @test Clf.measure_y!(state, 2) === (v, true)
-    @test Clf.measure_y!(state, 2) === (v, true)
-    Clf.apply!(state, Clf.XGate(), 2)
-    @test Clf.measure_y!(state, 2) === (!v, true)
-    Clf.apply!(state, Clf.YGate(), 2)
-    @test Clf.measure_y!(state, 2) === (!v, true)
-    Clf.apply!(state, Clf.ZGate(), 2)
-    @test Clf.measure_y!(state, 2) === (v, true)
-
-    v, det = Clf.measure_z!(state, 2)
-    @test !det
-    @test Clf.measure_z!(state, 2) === (v, true)
-    @test Clf.measure_z!(state, 2) === (v, true)
-    if v
-        Clf.apply!(state, Clf.XGate(), 2)
-    end
-    @test Clf.measure_z!(state, 2) === (false, true)
-
-    Clf.apply!(state, Clf.HGate(), 1)
-    v, det = Clf.measure_zs!(state, [1, 2])
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v, true)
-    @test Clf.measure_z!(state, 2) === (false, true)
-
-    Clf.apply!(state, Clf.HGate(), 1)
-    v2, det = Clf.measure_xs!(state, [1, 2])
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v, true)
-    @test Clf.measure_x!(state, 2) === (v2 ⊻ v, true)
-
-    v, det = Clf.measure_ys!(state, [1, 2])
-    @test !det
-    v2, det = Clf.measure_y!(state, 1)
-    @test Clf.measure_y!(state, 1) === (v2, true)
-    @test Clf.measure_y!(state, 2) === (v2 ⊻ v, true)
-
-    Clf.init_state_z!(state)
-    @test Clf.measure_z!(state, 1) === (false, true)
-    @test Clf.measure_z!(state, 2) === (false, true)
-
-    Clf.apply!(state, Clf.HGate(), 1)
-    Clf.apply!(state, Clf.HGate(), 2)
-    @test Clf.measure_x!(state, 1) === (false, true)
-    @test Clf.measure_x!(state, 2) === (false, true)
-
-    v, det = Clf.measure_zs!(state, [1, 2])
-    @test !det
-    v2, det = Clf.measure_z!(state, 1)
-    @test !det
-    @test Clf.measure_z!(state, 1) === (v2, true)
-    @test Clf.measure_z!(state, 2) === (v2 ⊻ v, true)
-
-    v, det = Clf.measure_paulis!(state, [true, true], [false, true])
-    @test !det
-    v2, det = Clf.measure_x!(state, 1)
-    @test !det
-    @test Clf.measure_x!(state, 1) === (v2, true)
-    @test Clf.measure_y!(state, 2) === (v2 ⊻ v, true)
-end
-
-function test_flip_base(n)
-    state = Clf.StabilizerState(n)
+function test_flip_base(::Type{SST}, n) where SST
+    state = SST(n)
 
     res = Bool[]
     res0 = false
@@ -474,8 +276,8 @@ function test_flip_base(n)
     end
 end
 
-function test_flip_base_x(n)
-    state = Clf.StabilizerState(n)
+function test_flip_base_x(::Type{SST}, n) where SST
+    state = SST(n)
     Clf.init_state_x!(state)
 
     res = Bool[]
@@ -596,58 +398,10 @@ function test_flip_base_x(n)
     end
 end
 
-@testset "flip base" begin
-    test_flip_base(4)
-    test_flip_base(5)
-    test_flip_base(16)
-    test_flip_base(17)
-    test_flip_base(31)
-    test_flip_base(32)
-    test_flip_base(64)
-    test_flip_base(65)
-    test_flip_base(70)
-    test_flip_base(80)
-    test_flip_base(90)
-    test_flip_base(100)
-    test_flip_base(110)
-    test_flip_base(120)
-    test_flip_base(127)
-    test_flip_base(128)
-    test_flip_base(129)
-
-    test_flip_base_x(4)
-    test_flip_base_x(5)
-    test_flip_base_x(16)
-    test_flip_base_x(17)
-    test_flip_base_x(31)
-    test_flip_base_x(32)
-    test_flip_base_x(64)
-    test_flip_base_x(65)
-    test_flip_base_x(70)
-    test_flip_base_x(80)
-    test_flip_base_x(90)
-    test_flip_base_x(100)
-    test_flip_base_x(110)
-    test_flip_base_x(120)
-    test_flip_base_x(127)
-    test_flip_base_x(128)
-    test_flip_base_x(129)
-end
-
-@testset "measure sign" begin
-    state = Clf.StabilizerState(3)
-    @test Clf.measure_z!(state, 3) === (false, true)
-    Clf.apply!(state, Clf.CNOTGate(), 2, 1)
-    Clf.apply!(state, Clf.CNOTGate(), 1, 3)
-    Clf.apply!(state, Clf.HGate(), 1)
-    Clf.apply!(state, Clf.CNOTGate(), 1, 2)
-    @test Clf.measure_z!(state, 3) === (false, true)
-end
-
-function test_deterministic_measure(nbit, ngates, nrep)
+function test_deterministic_measure(::Type{SST}, nbit, ngates, nrep) where SST
     stabx = Vector{Bool}(undef, nbit)
     stabz = Vector{Bool}(undef, nbit)
-    state = Clf.StabilizerState(nbit)
+    state = SST(nbit)
     str = Clf.PauliString{UInt64}(nbit)
     for i in 1:nrep
         if rand(Bool)
@@ -718,16 +472,266 @@ function test_deterministic_measure(nbit, ngates, nrep)
     end
 end
 
-@testset "deterministic measurement" begin
-    test_deterministic_measure(10, 2000, 100)
-    test_deterministic_measure(31, 2000, 30)
-    test_deterministic_measure(32, 2000, 30)
-    test_deterministic_measure(33, 2000, 30)
-    test_deterministic_measure(63, 2000, 30)
-    test_deterministic_measure(64, 2000, 30)
-    test_deterministic_measure(65, 2000, 30)
-    test_deterministic_measure(97, 2000, 25)
-    test_deterministic_measure(128, 2000, 20)
+for (ss_name, SS_T) in [("StabilizerState", Clf.StabilizerState),
+                        ("InvStabilizerState", Clf.InvStabilizerState)]
+    @testset "stabilizer 1q ($ss_name)" begin
+        state = SS_T(1)
+        @test Clf.measure_z!(state, 1) === (false, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_z!(state, 1) === (true, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_z!(state, 1) === (false, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_z!(state, 1) === (false, true)
+
+        v, det = Clf.measure_x!(state, 1)
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v, true)
+        @test Clf.measure_x!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_x!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_x!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_x!(state, 1) === (v, true)
+
+        v, det = Clf.measure_y!(state, 1)
+        @test !det
+        @test Clf.measure_y!(state, 1) === (v, true)
+        @test Clf.measure_y!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_y!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_y!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_y!(state, 1) === (v, true)
+
+        v, det = Clf.measure_z!(state, 1)
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v, true)
+        @test Clf.measure_z!(state, 1) === (v, true)
+        if v
+            Clf.apply!(state, Clf.XGate(), 1)
+        end
+        @test Clf.measure_z!(state, 1) === (false, true)
+
+        @test Clf.measure_zs!(state, [1]) === (false, true)
+
+        v, det = Clf.measure_xs!(state, [1])
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v, true)
+        @test Clf.measure_xs!(state, [1]) === (v, true)
+
+        v, det = Clf.measure_ys!(state, [1])
+        @test !det
+        @test Clf.measure_y!(state, 1) === (v, true)
+        @test Clf.measure_ys!(state, [1]) === (v, true)
+
+        v, det = Clf.measure_zs!(state, [1])
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v, true)
+        @test Clf.measure_zs!(state, [1]) === (v, true)
+
+        @test Clf.measure_paulis!(state, [false], [true]) === (v, true)
+
+        v, det = Clf.measure_paulis!(state, [true], [false])
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v, true)
+        @test Clf.measure_paulis!(state, [true], [false]) === (v, true)
+
+        v, det = Clf.measure_paulis!(state, [true], [true])
+        @test !det
+        @test Clf.measure_y!(state, 1) === (v, true)
+        @test Clf.measure_paulis!(state, [true], [true]) === (v, true)
+
+        v, det = Clf.measure_paulis!(state, [false], [true])
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v, true)
+        @test Clf.measure_paulis!(state, [false], [true]) === (v, true)
+    end
+
+    @testset "stabilizer 2q ($ss_name)" begin
+        state = SS_T(2)
+        @test Clf.measure_z!(state, 1) === (false, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_z!(state, 1) === (true, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_z!(state, 1) === (false, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_z!(state, 1) === (false, true)
+
+        @test Clf.measure_z!(state, 2) === (false, true)
+        Clf.apply!(state, Clf.XGate(), 2)
+        @test Clf.measure_z!(state, 2) === (true, true)
+        Clf.apply!(state, Clf.YGate(), 2)
+        @test Clf.measure_z!(state, 2) === (false, true)
+        Clf.apply!(state, Clf.ZGate(), 2)
+        @test Clf.measure_z!(state, 2) === (false, true)
+
+        v, det = Clf.measure_x!(state, 1)
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v, true)
+        @test Clf.measure_x!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_x!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_x!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_x!(state, 1) === (v, true)
+
+        v, det = Clf.measure_y!(state, 1)
+        @test !det
+        @test Clf.measure_y!(state, 1) === (v, true)
+        @test Clf.measure_y!(state, 1) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 1)
+        @test Clf.measure_y!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.YGate(), 1)
+        @test Clf.measure_y!(state, 1) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 1)
+        @test Clf.measure_y!(state, 1) === (v, true)
+
+        v, det = Clf.measure_z!(state, 1)
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v, true)
+        @test Clf.measure_z!(state, 1) === (v, true)
+        if v
+            Clf.apply!(state, Clf.XGate(), 1)
+        end
+        @test Clf.measure_z!(state, 1) === (false, true)
+
+        v, det = Clf.measure_x!(state, 2)
+        @test !det
+        @test Clf.measure_x!(state, 2) === (v, true)
+        @test Clf.measure_x!(state, 2) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 2)
+        @test Clf.measure_x!(state, 2) === (v, true)
+        Clf.apply!(state, Clf.YGate(), 2)
+        @test Clf.measure_x!(state, 2) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 2)
+        @test Clf.measure_x!(state, 2) === (v, true)
+
+        v, det = Clf.measure_y!(state, 2)
+        @test !det
+        @test Clf.measure_y!(state, 2) === (v, true)
+        @test Clf.measure_y!(state, 2) === (v, true)
+        Clf.apply!(state, Clf.XGate(), 2)
+        @test Clf.measure_y!(state, 2) === (!v, true)
+        Clf.apply!(state, Clf.YGate(), 2)
+        @test Clf.measure_y!(state, 2) === (!v, true)
+        Clf.apply!(state, Clf.ZGate(), 2)
+        @test Clf.measure_y!(state, 2) === (v, true)
+
+        v, det = Clf.measure_z!(state, 2)
+        @test !det
+        @test Clf.measure_z!(state, 2) === (v, true)
+        @test Clf.measure_z!(state, 2) === (v, true)
+        if v
+            Clf.apply!(state, Clf.XGate(), 2)
+        end
+        @test Clf.measure_z!(state, 2) === (false, true)
+
+        Clf.apply!(state, Clf.HGate(), 1)
+        v, det = Clf.measure_zs!(state, [1, 2])
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v, true)
+        @test Clf.measure_z!(state, 2) === (false, true)
+
+        Clf.apply!(state, Clf.HGate(), 1)
+        v2, det = Clf.measure_xs!(state, [1, 2])
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v, true)
+        @test Clf.measure_x!(state, 2) === (v2 ⊻ v, true)
+
+        v, det = Clf.measure_ys!(state, [1, 2])
+        @test !det
+        v2, det = Clf.measure_y!(state, 1)
+        @test Clf.measure_y!(state, 1) === (v2, true)
+        @test Clf.measure_y!(state, 2) === (v2 ⊻ v, true)
+
+        Clf.init_state_z!(state)
+        @test Clf.measure_z!(state, 1) === (false, true)
+        @test Clf.measure_z!(state, 2) === (false, true)
+
+        Clf.apply!(state, Clf.HGate(), 1)
+        Clf.apply!(state, Clf.HGate(), 2)
+        @test Clf.measure_x!(state, 1) === (false, true)
+        @test Clf.measure_x!(state, 2) === (false, true)
+
+        v, det = Clf.measure_zs!(state, [1, 2])
+        @test !det
+        v2, det = Clf.measure_z!(state, 1)
+        @test !det
+        @test Clf.measure_z!(state, 1) === (v2, true)
+        @test Clf.measure_z!(state, 2) === (v2 ⊻ v, true)
+
+        v, det = Clf.measure_paulis!(state, [true, true], [false, true])
+        @test !det
+        v2, det = Clf.measure_x!(state, 1)
+        @test !det
+        @test Clf.measure_x!(state, 1) === (v2, true)
+        @test Clf.measure_y!(state, 2) === (v2 ⊻ v, true)
+    end
+
+    @testset "flip base ($ss_name)" begin
+        test_flip_base(SS_T, 4)
+        test_flip_base(SS_T, 5)
+        test_flip_base(SS_T, 8)
+        test_flip_base(SS_T, 16)
+        test_flip_base(SS_T, 17)
+        test_flip_base(SS_T, 31)
+        test_flip_base(SS_T, 32)
+        test_flip_base(SS_T, 64)
+        test_flip_base(SS_T, 65)
+        test_flip_base(SS_T, 70)
+        test_flip_base(SS_T, 80)
+        test_flip_base(SS_T, 90)
+        test_flip_base(SS_T, 100)
+        test_flip_base(SS_T, 110)
+        test_flip_base(SS_T, 120)
+        test_flip_base(SS_T, 127)
+        test_flip_base(SS_T, 128)
+        test_flip_base(SS_T, 129)
+
+        test_flip_base_x(SS_T, 4)
+        test_flip_base_x(SS_T, 5)
+        test_flip_base_x(SS_T, 16)
+        test_flip_base_x(SS_T, 17)
+        test_flip_base_x(SS_T, 31)
+        test_flip_base_x(SS_T, 32)
+        test_flip_base_x(SS_T, 64)
+        test_flip_base_x(SS_T, 65)
+        test_flip_base_x(SS_T, 70)
+        test_flip_base_x(SS_T, 80)
+        test_flip_base_x(SS_T, 90)
+        test_flip_base_x(SS_T, 100)
+        test_flip_base_x(SS_T, 110)
+        test_flip_base_x(SS_T, 120)
+        test_flip_base_x(SS_T, 127)
+        test_flip_base_x(SS_T, 128)
+        test_flip_base_x(SS_T, 129)
+    end
+
+    @testset "measure sign ($ss_name)" begin
+        state = SS_T(3)
+        @test Clf.measure_z!(state, 3) === (false, true)
+        Clf.apply!(state, Clf.CNOTGate(), 2, 1)
+        Clf.apply!(state, Clf.CNOTGate(), 1, 3)
+        Clf.apply!(state, Clf.HGate(), 1)
+        Clf.apply!(state, Clf.CNOTGate(), 1, 2)
+        @test Clf.measure_z!(state, 3) === (false, true)
+    end
+
+    @testset "deterministic measurement ($ss_name)" begin
+        test_deterministic_measure(SS_T, 10, 2000, 100)
+        test_deterministic_measure(SS_T, 31, 2000, 30)
+        test_deterministic_measure(SS_T, 32, 2000, 30)
+        test_deterministic_measure(SS_T, 33, 2000, 30)
+        test_deterministic_measure(SS_T, 63, 2000, 30)
+        test_deterministic_measure(SS_T, 64, 2000, 30)
+        test_deterministic_measure(SS_T, 65, 2000, 30)
+        test_deterministic_measure(SS_T, 97, 2000, 25)
+        test_deterministic_measure(SS_T, 128, 2000, 20)
+    end
 end
 
 end
