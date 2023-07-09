@@ -912,6 +912,7 @@ end
          """, "fw_assume"), Cvoid, Tuple{Bool}, v)
 end
 
+# P1 = P1 * P2
 @inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
     VT8 = Vec{8,ChT}
     VT4 = Vec{4,ChT}
@@ -1072,7 +1073,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         px2s = pointer(@view(xzs[1, 3, a]))
         pz2s = pointer(@view(xzs[1, 4, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) == 0)
+        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) != 0)
     end
     return state
 end
@@ -1090,7 +1091,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         px2s = pointer(@view(xzs[1, 3, a]))
         pz2s = pointer(@view(xzs[1, 4, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) != 0)
+        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase - 0x1) == 0)
     end
     return state
 end
