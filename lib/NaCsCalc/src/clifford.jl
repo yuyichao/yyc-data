@@ -1258,35 +1258,31 @@ end
         end
     end
     was_y = _getbit(xzs[pchunk1, 4, a], pmask1)
+    flip_res = res ⊻ rs[a, 2]
     if was_y
-        @inbounds for j in 1:n
-            for k in 1:2
+        @inbounds for k in 1:2
+            for j in 1:n
                 x = xzs[lane + pchunk0, 2k - 1, j]
                 z = xzs[lane + pchunk0, 2k, j]
                 px = reduce(|, x & pmask0) != 0
                 pz = reduce(|, z & pmask0) != 0
                 xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, px ⊻ pz, pmask0)
                 xzs[lane + pchunk0, 2k, j] = _setbit(z, px, pmask0)
+                if px & flip_res
+                    rs[j, k] = ~rs[j, k]
+                end
             end
         end
     else
-        @inbounds for j in 1:n
-            for k in 1:2
+        @inbounds for k in 1:2
+            for j in 1:n
                 x = xzs[lane + pchunk0, 2k - 1, j]
                 z = xzs[lane + pchunk0, 2k, j]
                 px = reduce(|, x & pmask0) != 0
                 pz = reduce(|, z & pmask0) != 0
                 xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, pz, pmask0)
                 xzs[lane + pchunk0, 2k, j] = _setbit(z, px ⊻ pz, pmask0)
-            end
-        end
-    end
-    @inbounds if res ⊻ rs[a, 2]
-        for j in 1:n
-            for k in 1:2
-                z = xzs[lane + pchunk0, 2k, j]
-                pz = reduce(|, z & pmask0) != 0
-                if pz
+                if (px ⊻ pz) & flip_res
                     rs[j, k] = ~rs[j, k]
                 end
             end
