@@ -14,27 +14,39 @@ const Clf = NaCsCalc.Clifford
     return v1, v2
 end
 
-function test_size(n, rep)
-    state = Clf.StabilizerState(n)
+function test_size_rep(state, n, rep)
     for i in 1:rep
         Clf.measure_xs!(state, rand_2bits(n))
         Clf.measure_zs!(state, rand_2bits(n))
     end
 end
 
+function test_size(::Type{SST}, n, rep) where SST
+    state = SST(n)
+    @btime test_size_rep($state, $n, $rep)
+end
+
 # 9.458 μs (4 allocations: 384 bytes)
-@btime test_size(4, 100)
+test_size(Clf.StabilizerState, 4, 100)
+test_size(Clf.InvStabilizerState, 4, 100)
 # 24.665 μs (4 allocations: 512 bytes)
-@btime test_size(8, 200)
+test_size(Clf.StabilizerState, 8, 200)
+test_size(Clf.InvStabilizerState, 8, 200)
 # 70.330 μs (4 allocations: 784 bytes)
-@btime test_size(16, 400)
+test_size(Clf.StabilizerState, 16, 400)
+test_size(Clf.InvStabilizerState, 16, 400)
 # 227.823 μs (4 allocations: 1.28 KiB)
-@btime test_size(32, 800)
+test_size(Clf.StabilizerState, 32, 800)
+test_size(Clf.InvStabilizerState, 32, 800)
 # 1.000 ms (4 allocations: 3.27 KiB)
-@btime test_size(64, 1600)
+test_size(Clf.StabilizerState, 64, 1600)
+test_size(Clf.InvStabilizerState, 64, 1600)
 # 12.429 ms (6 allocations: 136.41 KiB)
-@btime test_size(512, 1600)
+test_size(Clf.StabilizerState, 512, 1600)
+test_size(Clf.InvStabilizerState, 512, 1600)
 # 27.677 ms (6 allocations: 136.41 KiB)
-@btime test_size(512, 3200)
+test_size(Clf.StabilizerState, 512, 3200)
+test_size(Clf.InvStabilizerState, 512, 3200)
 # 580.491 ms (7 allocations: 2.03 MiB)
-@btime test_size(2048, 6400)
+test_size(Clf.StabilizerState, 2048, 6400)
+test_size(Clf.InvStabilizerState, 2048, 6400)
