@@ -913,6 +913,14 @@ end
          """, "fw_assume"), Cvoid, Tuple{Bool}, v)
 end
 
+@generated function _gep_array(ptr::Ptr{T}, szs, index::NTuple{N}) where {T,N}
+    exp = :(index[$N] - 1)
+    for i in (N - 1):-1:1
+        exp = :($exp * szs[$i] + index[$i] - 1)
+    end
+    return :(@inline; ptr + $exp * $(sizeof(T)))
+end
+
 # P1 = P1 * P2
 @inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
     VT8 = Vec{8,ChT}
@@ -924,14 +932,14 @@ end
     # LLVM may think the vstore in the loop aliases the array pointer
     # so we extract the array pointer out of the loop.
     @inbounds for i in 1:8:nalign
-        x1 = vload(VT8, px1s + (i - 1) * 8)
-        x2 = vload(VT8, px2s + (i - 1) * 8)
+        x1 = vload(VT8, _gep_array(px1s, (), (i,)))
+        x2 = vload(VT8, _gep_array(px2s, (), (i,)))
         new_x1 = x1 ⊻ x2
-        vstore(new_x1, px1s + (i - 1) * 8)
-        z1 = vload(VT8, pz1s + (i - 1) * 8)
-        z2 = vload(VT8, pz2s + (i - 1) * 8)
+        vstore(new_x1, _gep_array(px1s, (), (i,)))
+        z1 = vload(VT8, _gep_array(pz1s, (), (i,)))
+        z2 = vload(VT8, _gep_array(pz2s, (), (i,)))
         new_z1 = z1 ⊻ z2
-        vstore(new_z1, pz1s + (i - 1) * 8)
+        vstore(new_z1, _gep_array(pz1s, (), (i,)))
 
         v1 = x1 & z2
         v2 = x2 & z1
