@@ -1170,10 +1170,16 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     return state
 end
 
-# Randomly pick a result
-@inline function measure_z!(state::InvStabilizerState, a; force=nothing)
+Base.@propagate_inbounds @inline function measure_z!(state::InvStabilizerState, a;
+                                                     force=nothing)
     n = state.n
-    check_qubit_bound(n, a)
+    @boundscheck check_qubit_bound(n, a)
+    return _measure_z!(state, a, force)
+end
+
+# Randomly pick a result
+function _measure_z!(state::InvStabilizerState, a, force)
+    n = state.n
     xzs = state.xzs
     rs = state.rs
     nchunks = size(xzs, 1)
