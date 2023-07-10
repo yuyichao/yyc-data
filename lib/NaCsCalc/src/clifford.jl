@@ -982,14 +982,14 @@ end
         pz2s += 4
     end
     if n & 2 != 0
-        x1 = vload(VT2, px1s)
-        x2 = vload(VT2, px2s)
+        x1 = vloada(VT2, px1s)
+        x2 = vloada(VT2, px2s)
         new_x1 = x1 ⊻ x2
-        vstore(new_x1, px1s)
-        z1 = vload(VT2, pz1s)
-        z2 = vload(VT2, pz2s)
+        vstorea(new_x1, px1s)
+        z1 = vloada(VT2, pz1s)
+        z2 = vloada(VT2, pz2s)
         new_z1 = z1 ⊻ z2
-        vstore(new_z1, pz1s)
+        vstorea(new_z1, pz1s)
 
         v1 = x1 & z2
         v2 = x2 & z1
