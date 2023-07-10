@@ -727,10 +727,16 @@ end
     return
 end
 
-# Randomly pick a result
-function measure_z!(state::StabilizerState, a; force=nothing)
+Base.@propagate_inbounds @inline function measure_z!(state::StabilizerState, a;
+                                                     force=nothing)
     n = state.n
-    check_qubit_bound(n, a)
+    @boundscheck check_qubit_bound(n, a)
+    return _measure_z!(state, a, force)
+end
+
+# Randomly pick a result
+function _measure_z!(state::StabilizerState, a, force)
+    n = state.n
     p = 0
     chunk_p = 0
     mask_p = zero(ChT)
@@ -1271,8 +1277,10 @@ function _measure_z!(state::InvStabilizerState, a, force)
             end
         end
     end
-    was_y = _getbit(xzs[pchunk1, 4, a], pmask1)
-    flip_res = res ⊻ rs[a, 2]
+    @inbounds begin
+        was_y = _getbit(xzs[pchunk1, 4, a], pmask1)
+        flip_res = res ⊻ rs[a, 2]
+    end
     if was_y
         @inbounds for k in 1:2
             for j in 1:n
