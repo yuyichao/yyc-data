@@ -480,7 +480,7 @@ function get_stabilizer(state::StabilizerState, i)
                        _getindex_r(state, i + n))
 end
 
-function init_state_z!(state::StabilizerState, v::Bool=false)
+function init_state_z!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
     zs = state.zs
@@ -497,7 +497,7 @@ function init_state_z!(state::StabilizerState, v::Bool=false)
     return state
 end
 
-function init_state_x!(state::StabilizerState, v::Bool=false)
+function init_state_x!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
     zs = state.zs
@@ -896,11 +896,11 @@ function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
                        state.rs[i, k])
 end
 
-function init_state_z!(state::InvStabilizerState, v::Bool=false)
+function init_state_z!(state::InvStabilizerState, v::Bool)
     n = state.n
     xzs = state.xzs
-    xzs .= 0
     assume(size(xzs, 2) == 4)
+    xzs .= 0
     assume(n > 0)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
@@ -916,11 +916,11 @@ function init_state_z!(state::InvStabilizerState, v::Bool=false)
     return state
 end
 
-function init_state_x!(state::InvStabilizerState, v::Bool=false)
+function init_state_x!(state::InvStabilizerState, v::Bool)
     n = state.n
     xzs = state.xzs
-    xzs .= 0
     assume(size(xzs, 2) == 4)
+    xzs .= 0
     assume(n > 0)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
@@ -1617,6 +1617,9 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
 end
 
 const _StabilizerState = Union{StabilizerState,InvStabilizerState}
+
+@inline init_state_z!(state::_StabilizerState) = init_state_z!(state, false)
+@inline init_state_x!(state::_StabilizerState) = init_state_x!(state, false)
 
 function measure_x!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
