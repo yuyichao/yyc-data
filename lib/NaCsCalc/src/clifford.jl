@@ -838,6 +838,7 @@ struct InvStabilizerState
         # X stab X term, X stab Z term, Z stab X term, Z stab Z term
         xzs = zeros(ChT, nchunks, 4, n)
         rs = zeros(Bool, n, 2)
+        assume(size(xzs, 2) == 4)
         @inbounds for i in 1:n
             chunk, mask = _get_chunk_mask(i)
             xzs[chunk, 1, i] = mask
@@ -862,7 +863,9 @@ end
 Base.@propagate_inbounds @inline function _getindex(state::InvStabilizerState,
                                                     i, j, k)
     chunk, mask = _get_chunk_mask(i)
-    return _getbit(state.xzs[chunk, j, k], mask)
+    xzs = state.xzs
+    assume(size(xzs, 2) == 4)
+    return _getbit(xzs[chunk, j, k], mask)
 end
 
 function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
@@ -877,14 +880,17 @@ function init_state_z!(state::InvStabilizerState, v::Bool=false)
     n = state.n
     xzs = state.xzs
     xzs .= 0
+    assume(size(xzs, 2) == 4)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
         xzs[chunk, 1, i] = mask
         xzs[chunk, 4, i] = mask
     end
     rs = state.rs
-    rs[:, 1] .= false
-    rs[:, 2] .= v
+    @inbounds begin
+        rs[:, 1] .= false
+        rs[:, 2] .= v
+    end
     return state
 end
 
@@ -892,14 +898,17 @@ function init_state_x!(state::InvStabilizerState, v::Bool=false)
     n = state.n
     xzs = state.xzs
     xzs .= 0
+    assume(size(xzs, 2) == 4)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
         xzs[chunk, 2, i] = mask
         xzs[chunk, 3, i] = mask
     end
     rs = state.rs
-    rs[:, 1] .= v
-    rs[:, 2] .= false
+    @inbounds begin
+        rs[:, 1] .= v
+        rs[:, 2] .= false
+    end
     return state
 end
 
@@ -1042,6 +1051,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds begin
         @simd ivdep for i in 1:nchunks
             xx = xzs[i, 1, a]
@@ -1099,6 +1109,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 1, a]))
         pz1s = pointer(@view(xzs[1, 2, a]))
@@ -1117,6 +1128,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 1, a]))
         pz1s = pointer(@view(xzs[1, 2, a]))
@@ -1135,6 +1147,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 3, a]))
         pz1s = pointer(@view(xzs[1, 4, a]))
@@ -1153,6 +1166,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 3, a]))
         pz1s = pointer(@view(xzs[1, 4, a]))
@@ -1173,6 +1187,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(size(xzs, 2) == 4)
     @inbounds GC.@preserve xzs begin
         # Xa′ = Xa * Xb
         px1s = pointer(@view(xzs[1, 1, a]))
@@ -1212,6 +1227,7 @@ function _measure_z!(state::InvStabilizerState, a, force)
     pmask0 = zero(Vec{2,ChT})
     pchunk1 = 0
     pmask1 = zero(ChT)
+    assume(size(xzs, 2) == 4)
     @inbounds for i0 in 1:(nchunks >> 1)
         i = i0 * 2 - 1
         zx = xzs[lane + i, 3, a]
