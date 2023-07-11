@@ -7,14 +7,14 @@ const Clf = NaCsCalc.Clifford
 
 @inline function benchmark(state, gate::Clf.Clifford1Q)
     n = state.n
-    for i in 1:n
+    @inbounds for i in 1:n
         Clf.apply!(state, gate, i)
     end
 end
 
 @inline function benchmark(state, gate::Clf.Clifford2Q)
     n = state.n
-    for i in 1:n
+    @inbounds for i in 1:n
         for j in 1:n - 1
             j = j < i ? j : j + 1
             Clf.apply!(state, gate, i, j)

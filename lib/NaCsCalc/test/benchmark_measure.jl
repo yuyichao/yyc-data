@@ -16,7 +16,7 @@ end
 
 function test_size_rep(state, rep)
     n = state.n
-    for i in 1:rep
+    @inbounds for i in 1:rep
         Clf.measure_xs!(state, rand_2bits(n))
         Clf.measure_zs!(state, rand_2bits(n))
     end
