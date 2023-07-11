@@ -1542,70 +1542,136 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     @inbounds zxa = xzs[lane + pchunk0, 3, a]
     cnot_tgt = zxa & ~pmask0
 
-    @inbounds for k in 1:2
-        for j in 1:n
-            x = xzs[lane + pchunk0, 2k - 1, j]
-            z = xzs[lane + pchunk0, 2k, j]
+    @inbounds begin
+        x = xzs[lane + pchunk0, 3, a]
+        z = xzs[lane + pchunk0, 4, a]
+        px = reduce(|, x & pmask0) != 0
+        pz = reduce(|, z & pmask0) != 0
+        cnot_z = z & cnot_tgt
+        zcum_lo = ws[lane + 1 + (a - 1) * 6, 2]
+        ws[lane + 1 + (a - 1) * 6, 2] = zero(VT2)
+        new_zcum_lo = zcum_lo ⊻ cnot_z
+        zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
+        if zcum_lo_cnt_u8 & 1 != 0
+            xzs[lane + pchunk0, 4, a] = z ⊻ pmask0
+        end
+        if px
+            xzs[lane + pchunk0, 3, a] = x ⊻ cnot_tgt
+            zcum_hi = ws[lane + 3 + (a - 1) * 6, 2] ⊻ (zcum_lo & cnot_z)
+            ws[lane + 3 + (a - 1) * 6, 2] = zero(VT2)
+            xzcum = ws[lane + 5 + (a - 1) * 6, 2] ⊻ (cnot_z & x)
+            ws[lane + 5 + (a - 1) * 6, 2] = zero(VT2)
+
+            xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
+            zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
+            zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
+
+            cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                zcum_cnt_u8 + 0x1) >> 1)
+            if cnot_phase & 1 != 0
+                rs[a, 2] = ~rs[a, 2]
+            end
+        end
+        was_y = _getbit(xzs[pchunk1, 4, a], pmask1)
+        flip_res = res ⊻ rs[a, 2]
+
+        if was_y
+            x = xzs[lane + pchunk0, 3, a]
+            z = xzs[lane + pchunk0, 4, a]
             px = reduce(|, x & pmask0) != 0
             pz = reduce(|, z & pmask0) != 0
-
-            cnot_z = z & cnot_tgt
-            zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
-            ws[lane + 1 + (j - 1) * 6, k] = zero(VT2)
-            new_zcum_lo = zcum_lo ⊻ cnot_z
-            zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
-            if zcum_lo_cnt_u8 & 1 != 0
-                xzs[lane + pchunk0, 2k, j] = z ⊻ pmask0
+            xzs[lane + pchunk0, 3, a] = _setbit(x, px ⊻ pz, pmask0)
+            xzs[lane + pchunk0, 4, a] = _setbit(z, px, pmask0)
+            if px & flip_res
+                rs[a, 2] = ~rs[a, 2]
             end
-            if px
-                xzs[lane + pchunk0, 2k - 1, j] = x ⊻ cnot_tgt
-                zcum_hi = ws[lane + 3 + (j - 1) * 6, k] ⊻ (zcum_lo & cnot_z)
-                ws[lane + 3 + (j - 1) * 6, k] = zero(VT2)
-                xzcum = ws[lane + 5 + (j - 1) * 6, k] ⊻ (cnot_z & x)
-                ws[lane + 5 + (j - 1) * 6, k] = zero(VT2)
-
-                xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
-                zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
-                zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
-
-                cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
-                                                    zcum_cnt_u8 + 0x1) >> 1)
-                if cnot_phase & 1 != 0
-                    rs[j, k] = ~rs[j, k]
-                end
+        else
+            x = xzs[lane + pchunk0, 3, a]
+            z = xzs[lane + pchunk0, 4, a]
+            px = reduce(|, x & pmask0) != 0
+            pz = reduce(|, z & pmask0) != 0
+            xzs[lane + pchunk0, 3, a] = _setbit(x, pz, pmask0)
+            xzs[lane + pchunk0, 4, a] = _setbit(z, px ⊻ pz, pmask0)
+            if (px ⊻ pz) & flip_res
+                rs[a, 2] = ~rs[a, 2]
             end
         end
     end
-    @inbounds begin
-        was_y = _getbit(xzs[pchunk1, 4, a], pmask1)
-        flip_res = res ⊻ rs[a, 2]
-    end
+
     if was_y
         @inbounds for k in 1:2
             for j in 1:n
+                if k == 2 && j == a
+                    continue
+                end
                 x = xzs[lane + pchunk0, 2k - 1, j]
                 z = xzs[lane + pchunk0, 2k, j]
                 px = reduce(|, x & pmask0) != 0
                 pz = reduce(|, z & pmask0) != 0
-                xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, px ⊻ pz, pmask0)
-                xzs[lane + pchunk0, 2k, j] = _setbit(z, px, pmask0)
-                if px & flip_res
-                    rs[j, k] = ~rs[j, k]
+
+                cnot_z = z & cnot_tgt
+                zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
+                ws[lane + 1 + (j - 1) * 6, k] = zero(VT2)
+                new_zcum_lo = zcum_lo ⊻ cnot_z
+                zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
+                new_pz = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
+                r = rs[j, k] ⊻ (px & flip_res)
+                if px
+                    zcum_hi = ws[lane + 3 + (j - 1) * 6, k] ⊻ (zcum_lo & cnot_z)
+                    ws[lane + 3 + (j - 1) * 6, k] = zero(VT2)
+                    xzcum = ws[lane + 5 + (j - 1) * 6, k] ⊻ (cnot_z & x)
+                    ws[lane + 5 + (j - 1) * 6, k] = zero(VT2)
+
+                    xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
+                    zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
+                    zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
+
+                    cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                        zcum_cnt_u8 + 0x1) >> 1)
+                    x = x ⊻ cnot_tgt
+                    r ⊻= cnot_phase & 1 != 0
                 end
+                xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, px ⊻ new_pz, pmask0)
+                xzs[lane + pchunk0, 2k, j] = _setbit(z, px, pmask0)
+                rs[j, k] = r
             end
         end
     else
         @inbounds for k in 1:2
             for j in 1:n
+                if k == 2 && j == a
+                    continue
+                end
                 x = xzs[lane + pchunk0, 2k - 1, j]
                 z = xzs[lane + pchunk0, 2k, j]
                 px = reduce(|, x & pmask0) != 0
                 pz = reduce(|, z & pmask0) != 0
-                xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, pz, pmask0)
-                xzs[lane + pchunk0, 2k, j] = _setbit(z, px ⊻ pz, pmask0)
-                if (px ⊻ pz) & flip_res
-                    rs[j, k] = ~rs[j, k]
+
+                cnot_z = z & cnot_tgt
+                zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
+                ws[lane + 1 + (j - 1) * 6, k] = zero(VT2)
+                new_zcum_lo = zcum_lo ⊻ cnot_z
+                zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
+                new_pz = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
+                r = rs[j, k] ⊻ ((px ⊻ new_pz) & flip_res)
+                if px
+                    zcum_hi = ws[lane + 3 + (j - 1) * 6, k] ⊻ (zcum_lo & cnot_z)
+                    ws[lane + 3 + (j - 1) * 6, k] = zero(VT2)
+                    xzcum = ws[lane + 5 + (j - 1) * 6, k] ⊻ (cnot_z & x)
+                    ws[lane + 5 + (j - 1) * 6, k] = zero(VT2)
+
+                    xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
+                    zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
+                    zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
+
+                    x = x ⊻ cnot_tgt
+                    cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                        zcum_cnt_u8 + 0x1) >> 1)
+                    r ⊻= cnot_phase & 1 != 0
                 end
+                xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, new_pz, pmask0)
+                xzs[lane + pchunk0, 2k, j] = _setbit(z, px ⊻ new_pz, pmask0)
+                rs[j, k] = r
             end
         end
     end
