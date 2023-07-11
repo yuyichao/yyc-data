@@ -1529,7 +1529,6 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         for k in 1:2
             for j in 1:n
                 px = _getbit(xzs[pchunk1, 2k - 1, j], pmask1)
-                zchunk = xzs[pchunk1, 2k, j]
                 x = xzs[lane + i, 2k - 1, j]
                 z = xzs[lane + i, 2k, j]
                 cnot_z = z & cnot_tgt
