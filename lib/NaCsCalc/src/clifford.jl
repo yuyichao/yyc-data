@@ -790,20 +790,16 @@ function _measure_z!(state::StabilizerState, n, a, force)
     end
     @inbounds if found_p
         nchunks = size(state.rs, 1)
+        assume(nchunks > 0)
         if nchunks <= 1
-            assume(nchunks > 0)
-            for i in 1:nchunks
-                mask_i = state.xs[i, a]
-                bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
-                mask_i = ifelse(bitidx < _chunk_len,
-                                mask_i & ~(one(ChT) << bitidx), mask_i)
-                if mask_i == 0
-                    continue
-                end
-                _clifford_rowsum1_2!(state, i, mask_i, chunk_p, mask_p)
+            mask_i = state.xs[1, a]
+            bitidx = (p - 1) % UInt
+            mask_i = ifelse(bitidx < _chunk_len,
+                            mask_i & ~(one(ChT) << bitidx), mask_i)
+            if mask_i != 0
+                _clifford_rowsum1_2!(state, 1, mask_i, chunk_p, mask_p)
             end
         else
-            assume(nchunks > 0)
             for i in 1:nchunks
                 mask_i = state.xs[i, a]
                 bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
