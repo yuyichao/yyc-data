@@ -1520,41 +1520,63 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         z = xzs[lane + pchunk0, 4, a]
         xzs[lane + pchunk0, 4, a] = z | pmask0
         pz = reduce(|, z & pmask0) != 0
-        cnot_z = z & cnot_tgt
-        xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & zxa))
-        zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
-        was_y = pz ⊻ (zcum_cnt_u8 & 1 != 0)
-        cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
-                                            zcum_cnt_u8 + 0x1) >> 1)
-        flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
-        rs[a, 2] = res
+        if reduce(|, cnot_tgt) != 0
+            cnot_z = z & cnot_tgt
+            xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & zxa))
+            zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
+            was_y = pz ⊻ (zcum_cnt_u8 & 1 != 0)
+            cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                zcum_cnt_u8 + 0x1) >> 1)
+            flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
+            rs[a, 2] = res
+            for k in 1:2
+                for j in 1:n
+                    if k == 2 && j == a
+                        continue
+                    end
+                    x = xzs[lane + pchunk0, 2k - 1, j]
+                    z = xzs[lane + pchunk0, 2k, j]
+                    px = reduce(|, x & pmask0) != 0
+                    pz = reduce(|, z & pmask0) != 0
 
-        for k in 1:2
-            for j in 1:n
-                if k == 2 && j == a
-                    continue
+                    cnot_z = z & cnot_tgt
+                    zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
+                    new_pz = pz ⊻ (zcum_cnt_u8 & 1 != 0)
+                    final_pz = ifelse(was_y, px, px ⊻ new_pz)
+                    final_px = ifelse(was_y, px ⊻ new_pz, new_pz)
+                    r = rs[j, k] ⊻ (final_pz & flip_res)
+                    if px
+                        xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & x))
+                        cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                            zcum_cnt_u8 + 0x1) >> 1)
+                        x = x ⊻ cnot_tgt
+                        r ⊻= cnot_phase & 1 != 0
+                    end
+                    xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
+                    xzs[lane + pchunk0, 2k, j] = _setbit(z, final_pz, pmask0)
+                    rs[j, k] = r
                 end
-                x = xzs[lane + pchunk0, 2k - 1, j]
-                z = xzs[lane + pchunk0, 2k, j]
-                px = reduce(|, x & pmask0) != 0
-                pz = reduce(|, z & pmask0) != 0
+            end
+        else
+            was_y = pz
+            flip_res = res ⊻ rs[a, 2]
+            rs[a, 2] = res
 
-                cnot_z = z & cnot_tgt
-                zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
-                new_pz = pz ⊻ (zcum_cnt_u8 & 1 != 0)
-                final_pz = ifelse(was_y, px, px ⊻ new_pz)
-                final_px = ifelse(was_y, px ⊻ new_pz, new_pz)
-                r = rs[j, k] ⊻ (final_pz & flip_res)
-                if px
-                    xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & x))
-                    cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
-                                                        zcum_cnt_u8 + 0x1) >> 1)
-                    x = x ⊻ cnot_tgt
-                    r ⊻= cnot_phase & 1 != 0
+            for k in 1:2
+                for j in 1:n
+                    if k == 2 && j == a
+                        continue
+                    end
+                    x = xzs[lane + pchunk0, 2k - 1, j]
+                    z = xzs[lane + pchunk0, 2k, j]
+                    px = reduce(|, x & pmask0) != 0
+                    pz = reduce(|, z & pmask0) != 0
+                    final_pz = ifelse(was_y, px, px ⊻ pz)
+                    final_px = ifelse(was_y, px ⊻ pz, pz)
+                    xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
+                    xzs[lane + pchunk0, 2k, j] = _setbit(z, final_pz, pmask0)
+                    rs[j, k] ⊻= final_pz & flip_res
                 end
-                xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
-                xzs[lane + pchunk0, 2k, j] = _setbit(z, final_pz, pmask0)
-                rs[j, k] = r
             end
         end
         return res, false
