@@ -970,14 +970,17 @@ end
     chi = zero(VT2)
     # Manual jump threading for the small n cases
     if n <= 2
-        x1 = vloada(VT2, px1s)
-        x2 = vloada(VT2, px2s)
-        new_x1 = x1 ⊻ x2
-        vstorea(new_x1, px1s)
-        z1 = vloada(VT2, pz1s)
-        z2 = vloada(VT2, pz2s)
-        new_z1 = z1 ⊻ z2
-        vstorea(new_z1, pz1s)
+        xz1 = vload(VT4, px1s)
+        xz2 = vload(VT4, px2s)
+        new_xz1 = xz1 ⊻ xz2
+        vstore(new_xz1, px1s)
+
+        x1 = Vec((xz1[1], xz1[2]))
+        z1 = Vec((xz1[3], xz1[4]))
+        x2 = Vec((xz2[1], xz2[2]))
+        z2 = Vec((xz2[3], xz2[4]))
+        new_x1 = Vec((new_xz1[1], new_xz1[2]))
+        new_z1 = Vec((new_xz1[3], new_xz1[4]))
 
         v1 = x1 & z2
         v2 = x2 & z1
