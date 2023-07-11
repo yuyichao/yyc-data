@@ -5,7 +5,7 @@ using BenchmarkTools
 
 const Clf = NaCsCalc.Clifford
 
-function test_bacon_shor(n)
+function test_bacon_shor(::Type{SST}, n) where SST
     data = Matrix{Int}(undef, n, n)
     anc_z = Matrix{Int}(undef, n, n - 1)
     anc_x = Matrix{Int}(undef, n - 1, n)
@@ -29,7 +29,7 @@ function test_bacon_shor(n)
             anc_x[i, j] = nqubit
         end
     end
-    state = Clf.StabilizerState(nqubit)
+    state = SST(nqubit)
     # logical |+> preparation
     @inbounds for i in 1:n
         d1 = data[i, 1]
@@ -71,12 +71,17 @@ function test_bacon_shor(n)
 end
 
 # 5.440 ms (10 allocations: 698.75 KiB)
-@btime test_bacon_shor(20)
+@btime test_bacon_shor(Clf.StabilizerState, 20)
+@btime test_bacon_shor(Clf.InvStabilizerState, 20)
 # 97.180 ms (10 allocations: 10.77 MiB)
-@btime test_bacon_shor(40)
+@btime test_bacon_shor(Clf.StabilizerState, 40)
+@btime test_bacon_shor(Clf.InvStabilizerState, 40)
 # 704.869 ms (13 allocations: 54.68 MiB)
-@btime test_bacon_shor(60)
+@btime test_bacon_shor(Clf.StabilizerState, 60)
+@btime test_bacon_shor(Clf.InvStabilizerState, 60)
 # 3.673 s (13 allocations: 173.30 MiB)
-@btime test_bacon_shor(80)
+@btime test_bacon_shor(Clf.StabilizerState, 80)
+@btime test_bacon_shor(Clf.InvStabilizerState, 80)
 # 14.049 s (13 allocations: 424.48 MiB)
-@btime test_bacon_shor(100)
+@btime test_bacon_shor(Clf.StabilizerState, 100)
+@btime test_bacon_shor(Clf.InvStabilizerState, 100)
