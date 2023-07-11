@@ -988,9 +988,7 @@ end
         change = v1 ⊻ v2
         chi = m & change
         clo = change
-
-        cnt = vcount_ones_u8(clo) + vcount_ones_u8(chi) << 1
-        return reduce(+, cnt) & 0x3
+        @goto n2_case_end
     elseif n < 8
         @goto n4_case
     end
