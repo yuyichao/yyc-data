@@ -1076,6 +1076,205 @@ end
     return reduce(+, cnt) & 0x3
 end
 
+@inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
+                                   px1s_2, pz1s_2, px2s_2, pz2s_2, n)
+    VT8 = Vec{8,ChT}
+    VT4 = Vec{4,ChT}
+    VT2 = Vec{2,ChT}
+
+    clo_1 = zero(VT2)
+    chi_1 = zero(VT2)
+    clo_2 = zero(VT2)
+    chi_2 = zero(VT2)
+    # Manual jump threading for the small n cases
+    if n <= 2
+        xz1 = vload(VT4, px1s_1)
+        xz2 = vload(VT4, px2s_1)
+        new_xz1 = xz1 ⊻ xz2
+        vstore(new_xz1, px1s_1)
+
+        x1 = Vec((xz1[1], xz1[2]))
+        z1 = Vec((xz1[3], xz1[4]))
+        x2 = Vec((xz2[1], xz2[2]))
+        z2 = Vec((xz2[3], xz2[4]))
+        new_x1 = Vec((new_xz1[1], new_xz1[2]))
+        new_z1 = Vec((new_xz1[3], new_xz1[4]))
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        chi_1 = m & change
+        clo_1 = change
+
+        xz1 = vload(VT4, px1s_2)
+        xz2 = vload(VT4, px2s_2)
+        new_xz1 = xz1 ⊻ xz2
+        vstore(new_xz1, px1s_2)
+
+        x1 = Vec((xz1[1], xz1[2]))
+        z1 = Vec((xz1[3], xz1[4]))
+        x2 = Vec((xz2[1], xz2[2]))
+        z2 = Vec((xz2[3], xz2[4]))
+        new_x1 = Vec((new_xz1[1], new_xz1[2]))
+        new_z1 = Vec((new_xz1[3], new_xz1[4]))
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        chi_2 = m & change
+        clo_2 = change
+        @goto n2_case_end
+    elseif n < 8
+        @goto n4_case
+    end
+    hi_1 = zero(VT8)
+    lo_1 = zero(VT8)
+    hi_2 = zero(VT8)
+    lo_2 = zero(VT8)
+    nalign = n & ~7
+    # LLVM may think the vstore in the loop aliases the array pointer
+    # so we extract the array pointer out of the loop.
+    @inbounds for i0 in 1:(n >> 3)
+        i = (i0 - 1) * 8 + 1
+        x1 = vload(VT8, _gep_array(px1s_1, (), (i,)))
+        x2 = vload(VT8, _gep_array(px2s_1, (), (i,)))
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, _gep_array(px1s_1, (), (i,)))
+        z1 = vload(VT8, _gep_array(pz1s_1, (), (i,)))
+        z2 = vload(VT8, _gep_array(pz2s_1, (), (i,)))
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, _gep_array(pz1s_1, (), (i,)))
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi_1 = hi_1 ⊻ ((m ⊻ lo_1) & change)
+        lo_1 = lo_1 ⊻ change
+
+        x1 = vload(VT8, _gep_array(px1s_2, (), (i,)))
+        x2 = vload(VT8, _gep_array(px2s_2, (), (i,)))
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, _gep_array(px1s_2, (), (i,)))
+        z1 = vload(VT8, _gep_array(pz1s_2, (), (i,)))
+        z2 = vload(VT8, _gep_array(pz2s_2, (), (i,)))
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, _gep_array(pz1s_2, (), (i,)))
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi_2 = hi_2 ⊻ ((m ⊻ lo_2) & change)
+        lo_2 = lo_2 ⊻ change
+    end
+    clo_1 = VT2((lo_1[1] ⊻ lo_1[3] ⊻ lo_1[5] ⊻ lo_1[7],
+                 lo_1[2] ⊻ lo_1[4] ⊻ lo_1[6] ⊻ lo_1[8]))
+    chi_1 = VT2((hi_1[1] ⊻ hi_1[3] ⊻ hi_1[5] ⊻ hi_1[7],
+                 hi_1[2] ⊻ hi_1[4] ⊻ hi_1[6] ⊻ hi_1[8]))
+    clo_2 = VT2((lo_2[1] ⊻ lo_2[3] ⊻ lo_2[5] ⊻ lo_2[7],
+                 lo_2[2] ⊻ lo_2[4] ⊻ lo_2[6] ⊻ lo_2[8]))
+    chi_2 = VT2((hi_2[1] ⊻ hi_2[3] ⊻ hi_2[5] ⊻ hi_2[7],
+                 hi_2[2] ⊻ hi_2[4] ⊻ hi_2[6] ⊻ hi_2[8]))
+    px1s_1 += nalign * 8
+    pz1s_1 += nalign * 8
+    px2s_1 += nalign * 8
+    pz2s_1 += nalign * 8
+    px1s_2 += nalign * 8
+    pz1s_2 += nalign * 8
+    px2s_2 += nalign * 8
+    pz2s_2 += nalign * 8
+
+    if n & 4 == 0
+        @goto n4_case_end
+    end
+    @label n4_case
+    x1 = vload(VT4, px1s_1)
+    x2 = vload(VT4, px2s_1)
+    new_x1 = x1 ⊻ x2
+    vstore(new_x1, px1s_1)
+    z1 = vload(VT4, pz1s_1)
+    z2 = vload(VT4, pz2s_1)
+    new_z1 = z1 ⊻ z2
+    vstore(new_z1, pz1s_1)
+
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    hi4 = m & change
+    lo4 = change
+    clo_1 ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+    chi_1 ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+
+    x1 = vload(VT4, px1s_2)
+    x2 = vload(VT4, px2s_2)
+    new_x1 = x1 ⊻ x2
+    vstore(new_x1, px1s_2)
+    z1 = vload(VT4, pz1s_2)
+    z2 = vload(VT4, pz2s_2)
+    new_z1 = z1 ⊻ z2
+    vstore(new_z1, pz1s_2)
+
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    hi4 = m & change
+    lo4 = change
+    clo_2 ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+    chi_2 ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+
+    px1s_2 += 4
+    pz1s_2 += 4
+    px2s_2 += 4
+    pz2s_2 += 4
+    @label n4_case_end
+
+    if n & 2 == 0
+        @goto n2_case_end
+    end
+    @label n2_case
+    x1 = vloada(VT2, px1s_1)
+    x2 = vloada(VT2, px2s_1)
+    new_x1 = x1 ⊻ x2
+    vstorea(new_x1, px1s_1)
+    z1 = vloada(VT2, pz1s_1)
+    z2 = vloada(VT2, pz2s_1)
+    new_z1 = z1 ⊻ z2
+    vstorea(new_z1, pz1s_1)
+
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    chi_1 ⊻= m & change
+    clo_1 ⊻= change
+
+    x1 = vloada(VT2, px1s_2)
+    x2 = vloada(VT2, px2s_2)
+    new_x1 = x1 ⊻ x2
+    vstorea(new_x1, px1s_2)
+    z1 = vloada(VT2, pz1s_2)
+    z2 = vloada(VT2, pz2s_2)
+    new_z1 = z1 ⊻ z2
+    vstorea(new_z1, pz1s_2)
+
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    chi_2 ⊻= m & change
+    clo_2 ⊻= change
+    @label n2_case_end
+
+    cnt_1 = vcount_ones_u8(clo_1) + vcount_ones_u8(chi_1) << 1
+    cnt_2 = vcount_ones_u8(clo_2) + vcount_ones_u8(chi_2) << 1
+    return reduce(+, cnt_1) & 0x3, reduce(+, cnt_2) & 0x3
+end
+
 Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
                                                  gate::Composite1Q, a)
     apply!(state, gate.g1, a)
@@ -1251,20 +1450,24 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         # Xa′ = Xa * Xb
-        px1s = pointer(@view(xzs[1, 1, a]))
-        pz1s = pointer(@view(xzs[1, 2, a]))
-        px2s = pointer(@view(xzs[1, 1, b]))
-        pz2s = pointer(@view(xzs[1, 2, b]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        rs[a, 1] ⊻= rs[b, 1] ⊻ (prod_phase != 0)
+        px1s_1 = pointer(@view(xzs[1, 1, a]))
+        pz1s_1 = pointer(@view(xzs[1, 2, a]))
+        px2s_1 = pointer(@view(xzs[1, 1, b]))
+        pz2s_1 = pointer(@view(xzs[1, 2, b]))
 
         # Zb′ = Za * Zb
-        px1s = pointer(@view(xzs[1, 3, b]))
-        pz1s = pointer(@view(xzs[1, 4, b]))
-        px2s = pointer(@view(xzs[1, 3, a]))
-        pz2s = pointer(@view(xzs[1, 4, a]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        rs[b, 2] ⊻= rs[a, 2] ⊻ (prod_phase != 0)
+        px1s_2 = pointer(@view(xzs[1, 3, b]))
+        pz1s_2 = pointer(@view(xzs[1, 4, b]))
+        px2s_2 = pointer(@view(xzs[1, 3, a]))
+        pz2s_2 = pointer(@view(xzs[1, 4, a]))
+
+        prod_phase_1, prod_phase_2 =
+            pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
+                              px1s_2, pz1s_2, px2s_2, pz2s_2, nchunks)
+        assume(prod_phase_1 & 0x1 == 0)
+        assume(prod_phase_2 & 0x1 == 0)
+        rs[a, 1] ⊻= rs[b, 1] ⊻ (prod_phase_1 != 0)
+        rs[b, 2] ⊻= rs[a, 2] ⊻ (prod_phase_2 != 0)
     end
     return state
 end
