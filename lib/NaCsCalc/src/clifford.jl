@@ -1212,7 +1212,8 @@ function _measure_z!(state::InvStabilizerState, a, force)
     pmask0 = zero(Vec{2,ChT})
     pchunk1 = 0
     pmask1 = zero(ChT)
-    @inbounds for i in 1:2:nchunks
+    @inbounds for i0 in 1:(nchunks >> 1)
+        i = i0 * 2 - 1
         zx = xzs[lane + i, 3, a]
         if reduce(|, zx) == 0
             continue
@@ -1235,7 +1236,8 @@ function _measure_z!(state::InvStabilizerState, a, force)
     res = force !== nothing ? force : rand(Bool)
 
     ws = state.ws
-    @inbounds for i in pchunk0 + 2:2:nchunks
+    @inbounds for i0 in (pchunk0 >> 1) + 2:(nchunks >> 1)
+        i = i0 * 2 - 1
         cnot_tgt = xzs[lane + i, 3, a]
         if reduce(|, cnot_tgt) == 0
             continue
