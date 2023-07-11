@@ -423,9 +423,15 @@ Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
     zs = state.zs
     rs = state.rs
     nchunks = size(state.rs, 1)
+    assume(nchunks > 0)
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
     end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
+                                                 gate::IGate, a)
+    @boundscheck check_qubit_bound(state.n, a)
     return state
 end
 
@@ -437,6 +443,7 @@ Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
     zs = state.zs
     rs = state.rs
     nchunks = size(state.rs, 1)
+    assume(nchunks > 0)
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
                @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
@@ -479,6 +486,7 @@ function init_state_z!(state::StabilizerState, v::Bool=false)
     zs = state.zs
     xs .= 0
     zs .= 0
+    assume(n > 0)
     @inbounds for i in 1:n
         chunk1, mask1 = _get_chunk_mask(i)
         xs[chunk1, i] = mask1
@@ -495,6 +503,7 @@ function init_state_x!(state::StabilizerState, v::Bool=false)
     zs = state.zs
     xs .= 0
     zs .= 0
+    assume(n > 0)
     @inbounds for i in 1:n
         chunk1, mask1 = _get_chunk_mask(i)
         zs[chunk1, i] = mask1
@@ -521,6 +530,7 @@ end
     zs = state.zs
     hi = zero(ChT)
     lo = zero(ChT)
+    assume(state.n > 0)
     @inbounds for j in 1:state.n
         xi = _getbit(xs[chunk_i, j], mask_i)
         zi = _getbit(zs[chunk_i, j], mask_i)
@@ -560,6 +570,7 @@ end
     zs = state.zs
     hi = zero(ChT)
     lo = zero(ChT)
+    assume(state.n > 0)
     @inbounds for j in 1:state.n
         xi = _getbit(xs[chunk_i, j], mask_i)
         zi = _getbit(zs[chunk_i, j], mask_i)
@@ -590,6 +601,7 @@ end
     wxzs = state.wxzs
     hi = zero(ChT)
     lo = zero(ChT)
+    assume(state.n > 0)
     @inbounds for j in 1:state.n
         xi = xs[chunk_i, j]
         xh = wxzs[j, 1]
@@ -609,6 +621,7 @@ end
     wxzs = state.wxzs
     hi = zero(ChT)
     lo = zero(ChT)
+    assume(state.n > 0)
     @inbounds for j in 1:state.n
         x = wxzs[j, 1]
         z = wxzs[j, 2]
@@ -697,6 +710,7 @@ end
     chunk1, mask1 = _get_chunk_mask(p - n)
     xs = state.xs
     zs = state.zs
+    assume(n > 0)
     @inbounds for i in 1:n
         # state.xs[i][p - n] = state.xs[i][p]
         # state.xs[i][p] = false
@@ -741,6 +755,7 @@ function _measure_z!(state::StabilizerState, a, force)
     chunk_p = 0
     mask_p = zero(ChT)
     found_p = false
+    assume(n > 0)
     @inbounds for _p in (n + 1):(2 * n)
         chunk_p, mask_p = _get_chunk_mask(_p)
         if _getbit(state.xs[chunk_p, a], mask_p)
@@ -752,6 +767,7 @@ function _measure_z!(state::StabilizerState, a, force)
     @inbounds if found_p
         nchunks = size(state.rs, 1)
         if nchunks <= 1
+            assume(nchunks > 0)
             for i in 1:nchunks
                 mask_i = state.xs[i, a]
                 bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
@@ -763,6 +779,7 @@ function _measure_z!(state::StabilizerState, a, force)
                 _clifford_rowsum1_2!(state, i, mask_i, chunk_p, mask_p)
             end
         else
+            assume(nchunks > 0)
             for i in 1:nchunks
                 mask_i = state.xs[i, a]
                 bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
@@ -783,6 +800,7 @@ function _measure_z!(state::StabilizerState, a, force)
         wrs = Ref(zero(ChT))
         total_mask = zero(ChT)
         if rembits == 0
+            assume(nfullchunks > 0)
             for i in 1:nfullchunks
                 mask_i = state.xs[i, a]
                 if mask_i != 0
@@ -850,6 +868,7 @@ end
 Base.eltype(::Type{InvStabilizerState}) = Bool
 
 function Base.show(io::IO, state::InvStabilizerState)
+    assume(state.n > 0)
     for i in 1:state.n
         print(io, "X[$i]: ")
         show(io, get_inv_stabilizer(state, i, false))
@@ -871,6 +890,7 @@ end
 function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
     n = state.n
     k = z ? 2 : 1
+    assume(n > 0)
     return PauliString(n, [_getindex(state, j, 2k - 1, i) for j in 1:n],
                        [_getindex(state, j, 2k, i) for j in 1:n],
                        state.rs[i, k])
@@ -881,12 +901,14 @@ function init_state_z!(state::InvStabilizerState, v::Bool=false)
     xzs = state.xzs
     xzs .= 0
     assume(size(xzs, 2) == 4)
+    assume(n > 0)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
         xzs[chunk, 1, i] = mask
         xzs[chunk, 4, i] = mask
     end
     rs = state.rs
+    assume(size(rs, 1) == n)
     @inbounds begin
         rs[:, 1] .= false
         rs[:, 2] .= v
@@ -899,12 +921,14 @@ function init_state_x!(state::InvStabilizerState, v::Bool=false)
     xzs = state.xzs
     xzs .= 0
     assume(size(xzs, 2) == 4)
+    assume(n > 0)
     @inbounds for i in 1:n
         chunk, mask = _get_chunk_mask(i)
         xzs[chunk, 2, i] = mask
         xzs[chunk, 3, i] = mask
     end
     rs = state.rs
+    assume(size(rs, 1) == n)
     @inbounds begin
         rs[:, 1] .= v
         rs[:, 2] .= false
@@ -1068,7 +1092,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds begin
         @simd ivdep for i in 1:nchunks
             xx = xzs[i, 1, a]
@@ -1092,6 +1118,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     n = state.n
     @boundscheck check_qubit_bound(n, a)
     rs = state.rs
+    assume(size(rs, 1) == n)
     @inbounds begin
         rs[a, 2] = ~rs[a, 2]
     end
@@ -1102,6 +1129,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     n = state.n
     @boundscheck check_qubit_bound(n, a)
     rs = state.rs
+    assume(size(rs, 1) == n)
     @inbounds begin
         rs[a, 1] = ~rs[a, 1]
         rs[a, 2] = ~rs[a, 2]
@@ -1113,6 +1141,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     n = state.n
     @boundscheck check_qubit_bound(n, a)
     rs = state.rs
+    assume(size(rs, 1) == n)
     @inbounds begin
         rs[a, 1] = ~rs[a, 1]
     end
@@ -1126,7 +1155,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 1, a]))
         pz1s = pointer(@view(xzs[1, 2, a]))
@@ -1146,7 +1177,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 1, a]))
         pz1s = pointer(@view(xzs[1, 2, a]))
@@ -1166,7 +1199,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 3, a]))
         pz1s = pointer(@view(xzs[1, 4, a]))
@@ -1186,7 +1221,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         px1s = pointer(@view(xzs[1, 3, a]))
         pz1s = pointer(@view(xzs[1, 4, a]))
@@ -1208,7 +1245,9 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds GC.@preserve xzs begin
         # Xa′ = Xa * Xb
         px1s = pointer(@view(xzs[1, 1, a]))
@@ -1243,6 +1282,8 @@ function _measure_z!(state::InvStabilizerState, a, force)
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
+    assume(n > 0)
     VT2 = Vec{2,ChT}
     lane = VecRange{2}(0)
     pchunk0 = 0
@@ -1250,6 +1291,7 @@ function _measure_z!(state::InvStabilizerState, a, force)
     pchunk1 = 0
     pmask1 = zero(ChT)
     assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
     @inbounds for i0 in 1:(nchunks >> 1)
         i = i0 * 2 - 1
         zx = xzs[lane + i, 3, a]
