@@ -40,6 +40,52 @@ Like `Base.count_ones` but works for `Bool` as well.
 count_ones(v::Bool) = Int(v)
 count_ones(v) = Base.count_ones(v)
 
+@inline function _cast_bits(::Type{T}, v) where T
+    if v isa T
+        return v
+    elseif v isa Bool
+        return v ? (zero(T) - one(T)) : zero(T)
+    else
+        return v % T
+    end
+end
+
+const ChT = UInt64
+const _chunk_len = sizeof(ChT) * 8
+@inline function _get_chunk_mask(bitidx)
+    bitidx_0 = bitidx - 1
+    chunk = bitidx_0 ÷ _chunk_len + 1
+    subbitidx_0 = bitidx_0 % _chunk_len
+    mask = one(ChT) << subbitidx_0
+    return chunk, mask
+end
+@inline _getbit(chunk, mask) = chunk & mask != 0
+@inline _setbit(chunk, val, mask) = ifelse(val, chunk | mask, chunk & ~mask)
+
+@inline vcount_ones_u8(v::Vec{N,T}) where {N,T} =
+    count_ones(reinterpret(Vec{N * sizeof(T),UInt8}, v))
+
+@inline function assume(v::Bool)
+    Base.llvmcall(
+        ("""
+         declare void @llvm.assume(i1)
+         define void @fw_assume(i8) alwaysinline
+         {
+             %v = trunc i8 %0 to i1
+             call void @llvm.assume(i1 %v)
+             ret void
+         }
+         """, "fw_assume"), Cvoid, Tuple{Bool}, v)
+end
+
+@generated function _gep_array(ptr::Ptr{T}, szs, index::NTuple{N}) where {T,N}
+    exp = :(index[$N] - 1)
+    for i in (N - 1):-1:1
+        exp = :($exp * szs[$i] + index[$i] - 1)
+    end
+    return :(@inline; ptr + $exp * $(sizeof(T)))
+end
+
 ## Single qubit gates
 # For these gates, we also support a variety of operations on them for convenience
 # including multiplication and inverse.
@@ -315,16 +361,6 @@ end
     return str
 end
 
-@inline function _cast_bits(::Type{T}, v) where T
-    if v isa T
-        return v
-    elseif v isa Bool
-        return v ? (zero(T) - one(T)) : zero(T)
-    else
-        return v % T
-    end
-end
-
 function pauli_commute(xas, zas, xbs, zbs)
     TA = eltype(xas)
     TB = eltype(xbs)
@@ -381,18 +417,6 @@ Base.@propagate_inbounds @inline function measure_stabilizer_z(str::PauliString,
                                                                r=false)
     return ~pauli_commute_z(str, zs)
 end
-
-const ChT = UInt64
-const _chunk_len = sizeof(ChT) * 8
-@inline function _get_chunk_mask(bitidx)
-    bitidx_0 = bitidx - 1
-    chunk = bitidx_0 ÷ _chunk_len + 1
-    subbitidx_0 = bitidx_0 % _chunk_len
-    mask = one(ChT) << subbitidx_0
-    return chunk, mask
-end
-@inline _getbit(chunk, mask) = chunk & mask != 0
-@inline _setbit(chunk, val, mask) = ifelse(val, chunk | mask, chunk & ~mask)
 
 struct StabilizerState
     n::Int
@@ -934,30 +958,6 @@ function init_state_x!(state::InvStabilizerState, v::Bool)
         rs[:, 2] .= false
     end
     return state
-end
-
-@inline vcount_ones_u8(v::Vec{N,T}) where {N,T} =
-    count_ones(reinterpret(Vec{N * sizeof(T),UInt8}, v))
-
-@inline function assume(v::Bool)
-    Base.llvmcall(
-        ("""
-         declare void @llvm.assume(i1)
-         define void @fw_assume(i8) alwaysinline
-         {
-             %v = trunc i8 %0 to i1
-             call void @llvm.assume(i1 %v)
-             ret void
-         }
-         """, "fw_assume"), Cvoid, Tuple{Bool}, v)
-end
-
-@generated function _gep_array(ptr::Ptr{T}, szs, index::NTuple{N}) where {T,N}
-    exp = :(index[$N] - 1)
-    for i in (N - 1):-1:1
-        exp = :($exp * szs[$i] + index[$i] - 1)
-    end
-    return :(@inline; ptr + $exp * $(sizeof(T)))
 end
 
 # P1 = P1 * P2
