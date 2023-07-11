@@ -932,12 +932,22 @@ end
     VT8 = Vec{8,ChT}
     VT4 = Vec{4,ChT}
     VT2 = Vec{2,ChT}
+
+    clo = zero(VT2)
+    chi = zero(VT2)
+    # Manual jump threading for the small n cases
+    if n <= 2
+        @goto n2_case
+    elseif n < 8
+        @goto n4_case
+    end
     hi = zero(VT8)
     lo = zero(VT8)
     nalign = n & ~7
     # LLVM may think the vstore in the loop aliases the array pointer
     # so we extract the array pointer out of the loop.
-    @inbounds for i in 1:8:nalign
+    @inbounds for i0 in 1:(n >> 3)
+        i = (i0 - 1) * 8 + 1
         x1 = vload(VT8, _gep_array(px1s, (), (i,)))
         x2 = vload(VT8, _gep_array(px2s, (), (i,)))
         new_x1 = x1 ⊻ x2
@@ -958,52 +968,59 @@ end
                lo[2] ⊻ lo[4] ⊻ lo[6] ⊻ lo[8]))
     chi = VT2((hi[1] ⊻ hi[3] ⊻ hi[5] ⊻ hi[7],
                hi[2] ⊻ hi[4] ⊻ hi[6] ⊻ hi[8]))
-
     px1s += nalign * 8
     pz1s += nalign * 8
     px2s += nalign * 8
     pz2s += nalign * 8
 
-    if n & 4 != 0
-        x1 = vload(VT4, px1s)
-        x2 = vload(VT4, px2s)
-        new_x1 = x1 ⊻ x2
-        vstore(new_x1, px1s)
-        z1 = vload(VT4, pz1s)
-        z2 = vload(VT4, pz2s)
-        new_z1 = z1 ⊻ z2
-        vstore(new_z1, pz1s)
-
-        v1 = x1 & z2
-        v2 = x2 & z1
-        m = new_x1 ⊻ new_z1 ⊻ v1
-        change = v1 ⊻ v2
-        hi4 = m & change
-        lo4 = change
-        clo ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
-        chi ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
-        px1s += 4
-        pz1s += 4
-        px2s += 4
-        pz2s += 4
+    if n & 4 == 0
+        @goto n4_case_end
     end
-    if n & 2 != 0
-        x1 = vloada(VT2, px1s)
-        x2 = vloada(VT2, px2s)
-        new_x1 = x1 ⊻ x2
-        vstorea(new_x1, px1s)
-        z1 = vloada(VT2, pz1s)
-        z2 = vloada(VT2, pz2s)
-        new_z1 = z1 ⊻ z2
-        vstorea(new_z1, pz1s)
+    @label n4_case
+    x1 = vload(VT4, px1s)
+    x2 = vload(VT4, px2s)
+    new_x1 = x1 ⊻ x2
+    vstore(new_x1, px1s)
+    z1 = vload(VT4, pz1s)
+    z2 = vload(VT4, pz2s)
+    new_z1 = z1 ⊻ z2
+    vstore(new_z1, pz1s)
 
-        v1 = x1 & z2
-        v2 = x2 & z1
-        m = new_x1 ⊻ new_z1 ⊻ v1
-        change = v1 ⊻ v2
-        chi ⊻= m & change
-        clo ⊻= change
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    hi4 = m & change
+    lo4 = change
+    clo ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+    chi ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+    px1s += 4
+    pz1s += 4
+    px2s += 4
+    pz2s += 4
+    @label n4_case_end
+
+    if n & 2 == 0
+        @goto n2_case_end
     end
+    @label n2_case
+    x1 = vloada(VT2, px1s)
+    x2 = vloada(VT2, px2s)
+    new_x1 = x1 ⊻ x2
+    vstorea(new_x1, px1s)
+    z1 = vloada(VT2, pz1s)
+    z2 = vloada(VT2, pz2s)
+    new_z1 = z1 ⊻ z2
+    vstorea(new_z1, pz1s)
+
+    v1 = x1 & z2
+    v2 = x2 & z1
+    m = new_x1 ⊻ new_z1 ⊻ v1
+    change = v1 ⊻ v2
+    chi ⊻= m & change
+    clo ⊻= change
+    @label n2_case_end
+
     cnt = vcount_ones_u8(clo) + vcount_ones_u8(chi) << 1
     return reduce(+, cnt) & 0x3
 end
@@ -1218,7 +1235,7 @@ function _measure_z!(state::InvStabilizerState, a, force)
     res = force !== nothing ? force : rand(Bool)
 
     ws = state.ws
-    @inbounds for i in (nchunks - 1):-2:pchunk0 + 2
+    @inbounds for i in pchunk0 + 2:2:nchunks
         cnot_tgt = xzs[lane + i, 3, a]
         if reduce(|, cnot_tgt) == 0
             continue
