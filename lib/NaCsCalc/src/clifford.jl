@@ -946,7 +946,24 @@ end
     chi = zero(VT2)
     # Manual jump threading for the small n cases
     if n <= 2
-        @goto n2_case
+        x1 = vloada(VT2, px1s)
+        x2 = vloada(VT2, px2s)
+        new_x1 = x1 ⊻ x2
+        vstorea(new_x1, px1s)
+        z1 = vloada(VT2, pz1s)
+        z2 = vloada(VT2, pz2s)
+        new_z1 = z1 ⊻ z2
+        vstorea(new_z1, pz1s)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        chi = m & change
+        clo = change
+
+        cnt = vcount_ones_u8(clo) + vcount_ones_u8(chi) << 1
+        return reduce(+, cnt) & 0x3
     elseif n < 8
         @goto n4_case
     end
