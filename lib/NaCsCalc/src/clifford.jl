@@ -1222,9 +1222,10 @@ function _measure_z!(state::InvStabilizerState, a, force)
     rs = state.rs
     nchunks = size(xzs, 1)
     assume(nchunks & 1 == 0)
+    VT2 = Vec{2,ChT}
     lane = VecRange{2}(0)
     pchunk0 = 0
-    pmask0 = zero(Vec{2,ChT})
+    pmask0 = zero(VT2)
     pchunk1 = 0
     pmask1 = zero(ChT)
     assume(size(xzs, 2) == 4)
@@ -1287,7 +1288,7 @@ function _measure_z!(state::InvStabilizerState, a, force)
 
             cnot_z = z & cnot_tgt
             zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
-            ws[lane + 1 + (j - 1) * 6, k] = Vec((zero(ChT), zero(ChT)))
+            ws[lane + 1 + (j - 1) * 6, k] = zero(VT2)
             new_zcum_lo = zcum_lo ⊻ cnot_z
             zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
             if zcum_lo_cnt_u8 & 1 != 0
@@ -1296,9 +1297,9 @@ function _measure_z!(state::InvStabilizerState, a, force)
             if px
                 xzs[lane + pchunk0, 2k - 1, j] = x ⊻ cnot_tgt
                 zcum_hi = ws[lane + 3 + (j - 1) * 6, k] ⊻ (zcum_lo & cnot_z)
-                ws[lane + 3 + (j - 1) * 6, k] = Vec((zero(ChT), zero(ChT)))
+                ws[lane + 3 + (j - 1) * 6, k] = zero(VT2)
                 xzcum = ws[lane + 5 + (j - 1) * 6, k] ⊻ (cnot_z & x)
-                ws[lane + 5 + (j - 1) * 6, k] = Vec((zero(ChT), zero(ChT)))
+                ws[lane + 5 + (j - 1) * 6, k] = zero(VT2)
 
                 xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
                 zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
