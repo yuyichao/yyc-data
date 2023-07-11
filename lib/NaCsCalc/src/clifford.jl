@@ -745,12 +745,12 @@ Base.@propagate_inbounds @inline function measure_z!(state::StabilizerState, a;
                                                      force=nothing)
     n = state.n
     @boundscheck check_qubit_bound(n, a)
-    return _measure_z!(state, a, force)
+    return _measure_z!(state, n, a, force)
 end
 
 # Randomly pick a result
-function _measure_z!(state::StabilizerState, a, force)
-    n = state.n
+function _measure_z!(state::StabilizerState, n, a, force)
+    assume(n == state.n)
     p = 0
     chunk_p = 0
     mask_p = zero(ChT)
@@ -1476,12 +1476,12 @@ Base.@propagate_inbounds @inline function measure_z!(state::InvStabilizerState, 
                                                      force=nothing)
     n = state.n
     @boundscheck check_qubit_bound(n, a)
-    return _measure_z!(state, a, force)
+    return _measure_z!(state, n, a, force)
 end
 
 # Randomly pick a result
-function _measure_z!(state::InvStabilizerState, a, force)
-    n = state.n
+function _measure_z!(state::InvStabilizerState, n, a, force)
+    assume(n == state.n)
     xzs = state.xzs
     rs = state.rs
     nchunks = size(xzs, 1)
