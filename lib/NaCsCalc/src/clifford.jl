@@ -1353,7 +1353,7 @@ const _StabilizerState = Union{StabilizerState,InvStabilizerState}
 function measure_x!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, HGate(), a)
-    res = measure_z!(state, a; force=force)
+    res = @inbounds measure_z!(state, a; force=force)
     @inbounds apply!(state, HGate(), a)
     return res
 end
@@ -1361,7 +1361,7 @@ end
 function measure_y!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, SXGate(), a)
-    res = measure_z!(state, a; force=force)
+    res = @inbounds measure_z!(state, a; force=force)
     @inbounds apply!(state, ISXGate(), a)
     return res
 end
@@ -1370,18 +1370,18 @@ function measure_zs!(state::_StabilizerState, idxs; force=nothing)
     if isempty(idxs)
         return false, true
     end
-    idx0 = idxs[1]
+    idx0 = @inbounds idxs[1]
     nidxs = length(idxs)
-    if nidxs == 1
-        return measure_z!(state, idx0; force=force)
-    end
     @boundscheck check_qubit_bound(state.n, idx0)
+    if nidxs == 1
+        return @inbounds measure_z!(state, idx0; force=force)
+    end
     for i in 2:nidxs
         idxi = @inbounds idxs[i]
         @boundscheck check_qubit_bound(state.n, idxi)
-        apply!(state, CNOTGate(), idxi, idx0)
+        @inbounds apply!(state, CNOTGate(), idxi, idx0)
     end
-    res = measure_z!(state, idx0; force=force)
+    res = @inbounds measure_z!(state, idx0; force=force)
     @inbounds for i in 2:nidxs
         apply!(state, CNOTGate(), idxs[i], idx0)
     end
@@ -1414,10 +1414,10 @@ function measure_paulis!(state::_StabilizerState, xs, zs; force=nothing)
     @assert length(xs) == state.n
     @assert length(zs) == state.n
     local idx0
-    for i in 1:state.n
+    @inbounds for i in 1:state.n
         x = xs[i]
         z = zs[i]
-        @inbounds if x
+        if x
             if z
                 apply!(state, SXGate(), i)
             else
@@ -1429,13 +1429,13 @@ function measure_paulis!(state::_StabilizerState, xs, zs; force=nothing)
         if !@isdefined(idx0)
             idx0 = i
         else
-            @inbounds apply!(state, CNOTGate(), i, idx0)
+            apply!(state, CNOTGate(), i, idx0)
         end
     end
     if !@isdefined(idx0)
         return false, true
     end
-    res = measure_z!(state, idx0; force=force)
+    res = @inbounds measure_z!(state, idx0; force=force)
     @inbounds for i in state.n:-1:1
         x = xs[i]
         z = zs[i]
