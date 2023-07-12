@@ -882,7 +882,8 @@ struct InvStabilizerState
             xzs[chunk, 1, i] = mask
             xzs[chunk, 4, i] = mask
         end
-        return new(n, xzs, rs, zeros(ChT, 6 * n, 2))
+        return new(n, xzs, rs, zeros(ChT, 4, nchunks >> 1))
+        # return new(n, xzs, rs, zeros(ChT, 6 * n, 2))
     end
 end
 Base.eltype(::Type{InvStabilizerState}) = Bool
@@ -1486,7 +1487,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     assume(n > 0)
     VT2 = Vec{2,ChT}
     lane = VecRange{2}(0)
-    local pchunk0, pmask0, pchunk1, pmask1, zxa
+    local pchunk0, pmask0, zxa
     assume(size(xzs, 2) == 4)
     assume(size(rs, 1) == n)
     i0_end = nchunks >> 1
@@ -1498,13 +1499,9 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         end
         pchunk0 = i
         if zxa[1] == 0
-            pchunk1 = i + 1
-            pmask1 = one(ChT) << trailing_zeros(zxa[2])
-            pmask0 = Vec((zero(ChT), pmask1))
+            pmask0 = Vec((zero(ChT), one(ChT) << trailing_zeros(zxa[2])))
         else
-            pchunk1 = i
-            pmask1 = one(ChT) << trailing_zeros(zxa[1])
-            pmask0 = Vec((pmask1, zero(ChT)))
+            pmask0 = Vec((one(ChT) << trailing_zeros(zxa[1]), zero(ChT)))
         end
         @goto rand_measure
     end
@@ -1518,98 +1515,101 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         @goto single_chunk
     end
     ws = state.ws
-    multi_chunk = false
+    assume(size(ws, 1) == 4)
+    chunk_count = 0
+    zcum_lo = zero(VT2)
+    zcum_hi = zero(VT2)
     @inbounds for i0 in i0_start:i0_end
         i = i0 * 2 - 1
         cnot_tgt = xzs[lane + i, 3, a]
         if reduce(|, cnot_tgt) == 0
             continue
         end
-        multi_chunk = true
-        for k in 1:2
-            for j in 1:n
-                px = _getbit(xzs[pchunk1, 2k - 1, j], pmask1)
-                x = xzs[lane + i, 2k - 1, j]
-                z = xzs[lane + i, 2k, j]
-                cnot_z = z & cnot_tgt
-                zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
-                ws[lane + 1 + (j - 1) * 6, k] = zcum_lo ⊻ cnot_z
-                if px
-                    xzs[lane + i, 2k - 1, j] = x ⊻ cnot_tgt
-                    ws[lane + 3 + (j - 1) * 6, k] ⊻= zcum_lo & cnot_z
-                    ws[lane + 5 + (j - 1) * 6, k] ⊻= cnot_z & x
-                end
-            end
-        end
+        xzs[lane + i, 3, a] = zero(VT2)
+
+        chunk_count += 1
+        ws[lane + 1, chunk_count] = cnot_tgt
+        ws[3, chunk_count] = i
+
+        z = xzs[lane + i, 4, a]
+        cnot_z = z & cnot_tgt
+        zcum_hi ⊻= zcum_lo & cnot_z
+        zcum_lo ⊻= cnot_z
     end
-    if !multi_chunk
+    if chunk_count <= 0
         @goto single_chunk
     end
     @inbounds begin
         xzs[lane + pchunk0, 3, a] = zero(VT2)
-        cnot_tgt = zxa & ~pmask0
+        cnot_tgt0 = zxa & ~pmask0
         z = xzs[lane + pchunk0, 4, a]
         xzs[lane + pchunk0, 4, a] = z | pmask0
         pz = reduce(|, z & pmask0) != 0
-        cnot_z = z & cnot_tgt
-        zcum_lo = ws[lane + 1 + (a - 1) * 6, 2]
-        ws[lane + 1 + (a - 1) * 6, 2] = zero(VT2)
+        cnot_z = z & cnot_tgt0
         new_zcum_lo = zcum_lo ⊻ cnot_z
         zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
         was_y = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
 
-        zcum_hi = ws[lane + 3 + (a - 1) * 6, 2] ⊻ (zcum_lo & cnot_z)
-        ws[lane + 3 + (a - 1) * 6, 2] = zero(VT2)
-        xzcum = ws[lane + 5 + (a - 1) * 6, 2] ⊻ (cnot_z & zxa)
-        ws[lane + 5 + (a - 1) * 6, 2] = zero(VT2)
+        zcum_hi ⊻= zcum_lo & cnot_z
 
-        xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
         zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
         zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
 
-        cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
-                                            zcum_cnt_u8 + 0x1) >> 1)
+        cnot_phase = zcum_lo_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                              zcum_cnt_u8 + 0x1) >> 1)
         flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
         rs[a, 2] = res
     end
 
-    @inbounds for k in 1:2
-        for j in 1:n
+    @inbounds for j in 1:n
+        for k in 1:2
             if k == 2 && j == a
                 continue
             end
-            x = xzs[lane + pchunk0, 2k - 1, j]
-            z = xzs[lane + pchunk0, 2k, j]
-            px = reduce(|, x & pmask0) != 0
-            pz = reduce(|, z & pmask0) != 0
-
-            cnot_z = z & cnot_tgt
-            zcum_lo = ws[lane + 1 + (j - 1) * 6, k]
-            ws[lane + 1 + (j - 1) * 6, k] = zero(VT2)
-            new_zcum_lo = zcum_lo ⊻ cnot_z
-            zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
+            x0 = xzs[lane + pchunk0, 2k - 1, j]
+            px = reduce(|, x0 & pmask0) != 0
+            z0 = xzs[lane + pchunk0, 2k, j]
+            pz = reduce(|, z0 & pmask0) != 0
+            cnot_z0 = z0 & cnot_tgt0
+            zcum_lo = cnot_z0
+            if px
+                zcum_hi = zero(VT2)
+                xzcum = cnot_z0 & x0
+                for cid in 1:chunk_count
+                    cnot_tgt = ws[lane + 1, chunk_count]
+                    i = ws[3, chunk_count]
+                    x = xzs[lane + i, 2k - 1, j]
+                    z = xzs[lane + i, 2k, j]
+                    cnot_z = z & cnot_tgt
+                    xzs[lane + i, 2k - 1, j] = x ⊻ cnot_tgt
+                    zcum_hi ⊻= zcum_lo & cnot_z
+                    xzcum ⊻= cnot_z & x
+                    zcum_lo ⊻= cnot_z
+                end
+                x0 = x0 ⊻ cnot_tgt0
+                xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
+                zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
+                zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(zcum_lo))
+                zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
+                cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+                                                    zcum_cnt_u8 + 0x1) >> 1)
+                r = rs[j, k] ⊻ (cnot_phase & 1 != 0)
+            else
+                for cid in 1:chunk_count
+                    cnot_tgt = ws[lane + 1, chunk_count]
+                    i = ws[3, chunk_count]
+                    z = xzs[lane + i, 2k, j]
+                    zcum_lo ⊻= z & cnot_tgt
+                end
+                zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(zcum_lo))
+                r = rs[j, k]
+            end
             new_pz = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
             final_pz = ifelse(was_y, px, px ⊻ new_pz)
             final_px = ifelse(was_y, px ⊻ new_pz, new_pz)
-            r = rs[j, k] ⊻ (final_pz & flip_res)
-            if px
-                zcum_hi = ws[lane + 3 + (j - 1) * 6, k] ⊻ (zcum_lo & cnot_z)
-                ws[lane + 3 + (j - 1) * 6, k] = zero(VT2)
-                xzcum = ws[lane + 5 + (j - 1) * 6, k] ⊻ (cnot_z & x)
-                ws[lane + 5 + (j - 1) * 6, k] = zero(VT2)
-
-                xzcum_cnt_u8 = reduce(+, vcount_ones_u8(xzcum))
-                zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
-                zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
-
-                cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
-                                                    zcum_cnt_u8 + 0x1) >> 1)
-                x = x ⊻ cnot_tgt
-                r ⊻= cnot_phase & 1 != 0
-            end
-            xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
-            xzs[lane + pchunk0, 2k, j] = _setbit(z, final_pz, pmask0)
-            rs[j, k] = r
+            xzs[lane + pchunk0, 2k - 1, j] = _setbit(x0, final_px, pmask0)
+            xzs[lane + pchunk0, 2k, j] = _setbit(z0, final_pz, pmask0)
+            rs[j, k] = r ⊻ (final_pz & flip_res)
         end
     end
     return res, false
