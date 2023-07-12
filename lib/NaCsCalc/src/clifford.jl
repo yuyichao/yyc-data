@@ -1042,10 +1042,10 @@ end
     lo4 = change
     clo ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
     chi ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
-    px1s += 4
-    pz1s += 4
-    px2s += 4
-    pz2s += 4
+    px1s += sizeof(VT4)
+    pz1s += sizeof(VT4)
+    px2s += sizeof(VT4)
+    pz2s += sizeof(VT4)
     @label n4_case_end
 
     if n & 2 == 0
@@ -1206,6 +1206,11 @@ end
     clo_1 ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
     chi_1 ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
 
+    px1s_1 += sizeof(VT4)
+    pz1s_1 += sizeof(VT4)
+    px2s_1 += sizeof(VT4)
+    pz2s_1 += sizeof(VT4)
+
     x1 = vload(VT4, px1s_2)
     x2 = vload(VT4, px2s_2)
     new_x1 = x1 ⊻ x2
@@ -1224,10 +1229,10 @@ end
     clo_2 ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
     chi_2 ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
 
-    px1s_2 += 4
-    pz1s_2 += 4
-    px2s_2 += 4
-    pz2s_2 += 4
+    px1s_2 += sizeof(VT4)
+    pz1s_2 += sizeof(VT4)
+    px2s_2 += sizeof(VT4)
+    pz2s_2 += sizeof(VT4)
     @label n4_case_end
 
     if n & 2 == 0
