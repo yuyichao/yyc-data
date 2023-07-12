@@ -1576,8 +1576,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 zcum_hi = zero(VT2)
                 xzcum = cnot_z0 & x0
                 for cid in 1:chunk_count
-                    cnot_tgt = ws[lane + 1, chunk_count]
-                    i = ws[3, chunk_count]
+                    cnot_tgt = ws[lane + 1, cid]
+                    i = ws[3, cid]
                     x = xzs[lane + i, 2k - 1, j]
                     z = xzs[lane + i, 2k, j]
                     cnot_z = z & cnot_tgt
@@ -1596,8 +1596,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 r = rs[j, k] ⊻ (cnot_phase & 1 != 0)
             else
                 for cid in 1:chunk_count
-                    cnot_tgt = ws[lane + 1, chunk_count]
-                    i = ws[3, chunk_count]
+                    cnot_tgt = ws[lane + 1, cid]
+                    i = ws[3, cid]
                     z = xzs[lane + i, 2k, j]
                     zcum_lo ⊻= z & cnot_tgt
                 end
