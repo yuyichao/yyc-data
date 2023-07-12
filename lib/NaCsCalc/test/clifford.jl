@@ -398,6 +398,29 @@ function test_flip_base_x(::Type{SST}, n) where SST
     end
 end
 
+function test_gap(::Type{SST}, gap, nqubit) where SST
+    state = SST(nqubit)
+
+    Clf.apply!(state, Clf.HGate(), 1)
+    Clf.apply!(state, Clf.CNOTGate(), 1, gap + 1)
+    Clf.apply!(state, Clf.HGate(), gap + 1)
+    Clf.apply!(state, Clf.CNOTGate(), 1, 2gap + 1)
+    Clf.apply!(state, Clf.HGate(), 2 * gap + 1)
+    Clf.apply!(state, Clf.HGate(), 1)
+
+    @test Clf.measure_xs!(state, (gap + 1, 2 * gap + 1)) == (false, true)
+
+    meas, det = Clf.measure_z!(state, 1, force=true)
+    @test !det
+
+    @test Clf.measure_xs!(state, (gap + 1, 2 * gap + 1)) == (false, true)
+
+    meas, det = Clf.measure_z!(state, 1)
+    @test det
+
+    @test Clf.measure_xs!(state, (gap + 1, 2 * gap + 1)) == (false, true)
+end
+
 function apply_random_clifford!(cb, nbit)
     id = rand(1:16)
     n1 = rand(1:nbit)
@@ -777,6 +800,17 @@ for (ss_name, SS_T) in [("StabilizerState", Clf.StabilizerState),
         Clf.apply!(state, Clf.HGate(), 1)
         Clf.apply!(state, Clf.CNOTGate(), 1, 2)
         @test Clf.measure_z!(state, 3) === (false, true)
+    end
+
+    @testset "gap ($ss_name)" begin
+        for gap in 1:128
+            for nqubit in [3:140; 240:260; 500:530; 1000:1050; 2020:2070]
+                if nqubit < gap * 2 + 1
+                    continue
+                end
+                test_gap(SS_T, gap, nqubit)
+            end
+        end
     end
 
     @testset "random measurement ($ss_name)" begin
