@@ -398,6 +398,43 @@ function test_flip_base_x(::Type{SST}, n) where SST
     end
 end
 
+function apply_random_clifford!(cb, nbit)
+    id = rand(1:16)
+    n1 = rand(1:nbit)
+    if id == 1
+        # H
+        cb(Clf.HGate(), n1)
+    elseif id == 2
+        # X
+        cb(Clf.XGate(), n1)
+    elseif id == 3
+        # Y
+        cb(Clf.YGate(), n1)
+    elseif id == 4
+        # Z
+        cb(Clf.ZGate(), n1)
+    elseif id == 5
+        # S
+        cb(Clf.SGate(), n1)
+    elseif id == 6
+        # IS
+        cb(Clf.ISGate(), n1)
+    elseif id == 7
+        # SX
+        cb(Clf.SXGate(), n1)
+    elseif id == 8
+        # ISX
+        cb(Clf.ISXGate(), n1)
+    else
+        # CNOT
+        n2 = rand(1:(nbit - 1))
+        if n2 >= n1
+            n2 += 1
+        end
+        cb(Clf.CNOTGate(), n1, n2)
+    end
+end
+
 function test_deterministic_measure(::Type{SST}, nbit, ngates, nrep) where SST
     stabx = Vector{Bool}(undef, nbit)
     stabz = Vector{Bool}(undef, nbit)
@@ -416,48 +453,9 @@ function test_deterministic_measure(::Type{SST}, nbit, ngates, nrep) where SST
         str.rs[] = zero(UInt64)
         for _ in 1:ngates
             for i in 1:100
-                id = rand(1:16)
-                n1 = rand(1:nbit)
-                if id == 1
-                    # H
-                    Clf.apply!(state, Clf.HGate(), n1)
-                    Clf.apply!(str, Clf.HGate(), n1)
-                elseif id == 2
-                    # X
-                    Clf.apply!(state, Clf.XGate(), n1)
-                    Clf.apply!(str, Clf.XGate(), n1)
-                elseif id == 3
-                    # Y
-                    Clf.apply!(state, Clf.YGate(), n1)
-                    Clf.apply!(str, Clf.YGate(), n1)
-                elseif id == 4
-                    # Z
-                    Clf.apply!(state, Clf.ZGate(), n1)
-                    Clf.apply!(str, Clf.ZGate(), n1)
-                elseif id == 5
-                    # S
-                    Clf.apply!(state, Clf.SGate(), n1)
-                    Clf.apply!(str, Clf.SGate(), n1)
-                elseif id == 6
-                    # IS
-                    Clf.apply!(state, Clf.ISGate(), n1)
-                    Clf.apply!(str, Clf.ISGate(), n1)
-                elseif id == 7
-                    # SX
-                    Clf.apply!(state, Clf.SXGate(), n1)
-                    Clf.apply!(str, Clf.SXGate(), n1)
-                elseif id == 8
-                    # ISX
-                    Clf.apply!(state, Clf.ISXGate(), n1)
-                    Clf.apply!(str, Clf.ISXGate(), n1)
-                else
-                    # CNOT
-                    n2 = rand(1:(nbit - 1))
-                    if n2 >= n1
-                        n2 += 1
-                    end
-                    Clf.apply!(state, Clf.CNOTGate(), n1, n2)
-                    Clf.apply!(str, Clf.CNOTGate(), n1, n2)
+                apply_random_clifford!(nbit) do (args...)
+                    Clf.apply!(state, args...)
+                    Clf.apply!(str, args...)
                 end
             end
             for j in 0:(Clf.nbits(typeof(str)) - 1)
@@ -467,6 +465,66 @@ function test_deterministic_measure(::Type{SST}, nbit, ngates, nrep) where SST
                 v, det = Clf.measure_paulis!(state, stabx, stabz)
                 @test det
                 @test r == v
+            end
+        end
+    end
+end
+
+function rand_commuting_pauli!(strs, nbit)
+    for str in strs
+        str.zs .= rand.(UInt64)
+        str.xs .= zero(UInt64)
+        str.rs[] = zero(UInt64)
+    end
+    for i in 1:nbit * 20
+        apply_random_clifford!(nbit) do (args...)
+            for str in strs
+                Clf.apply!(str, args...)
+            end
+        end
+    end
+end
+
+function test_random_measure(::Type{SST}, nbit, ngates, nrep) where SST
+    stabx = Vector{Bool}(undef, nbit)
+    stabz = Vector{Bool}(undef, nbit)
+    state = SST(nbit)
+    strs = [Clf.PauliString{UInt64}(nbit) for i in 1:ngates]
+    for i in 1:nrep
+        if rand(Bool)
+            Clf.init_state_z!(state)
+        else
+            Clf.init_state_x!(state)
+        end
+        rand_commuting_pauli!(strs, nbit)
+        for j in 1:ngates
+            for i in 1:20
+                apply_random_clifford!(nbit) do (args...)
+                    Clf.apply!(state, args...)
+                    for str in strs
+                        Clf.apply!(str, args...)
+                    end
+                end
+            end
+            for k in 1:(j - 1)
+                str = strs[k]
+                for b in 0:(Clf.nbits(typeof(str)) - 1)
+                    stabx .= ((str.xs .>> b) .& 1) .!= 0
+                    stabz .= ((str.zs .>> b) .& 1) .!= 0
+                    r = (str.rs[] >> b) & 1 != 0
+                    v, det = Clf.measure_paulis!(state, stabx, stabz)
+                    @test det
+                    @test r == v
+                end
+            end
+            str = strs[j]
+            for b in 0:(Clf.nbits(typeof(str)) - 1)
+                stabx .= ((str.xs .>> b) .& 1) .!= 0
+                stabz .= ((str.zs .>> b) .& 1) .!= 0
+                r = (str.rs[] >> b) & 1 != 0
+                v, det = Clf.measure_paulis!(state, stabx, stabz)
+                str.rs[] = (v ? (str.rs[] | (UInt64(1) << b)) :
+                    (str.rs[] & ~(UInt64(1) << b)))
             end
         end
     end
@@ -719,6 +777,18 @@ for (ss_name, SS_T) in [("StabilizerState", Clf.StabilizerState),
         Clf.apply!(state, Clf.HGate(), 1)
         Clf.apply!(state, Clf.CNOTGate(), 1, 2)
         @test Clf.measure_z!(state, 3) === (false, true)
+    end
+
+    @testset "random measurement ($ss_name)" begin
+        test_random_measure(SS_T, 10, 80, 100)
+        test_random_measure(SS_T, 31, 80, 30)
+        test_random_measure(SS_T, 32, 80, 30)
+        test_random_measure(SS_T, 33, 80, 30)
+        test_random_measure(SS_T, 63, 80, 30)
+        test_random_measure(SS_T, 64, 80, 30)
+        test_random_measure(SS_T, 65, 80, 30)
+        test_random_measure(SS_T, 97, 80, 25)
+        test_random_measure(SS_T, 128, 80, 20)
     end
 
     @testset "deterministic measurement ($ss_name)" begin
