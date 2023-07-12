@@ -1636,8 +1636,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                                                 zcum_cnt_u8 + 0x1) >> 1)
             flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
             rs[a, 2] = res
-            for k in 1:2
-                for j in 1:n
+            for j in 1:n
+                for k in 1:2
                     if k == 2 && j == a
                         continue
                     end
@@ -1669,8 +1669,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
             flip_res = res ⊻ rs[a, 2]
             rs[a, 2] = res
 
-            for k in 1:2
-                for j in 1:n
+            for j in 1:n
+                for k in 1:2
                     if k == 2 && j == a
                         continue
                     end
