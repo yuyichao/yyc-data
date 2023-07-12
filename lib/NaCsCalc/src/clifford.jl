@@ -1298,13 +1298,13 @@ function measure_paulis!(state::_StabilizerState, str::PauliString{Bool}; force=
     if force !== nothing
         force ⊻= str.rs[]
     end
-    v, det = measure_paulis!(state, str.xs, str.ys; force=force)
+    v, det = measure_paulis!(state, str.xs, str.zs; force=force)
     v ⊻= str.rs[]
     return v, det
 end
 
 function measure_stabilizer(state::_StabilizerState, xs, zs, r=false)
-    v, det = measure_paulis!(state, xs, ys)
+    v, det = measure_paulis!(state, xs, zs)
     return v ⊻ r
 end
 function measure_stabilizer_x(state::_StabilizerState, xs, r=false)
