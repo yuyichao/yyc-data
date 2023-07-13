@@ -1523,6 +1523,15 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     @label rand_measure
     res = force !== nothing ? force : rand(Bool)
 
+    @inbounds begin
+        xzs[lane + pchunk0, 3, a] = zero(VT2)
+        cnot_tgt0 = zxa & ~pmask0
+        za0 = xzs[lane + pchunk0, 4, a]
+        xzs[lane + pchunk0, 4, a] = za0 | pmask0
+        pza0 = reduce(|, za0 & pmask0) != 0
+        cnot_za0 = za0 & cnot_tgt0
+    end
+
     i0_start = (pchunk0 >> 1) + 2
     if i0_start > i0_end
         @goto single_chunk
@@ -1530,7 +1539,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     ws = state.ws
     assume(size(ws, 1) == 4)
     chunk_count = 0
-    zcum_lo = zero(VT2)
+    zcum_lo = cnot_za0
     zcum_hi = zero(VT2)
     @inbounds for i0 in i0_start:i0_end
         i = i0 * 2 - 1
@@ -1553,22 +1562,13 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         @goto single_chunk
     end
     @inbounds begin
-        xzs[lane + pchunk0, 3, a] = zero(VT2)
-        cnot_tgt0 = zxa & ~pmask0
-        z = xzs[lane + pchunk0, 4, a]
-        xzs[lane + pchunk0, 4, a] = z | pmask0
-        pz = reduce(|, z & pmask0) != 0
-        cnot_z = z & cnot_tgt0
-        new_zcum_lo = zcum_lo ⊻ cnot_z
-        zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(new_zcum_lo))
-        was_y = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
-
-        zcum_hi ⊻= zcum_lo & cnot_z
+        zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(zcum_lo))
+        was_y = pza0 ⊻ (zcum_lo_cnt_u8 & 1 != 0)
 
         zcum_hi_cnt_u8 = reduce(+, vcount_ones_u8(zcum_hi))
         zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
 
-        cnot_phase = zcum_lo_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+        cnot_phase = zcum_lo_cnt_u8 ⊻ (ifelse(pza0, zcum_cnt_u8,
                                               zcum_cnt_u8 + 0x1) >> 1)
         flip_res = res ⊻ u8_to_bool(rs[a, 2]) ⊻ (cnot_phase & 1 != 0)
         rs[a, 2] = res
@@ -1630,17 +1630,11 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     @label single_chunk
 
     @inbounds begin
-        xzs[lane + pchunk0, 3, a] = zero(VT2)
-        cnot_tgt = zxa & ~pmask0
-        z = xzs[lane + pchunk0, 4, a]
-        xzs[lane + pchunk0, 4, a] = z | pmask0
-        pz = reduce(|, z & pmask0) != 0
-        if reduce(|, cnot_tgt) != 0
-            cnot_z = z & cnot_tgt
-            xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & zxa))
-            zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
-            was_y = pz ⊻ (zcum_cnt_u8 & 1 != 0)
-            cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
+        if reduce(|, cnot_tgt0) != 0
+            xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_za0 & zxa))
+            zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_za0))
+            was_y = pza0 ⊻ (zcum_cnt_u8 & 1 != 0)
+            cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pza0, zcum_cnt_u8,
                                                 zcum_cnt_u8 + 0x1) >> 1)
             flip_res = res ⊻ u8_to_bool(rs[a, 2]) ⊻ (cnot_phase & 1 != 0)
             rs[a, 2] = res
@@ -1654,7 +1648,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                     px = reduce(|, x & pmask0) != 0
                     pz = reduce(|, z & pmask0) != 0
 
-                    cnot_z = z & cnot_tgt
+                    cnot_z = z & cnot_tgt0
                     zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
                     new_pz = pz ⊻ (zcum_cnt_u8 & 1 != 0)
                     final_pz = ifelse(was_y, px, px ⊻ new_pz)
@@ -1664,7 +1658,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                         xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & x))
                         cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
                                                             zcum_cnt_u8 + 0x1) >> 1)
-                        x = x ⊻ cnot_tgt
+                        x = x ⊻ cnot_tgt0
                         r ⊻= cnot_phase & 1 != 0
                     end
                     xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
@@ -1673,7 +1667,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 end
             end
         else
-            was_y = pz
+            was_y = pza0
             flip_res = res ⊻ u8_to_bool(rs[a, 2])
             rs[a, 2] = res
 
