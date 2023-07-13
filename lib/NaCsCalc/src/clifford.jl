@@ -78,6 +78,11 @@ end
          """, "fw_assume"), Cvoid, Tuple{Bool}, v)
 end
 
+@inline function u8_to_bool(v)
+    assume(v <= 0x1)
+    return v != 0
+end
+
 @generated function _gep_array(ptr::Ptr{T}, szs, index::NTuple{N}) where {T,N}
     exp = :(index[$N] - 1)
     for i in (N - 1):-1:1
@@ -867,7 +872,7 @@ end
 struct InvStabilizerState
     n::Int
     xzs::Array{ChT,3}
-    rs::Matrix{Bool}
+    rs::Matrix{UInt8}
     ws::Matrix{ChT}
     function InvStabilizerState(n)
         # Align the chunk number to 2
@@ -875,7 +880,7 @@ struct InvStabilizerState
         # XX,            XZ,            ZX,            ZZ
         # X stab X term, X stab Z term, Z stab X term, Z stab Z term
         xzs = zeros(ChT, nchunks, 4, n)
-        rs = zeros(Bool, n, 2)
+        rs = zeros(UInt8, n, 2)
         assume(size(xzs, 2) == 4)
         @inbounds for i in 1:n
             chunk, mask = _get_chunk_mask(i)
@@ -913,7 +918,7 @@ function get_inv_stabilizer(state::InvStabilizerState, i, z::Bool)
     assume(n > 0)
     return PauliString(n, [_getindex(state, j, 2k - 1, i) for j in 1:n],
                        [_getindex(state, j, 2k, i) for j in 1:n],
-                       state.rs[i, k])
+                       u8_to_bool(state.rs[i, k]))
 end
 
 function init_state_z!(state::InvStabilizerState, v::Bool)
@@ -1307,8 +1312,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
             xzs[i, 3, a] = xx
             xzs[i, 4, a] = xz
         end
-        rx = rs[a, 1]
-        rz = rs[a, 2]
+        rx = u8_to_bool(rs[a, 1])
+        rz = u8_to_bool(rs[a, 2])
         rs[a, 2] = rx
         rs[a, 1] = rz
     end
@@ -1321,7 +1326,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     assume(size(rs, 1) == n)
     @inbounds begin
-        rs[a, 2] = ~rs[a, 2]
+        rs[a, 2] = ~u8_to_bool(rs[a, 2])
     end
     return state
 end
@@ -1332,8 +1337,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     assume(size(rs, 1) == n)
     @inbounds begin
-        rs[a, 1] = ~rs[a, 1]
-        rs[a, 2] = ~rs[a, 2]
+        rs[a, 1] = ~u8_to_bool(rs[a, 1])
+        rs[a, 2] = ~u8_to_bool(rs[a, 2])
     end
     return state
 end
@@ -1344,7 +1349,7 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     rs = state.rs
     assume(size(rs, 1) == n)
     @inbounds begin
-        rs[a, 1] = ~rs[a, 1]
+        rs[a, 1] = ~u8_to_bool(rs[a, 1])
     end
     return state
 end
@@ -1366,7 +1371,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         pz2s = pointer(@view(xzs[1, 4, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
         assume(prod_phase & 0x1 != 0)
-        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase & 0x2) != 0)
+        rs[a, 1] = (u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[a, 2]) ⊻
+            ((prod_phase & 0x2) != 0))
     end
     return state
 end
@@ -1388,7 +1394,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         pz2s = pointer(@view(xzs[1, 4, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
         assume(prod_phase & 0x1 != 0)
-        rs[a, 1] ⊻= rs[a, 2] ⊻ ((prod_phase & 0x2) == 0)
+        rs[a, 1] = (u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[a, 2]) ⊻
+            ((prod_phase & 0x2) == 0))
     end
     return state
 end
@@ -1410,7 +1417,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         pz2s = pointer(@view(xzs[1, 2, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
         assume(prod_phase & 0x1 != 0)
-        rs[a, 2] ⊻= rs[a, 1] ⊻ ((prod_phase & 0x2) != 0)
+        rs[a, 2] = (u8_to_bool(rs[a, 2]) ⊻ u8_to_bool(rs[a, 1]) ⊻
+            ((prod_phase & 0x2) != 0))
     end
     return state
 end
@@ -1432,7 +1440,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         pz2s = pointer(@view(xzs[1, 2, a]))
         prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
         assume(prod_phase & 0x1 != 0)
-        rs[a, 2] ⊻= rs[a, 1] ⊻ ((prod_phase & 0x2) == 0)
+        rs[a, 2] = (u8_to_bool(rs[a, 2]) ⊻ u8_to_bool(rs[a, 1]) ⊻
+            ((prod_phase & 0x2) == 0))
     end
     return state
 end
@@ -1467,8 +1476,8 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
                               px1s_2, pz1s_2, px2s_2, pz2s_2, nchunks)
         assume(prod_phase_1 & 0x1 == 0)
         assume(prod_phase_2 & 0x1 == 0)
-        rs[a, 1] ⊻= rs[b, 1] ⊻ (prod_phase_1 != 0)
-        rs[b, 2] ⊻= rs[a, 2] ⊻ (prod_phase_2 != 0)
+        rs[a, 1] = u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[b, 1]) ⊻ (prod_phase_1 != 0)
+        rs[b, 2] = u8_to_bool(rs[b, 2]) ⊻ u8_to_bool(rs[a, 2]) ⊻ (prod_phase_2 != 0)
     end
     return state
 end
@@ -1509,7 +1518,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         end
         @goto rand_measure
     end
-    return @inbounds(rs[a, 2]), true
+    return @inbounds(u8_to_bool(rs[a, 2])), true
 
     @label rand_measure
     res = force !== nothing ? force : rand(Bool)
@@ -1561,7 +1570,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
 
         cnot_phase = zcum_lo_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
                                               zcum_cnt_u8 + 0x1) >> 1)
-        flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
+        flip_res = res ⊻ u8_to_bool(rs[a, 2]) ⊻ (cnot_phase & 1 != 0)
         rs[a, 2] = res
     end
 
@@ -1597,7 +1606,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 zcum_cnt_u8 = (zcum_hi_cnt_u8 << 1) + zcum_lo_cnt_u8
                 cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
                                                     zcum_cnt_u8 + 0x1) >> 1)
-                r = rs[j, k] ⊻ (cnot_phase & 1 != 0)
+                r = u8_to_bool(rs[j, k]) ⊻ (cnot_phase & 1 != 0)
             else
                 for cid in 1:chunk_count
                     cnot_tgt = ws[lane + 1, cid]
@@ -1606,7 +1615,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                     zcum_lo ⊻= z & cnot_tgt
                 end
                 zcum_lo_cnt_u8 = reduce(+, vcount_ones_u8(zcum_lo))
-                r = rs[j, k]
+                r = u8_to_bool(rs[j, k])
             end
             new_pz = pz ⊻ (zcum_lo_cnt_u8 & 1 != 0)
             final_pz = ifelse(was_y, px, px ⊻ new_pz)
@@ -1633,7 +1642,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
             was_y = pz ⊻ (zcum_cnt_u8 & 1 != 0)
             cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
                                                 zcum_cnt_u8 + 0x1) >> 1)
-            flip_res = res ⊻ rs[a, 2] ⊻ (cnot_phase & 1 != 0)
+            flip_res = res ⊻ u8_to_bool(rs[a, 2]) ⊻ (cnot_phase & 1 != 0)
             rs[a, 2] = res
             for j in 1:n
                 for k in 1:2
@@ -1650,7 +1659,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                     new_pz = pz ⊻ (zcum_cnt_u8 & 1 != 0)
                     final_pz = ifelse(was_y, px, px ⊻ new_pz)
                     final_px = ifelse(was_y, px ⊻ new_pz, new_pz)
-                    r = rs[j, k] ⊻ (final_pz & flip_res)
+                    r = u8_to_bool(rs[j, k]) ⊻ (final_pz & flip_res)
                     if px
                         xzcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z & x))
                         cnot_phase = xzcum_cnt_u8 ⊻ (ifelse(pz, zcum_cnt_u8,
@@ -1665,7 +1674,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
             end
         else
             was_y = pz
-            flip_res = res ⊻ rs[a, 2]
+            flip_res = res ⊻ u8_to_bool(rs[a, 2])
             rs[a, 2] = res
 
             for j in 1:n
@@ -1682,7 +1691,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                     flip_px = ifelse(was_y, pz, pz ⊻ px)
                     xzs[lane + pchunk0, 2k - 1, j] = x ⊻ flip_px
                     xzs[lane + pchunk0, 2k, j] = z ⊻ pz ⊻ final_pz
-                    rs[j, k] ⊻= (reduce(|, final_pz) != 0) & flip_res
+                    rs[j, k] = (u8_to_bool(rs[j, k]) ⊻
+                        ((reduce(|, final_pz) != 0) & flip_res))
                 end
             end
         end
