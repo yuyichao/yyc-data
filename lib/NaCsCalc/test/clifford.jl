@@ -421,6 +421,26 @@ function test_gap(::Type{SST}, gap, nqubit) where SST
     @test Clf.measure_xs!(state, (gap + 1, 2 * gap + 1)) == (false, true)
 end
 
+function test_gap2(::Type{SST}, pos1, pos2, nqubit) where SST
+    state = SST(nqubit)
+
+    Clf.apply!(state, Clf.CNOTGate(), pos1, pos2)
+    Clf.apply!(state, Clf.HGate(), pos1)
+    Clf.apply!(state, Clf.CNOTGate(), pos1, pos2)
+    if SST === Clf.InvStabilizerState
+        inv_stab = Clf.get_inv_stabilizer(state, pos2, true)
+        @test inv_stab.xs == [(i == pos1 || i == pos2) for i in 1:nqubit]
+        @test inv_stab.zs == [(i == pos1 || i == pos2) for i in 1:nqubit]
+        @test inv_stab.rs[] == true
+    end
+    Clf.apply!(state, Clf.SXGate(), pos2)
+    Clf.apply!(state, Clf.SGate(), pos1)
+    Clf.apply!(state, Clf.HGate(), pos1)
+    Clf.apply!(state, Clf.CNOTGate(), pos1, pos2)
+
+    @test Clf.measure_z!(state, pos2) == (false, true)
+end
+
 function apply_random_clifford!(cb, nbit)
     id = rand(1:16)
     n1 = rand(1:nbit)
@@ -809,6 +829,21 @@ for (ss_name, SS_T) in [("StabilizerState", Clf.StabilizerState),
                     continue
                 end
                 test_gap(SS_T, gap, nqubit)
+            end
+        end
+    end
+
+    @testset "gap2 ($ss_name)" begin
+        for nqubit in [5; 63:65; 127:129; 250:2:262;
+                       504:4:524; 1008:8:1040; 2016:16:2080]
+            step = nqubit >= 1000 ? 8 : (nqubit > 500 ? 4 : 2)
+            for pos1 in 1:step:nqubit
+                for pos2 in 1:step:(nqubit - 1)
+                    if pos2 >= pos1
+                        pos2 += 1
+                    end
+                    test_gap2(SS_T, pos1, pos2, nqubit)
+                end
             end
         end
     end
