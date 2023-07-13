@@ -96,202 +96,118 @@ end
 # including multiplication and inverse.
 abstract type Clifford1Q end
 
-struct Composite1Q{G1<:Clifford1Q,G2<:Clifford1Q} <: Clifford1Q
-    g1::G1
-    g2::G2
+@inline function _combine_1q(x, z, r, xx, xz, xr, zx, zz, zr)
+    if x
+        if z
+            return xx ⊻ zx, xz ⊻ zz, xr ⊻ zr ⊻ r ⊻ (zz ⊻ xx) ⊻ (zx | xz)
+        else
+            return xx, xz, xr ⊻ r
+        end
+    elseif z
+        return zx, zz, zr ⊻ r
+    else
+        return (false, false, r)
+    end
 end
-Base.@propagate_inbounds @inline function apply!(gate::Composite1Q, xas, zas, rs)
-    apply!(gate.g1, xas, zas, rs)
-    apply!(gate.g2, xas, zas, rs)
-    return
-end
-function Base.:*(g1::Clifford1Q, g2::Clifford1Q)
-    return Composite1Q(g1, g2)
-end
-@inline Base.inv(g::Composite1Q) = Composite1Q(inv(g.g2), inv(g.g1))
 
-# Identity
-struct IGate <: Clifford1Q
+struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
+    function Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}() where {XX,XZ,XR,ZX,ZZ,ZR}
+        anticommute = (XX & ZZ) ⊻ (XZ & ZX)
+        if !anticommute
+            error("X and Z mapping must anti-commute")
+        end
+        return new{XX,XZ,XR,ZX,ZZ,ZR}()
+    end
 end
-@inline function apply!(::IGate, xas, zas, rs)
-    return
+function Base.:*(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
+                 ::Generic1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
+                                                              XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
+    XX, XZ, XR = _combine_1q(XX1, XZ1, XR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
+    ZX, ZZ, ZR = _combine_1q(ZX1, ZZ1, ZR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
+    return Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}()
 end
-@inline Base.inv(::IGate) = IGate()
-Base.:*(g1::Clifford1Q, ::IGate) = g1
-Base.:*(::IGate, g2::Clifford1Q) = g2
-Base.:*(::IGate, ::IGate) = IGate()
-
-# Hadamard
-struct HGate <: Clifford1Q
+@inline function Base.inv(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+    XX′ = ZZ
+    XZ′ = XZ
+    ZX′ = ZX
+    ZZ′ = XX
+    XR′ = (ZZ & XR) ⊻ (~(ZR ⊻ ZX) & XZ)
+    ZR′ = (XX & ZR) ⊻ (~(XR ⊻ XZ) & ZX)
+    return Generic1Q{XX′,XZ′,XR′,ZX′,ZZ′,ZR′}()
 end
-# I -> I, X -> Z, Y -> -Y, Z -> X
-Base.@propagate_inbounds @inline function apply!(::HGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa & za)
-    xas[] = za
-    zas[] = xa
-    return
+const _named_gates = Dict((true, false, false, false, true, false)=>"I",
+                          (false, true, false, true, false, false)=>"H",
+                          (true, false, false, false, true, true)=>"X",
+                          (true, false, true, false, true, true)=>"Y",
+                          (true, false, true, false, true, false)=>"Z",
+                          (true, true, false, false, true, false)=>"S",
+                          (true, true, true, false, true, false)=>"IS",
+                          (true, false, false, true, true, true)=>"SX",
+                          (true, false, false, true, true, false)=>"ISX",
+                          (false, true, true, true, false, false)=>"SY",
+                          (false, true, false, true, false, true)=>"ISY")
+function _to_pauli_name(x, z, r)
+    return (r ? "-" : "+") * (x ? (z ? "Y" : "X") : "Z")
 end
-@inline Base.inv(::HGate) = HGate()
-Base.:*(::HGate, ::HGate) = IGate()
-
-# X
-struct XGate <: Clifford1Q
+function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+    name = get(_named_gates, (XX,XZ,XR,ZX,ZZ,ZR), nothing)
+    if name === nothing
+        YX = XX ⊻ ZX
+        YZ = XZ ⊻ ZZ
+        YR = XR ⊻ ZR ⊻ (ZZ ⊻ XX) ⊻ (ZX | XZ)
+        xname = _to_pauli_name(XX, XZ, XR)
+        yname = _to_pauli_name(YX, YZ, YR)
+        zname = _to_pauli_name(ZX, ZZ, ZR)
+        print(io, "Generic1Q(I->+I, X->$(xname), Y->$(yname), Z->$(zname))")
+    else
+        print(io, "$(name)Gate()")
+    end
 end
-# I -> I, X -> X, Y -> -Y, Z -> -Z
-Base.@propagate_inbounds @inline function apply!(::XGate, xas, zas, rs)
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ za
-    return
-end
-@inline Base.inv(::XGate) = XGate()
-Base.:*(::XGate, ::XGate) = IGate()
-
-# Y
-struct YGate <: Clifford1Q
-end
-# I -> I, X -> -X, Y -> Y, Z -> -Z
-Base.@propagate_inbounds @inline function apply!(::YGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa ⊻ za)
-    return
-end
-@inline Base.inv(::YGate) = YGate()
-Base.:*(::YGate, ::YGate) = IGate()
-
-# Z
-struct ZGate <: Clifford1Q
-end
-# I -> I, X -> -X, Y -> -Y, Z -> Z
-Base.@propagate_inbounds @inline function apply!(::ZGate, xas, zas, rs)
-    xa = xas[]
-    r = rs[]
-
-    rs[] = r ⊻ xa
-    return
-end
-@inline Base.inv(::ZGate) = ZGate()
-Base.:*(::ZGate, ::ZGate) = IGate()
-
-# Phase gate (sqrt(Z))
-struct SGate <: Clifford1Q
+for (param, name) in _named_gates
+    @eval const $(Symbol("$(name)Gate")) = $(Generic1Q{param...})
 end
 const SZGate = SGate
-# I -> I, X -> Y, Y -> -X, Z -> Z
-Base.@propagate_inbounds @inline function apply!(::SGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa & za)
-    zas[] = za ⊻ xa
-    return
-end
-# Inverse of phase gate
-struct ISGate <: Clifford1Q
-end
 const ISZGate = ISGate
-# I -> I, X -> -Y, Y -> X, Z -> Z
-Base.@propagate_inbounds @inline function apply!(::ISGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
 
-    rs[] = r ⊻ (xa & ~za)
-    zas[] = za ⊻ xa
+Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
+                                                 xas, zas, rs) where {XX,XZ,XR,ZX,ZZ,ZR}
+    YPHASE = (ZZ ⊻ XX) ⊻ (ZX | XZ)
+    NEED_X = ZX | XR | YPHASE
+    NEED_Z = XZ | ZR | YPHASE
+    NEED_R = XR | ZR | YPHASE
+
+    xa = NEED_X ? xas[] : zero(eltype(xas))
+    za = NEED_Z ? zas[] : zero(eltype(zas))
+    if ZX
+        if XX
+            xas[] = xa ⊻ za
+        else
+            xas[] = za
+        end
+    end
+    if XZ
+        if ZZ
+            zas[] = xa ⊻ za
+        else
+            zas[] = xa
+        end
+    end
+
+    if NEED_R
+        r = rs[]
+        if XR
+            r ⊻= xa
+        end
+        if ZR
+            r ⊻= za
+        end
+        if YPHASE
+            r ⊻= xa & za
+        end
+        rs[] = r
+    end
     return
 end
-@inline Base.inv(::SGate) = ISGate()
-@inline Base.inv(::ISGate) = SGate()
-Base.:*(::SGate, ::SGate) = ZGate()
-Base.:*(::ISGate, ::ISGate) = ZGate()
-
-Base.:*(::SGate, ::ZGate) = ISGate()
-Base.:*(::ZGate, ::SGate) = ISGate()
-Base.:*(::ISGate, ::ZGate) = SGate()
-Base.:*(::ZGate, ::ISGate) = SGate()
-
-# sqrt(X)
-struct SXGate <: Clifford1Q
-end
-# I -> I, X -> X, Y -> Z, Z -> -Y
-Base.@propagate_inbounds @inline function apply!(::SXGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (~xa & za)
-    xas[] = xa ⊻ za
-    return
-end
-# Inverse of sqrt(X)
-struct ISXGate <: Clifford1Q
-end
-# I -> I, X -> X, Y -> -Z, Z -> Y
-Base.@propagate_inbounds @inline function apply!(::ISXGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa & za)
-    xas[] = xa ⊻ za
-    return
-end
-@inline Base.inv(::SXGate) = ISXGate()
-@inline Base.inv(::ISXGate) = SXGate()
-Base.:*(::SXGate, ::SXGate) = XGate()
-Base.:*(::ISXGate, ::ISXGate) = XGate()
-
-Base.:*(::SXGate, ::XGate) = ISXGate()
-Base.:*(::XGate, ::SXGate) = ISXGate()
-Base.:*(::ISXGate, ::XGate) = SXGate()
-Base.:*(::XGate, ::ISXGate) = SXGate()
-
-# sqrt(Y)
-struct SYGate <: Clifford1Q
-end
-# I -> I, X -> -Z, Y -> Y, Z -> X
-Base.@propagate_inbounds @inline function apply!(::SYGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa & ~za)
-    xas[] = za
-    zas[] = xa
-    return
-end
-# Inverse of sqrt(Y)
-struct ISYGate <: Clifford1Q
-end
-# I -> I, X -> Z, Y -> Y, Z -> -X
-Base.@propagate_inbounds @inline function apply!(::ISYGate, xas, zas, rs)
-    xa = xas[]
-    za = zas[]
-    r = rs[]
-
-    rs[] = r ⊻ (~xa & za)
-    xas[] = za
-    zas[] = xa
-    return
-end
-@inline Base.inv(::SYGate) = ISYGate()
-@inline Base.inv(::ISYGate) = SYGate()
-Base.:*(::SYGate, ::SYGate) = YGate()
-Base.:*(::ISYGate, ::ISYGate) = YGate()
-
-Base.:*(::SYGate, ::YGate) = ISYGate()
-Base.:*(::YGate, ::SYGate) = ISYGate()
-Base.:*(::ISYGate, ::YGate) = SYGate()
-Base.:*(::YGate, ::ISYGate) = SYGate()
 
 ## Two qubit gates
 abstract type Clifford2Q end
@@ -1229,12 +1145,6 @@ end
     return _pauli_multiply_phase(chi_1, clo_1), _pauli_multiply_phase(chi_2, clo_2)
 end
 
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::Composite1Q, a)
-    apply!(state, gate.g1, a)
-    apply!(state, gate.g2, a)
-    return state
-end
 @inline function apply!(state::InvStabilizerState, gate::IGate, a)
     return state
 end
