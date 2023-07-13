@@ -1534,7 +1534,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
 
         chunk_count += 1
         ws[lane + 1, chunk_count] = cnot_tgt
-        ws[3, chunk_count] = i
+        ws[3, chunk_count] = i % ChT
 
         z = xzs[lane + i, 4, a]
         cnot_z = z & cnot_tgt
@@ -1582,7 +1582,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 xzcum = cnot_z0 & x0
                 for cid in 1:chunk_count
                     cnot_tgt = ws[lane + 1, cid]
-                    i = ws[3, cid]
+                    i = ws[3, cid] % Int
                     x = xzs[lane + i, 2k - 1, j]
                     z = xzs[lane + i, 2k, j]
                     cnot_z = z & cnot_tgt
@@ -1602,7 +1602,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
             else
                 for cid in 1:chunk_count
                     cnot_tgt = ws[lane + 1, cid]
-                    i = ws[3, cid]
+                    i = ws[3, cid] % Int
                     z = xzs[lane + i, 2k, j]
                     zcum_lo ⊻= z & cnot_tgt
                 end
