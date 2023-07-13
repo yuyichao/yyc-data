@@ -1676,13 +1676,14 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                     end
                     x = xzs[lane + pchunk0, 2k - 1, j]
                     z = xzs[lane + pchunk0, 2k, j]
-                    px = reduce(|, x & pmask0) != 0
-                    pz = reduce(|, z & pmask0) != 0
+
+                    px = x & pmask0
+                    pz = z & pmask0
                     final_pz = ifelse(was_y, px, px ⊻ pz)
-                    final_px = ifelse(was_y, px ⊻ pz, pz)
-                    xzs[lane + pchunk0, 2k - 1, j] = _setbit(x, final_px, pmask0)
-                    xzs[lane + pchunk0, 2k, j] = _setbit(z, final_pz, pmask0)
-                    rs[j, k] ⊻= final_pz & flip_res
+                    flip_px = ifelse(was_y, pz, pz ⊻ px)
+                    xzs[lane + pchunk0, 2k - 1, j] = x ⊻ flip_px
+                    xzs[lane + pchunk0, 2k, j] = z ⊻ pz ⊻ final_pz
+                    rs[j, k] ⊻= (reduce(|, final_pz) != 0) & flip_res
                 end
             end
         end
