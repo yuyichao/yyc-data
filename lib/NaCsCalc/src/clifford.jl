@@ -961,7 +961,7 @@ function init_state_x!(state::InvStabilizerState, v::Bool)
     return state
 end
 
-@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, hi, lo)
+@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo)
     VT8 = Vec{8,ChT}
 
     x1 = vload(VT8, _gep_array(px1s, (), (i,)))
@@ -977,15 +977,31 @@ end
     v2 = x2 & z1
     m = new_x1 ⊻ new_z1 ⊻ v1
     change = v1 ⊻ v2
-    hi ⊻= (m ⊻ lo) & change
-    lo ⊻= change
-    return hi, lo
+
+    m_1 = Vec((m[1], m[2]))
+    m_2 = Vec((m[3], m[4]))
+    m_3 = Vec((m[5], m[6]))
+    m_4 = Vec((m[7], m[8]))
+    change_1 = Vec((change[1], change[2]))
+    change_2 = Vec((change[3], change[4]))
+    change_3 = Vec((change[5], change[6]))
+    change_4 = Vec((change[7], change[8]))
+
+    chi ⊻= (m_1 ⊻ clo) & change_1
+    clo ⊻= change_1
+    chi ⊻= (m_2 ⊻ clo) & change_2
+    clo ⊻= change_2
+    chi ⊻= (m_3 ⊻ clo) & change_3
+    clo ⊻= change_3
+    chi ⊻= (m_4 ⊻ clo) & change_4
+    clo ⊻= change_4
+    return chi, clo
 end
 
 @inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s,
                                            chi=nothing, clo=nothing)
     VT4 = Vec{4,ChT}
-    VT2 = Vec{2,ChT}
+
     x1 = vload(VT4, px1s)
     x2 = vload(VT4, px2s)
     new_x1 = x1 ⊻ x2
@@ -999,14 +1015,20 @@ end
     v2 = x2 & z1
     m = new_x1 ⊻ new_z1 ⊻ v1
     change = v1 ⊻ v2
-    hi4 = m & change
-    lo4 = change
+    m_1 = Vec((m[1], m[2]))
+    m_2 = Vec((m[3], m[4]))
+    change_1 = Vec((change[1], change[2]))
+    change_2 = Vec((change[3], change[4]))
     if chi !== nothing
-        chi ⊻= VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
-        clo ⊻= VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi ⊻= (m_1 ⊻ clo) & change_1
+        clo ⊻= change_1
+        chi ⊻= (m_2 ⊻ clo) & change_2
+        clo ⊻= change_2
     else
-        chi = VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
-        clo = VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi = m_1 & change_1
+        clo = change_1
+        chi ⊻= (m_2 ⊻ clo) & change_2
+        clo ⊻= change_2
     end
     px1s += sizeof(VT4)
     pz1s += sizeof(VT4)
@@ -1030,7 +1052,7 @@ end
     v2 = x2 & z1
     m = new_x1 ⊻ new_z1 ⊻ v1
     change = v1 ⊻ v2
-    return chi ⊻ (m & change), clo ⊻ change
+    return chi ⊻ ((m ⊻ clo) & change), clo ⊻ change
 end
 
 @inline function _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s)
@@ -1061,8 +1083,6 @@ end
 
 # P1 = P1 * P2
 @inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
-    VT8 = Vec{8,ChT}
-    VT4 = Vec{4,ChT}
     VT2 = Vec{2,ChT}
 
     # Manual jump threading for the small n cases
@@ -1074,19 +1094,15 @@ end
             _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s)
         @goto n4_case_end
     end
-    hi = zero(VT8)
-    lo = zero(VT8)
+    chi = zero(VT2)
+    clo = zero(VT2)
     nalign = n & ~7
     # LLVM may think the vstore in the loop aliases the array pointer
     # so we extract the array pointer out of the loop.
     @inbounds for i0 in 1:(n >> 3)
         i = (i0 - 1) * 8 + 1
-        hi, lo = _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, hi, lo)
+        chi, clo = _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo)
     end
-    clo = VT2((lo[1] ⊻ lo[3] ⊻ lo[5] ⊻ lo[7],
-               lo[2] ⊻ lo[4] ⊻ lo[6] ⊻ lo[8]))
-    chi = VT2((hi[1] ⊻ hi[3] ⊻ hi[5] ⊻ hi[7],
-               hi[2] ⊻ hi[4] ⊻ hi[6] ⊻ hi[8]))
     px1s += nalign * 8
     pz1s += nalign * 8
     px2s += nalign * 8
@@ -1112,8 +1128,6 @@ end
 
 @inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
                                    px1s_2, pz1s_2, px2s_2, pz2s_2, n)
-    VT8 = Vec{8,ChT}
-    VT4 = Vec{4,ChT}
     VT2 = Vec{2,ChT}
 
     # Manual jump threading for the small n cases
@@ -1128,28 +1142,21 @@ end
             _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2)
         @goto n4_case_end
     end
-    hi_1 = zero(VT8)
-    lo_1 = zero(VT8)
-    hi_2 = zero(VT8)
-    lo_2 = zero(VT8)
+    chi_1 = zero(VT2)
+    clo_1 = zero(VT2)
+    chi_2 = zero(VT2)
+    clo_2 = zero(VT2)
     nalign = n & ~7
     # LLVM may think the vstore in the loop aliases the array pointer
     # so we extract the array pointer out of the loop.
     @inbounds for i0 in 1:(n >> 3)
         i = (i0 - 1) * 8 + 1
-        hi_1, lo_1 = _pauli_multiply_kernel_8!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                               i, hi_1, lo_1)
-        hi_2, lo_2 = _pauli_multiply_kernel_8!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                               i, hi_2, lo_2)
+        chi_1, clo_1 = _pauli_multiply_kernel_8!(px1s_1, pz1s_1, px2s_1, pz2s_1,
+                                                 i, chi_1, clo_1)
+        chi_2, clo_2 = _pauli_multiply_kernel_8!(px1s_2, pz1s_2, px2s_2, pz2s_2,
+                                                 i, chi_2, clo_2)
     end
-    clo_1 = VT2((lo_1[1] ⊻ lo_1[3] ⊻ lo_1[5] ⊻ lo_1[7],
-                 lo_1[2] ⊻ lo_1[4] ⊻ lo_1[6] ⊻ lo_1[8]))
-    chi_1 = VT2((hi_1[1] ⊻ hi_1[3] ⊻ hi_1[5] ⊻ hi_1[7],
-                 hi_1[2] ⊻ hi_1[4] ⊻ hi_1[6] ⊻ hi_1[8]))
-    clo_2 = VT2((lo_2[1] ⊻ lo_2[3] ⊻ lo_2[5] ⊻ lo_2[7],
-                 lo_2[2] ⊻ lo_2[4] ⊻ lo_2[6] ⊻ lo_2[8]))
-    chi_2 = VT2((hi_2[1] ⊻ hi_2[3] ⊻ hi_2[5] ⊻ hi_2[7],
-                 hi_2[2] ⊻ hi_2[4] ⊻ hi_2[6] ⊻ hi_2[8]))
+
     px1s_1 += nalign * 8
     pz1s_1 += nalign * 8
     px2s_1 += nalign * 8
