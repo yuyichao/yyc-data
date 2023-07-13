@@ -883,7 +883,6 @@ struct InvStabilizerState
             xzs[chunk, 4, i] = mask
         end
         return new(n, xzs, rs, zeros(ChT, 4, nchunks >> 1))
-        # return new(n, xzs, rs, zeros(ChT, 6 * n, 2))
     end
 end
 Base.eltype(::Type{InvStabilizerState}) = Bool
