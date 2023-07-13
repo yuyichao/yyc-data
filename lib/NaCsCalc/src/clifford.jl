@@ -967,8 +967,6 @@ end
     VT4 = Vec{4,ChT}
     VT2 = Vec{2,ChT}
 
-    clo = zero(VT2)
-    chi = zero(VT2)
     # Manual jump threading for the small n cases
     if n <= 2
         xz1 = vload(VT4, px1s)
@@ -991,7 +989,28 @@ end
         clo = change
         @goto n2_case_end
     elseif n < 8
-        @goto n4_case
+        x1 = vload(VT4, px1s)
+        x2 = vload(VT4, px2s)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s)
+        z1 = vload(VT4, pz1s)
+        z2 = vload(VT4, pz2s)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi4 = m & change
+        lo4 = change
+        clo = VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi = VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+        px1s += sizeof(VT4)
+        pz1s += sizeof(VT4)
+        px2s += sizeof(VT4)
+        pz2s += sizeof(VT4)
+        @goto n4_case_end
     end
     hi = zero(VT8)
     lo = zero(VT8)
@@ -1083,10 +1102,6 @@ end
     VT4 = Vec{4,ChT}
     VT2 = Vec{2,ChT}
 
-    clo_1 = zero(VT2)
-    chi_1 = zero(VT2)
-    clo_2 = zero(VT2)
-    chi_2 = zero(VT2)
     # Manual jump threading for the small n cases
     if n <= 2
         xz1 = vload(VT4, px1s_1)
@@ -1128,7 +1143,52 @@ end
         clo_2 = change
         @goto n2_case_end
     elseif n < 8
-        @goto n4_case
+        x1 = vload(VT4, px1s_1)
+        x2 = vload(VT4, px2s_1)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s_1)
+        z1 = vload(VT4, pz1s_1)
+        z2 = vload(VT4, pz2s_1)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s_1)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi4 = m & change
+        lo4 = change
+        clo_1 = VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi_1 = VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+
+        px1s_1 += sizeof(VT4)
+        pz1s_1 += sizeof(VT4)
+        px2s_1 += sizeof(VT4)
+        pz2s_1 += sizeof(VT4)
+
+        x1 = vload(VT4, px1s_2)
+        x2 = vload(VT4, px2s_2)
+        new_x1 = x1 ⊻ x2
+        vstore(new_x1, px1s_2)
+        z1 = vload(VT4, pz1s_2)
+        z2 = vload(VT4, pz2s_2)
+        new_z1 = z1 ⊻ z2
+        vstore(new_z1, pz1s_2)
+
+        v1 = x1 & z2
+        v2 = x2 & z1
+        m = new_x1 ⊻ new_z1 ⊻ v1
+        change = v1 ⊻ v2
+        hi4 = m & change
+        lo4 = change
+        clo_2 = VT2((lo4[1] ⊻ lo4[3], lo4[2] ⊻ lo4[4]))
+        chi_2 = VT2((hi4[1] ⊻ hi4[3], hi4[2] ⊻ hi4[4]))
+
+        px1s_2 += sizeof(VT4)
+        pz1s_2 += sizeof(VT4)
+        px2s_2 += sizeof(VT4)
+        pz2s_2 += sizeof(VT4)
+        @goto n4_case_end
     end
     hi_1 = zero(VT8)
     lo_1 = zero(VT8)
