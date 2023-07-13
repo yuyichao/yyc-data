@@ -184,6 +184,7 @@ Base.:*(::ZGate, ::ZGate) = IGate()
 # Phase gate (sqrt(Z))
 struct SGate <: Clifford1Q
 end
+const SZGate = SGate
 # I -> I, X -> Y, Y -> -X, Z -> Z
 Base.@propagate_inbounds @inline function apply!(::SGate, xas, zas, rs)
     xa = xas[]
@@ -197,6 +198,7 @@ end
 # Inverse of phase gate
 struct ISGate <: Clifford1Q
 end
+const ISZGate = ISGate
 # I -> I, X -> -Y, Y -> X, Z -> Z
 Base.@propagate_inbounds @inline function apply!(::ISGate, xas, zas, rs)
     xa = xas[]
@@ -252,6 +254,44 @@ Base.:*(::SXGate, ::XGate) = ISXGate()
 Base.:*(::XGate, ::SXGate) = ISXGate()
 Base.:*(::ISXGate, ::XGate) = SXGate()
 Base.:*(::XGate, ::ISXGate) = SXGate()
+
+# sqrt(Y)
+struct SYGate <: Clifford1Q
+end
+# I -> I, X -> -Z, Y -> Y, Z -> X
+Base.@propagate_inbounds @inline function apply!(::SYGate, xas, zas, rs)
+    xa = xas[]
+    za = zas[]
+    r = rs[]
+
+    rs[] = r ⊻ (xa & ~za)
+    xas[] = za
+    zas[] = xa
+    return
+end
+# Inverse of sqrt(Y)
+struct ISYGate <: Clifford1Q
+end
+# I -> I, X -> Z, Y -> Y, Z -> -X
+Base.@propagate_inbounds @inline function apply!(::ISYGate, xas, zas, rs)
+    xa = xas[]
+    za = zas[]
+    r = rs[]
+
+    rs[] = r ⊻ (~xa & za)
+    xas[] = za
+    zas[] = xa
+    return
+end
+@inline Base.inv(::SYGate) = ISYGate()
+@inline Base.inv(::ISYGate) = SYGate()
+Base.:*(::SYGate, ::SYGate) = YGate()
+Base.:*(::ISYGate, ::ISYGate) = YGate()
+
+Base.:*(::SYGate, ::YGate) = ISYGate()
+Base.:*(::YGate, ::SYGate) = ISYGate()
+Base.:*(::ISYGate, ::YGate) = SYGate()
+Base.:*(::YGate, ::ISYGate) = SYGate()
 
 ## Two qubit gates
 abstract type Clifford2Q end
@@ -1350,6 +1390,64 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         assume(prod_phase & 0x1 != 0)
         rs[a, 2] = (u8_to_bool(rs[a, 2]) ⊻ u8_to_bool(rs[a, 1]) ⊻
             ((prod_phase & 0x2) == 0))
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::SYGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
+    assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
+    @inbounds begin
+        @simd ivdep for i in 1:nchunks
+            xx = xzs[i, 1, a]
+            xz = xzs[i, 2, a]
+            zx = xzs[i, 3, a]
+            zz = xzs[i, 4, a]
+            xzs[i, 1, a] = zx
+            xzs[i, 2, a] = zz
+            xzs[i, 3, a] = xx
+            xzs[i, 4, a] = xz
+        end
+        rx = u8_to_bool(rs[a, 1])
+        rz = u8_to_bool(rs[a, 2])
+        rs[a, 2] = ~rx
+        rs[a, 1] = rz
+    end
+    return state
+end
+Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
+                                                 gate::ISYGate, a)
+    n = state.n
+    @boundscheck check_qubit_bound(n, a)
+    xzs = state.xzs
+    rs = state.rs
+    nchunks = size(xzs, 1)
+    assume(nchunks & 1 == 0)
+    assume(nchunks >= 2)
+    assume(size(xzs, 2) == 4)
+    assume(size(rs, 1) == n)
+    @inbounds begin
+        @simd ivdep for i in 1:nchunks
+            xx = xzs[i, 1, a]
+            xz = xzs[i, 2, a]
+            zx = xzs[i, 3, a]
+            zz = xzs[i, 4, a]
+            xzs[i, 1, a] = zx
+            xzs[i, 2, a] = zz
+            xzs[i, 3, a] = xx
+            xzs[i, 4, a] = xz
+        end
+        rx = u8_to_bool(rs[a, 1])
+        rz = u8_to_bool(rs[a, 2])
+        rs[a, 2] = rx
+        rs[a, 1] = ~rz
     end
     return state
 end

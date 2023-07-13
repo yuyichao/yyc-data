@@ -90,6 +90,18 @@ end
     test_gate(Clf.ISXGate(), (false, true), (true, true), false)
 end
 
+@testset "SY" begin
+    test_gate(Clf.SYGate(), (false, false), (false, false), false)
+    test_gate(Clf.SYGate(), (true, false), (false, true), true)
+    test_gate(Clf.SYGate(), (true, true), (true, true), false)
+    test_gate(Clf.SYGate(), (false, true), (true, false), false)
+
+    test_gate(Clf.ISYGate(), (false, false), (false, false), false)
+    test_gate(Clf.ISYGate(), (true, false), (false, true), false)
+    test_gate(Clf.ISYGate(), (true, true), (true, true), false)
+    test_gate(Clf.ISYGate(), (false, true), (true, false), true)
+end
+
 @testset "CNOT" begin
     test_gate(Clf.CNOTGate(), (false, false, false, false),
               (false, false, false, false), false)
@@ -130,7 +142,8 @@ const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
 
 @testset "inv" begin
     for gate in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                 Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate()]
+                 Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
+                 Clf.SYGate(), Clf.ISYGate()]
         for input in inputs_1q
             @test Clf.apply(inv(gate), Clf.apply(gate, input...)...) === input
             @test Clf.apply(gate, Clf.apply(inv(gate), input...)...) === input
@@ -140,9 +153,11 @@ end
 
 @testset "prod" begin
     for gate1 in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                  Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate()]
+                  Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
+                  Clf.SYGate(), Clf.ISYGate()]
         for gate2 in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                      Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate()]
+                      Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
+                      Clf.SYGate(), Clf.ISYGate()]
             for input in inputs_1q
                 @test(Clf.apply(gate2, Clf.apply(gate1, input...)...) ===
                     Clf.apply(gate1 * gate2, input...))
@@ -468,6 +483,12 @@ function apply_random_clifford!(cb, nbit)
     elseif id == 8
         # ISX
         cb(Clf.ISXGate(), n1)
+    elseif id == 9
+        # SY
+        cb(Clf.SYGate(), n1)
+    elseif id == 10
+        # ISY
+        cb(Clf.ISYGate(), n1)
     else
         # CNOT
         n2 = rand(1:(nbit - 1))
