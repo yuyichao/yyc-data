@@ -29,6 +29,23 @@ using SIMD
 # larger (UInt64) integers so that we can use bitwise operator to implement
 # gate and measurement operations in parallel.
 
+##
+# State representations
+# There are currently 3 different representations of state.
+# 1. Collections of Pauli operators.
+#    This can be used to propagate any Pauli operators of interest
+#    and is also useful to propagate errors (i.e. diff of the circuits).
+# 2. Full set of stabilizer of the state. (CHP)
+#    Using the representation out-lined in https://arxiv.org/abs/quant-ph/0406196
+# 3. Full set of inverse Pauli frames. (Stim)
+#    Following https://arxiv.org/abs/2103.02202
+#
+# Both the second and the third representations can represent the whole state.
+# For most operations including the all operations for large qubit numbers
+# the third version (Stim) is faster.
+# The second version may be faster for certain operations
+# (CNOT and random measurements) on small to intermediate (<1000 qubit) problem sizes.
+
 # Utility functions
 """
     nbits(::Type)
