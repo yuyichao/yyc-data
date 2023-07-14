@@ -126,13 +126,17 @@ function Base.:*(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
     ZX, ZZ, ZR = _combine_1q(ZX1, ZZ1, ZR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
     return Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}()
 end
-@inline function Base.inv(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+@inline function _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
     XX′ = ZZ
     XZ′ = XZ
     ZX′ = ZX
     ZZ′ = XX
     XR′ = (ZZ & XR) ⊻ (~(ZR ⊻ ZX) & XZ)
     ZR′ = (XX & ZR) ⊻ (~(XR ⊻ XZ) & ZX)
+    return XX′, XZ′, XR′, ZX′, ZZ′, ZR′
+end
+@inline function Base.inv(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+    XX′, XZ′, XR′, ZX′, ZZ′, ZR′ = _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
     return Generic1Q{XX′,XZ′,XR′,ZX′,ZZ′,ZR′}()
 end
 const _named_gates = Dict((true, false, false, false, true, false)=>"I",
@@ -917,17 +921,24 @@ function init_state_x!(state::InvStabilizerState, v::Bool)
     return state
 end
 
-@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo)
+@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo,
+                                           ::Val{do_swap}) where {do_swap}
     VT8 = Vec{8,ChT}
 
     x1 = vload(VT8, _gep_array(px1s, (), (i,)))
     x2 = vload(VT8, _gep_array(px2s, (), (i,)))
     new_x1 = x1 ⊻ x2
     vstore(new_x1, _gep_array(px1s, (), (i,)))
+    if do_swap
+        vstore(x1, _gep_array(px2s, (), (i,)))
+    end
     z1 = vload(VT8, _gep_array(pz1s, (), (i,)))
     z2 = vload(VT8, _gep_array(pz2s, (), (i,)))
     new_z1 = z1 ⊻ z2
     vstore(new_z1, _gep_array(pz1s, (), (i,)))
+    if do_swap
+        vstore(z1, _gep_array(pz2s, (), (i,)))
+    end
 
     v1 = x1 & z2
     v2 = x2 & z1
@@ -954,18 +965,24 @@ end
     return chi, clo
 end
 
-@inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s,
-                                           chi=nothing, clo=nothing)
+@inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo,
+                                           ::Val{do_swap}) where {do_swap}
     VT4 = Vec{4,ChT}
 
     x1 = vload(VT4, px1s)
     x2 = vload(VT4, px2s)
     new_x1 = x1 ⊻ x2
     vstore(new_x1, px1s)
+    if do_swap
+        vstore(x1, px2s)
+    end
     z1 = vload(VT4, pz1s)
     z2 = vload(VT4, pz2s)
     new_z1 = z1 ⊻ z2
     vstore(new_z1, pz1s)
+    if do_swap
+        vstore(z1, pz2s)
+    end
 
     v1 = x1 & z2
     v2 = x2 & z1
@@ -993,16 +1010,23 @@ end
     return px1s, pz1s, px2s, pz2s, chi, clo
 end
 
-@inline function _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo)
+@inline function _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo,
+                                           ::Val{do_swap}) where {do_swap}
     VT2 = Vec{2,ChT}
     x1 = vloada(VT2, px1s)
     x2 = vloada(VT2, px2s)
     new_x1 = x1 ⊻ x2
     vstorea(new_x1, px1s)
+    if do_swap
+        vstorea(x1, px2s)
+    end
     z1 = vloada(VT2, pz1s)
     z2 = vloada(VT2, pz2s)
     new_z1 = z1 ⊻ z2
     vstorea(new_z1, pz1s)
+    if do_swap
+        vstorea(z1, pz2s)
+    end
 
     v1 = x1 & z2
     v2 = x2 & z1
@@ -1011,12 +1035,16 @@ end
     return chi ⊻ ((m ⊻ clo) & change), clo ⊻ change
 end
 
-@inline function _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s)
+@inline function _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s,
+                                                  ::Val{do_swap}) where {do_swap}
     VT4 = Vec{4,ChT}
     xz1 = vload(VT4, px1s)
     xz2 = vload(VT4, px2s)
     new_xz1 = xz1 ⊻ xz2
     vstore(new_xz1, px1s)
+    if do_swap
+        vstorea(xz1, px2s)
+    end
 
     x1 = Vec((xz1[1], xz1[2]))
     z1 = Vec((xz1[3], xz1[4]))
@@ -1038,16 +1066,17 @@ end
 end
 
 # P1 = P1 * P2
-@inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n)
+@inline function pauli_multiply!(px1s, pz1s, px2s, pz2s, n,
+                                 ds::Val{do_swap}=Val(false)) where {do_swap}
     VT2 = Vec{2,ChT}
 
     # Manual jump threading for the small n cases
     if n <= 2
-        chi, clo = _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s)
+        chi, clo = _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s, ds)
         @goto n2_case_end
     elseif n < 8
         px1s, pz1s, px2s, pz2s, chi, clo =
-            _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s)
+            _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, nothing, nothing, ds)
         @goto n4_case_end
     end
     chi = zero(VT2)
@@ -1057,7 +1086,7 @@ end
     # so we extract the array pointer out of the loop.
     @inbounds for i0 in 1:(n >> 3)
         i = (i0 - 1) * 8 + 1
-        chi, clo = _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo)
+        chi, clo = _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo, ds)
     end
     px1s += nalign * 8
     pz1s += nalign * 8
@@ -1069,14 +1098,14 @@ end
     end
     @label n4_case
     px1s, pz1s, px2s, pz2s, chi, clo =
-        _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo)
+        _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo, ds)
     @label n4_case_end
 
     if n & 2 == 0
         @goto n2_case_end
     end
     @label n2_case
-    chi, clo = _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo)
+    chi, clo = _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo, ds)
     @label n2_case_end
 
     return _pauli_multiply_phase(chi, clo)
@@ -1085,17 +1114,22 @@ end
 @inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
                                    px1s_2, pz1s_2, px2s_2, pz2s_2, n)
     VT2 = Vec{2,ChT}
+    ds = Val(false)
 
     # Manual jump threading for the small n cases
     if n <= 2
-        chi_1, clo_1 = _pauli_multiply_kernel_single_2!(px1s_1, pz1s_1, px2s_1, pz2s_1)
-        chi_2, clo_2 = _pauli_multiply_kernel_single_2!(px1s_2, pz1s_2, px2s_2, pz2s_2)
+        chi_1, clo_1 = _pauli_multiply_kernel_single_2!(px1s_1, pz1s_1,
+                                                        px2s_1, pz2s_1, ds)
+        chi_2, clo_2 = _pauli_multiply_kernel_single_2!(px1s_2, pz1s_2,
+                                                        px2s_2, pz2s_2, ds)
         @goto n2_case_end
     elseif n < 8
         px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1 =
-            _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1)
+            _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1,
+                                      nothing, nothing, ds)
         px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2 =
-            _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2)
+            _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2,
+                                      nothing, nothing, ds)
         @goto n4_case_end
     end
     chi_1 = zero(VT2)
@@ -1108,9 +1142,9 @@ end
     @inbounds for i0 in 1:(n >> 3)
         i = (i0 - 1) * 8 + 1
         chi_1, clo_1 = _pauli_multiply_kernel_8!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                                 i, chi_1, clo_1)
+                                                 i, chi_1, clo_1, ds)
         chi_2, clo_2 = _pauli_multiply_kernel_8!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                                 i, chi_2, clo_2)
+                                                 i, chi_2, clo_2, ds)
     end
 
     px1s_1 += nalign * 8
@@ -1127,9 +1161,9 @@ end
     end
     @label n4_case
     px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1 =
-        _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1)
+        _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1, ds)
     px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2 =
-        _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2)
+        _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2, ds)
     @label n4_case_end
 
     if n & 2 == 0
@@ -1137,19 +1171,23 @@ end
     end
     @label n2_case
     chi_1, clo_1 = _pauli_multiply_kernel_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                             chi_1, clo_1)
+                                             chi_1, clo_1, ds)
     chi_2, clo_2 = _pauli_multiply_kernel_2!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                             chi_2, clo_2)
+                                             chi_2, clo_2, ds)
     @label n2_case_end
 
     return _pauli_multiply_phase(chi_1, clo_1), _pauli_multiply_phase(chi_2, clo_2)
 end
 
-@inline function apply!(state::InvStabilizerState, gate::IGate, a)
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::HGate, a)
+Base.@propagate_inbounds @inline function apply!(
+    state::InvStabilizerState, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
+    a) where {XX,XZ,XR,ZX,ZZ,ZR}
+
+    if XX & !XZ & !XR & !ZX & ZZ & !ZR
+        # IGate
+        return state
+    end
+
     n = state.n
     @boundscheck check_qubit_bound(n, a)
     xzs = state.xzs
@@ -1159,7 +1197,25 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
     assume(nchunks >= 2)
     assume(size(xzs, 2) == 4)
     assume(size(rs, 1) == n)
-    @inbounds begin
+
+    # 3 different cases
+    # 1. no XZ change, only phase change: we need just need to apply sign changes
+    # 2. XZ exchange, swap X and Z and apply sign changes
+    # 3. one and only one of X and Z was mapped to the original Y
+    #    we need to multiply the X and Z strings together
+    #    3.1. The other one remains unchanged (e.g. X <- X, Z <- Y)
+    #    3.2. The other one is swapped (e.g. X <- Z, Z <- Y)
+
+    @inbounds if XX & !XZ & !ZX & ZZ
+        # Case 1: no XZ change
+        if XR
+            rs[a, 1] = ~u8_to_bool(rs[a, 1])
+        end
+        if ZR
+            rs[a, 2] = ~u8_to_bool(rs[a, 2])
+        end
+    elseif !XX & XZ & ZX & !ZZ
+        # Case 2: XZ exchange
         @simd ivdep for i in 1:nchunks
             xx = xzs[i, 1, a]
             xz = xzs[i, 2, a]
@@ -1172,192 +1228,51 @@ Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
         end
         rx = u8_to_bool(rs[a, 1])
         rz = u8_to_bool(rs[a, 2])
-        rs[a, 2] = rx
-        rs[a, 1] = rz
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::XGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    rs = state.rs
-    assume(size(rs, 1) == n)
-    @inbounds begin
-        rs[a, 2] = ~u8_to_bool(rs[a, 2])
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::YGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    rs = state.rs
-    assume(size(rs, 1) == n)
-    @inbounds begin
-        rs[a, 1] = ~u8_to_bool(rs[a, 1])
-        rs[a, 2] = ~u8_to_bool(rs[a, 2])
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::ZGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    rs = state.rs
-    assume(size(rs, 1) == n)
-    @inbounds begin
-        rs[a, 1] = ~u8_to_bool(rs[a, 1])
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::SGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds GC.@preserve xzs begin
-        px1s = pointer(@view(xzs[1, 1, a]))
-        pz1s = pointer(@view(xzs[1, 2, a]))
-        px2s = pointer(@view(xzs[1, 3, a]))
-        pz2s = pointer(@view(xzs[1, 4, a]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        assume(prod_phase & 0x1 != 0)
-        rs[a, 1] = (u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[a, 2]) ⊻
-            ((prod_phase & 0x2) != 0))
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::ISGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds GC.@preserve xzs begin
-        px1s = pointer(@view(xzs[1, 1, a]))
-        pz1s = pointer(@view(xzs[1, 2, a]))
-        px2s = pointer(@view(xzs[1, 3, a]))
-        pz2s = pointer(@view(xzs[1, 4, a]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        assume(prod_phase & 0x1 != 0)
-        rs[a, 1] = (u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[a, 2]) ⊻
-            ((prod_phase & 0x2) == 0))
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::SXGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds GC.@preserve xzs begin
-        px1s = pointer(@view(xzs[1, 3, a]))
-        pz1s = pointer(@view(xzs[1, 4, a]))
-        px2s = pointer(@view(xzs[1, 1, a]))
-        pz2s = pointer(@view(xzs[1, 2, a]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        assume(prod_phase & 0x1 != 0)
-        rs[a, 2] = (u8_to_bool(rs[a, 2]) ⊻ u8_to_bool(rs[a, 1]) ⊻
-            ((prod_phase & 0x2) != 0))
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::ISXGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds GC.@preserve xzs begin
-        px1s = pointer(@view(xzs[1, 3, a]))
-        pz1s = pointer(@view(xzs[1, 4, a]))
-        px2s = pointer(@view(xzs[1, 1, a]))
-        pz2s = pointer(@view(xzs[1, 2, a]))
-        prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks)
-        assume(prod_phase & 0x1 != 0)
-        rs[a, 2] = (u8_to_bool(rs[a, 2]) ⊻ u8_to_bool(rs[a, 1]) ⊻
-            ((prod_phase & 0x2) == 0))
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::SYGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds begin
-        @simd ivdep for i in 1:nchunks
-            xx = xzs[i, 1, a]
-            xz = xzs[i, 2, a]
-            zx = xzs[i, 3, a]
-            zz = xzs[i, 4, a]
-            xzs[i, 1, a] = zx
-            xzs[i, 2, a] = zz
-            xzs[i, 3, a] = xx
-            xzs[i, 4, a] = xz
+        rs[a, 2] = XR ? ~rx : rx
+        rs[a, 1] = ZR ? ~rz : rz
+    else
+        inv_XX, inv_XZ, inv_XR, inv_ZX, inv_ZZ, inv_ZR =
+            _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
+        x_was_y = inv_XX & inv_XZ
+        # Both of the cross terms are true, meaning none of X or Z maps to themselves
+        do_swap = XZ & ZX
+
+        GC.@preserve xzs begin
+            px1s = pointer(@view(xzs[1, x_was_y ? 1 : 3, a]))
+            pz1s = pointer(@view(xzs[1, x_was_y ? 2 : 4, a]))
+            px2s = pointer(@view(xzs[1, x_was_y ? 3 : 1, a]))
+            pz2s = pointer(@view(xzs[1, x_was_y ? 4 : 2, a]))
+            prod_phase = pauli_multiply!(px1s, pz1s, px2s, pz2s, nchunks, Val(do_swap))
+            assume(prod_phase & 0x1 != 0)
+            pr = prod_phase & 0x2 != 0
+            rx = u8_to_bool(rs[a, 1])
+            rz = u8_to_bool(rs[a, 2])
+            if x_was_y
+                # Z is multiplied into X, so is the phase
+                new_rx = rx ⊻ rz ⊻ pr
+                if inv_XR
+                    new_rx = ~new_rx
+                end
+                rs[a, 1] = new_rx
+                if do_swap
+                    rs[a, 2] = inv_ZR ? ~rx : rx
+                elseif inv_ZR
+                    rs[a, 2] = ~rz
+                end
+            else
+                # X is multiplied into Z, so is the phase
+                new_rz = rz ⊻ rx ⊻ pr
+                if ~inv_ZR
+                    new_rz = ~new_rz
+                end
+                rs[a, 2] = new_rz
+                if do_swap
+                    rs[a, 1] = inv_XR ? ~rz : rz
+                elseif inv_XR
+                    rs[a, 1] = ~rx
+                end
+            end
         end
-        rx = u8_to_bool(rs[a, 1])
-        rz = u8_to_bool(rs[a, 2])
-        rs[a, 2] = ~rx
-        rs[a, 1] = rz
-    end
-    return state
-end
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::ISYGate, a)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds begin
-        @simd ivdep for i in 1:nchunks
-            xx = xzs[i, 1, a]
-            xz = xzs[i, 2, a]
-            zx = xzs[i, 3, a]
-            zz = xzs[i, 4, a]
-            xzs[i, 1, a] = zx
-            xzs[i, 2, a] = zz
-            xzs[i, 3, a] = xx
-            xzs[i, 4, a] = xz
-        end
-        rx = u8_to_bool(rs[a, 1])
-        rz = u8_to_bool(rs[a, 2])
-        rs[a, 2] = rx
-        rs[a, 1] = ~rz
     end
     return state
 end
