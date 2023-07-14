@@ -605,8 +605,8 @@ end
     return hi, lo
 end
 
-@inline function _clifford_rowsum1!(state::StabilizerState, chunk_h, mask_h,
-                                    chunk_i, mask_i)
+@inline function _pauli_rowsum1!(state::StabilizerState, chunk_h, mask_h,
+                                 chunk_i, mask_i)
     xs = state.xs
     zs = state.zs
     hi = zero(ChT)
@@ -645,8 +645,8 @@ end
     return state
 end
 
-@inline function _clifford_rowsum1_2!(state::StabilizerState, chunk_h, mask_h,
-                                      chunk_i, mask_i)
+@inline function _pauli_rowsum1_2!(state::StabilizerState, chunk_h, mask_h,
+                                   chunk_i, mask_i)
     xs = state.xs
     zs = state.zs
     hi = zero(ChT)
@@ -676,7 +676,7 @@ end
     end
     return state
 end
-@inline function _clifford_rowsum2!(state::StabilizerState, chunk_i, mask_i, wrs)
+@inline function _pauli_rowsum2!(state::StabilizerState, chunk_i, mask_i, wrs)
     xs = state.xs
     zs = state.zs
     wxzs = state.wxzs
@@ -697,7 +697,7 @@ end
     end
     return state
 end
-@inline function _clifford_rowsum3!(state::StabilizerState, wrs)
+@inline function _pauli_rowsum3!(state::StabilizerState, wrs)
     @assert sizeof(ChT) == 8
     wxzs = state.wxzs
     hi = zero(ChT)
@@ -854,7 +854,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
             mask_i = ifelse(bitidx < _chunk_len,
                             mask_i & ~(one(ChT) << bitidx), mask_i)
             if mask_i != 0
-                _clifford_rowsum1_2!(state, 1, mask_i, chunk_p, mask_p)
+                _pauli_rowsum1_2!(state, 1, mask_i, chunk_p, mask_p)
             end
         else
             for i in 1:nchunks
@@ -865,7 +865,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 if mask_i == 0
                     continue
                 end
-                _clifford_rowsum1!(state, i, mask_i, chunk_p, mask_p)
+                _pauli_rowsum1!(state, i, mask_i, chunk_p, mask_p)
             end
         end
         res = force !== nothing ? force : rand(Bool)
@@ -882,7 +882,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 mask_i = state.xs[i, a]
                 if mask_i != 0
                     total_mask |= mask_i
-                    _clifford_rowsum2!(state, i + nfullchunks, mask_i, wrs)
+                    _pauli_rowsum2!(state, i + nfullchunks, mask_i, wrs)
                 end
             end
         else
@@ -893,7 +893,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 mask = new_mask >> (_chunk_len - rembits)
                 if mask_i != 0
                     total_mask |= mask_i
-                    _clifford_rowsum2!(state, i + nfullchunks, mask_i, wrs)
+                    _pauli_rowsum2!(state, i + nfullchunks, mask_i, wrs)
                 end
             end
             new_mask = state.xs[nfullchunks + 1, a]
@@ -902,7 +902,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
             mask_i &= (one(ChT) << rembits2) - one(ChT)
             if mask_i != 0
                 total_mask |= mask_i
-                _clifford_rowsum2!(state, 2 * nfullchunks + 1, mask_i, wrs)
+                _pauli_rowsum2!(state, 2 * nfullchunks + 1, mask_i, wrs)
             end
             if rembits2 > _chunk_len
                 mask_i = new_mask >> (_chunk_len - rembits)
@@ -910,14 +910,14 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 mask_i &= (one(ChT) << (rembits2 - _chunk_len)) - one(ChT)
                 if mask_i != 0
                     total_mask |= mask_i
-                    _clifford_rowsum2!(state, 2 * nfullchunks + 2, mask_i, wrs)
+                    _pauli_rowsum2!(state, 2 * nfullchunks + 2, mask_i, wrs)
                 end
             end
         end
         if count_ones(total_mask) == 1
             return wrs[] != 0, true
         end
-        return _clifford_rowsum3!(state, wrs), true
+        return _pauli_rowsum3!(state, wrs), true
     end
 end
 
