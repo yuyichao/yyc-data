@@ -135,17 +135,10 @@ Return the combination of the two Pauli strings X: `xx, xz, xr`
 and Z: `zx, zz, zr`, based on the control input `x, z, r`.
 """
 @inline function _combine_1q(x, z, r, xx, xz, xr, zx, zz, zr)
-    if x
-        if z
-            return xx ⊻ zx, xz ⊻ zz, xr ⊻ zr ⊻ r ⊻ (zz ⊻ xx) ⊻ (zx | xz)
-        else
-            return xx, xz, xr ⊻ r
-        end
-    elseif z
-        return zx, zz, zr ⊻ r
-    else
-        return (false, false, r)
-    end
+    x′ = (x & xx) ⊻ (z & zx)
+    z′ = (x & xz) ⊻ (z & zz)
+    r ⊻= (z & zr) ⊻ (x & xr) ⊻ ((x & z) & (zz ⊻ xx ⊻ (zx | xz)))
+    return x′, z′, r
 end
 
 # We support the most generic set of single qubit Clifford gates.
@@ -222,7 +215,7 @@ function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ
     if name === nothing
         YX = XX ⊻ ZX
         YZ = XZ ⊻ ZZ
-        YR = XR ⊻ ZR ⊻ (ZZ ⊻ XX) ⊻ (ZX | XZ)
+        YR = XR ⊻ ZR ⊻ ZZ ⊻ XX ⊻ (ZX | XZ)
         xname = _to_pauli_name(XX, XZ, XR)
         yname = _to_pauli_name(YX, YZ, YR)
         zname = _to_pauli_name(ZX, ZZ, ZR)
@@ -246,7 +239,7 @@ const HZYGate = HYZGate
 # Implementation of forward-propagation of Pauli
 Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
                                                  xas, zas, rs) where {XX,XZ,XR,ZX,ZZ,ZR}
-    YPHASE = (ZZ ⊻ XX) ⊻ (ZX | XZ)
+    YPHASE = ZZ ⊻ XX ⊻ (ZX | XZ)
     NEED_X = ZX | XR | YPHASE
     NEED_Z = XZ | ZR | YPHASE
     NEED_R = XR | ZR | YPHASE
