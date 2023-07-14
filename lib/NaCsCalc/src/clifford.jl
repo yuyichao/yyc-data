@@ -10,20 +10,24 @@ using SIMD
 # Implement simulation of clifford circuit using the stabilizer state description
 
 ##
-# Gates
-#
-# Gate operations are implemented via their effect on pauli operators.
-# The pauli operator is described using two bits, `x` and `z`:
+# Representation of the Pauli string
+# The state is generally represented by a collection of Pauli strings.
+# Each n-qubit pauli string is described using 2n + 1 bits,
+# n X-bits and n Z-bits and one phase bit (R).
+# The X and Z bit on each qubit represent the pauli operator on the bit,
 #     x=0, z=0: I
 #     x=1, z=0: X
 #     x=1, z=1: Y
 #     x=0, z=1: Z
-# and the `r` carries the sign of the operator (e.g. `x=0`, `z=1`, `r=1` represents
-# the `-Z` operator).
-#
-# For efficient implementation of propagating multiple pauli strings/stabilizers
-# at the same time, we allow each of the bits to be packed into an integer
-# and we use bitwise operation to implement the gate in parallel.
+# and the phase bit R is the sign on the complete Pauli string
+# (i.e. a bit 1 means a negative sign).
+# For example, an `-XY` pauli string is encoded as `x1=1, z1=0, x2=1, z2=1, r=1`.
+# Note that this encoding can only represent Hermitian Pauli strings
+# (i.e. without `i` phase) and these are the only ones we need to represent states.
+
+# For most versions of the state representation, we pack these bits into
+# larger (UInt64) integers so that we can use bitwise operator to implement
+# gate and measurement operations in parallel.
 
 """
     nbits(::Type)
