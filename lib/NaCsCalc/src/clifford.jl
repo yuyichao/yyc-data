@@ -898,7 +898,6 @@ Base.@propagate_inbounds @inline function measure_z!(state::StabilizerState, a;
     return _measure_z!(state, n, a, force)
 end
 
-# Randomly pick a result
 function _measure_z!(state::StabilizerState, n, a, force)
     assume(n == state.n)
     p = 0
@@ -920,7 +919,10 @@ function _measure_z!(state::StabilizerState, n, a, force)
         end
     end
     @inbounds if found_p
+        # Rearrange the stabilizers so that there's a single stablizer that is not
+        # communting with our measurement.
         if nchunks <= 1
+            # Special case optimizing for small bit count
             mask_i = xs[1, a]
             bitidx = (p - 1) % UInt
             mask_i = ifelse(bitidx < _chunk_len,
@@ -940,10 +942,13 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 _pauli_rowsum1!(state, i, mask_i, chunk_p, mask_p)
             end
         end
+        # Randomly pick a result
         res = force !== nothing ? force : rand(Bool)
         _inject_zresult!(state, n, a, p, chunk_p, mask_p, res)
         return res, false
     else
+        # Multiply all the stabilizers that are needed to construct our
+        # measured Z, using the coefficients from the de-stabilizers.
         nfullchunks, rembits = divrem(n, _chunk_len)
         wxzs = state.wxzs
         assume(size(wxzs, 1) == n)
@@ -953,6 +958,9 @@ function _measure_z!(state::StabilizerState, n, a, force)
         wrs = Ref(zero(ChT))
         total_mask = zero(ChT)
         if rembits == 0
+            # If the bit number aligns with the chunk size,
+            # then the bit mask for stablizer and destabilizer aligns
+            # ans we can simply use the corresponding integers with matching index.
             assume(nfullchunks > 0)
             for i in 1:nfullchunks
                 mask_i = xs[i, a]
@@ -962,6 +970,10 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 end
             end
         else
+            # If n is not aligned to a full chunk, we need to shift the destablizer
+            # mask to match the stablizer mask.
+            # As we iterate, keep track of the destabilizer mask that we've loade
+            # but have not used yet to be used on the next iteration.
             mask = zero(ChT)
             for i in 1:nfullchunks
                 new_mask = xs[i, a]
@@ -990,6 +1002,8 @@ function _measure_z!(state::StabilizerState, n, a, force)
                 end
             end
         end
+        # Mostly to catch the cases where there actually is only a single term
+        # but could also catch when we are lucky and the multiple terms aligns.
         if count_ones(total_mask) == 1
             return wrs[] != 0, true
         end
@@ -997,13 +1011,21 @@ function _measure_z!(state::StabilizerState, n, a, force)
     end
 end
 
+# Implement the inverted stabilizer tableau based on https://arxiv.org/abs/2103.02202.
 struct InvStabilizerState
     n::Int
+    # The last dimension of `xzs` is the latest time bit index.
+    # Each matrix in the first two dimensions stores the beginning-of-time
+    # Pauli string that corresponds to `X` and `Z` on this bit at latest time.
+    # The signes for the `X` and `Z` Pauli strings are stored
+    # in `rs` as an `n` by `2` matrix.
     xzs::Array{ChT,3}
     rs::Matrix{UInt8}
+    # This (`ws`) is a workspace member currently used during random measurement
+    # to record to beginning-of-time CNOT that needs to be applied.
     ws::Matrix{ChT}
     function InvStabilizerState(n)
-        # Align the chunk number to 2
+        # Align the chunk number to 2 for better alignment and easier processing.
         nchunks = ((n - 1) ÷ (_chunk_len * 2) + 1) * 2
         # XX,            XZ,            ZX,            ZZ
         # X stab X term, X stab Z term, Z stab X term, Z stab Z term
@@ -1366,7 +1388,7 @@ Base.@propagate_inbounds @inline function apply!(
     # 2. XZ exchange, swap X and Z and apply sign changes
     # 3. one and only one of X and Z was mapped to the original Y
     #    we need to multiply the X and Z strings together
-    #    3.1. The other one remains unchanged (e.g. X <- X, Z <- Y)
+    #    3.1. The other one remains unchanged (up to a sign) (e.g. X <- X, Z <- Y)
     #    3.2. The other one is swapped (e.g. X <- Z, Z <- Y)
 
     @inbounds if XX & !XZ & !ZX & ZZ
@@ -1483,7 +1505,6 @@ Base.@propagate_inbounds @inline function measure_z!(state::InvStabilizerState, 
     return _measure_z!(state, n, a, force)
 end
 
-# Randomly pick a result
 function _measure_z!(state::InvStabilizerState, n, a, force)
     assume(n == state.n)
     xzs = state.xzs
@@ -1515,6 +1536,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
     return @inbounds(u8_to_bool(rs[a, 2])), true
 
     @label rand_measure
+    # Randomly pick a result
     res = force !== nothing ? force : rand(Bool)
 
     @inbounds begin
