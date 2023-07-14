@@ -595,9 +595,16 @@ function init_state_x!(state::StabilizerState, v::Bool)
     return state
 end
 
+# Accumulate the phase (±i) of the product of the two Pauli operators
+# `x1, z1` and `x2, z2` into the two-bit counter `hi, lo`.
 @inline function _accum_pauli_prod_phase(hi, lo, x1, z1, x2, z2)
     v1 = x1 & z2
     v2 = x2 & z1
+    # This is different from the efficient implementation used in Stim.
+    # The Stim expression (used below) is more efficient when the
+    # new value of x and z (i.e. `x1 ⊻ x2` and `z1 ⊻ z2`) are already computed.
+    # The following expression is more efficient without those pre-computed values
+    # and is optimized by enumeration.
     m = z1 ⊻ x2 ⊻ (x1 | z2)
     change = v1 ⊻ v2
     hi = hi ⊻ ((m ⊻ lo) & change)
@@ -605,6 +612,16 @@ end
     return hi, lo
 end
 
+# These are implementations of the `rowsum` function from CHP,
+# which is basically a multiplication between communing Pauli strings.
+# The different versions here corresponds to different usage patterns
+# and different ways for parallel processing.
+# All of these functions have a single user in the `_measure_z!`
+# for `StabilizerState` and should all be inlined into that function.
+
+# Multiply the single Pauli string located at `chunk_i, mask_i`
+# onto the Pauli strings at `chunk_h, mask_h`.
+# (i.e. `mask_i` have only a single bit set whereas `mask_h` might have multiple set)
 @inline function _pauli_rowsum1!(state::StabilizerState, chunk_h, mask_h,
                                  chunk_i, mask_i)
     xs = state.xs
@@ -615,6 +632,8 @@ end
     @inbounds for j in 1:state.n
         xi = _getbit(xs[chunk_i, j], mask_i)
         zi = _getbit(zs[chunk_i, j], mask_i)
+        # Based on testing, it seems that the cost of the branch is less than
+        # the saving in other operations (probably memory read/writes)
         if xi
             xh = xs[chunk_h, j]
             zh = zs[chunk_h, j]
@@ -645,6 +664,8 @@ end
     return state
 end
 
+# Similar to `_pauli_rowsum1!` but without branches.
+# This seems to perform better for small qubit count.
 @inline function _pauli_rowsum1_2!(state::StabilizerState, chunk_h, mask_h,
                                    chunk_i, mask_i)
     xs = state.xs
@@ -676,6 +697,9 @@ end
     end
     return state
 end
+
+# Multiply pair-wise the Pauli strings in `chunk_i, mask_i` onto the Pauli strings
+# in the workspace. The workspace phase is kept track of in `wrs`.
 @inline function _pauli_rowsum2!(state::StabilizerState, chunk_i, mask_i, wrs)
     xs = state.xs
     zs = state.zs
@@ -697,6 +721,10 @@ end
     end
     return state
 end
+
+# When there are multiple non-trivial Pauli string in the workspace,
+# Compute the phase when all of them are multiplied together.
+# We do not care about the string itself in this case.
 @inline function _pauli_rowsum3!(state::StabilizerState, wrs)
     @assert sizeof(ChT) == 8
     wxzs = state.wxzs
@@ -704,14 +732,26 @@ end
     lo = zero(ChT)
     assume(state.n > 0)
     @inbounds for j in 1:state.n
+        # Although we can assume all of the Pauli strings commutes with each other
+        # therefore the phase should be independent of the multiplication order,
+        # I cannot find an algorithm that is explicit order-independent.
+        # As such, the way I'm computing this is to simulate a log(64) steps
+        # folding reduction. However, instead of computing the phase
+        # for each multiplication I'm computing and recording the operand
+        # of each mulplication (there are in total 63 of them) in two vectors
+        # (`xh, zh` and `xi, zi`) and then computing the sum of the phase accumulated
+        # on all of the 63 multiplications.
+
         x = wxzs[j, 1]
         z = wxzs[j, 2]
 
+        # Multiply 64 bits into 32 bits
         x1 = (x >> 32) % UInt32
         z1 = (z >> 32) % UInt32
         x2 = x % UInt32
         z2 = z % UInt32
 
+        # Record the operands in the lowest 32 bits [31...0]
         xh = x1 % UInt64
         zh = z1 % UInt64
         xi = x2 % UInt64
@@ -720,11 +760,13 @@ end
         x = x1 ⊻ x2
         z = z1 ⊻ z2
 
+        # Multiply 32 bits into 16 bits
         x1 = x >> 16
         z1 = z >> 16
         x2 = x & 0x0000ffff
         z2 = z & 0x0000ffff
 
+        # Record the operands in bits [47...32]
         xh |= (x1 % UInt64) << 32
         zh |= (z1 % UInt64) << 32
         xi |= (x2 % UInt64) << 32
@@ -733,11 +775,13 @@ end
         x = x1 ⊻ x2
         z = z1 ⊻ z2
 
+        # Multiply 16 bits into 8 bits
         x1 = x >> 8
         z1 = z >> 8
         x2 = x & 0x000000ff
         z2 = z & 0x000000ff
 
+        # Record the operands in bits [55...48]
         xh |= (x1 % UInt64) << 48
         zh |= (z1 % UInt64) << 48
         xi |= (x2 % UInt64) << 48
@@ -746,11 +790,13 @@ end
         x = x1 ⊻ x2
         z = z1 ⊻ z2
 
+        # Multiply 8 bits into 4 bits
         x1 = x >> 4
         z1 = z >> 4
         x2 = x & 0x0000000f
         z2 = z & 0x0000000f
 
+        # Record the operands in bits [59...56]
         xh |= (x1 % UInt64) << 56
         zh |= (z1 % UInt64) << 56
         xi |= (x2 % UInt64) << 56
@@ -759,11 +805,13 @@ end
         x = x1 ⊻ x2
         z = z1 ⊻ z2
 
+        # Multiply 4 bits into 2 bits
         x1 = x >> 2
         z1 = z >> 2
         x2 = x & 0x00000003
         z2 = z & 0x00000003
 
+        # Record the operands in bits [61...60]
         xh |= (x1 % UInt64) << 60
         zh |= (z1 % UInt64) << 60
         xi |= (x2 % UInt64) << 60
@@ -772,11 +820,13 @@ end
         x = x1 ⊻ x2
         z = z1 ⊻ z2
 
+        # Multiply 2 bits into 1 bits
         x1 = x >> 1
         z1 = z >> 1
         x2 = x & 0x00000001
         z2 = z & 0x00000001
 
+        # Record the operands in bit 62
         xh |= (x1 % UInt64) << 62
         zh |= (z1 % UInt64) << 62
         xi |= (x2 % UInt64) << 62
@@ -787,30 +837,30 @@ end
     return (count_ones(wrs[] ⊻ hi) ⊻ (count_ones(lo) >> 1)) & 1 != 0
 end
 
+# With the rearrangement of the stabilizer finished, set the (p-n)-th stabilizer
+# to reflect the measurement result. `chunk2, mask2` is the bit index/mask
+# for the stabilizer (i.e. the p-th string)
 @inline function _inject_zresult!(state::StabilizerState, n, a, p, chunk2, mask2, res)
-    chunk1, mask1 = _get_chunk_mask(p - n)
+    chunk1, mask1 = _get_chunk_mask(p - n) # index and mask for the de-stabilizer
     xs = state.xs
     zs = state.zs
     assume(n > 0)
     @inbounds for i in 1:n
-        # state.xs[i][p - n] = state.xs[i][p]
-        # state.xs[i][p] = false
+        # Set the destabilizer to the current stabilizer
+        # and set the stabilizer to the correct `Z` with the correct sign.
+
         x2 = xs[chunk2, i]
         xs[chunk2, i] = x2 & ~mask2
         # Note that the load of x1 has to happen after the store of x2
         # since the two may alias
         xs[chunk1, i] = _setbit(xs[chunk1, i], _getbit(x2, mask2), mask1)
 
-        # state.zs[i][p - n] = state.zs[i][p]
-        # state.zs[i][p] = i == a
         z2 = zs[chunk2, i]
         zs[chunk2, i] = _setbit(z2, i == a, mask2)
         # Note that the load of z1 has to happen after the store of z2
         # since the two may alias
         zs[chunk1, i] = _setbit(zs[chunk1, i], _getbit(z2, mask2), mask1)
     end
-    # state.rs[p - n] = state.rs[p]
-    # state.rs[p] = res
     rs = state.rs
     @inbounds begin
         r2 = rs[chunk2, 1]
