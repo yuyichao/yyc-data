@@ -574,8 +574,10 @@ function init_state_z!(state::StabilizerState, v::Bool)
     zs .= 0
     assume(n > 0)
     @inbounds for i in 1:n
+        # Destablizer to X
         chunk1, mask1 = _get_chunk_mask(i)
         xs[chunk1, i] = mask1
+        # Stablizer to Z
         chunk2, mask2 = _get_chunk_mask(i + n)
         zs[chunk2, i] = mask2
     end
@@ -596,10 +598,41 @@ function init_state_x!(state::StabilizerState, v::Bool)
     zs .= 0
     assume(n > 0)
     @inbounds for i in 1:n
+        # Destablizer to Z
         chunk1, mask1 = _get_chunk_mask(i)
         zs[chunk1, i] = mask1
+        # Stablizer to X
         chunk2, mask2 = _get_chunk_mask(i + n)
         xs[chunk2, i] = mask2
+    end
+    rs .= _cast_bits(ChT, v)
+    return state
+end
+
+# Initialize all qubits to the eigenstates of `Y` with sign `v`
+# (true for negative sign)
+function init_state_y!(state::StabilizerState, v::Bool)
+    n = state.n
+    xs = state.xs
+    zs = state.zs
+    rs = state.rs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1) == length(rs))
+    assume(length(xs) == length(zs))
+    xs .= 0
+    zs .= 0
+    assume(n > 0)
+    @inbounds for i in 1:n
+        # Destablizer to X
+        chunk1, mask1 = _get_chunk_mask(i)
+        # Stablizer to Y
+        chunk2, mask2 = _get_chunk_mask(i + n)
+        if chunk1 == chunk2
+            xs[chunk1, i] = mask1 | mask2
+        else
+            xs[chunk1, i] = mask1
+            xs[chunk2, i] = mask2
+        end
+        zs[chunk2, i] = mask2
     end
     rs .= _cast_bits(ChT, v)
     return state
@@ -1107,6 +1140,27 @@ function init_state_x!(state::InvStabilizerState, v::Bool)
     @inbounds begin
         rs[:, 1] .= v
         rs[:, 2] .= false
+    end
+    return state
+end
+
+function init_state_y!(state::InvStabilizerState, v::Bool)
+    n = state.n
+    xzs = state.xzs
+    assume(size(xzs, 2) == 4)
+    xzs .= 0
+    assume(n > 0)
+    @inbounds for i in 1:n
+        chunk, mask = _get_chunk_mask(i)
+        xzs[chunk, 1, i] = mask
+        xzs[chunk, 3, i] = mask
+        xzs[chunk, 4, i] = mask
+    end
+    rs = state.rs
+    assume(size(rs, 1) == n)
+    @inbounds begin
+        rs[:, 1] .= false
+        rs[:, 2] .= v
     end
     return state
 end
@@ -1712,6 +1766,7 @@ const _StabilizerState = Union{StabilizerState,InvStabilizerState}
 
 @inline init_state_z!(state::_StabilizerState) = init_state_z!(state, false)
 @inline init_state_x!(state::_StabilizerState) = init_state_x!(state, false)
+@inline init_state_y!(state::_StabilizerState) = init_state_y!(state, false)
 
 function measure_x!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)

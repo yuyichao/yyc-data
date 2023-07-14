@@ -572,6 +572,29 @@ end
 
 for (ss_name, SS_T) in [("StabilizerState", Clf.StabilizerState),
                         ("InvStabilizerState", Clf.InvStabilizerState)]
+    @testset "Init ($ss_name)" begin
+        for nbit in 1:3:2049
+            state = SS_T(nbit)
+            for i in 1:nbit
+                @test Clf.measure_z!(state, i) == (false, true)
+            end
+            for v in (false, true)
+                Clf.init_state_x!(state, v)
+                for i in 1:nbit
+                    @test Clf.measure_x!(state, i) == (v, true)
+                end
+                Clf.init_state_y!(state, v)
+                for i in 1:nbit
+                    @test Clf.measure_y!(state, i) == (v, true)
+                end
+                Clf.init_state_z!(state, v)
+                for i in 1:nbit
+                    @test Clf.measure_z!(state, i) == (v, true)
+                end
+            end
+        end
+    end
+
     @testset "stabilizer 1q ($ss_name)" begin
         state = SS_T(1)
         @test Clf.measure_z!(state, 1) === (false, true)
