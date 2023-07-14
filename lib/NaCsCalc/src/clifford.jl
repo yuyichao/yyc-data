@@ -141,6 +141,8 @@ end
 end
 const _named_gates = Dict((true, false, false, false, true, false)=>"I",
                           (false, true, false, true, false, false)=>"H",
+                          (true, true, false, false, true, true)=>"HXY",
+                          (true, false, true, true, true, false)=>"HYZ",
                           (true, false, false, false, true, true)=>"X",
                           (true, false, true, false, true, true)=>"Y",
                           (true, false, true, false, true, false)=>"Z",
@@ -149,7 +151,9 @@ const _named_gates = Dict((true, false, false, false, true, false)=>"I",
                           (true, false, false, true, true, true)=>"SX",
                           (true, false, false, true, true, false)=>"ISX",
                           (false, true, true, true, false, false)=>"SY",
-                          (false, true, false, true, false, true)=>"ISY")
+                          (false, true, false, true, false, true)=>"ISY",
+                          (true, true, false, true, false, false)=>"CXYZ",
+                          (false, true, false, true, true, false)=>"CZYX")
 function _to_pauli_name(x, z, r)
     return (r ? "-" : "+") * (x ? (z ? "Y" : "X") : "Z")
 end
@@ -168,10 +172,15 @@ function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ
     end
 end
 for (param, name) in _named_gates
+    Generic1Q{param...}() # Builtin test
     @eval const $(Symbol("$(name)Gate")) = $(Generic1Q{param...})
 end
 const SZGate = SGate
 const ISZGate = ISGate
+const HXZGate = HGate
+const HZXGate = HGate
+const HYXGate = HXYGate
+const HZYGate = HYZGate
 
 Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
                                                  xas, zas, rs) where {XX,XZ,XR,ZX,ZZ,ZR}
