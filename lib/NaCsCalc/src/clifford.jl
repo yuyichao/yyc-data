@@ -351,6 +351,7 @@ end
 Base.eltype(::Type{PauliString{T}}) where T = T
 
 function Base.empty!(str::PauliString{T}) where T
+    assume(length(str.xs) == length(str.zs))
     str.xs .= zero(T)
     str.zs .= zero(T)
     str.rs[] = zero(T)
@@ -482,6 +483,7 @@ struct StabilizerState
         # that this cannot be resized and that the size and pointer
         # are both lifetime constants.
         rs = zeros(ChT, nchunks, 1)
+        assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
         @inbounds for i in 1:n
             chunk1, mask1 = _get_chunk_mask(i)
             xs[chunk1, i] = mask1
@@ -499,8 +501,9 @@ Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
     xs = state.xs
     zs = state.zs
     rs = state.rs
-    nchunks = size(state.rs, 1)
+    nchunks = size(rs, 1)
     assume(nchunks > 0)
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]), @view(rs[i, 1]))
     end
@@ -519,8 +522,9 @@ Base.@propagate_inbounds @inline function apply!(state::StabilizerState,
     xs = state.xs
     zs = state.zs
     rs = state.rs
-    nchunks = size(state.rs, 1)
+    nchunks = size(rs, 1)
     assume(nchunks > 0)
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
     @inbounds @simd ivdep for i in 1:nchunks
         apply!(gate, @view(xs[i, a]), @view(zs[i, a]),
                @view(xs[i, b]), @view(zs[i, b]), @view(rs[i, 1]))
@@ -563,6 +567,9 @@ function init_state_z!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
     zs = state.zs
+    rs = state.rs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1) == length(rs))
+    assume(length(xs) == length(zs))
     xs .= 0
     zs .= 0
     assume(n > 0)
@@ -572,7 +579,7 @@ function init_state_z!(state::StabilizerState, v::Bool)
         chunk2, mask2 = _get_chunk_mask(i + n)
         zs[chunk2, i] = mask2
     end
-    state.rs .= _cast_bits(ChT, v)
+    rs .= _cast_bits(ChT, v)
     return state
 end
 
@@ -582,6 +589,9 @@ function init_state_x!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
     zs = state.zs
+    rs = state.rs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1) == length(rs))
+    assume(length(xs) == length(zs))
     xs .= 0
     zs .= 0
     assume(n > 0)
@@ -591,7 +601,7 @@ function init_state_x!(state::StabilizerState, v::Bool)
         chunk2, mask2 = _get_chunk_mask(i + n)
         xs[chunk2, i] = mask2
     end
-    state.rs .= _cast_bits(ChT, v)
+    rs .= _cast_bits(ChT, v)
     return state
 end
 
@@ -626,6 +636,8 @@ end
                                  chunk_i, mask_i)
     xs = state.xs
     zs = state.zs
+    rs = state.rs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
     hi = zero(ChT)
     lo = zero(ChT)
     assume(state.n > 0)
@@ -656,7 +668,6 @@ end
         end
     end
     @inbounds begin
-        rs = state.rs
         rh = rs[chunk_h]
         hi = ifelse(_getbit(rs[chunk_i], mask_i), ~hi, hi)
         rs[chunk_h] = rh ⊻ (hi & mask_h)
@@ -670,6 +681,8 @@ end
                                    chunk_i, mask_i)
     xs = state.xs
     zs = state.zs
+    rs = state.rs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
     hi = zero(ChT)
     lo = zero(ChT)
     assume(state.n > 0)
@@ -690,7 +703,6 @@ end
         zs[chunk_h, j] = ifelse(zi, zh ⊻ mask_h, zh)
     end
     @inbounds begin
-        rs = state.rs
         rh = rs[chunk_h]
         hi = ifelse(_getbit(rs[chunk_i], mask_i), ~hi, hi)
         rs[chunk_h] = rh ⊻ (hi & mask_h)
@@ -701,13 +713,17 @@ end
 # Multiply pair-wise the Pauli strings in `chunk_i, mask_i` onto the Pauli strings
 # in the workspace. The workspace phase is kept track of in `wrs`.
 @inline function _pauli_rowsum2!(state::StabilizerState, chunk_i, mask_i, wrs)
+    n = state.n
     xs = state.xs
     zs = state.zs
+    rs = state.rs
     wxzs = state.wxzs
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
+    assume(size(wxzs, 1) == n)
     hi = zero(ChT)
     lo = zero(ChT)
-    assume(state.n > 0)
-    @inbounds for j in 1:state.n
+    assume(n > 0)
+    @inbounds for j in 1:n
         xi = xs[chunk_i, j]
         xh = wxzs[j, 1]
         zi = zs[chunk_i, j]
@@ -717,7 +733,7 @@ end
         wxzs[j, 2] = zh ⊻ (zi & mask_i)
     end
     @inbounds begin
-        wrs[] ⊻= (hi ⊻ state.rs[chunk_i, 1]) & mask_i
+        wrs[] ⊻= (hi ⊻ rs[chunk_i, 1]) & mask_i
     end
     return state
 end
@@ -726,12 +742,14 @@ end
 # Compute the phase when all of them are multiplied together.
 # We do not care about the string itself in this case.
 @inline function _pauli_rowsum3!(state::StabilizerState, wrs)
+    n = state.n
     @assert sizeof(ChT) == 8
     wxzs = state.wxzs
     hi = zero(ChT)
     lo = zero(ChT)
-    assume(state.n > 0)
-    @inbounds for j in 1:state.n
+    assume(size(wxzs, 1) == n)
+    assume(n > 0)
+    @inbounds for j in 1:n
         # Although we can assume all of the Pauli strings commutes with each other
         # therefore the phase should be independent of the multiplication order,
         # I cannot find an algorithm that is explicit order-independent.
@@ -844,7 +862,9 @@ end
     chunk1, mask1 = _get_chunk_mask(p - n) # index and mask for the de-stabilizer
     xs = state.xs
     zs = state.zs
+    rs = state.rs
     assume(n > 0)
+    assume(size(xs, 1) == size(zs, 1) == size(rs, 1))
     @inbounds for i in 1:n
         # Set the destabilizer to the current stabilizer
         # and set the stabilizer to the correct `Z` with the correct sign.
@@ -861,7 +881,6 @@ end
         # since the two may alias
         zs[chunk1, i] = _setbit(zs[chunk1, i], _getbit(z2, mask2), mask1)
     end
-    rs = state.rs
     @inbounds begin
         r2 = rs[chunk2, 1]
         rs[chunk2, 1] = _setbit(r2, res, mask2)
@@ -887,19 +906,22 @@ function _measure_z!(state::StabilizerState, n, a, force)
     mask_p = zero(ChT)
     found_p = false
     assume(n > 0)
+    xs = state.xs
+    rs = state.rs
+    nchunks = size(rs, 1)
+    assume(nchunks > 0)
+    assume(size(xs, 1) == size(rs, 1))
     @inbounds for _p in (n + 1):(2 * n)
         chunk_p, mask_p = _get_chunk_mask(_p)
-        if _getbit(state.xs[chunk_p, a], mask_p)
+        if _getbit(xs[chunk_p, a], mask_p)
             p = _p
             found_p = true
             break
         end
     end
     @inbounds if found_p
-        nchunks = size(state.rs, 1)
-        assume(nchunks > 0)
         if nchunks <= 1
-            mask_i = state.xs[1, a]
+            mask_i = xs[1, a]
             bitidx = (p - 1) % UInt
             mask_i = ifelse(bitidx < _chunk_len,
                             mask_i & ~(one(ChT) << bitidx), mask_i)
@@ -908,7 +930,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
             end
         else
             for i in 1:nchunks
-                mask_i = state.xs[i, a]
+                mask_i = xs[i, a]
                 bitidx = (p - 1 - (i - 1) * _chunk_len) % UInt
                 mask_i = ifelse(bitidx < _chunk_len,
                                 mask_i & ~(one(ChT) << bitidx), mask_i)
@@ -923,13 +945,17 @@ function _measure_z!(state::StabilizerState, n, a, force)
         return res, false
     else
         nfullchunks, rembits = divrem(n, _chunk_len)
-        state.wxzs .= zero(ChT)
+        wxzs = state.wxzs
+        assume(size(wxzs, 1) == n)
+        assume(size(wxzs, 2) == 2)
+        assume(length(wxzs) == 2 * n)
+        wxzs .= zero(ChT)
         wrs = Ref(zero(ChT))
         total_mask = zero(ChT)
         if rembits == 0
             assume(nfullchunks > 0)
             for i in 1:nfullchunks
-                mask_i = state.xs[i, a]
+                mask_i = xs[i, a]
                 if mask_i != 0
                     total_mask |= mask_i
                     _pauli_rowsum2!(state, i + nfullchunks, mask_i, wrs)
@@ -938,7 +964,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
         else
             mask = zero(ChT)
             for i in 1:nfullchunks
-                new_mask = state.xs[i, a]
+                new_mask = xs[i, a]
                 mask_i = mask | (new_mask << rembits)
                 mask = new_mask >> (_chunk_len - rembits)
                 if mask_i != 0
@@ -946,7 +972,7 @@ function _measure_z!(state::StabilizerState, n, a, force)
                     _pauli_rowsum2!(state, i + nfullchunks, mask_i, wrs)
                 end
             end
-            new_mask = state.xs[nfullchunks + 1, a]
+            new_mask = xs[nfullchunks + 1, a]
             mask_i = mask | (new_mask << rembits)
             rembits2 = rembits * 2
             mask_i &= (one(ChT) << rembits2) - one(ChT)
