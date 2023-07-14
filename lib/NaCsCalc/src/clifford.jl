@@ -243,6 +243,7 @@ const HZXGate = HGate
 const HYXGate = HXYGate
 const HZYGate = HYZGate
 
+# Implementation of forward-propagation of Pauli
 Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
                                                  xas, zas, rs) where {XX,XZ,XR,ZX,ZZ,ZR}
     YPHASE = (ZZ ⊻ XX) ⊻ (ZX | XZ)
@@ -288,6 +289,7 @@ abstract type Clifford2Q end
 
 struct CNOTGate <: Clifford2Q
 end
+# Implementation of forward-propagation of Pauli
 Base.@propagate_inbounds @inline function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
     xa = xas[]
     xb = xbs[]
@@ -388,11 +390,14 @@ function Base.show(io::IO, str::PauliString{T}) where T
     end
 end
 
-# Ignore signs
+# Injecting an Pauli operator
+# This is intended for injecting or correcting Pauli errors
+# into the state diff.
 @inline function inject_pauli!(str::PauliString, x, z, i)
     @boundscheck check_qubit_bound(str.n, i)
     @inbounds str.xs[i] ⊻= x
     @inbounds str.zs[i] ⊻= z
+    # Ignore signs
     return str
 end
 
@@ -453,16 +458,29 @@ Base.@propagate_inbounds @inline function measure_stabilizer_z(str::PauliString,
     return ~pauli_commute_z(str, zs)
 end
 
+# Implementation of stablizer state based on https://arxiv.org/abs/quant-ph/0406196
+# The bit in each Pauli strings corresponds to each qubit is packed into a `UInt64`
+# so that we can do parallel gate operations on multiple strings at the same time.
+# We store in total `2n` strings `n` for the destablizers and stabilizers each.
+# The X and Z terms for each string are stored in two matrices separately.
 struct StabilizerState
     n::Int
     xs::Matrix{ChT}
     zs::Matrix{ChT}
     rs::Matrix{ChT}
+    # This is the 2n+1 string in the CHP paper as workspace
+    # to figure out the result of deterministic measurements.
+    # This relaxes some requirement during measurement allowing us to
+    # do out-of-bound read/write on the unused bits at the end
+    # without having to mask them out.
     wxzs::Matrix{ChT}
     function StabilizerState(n)
         nchunks = (2n - 1) ÷ _chunk_len + 1
         xs = zeros(ChT, nchunks, n)
         zs = zeros(ChT, nchunks, n)
+        # Use a matrix here to help the julia compiler realizing
+        # that this cannot be resized and that the size and pointer
+        # are both lifetime constants.
         rs = zeros(ChT, nchunks, 1)
         @inbounds for i in 1:n
             chunk1, mask1 = _get_chunk_mask(i)
@@ -539,6 +557,8 @@ function get_stabilizer(state::StabilizerState, i)
                        _getindex_r(state, i + n))
 end
 
+# Initialize all qubits to the eigenstates of `Z` with sign `v`
+# (true for negative sign)
 function init_state_z!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
@@ -556,6 +576,8 @@ function init_state_z!(state::StabilizerState, v::Bool)
     return state
 end
 
+# Initialize all qubits to the eigenstates of `X` with sign `v`
+# (true for negative sign)
 function init_state_x!(state::StabilizerState, v::Bool)
     n = state.n
     xs = state.xs
