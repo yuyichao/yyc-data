@@ -799,7 +799,7 @@ end
         xs[chunk2, i] = x2 & ~mask2
         # Note that the load of x1 has to happen after the store of x2
         # since the two may alias
-        xs[chunk1, i] = _setbit(xs[chunk1, i], (x2 & mask2) != 0, mask1)
+        xs[chunk1, i] = _setbit(xs[chunk1, i], _getbit(x2, mask2), mask1)
 
         # state.zs[i][p - n] = state.zs[i][p]
         # state.zs[i][p] = i == a
@@ -807,7 +807,7 @@ end
         zs[chunk2, i] = _setbit(z2, i == a, mask2)
         # Note that the load of z1 has to happen after the store of z2
         # since the two may alias
-        zs[chunk1, i] = _setbit(zs[chunk1, i], (z2 & mask2) != 0, mask1)
+        zs[chunk1, i] = _setbit(zs[chunk1, i], _getbit(z2, mask2), mask1)
     end
     # state.rs[p - n] = state.rs[p]
     # state.rs[p] = res
@@ -817,7 +817,7 @@ end
         rs[chunk2, 1] = _setbit(r2, res, mask2)
         # Note that the load of r1 has to happen after the store of r2
         # since the two may alias
-        rs[chunk1, 1] = _setbit(rs[chunk1, 1], (r2 & mask2) != 0, mask1)
+        rs[chunk1, 1] = _setbit(rs[chunk1, 1], _getbit(r2, mask2), mask1)
     end
     return
 end
