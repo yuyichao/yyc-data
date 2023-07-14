@@ -460,38 +460,11 @@ function test_gap2(::Type{SST}, pos1, pos2, nqubit) where SST
 end
 
 function apply_random_clifford!(cb, nbit)
-    id = rand(1:16)
+    id = rand(1:32)
     n1 = rand(1:nbit)
-    if id == 1
-        # H
-        cb(Clf.HGate(), n1)
-    elseif id == 2
-        # X
-        cb(Clf.XGate(), n1)
-    elseif id == 3
-        # Y
-        cb(Clf.YGate(), n1)
-    elseif id == 4
-        # Z
-        cb(Clf.ZGate(), n1)
-    elseif id == 5
-        # S
-        cb(Clf.SGate(), n1)
-    elseif id == 6
-        # IS
-        cb(Clf.ISGate(), n1)
-    elseif id == 7
-        # SX
-        cb(Clf.SXGate(), n1)
-    elseif id == 8
-        # ISX
-        cb(Clf.ISXGate(), n1)
-    elseif id == 9
-        # SY
-        cb(Clf.SYGate(), n1)
-    elseif id == 10
-        # ISY
-        cb(Clf.ISYGate(), n1)
+    gate1q = get(gates_1q, id, Clf.IGate())
+    if gate1q !== Clf.IGate()
+        cb(gate1q, n1)
     else
         # CNOT
         n2 = rand(1:(nbit - 1))
