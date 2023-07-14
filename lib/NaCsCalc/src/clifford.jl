@@ -29,6 +29,7 @@ using SIMD
 # larger (UInt64) integers so that we can use bitwise operator to implement
 # gate and measurement operations in parallel.
 
+# Utility functions
 """
     nbits(::Type)
 
@@ -64,8 +65,15 @@ const _chunk_len = sizeof(ChT) * 8
     return chunk, mask
 end
 @inline _getbit(chunk, mask) = chunk & mask != 0
+@inline _getbit(chunk::Vec, mask::Vec) = reduce(|, chunk & mask) != 0
 @inline _setbit(chunk, val, mask) = ifelse(val, chunk | mask, chunk & ~mask)
 
+# It turns out that on both x86 and aarch64,
+# vectorized popcount is implemented byte-wise
+# (the result of the byte-wise popcount is then added together horizontally).
+# Since we really only care about the last one or two bits of the result
+# casting to `UInt8` vector and do as many operation on it as we can
+# reduces the number of horizontal additions we need.
 @inline vcount_ones_u8(v::Vec{N,T}) where {N,T} =
     count_ones(reinterpret(Vec{N * sizeof(T),UInt8}, v))
 
@@ -82,6 +90,9 @@ end
          """, "fw_assume"), Cvoid, Tuple{Bool}, v)
 end
 
+# Bool in julia always get masked when loaded even though we know that
+# the stored value is either `0` or `1`. Store them using `UInt8` instead
+# and do the conversion manually with an explicit assumption of the value range.
 @inline function u8_to_bool(v)
     assume(v <= 0x1)
     return v != 0
@@ -100,6 +111,12 @@ end
 # including multiplication and inverse.
 abstract type Clifford1Q end
 
+"""
+    _combine_1q(x, z, r, xx, xz, xr, zx, zz, zr)
+
+Return the combination of the two Pauli strings X: `xx, xz, xr`
+and Z: `zx, zz, zr`, based on the control input `x, z, r`.
+"""
 @inline function _combine_1q(x, z, r, xx, xz, xr, zx, zz, zr)
     if x
         if z
@@ -114,6 +131,18 @@ abstract type Clifford1Q end
     end
 end
 
+# We support the most generic set of single qubit Clifford gates.
+"""
+    Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}
+
+Generic one qubit Clifford rotation.
+The gate is represented by the operation done on the X and the Z operators.
+The X operator is turned into the Pauli operator represented by `XX, XZ, XR`
+and the Z operator is turned into the Pauli operator represented by `ZX, ZZ, ZR`.
+
+Note that the X and Z Pauli string must anti-commute to maintain the unitarity
+of the gate and this is checked in the constructor.
+"""
 struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
     function Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}() where {XX,XZ,XR,ZX,ZZ,ZR}
         anticommute = (XX & ZZ) ⊻ (XZ & ZX)
@@ -123,6 +152,11 @@ struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
         return new{XX,XZ,XR,ZX,ZZ,ZR}()
     end
 end
+"""
+    *(g1::Generic1Q, g2::Generic1Q)
+
+Return the gate corresponding to apply `g1` first and then `g2`.
+"""
 function Base.:*(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
                  ::Generic1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
                                                               XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
@@ -130,6 +164,11 @@ function Base.:*(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
     ZX, ZZ, ZR = _combine_1q(ZX1, ZZ1, ZR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
     return Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}()
 end
+"""
+    _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
+
+Return the X and Z Pauli strings representing the inverse of the 1Q gate.
+"""
 @inline function _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
     XX′ = ZZ
     XZ′ = XZ
@@ -175,6 +214,7 @@ function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ
         print(io, "$(name)Gate()")
     end
 end
+# Create convinience alias for certain known-named gates.
 for (param, name) in _named_gates
     Generic1Q{param...}() # Builtin test
     @eval const $(Symbol("$(name)Gate")) = $(Generic1Q{param...})
@@ -1372,7 +1412,7 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
         cnot_tgt0 = zxa & ~pmask0
         za0 = xzs[lane + pchunk0, 4, a]
         xzs[lane + pchunk0, 4, a] = za0 | pmask0
-        pza0 = reduce(|, za0 & pmask0) != 0
+        pza0 = _getbit(za0, pmask0)
         cnot_za0 = za0 & cnot_tgt0
     end
 
@@ -1424,9 +1464,9 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 continue
             end
             x0 = xzs[lane + pchunk0, 2k - 1, j]
-            px = reduce(|, x0 & pmask0) != 0
+            px = _getbit(x0, pmask0)
             z0 = xzs[lane + pchunk0, 2k, j]
-            pz = reduce(|, z0 & pmask0) != 0
+            pz = _getbit(z0, pmask0)
             cnot_z0 = z0 & cnot_tgt0
             zcum_lo = cnot_z0
             if px
@@ -1488,8 +1528,8 @@ function _measure_z!(state::InvStabilizerState, n, a, force)
                 end
                 x = xzs[lane + pchunk0, 2k - 1, j]
                 z = xzs[lane + pchunk0, 2k, j]
-                px = reduce(|, x & pmask0) != 0
-                pz = reduce(|, z & pmask0) != 0
+                px = _getbit(x, pmask0)
+                pz = _getbit(z, pmask0)
 
                 cnot_z = z & cnot_tgt0
                 zcum_cnt_u8 = reduce(+, vcount_ones_u8(cnot_z))
