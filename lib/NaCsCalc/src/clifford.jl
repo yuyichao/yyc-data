@@ -1253,11 +1253,6 @@ Base.@propagate_inbounds @inline function apply!(
     state::InvStabilizerState, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
     a) where {XX,XZ,XR,ZX,ZZ,ZR}
 
-    if XX & !XZ & !XR & !ZX & ZZ & !ZR
-        # IGate
-        return state
-    end
-
     n = state.n
     @boundscheck check_qubit_bound(n, a)
     xzs = state.xzs
