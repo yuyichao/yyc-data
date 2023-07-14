@@ -139,11 +139,18 @@ end
 end
 
 const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
+const gates_1q = [Clf.Generic1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
+                  for XZ in ((true, false, true, true),
+                             (true, false, false, true),
+                             (true, true, true, false),
+                             (true, true, false, true),
+                             (false, true, true, false),
+                             (false, true, true, true)),
+                      R in Iterators.product((false, true), (false, true))]
 
 @testset "inv" begin
-    for gate in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                 Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
-                 Clf.SYGate(), Clf.ISYGate()]
+    for gate in gates_1q
+        @test gate * inv(gate) === Clf.IGate()
         for input in inputs_1q
             @test Clf.apply(inv(gate), Clf.apply(gate, input...)...) === input
             @test Clf.apply(gate, Clf.apply(inv(gate), input...)...) === input
@@ -152,12 +159,8 @@ const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
 end
 
 @testset "prod" begin
-    for gate1 in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                  Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
-                  Clf.SYGate(), Clf.ISYGate()]
-        for gate2 in [Clf.IGate(), Clf.XGate(), Clf.YGate(), Clf.ZGate(), Clf.HGate(),
-                      Clf.SGate(), Clf.ISGate(), Clf.SXGate(), Clf.ISXGate(),
-                      Clf.SYGate(), Clf.ISYGate()]
+    for gate1 in gates_1q
+        for gate2 in gates_1q
             for input in inputs_1q
                 @test(Clf.apply(gate2, Clf.apply(gate1, input...)...) ===
                     Clf.apply(gate1 * gate2, input...))
