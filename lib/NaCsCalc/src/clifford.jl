@@ -598,7 +598,7 @@ end
 @inline function _accum_pauli_prod_phase(hi, lo, x1, z1, x2, z2)
     v1 = x1 & z2
     v2 = x2 & z1
-    m = (z2 ⊻ x1) | ~(x2 | z1)
+    m = z1 ⊻ x2 ⊻ (x1 | z2)
     change = v1 ⊻ v2
     hi = hi ⊻ ((m ⊻ lo) & change)
     lo = lo ⊻ change
