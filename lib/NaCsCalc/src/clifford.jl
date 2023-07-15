@@ -140,6 +140,9 @@ and Z: `zx, zz, zr`, based on the control input `x, z, r`.
     r ⊻= (z & zr) ⊻ (x & xr) ⊻ ((x & z) & (zz ⊻ xx ⊻ (zx | xz)))
     return x′, z′, r
 end
+@inline function _anti_commute_1q(x1, z1, x2, z2)
+    return (x1 & z2) ⊻ (z1 & x2)
+end
 
 # We support the most generic set of single qubit Clifford gates.
 """
@@ -155,8 +158,7 @@ of the gate and this is checked in the constructor.
 """
 struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
     function Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}() where {XX,XZ,XR,ZX,ZZ,ZR}
-        anticommute = (XX & ZZ) ⊻ (XZ & ZX)
-        if !anticommute
+        if !_anti_commute_1q(XX, XZ, ZX, ZZ)
             error("X and Z mapping must anti-commute")
         end
         return new{XX,XZ,XR,ZX,ZZ,ZR}()
