@@ -348,6 +348,105 @@ end
     return x1′, z1′, x2′, z2′
 end
 
+struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                 Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                 X2X1,X2Z1,X2X2,X2Z2,X2R,
+                 Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R} <: Clifford2Q
+    function Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                       Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                       X2X1,X2Z1,X2X2,X2Z2,X2R,
+                       Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}() where {X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                         Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                         X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                         Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+        if !_anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
+                             Z1X1, Z1Z1, Z1X2, Z1Z2)
+            error("X1 and Z1 mapping must anti-commute")
+        end
+        if !_anti_commute_2q(X2X1, X2Z1, X2X2, X2Z2,
+                             Z2X1, Z2Z1, Z2X2, Z2Z2)
+            error("X2 and Z2 mapping must anti-commute")
+        end
+
+        if _anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
+                            X2X1, X2Z1, X2X2, X2Z2)
+            error("X1 and X2 mapping must commute")
+        end
+        if _anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
+                            Z2X1, Z2Z1, Z2X2, Z2Z2)
+            error("X1 and Z2 mapping must commute")
+        end
+        if _anti_commute_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
+                            X2X1, X2Z1, X2X2, X2Z2)
+            error("Z1 and X2 mapping must commute")
+        end
+        if _anti_commute_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
+                            Z2X1, Z2Z1, Z2X2, Z2Z2)
+            error("Z1 and Z2 mapping must commute")
+        end
+        return new{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                   Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                   X2X1,X2Z1,X2X2,X2Z2,X2R,
+                   Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}()
+    end
+    function Generic2Q(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
+                       ::Generic1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {
+                           XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
+                           XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
+        return Generic2Q{XX1,XZ1,false,false,XR1,
+                         ZX1,ZZ1,false,false,ZR1,
+                         false,false,XX2,XZ2,XR2,
+                         false,false,ZX2,ZZ2,ZR2}()
+    end
+end
+function Base.:*(::Generic2Q{X1X11,X1Z11,X1X21,X1Z21,X1R1,
+                             Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
+                             X2X11,X2Z11,X2X21,X2Z21,X2R1,
+                             Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1},
+                 ::Generic2Q{X1X12,X1Z12,X1X22,X1Z22,X1R2,
+                             Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
+                             X2X12,X2Z12,X2X22,X2Z22,X2R2,
+                             Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}) where {
+                                 X1X11,X1Z11,X1X21,X1Z21,X1R1,
+                                 Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
+                                 X2X11,X2Z11,X2X21,X2Z21,X2R1,
+                                 Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1,
+                                 X1X12,X1Z12,X1X22,X1Z22,X1R2,
+                                 Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
+                                 X2X12,X2Z12,X2X22,X2Z22,X2R2,
+                                 Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}
+
+    X1X1′, X1Z1′, X1X2′, X1Z2′, X1R′ =
+        _combine4_2q(X1X11, X1Z11, X1X21, X1Z21, X1R1,
+                     X1X12, X1Z12, X1X22, X1Z22, X1R2,
+                     Z1X12, Z1Z12, Z1X22, Z1Z22, Z1R2,
+                     X2X12, X2Z12, X2X22, X2Z22, X2R2,
+                     Z2X12, Z2Z12, Z2X22, Z2Z22, Z2R2)
+    Z1X1′, Z1Z1′, Z1X2′, Z1Z2′, Z1R′ =
+        _combine4_2q(Z1X11, Z1Z11, Z1X21, Z1Z21, Z1R1,
+                     X1X12, X1Z12, X1X22, X1Z22, X1R2,
+                     Z1X12, Z1Z12, Z1X22, Z1Z22, Z1R2,
+                     X2X12, X2Z12, X2X22, X2Z22, X2R2,
+                     Z2X12, Z2Z12, Z2X22, Z2Z22, Z2R2)
+    X2X1′, X2Z1′, X2X2′, X2Z2′, X2R′ =
+        _combine4_2q(X2X11, X2Z11, X2X21, X2Z21, X2R1,
+                     X1X12, X1Z12, X1X22, X1Z22, X1R2,
+                     Z1X12, Z1Z12, Z1X22, Z1Z22, Z1R2,
+                     X2X12, X2Z12, X2X22, X2Z22, X2R2,
+                     Z2X12, Z2Z12, Z2X22, Z2Z22, Z2R2)
+    Z2X1′, Z2Z1′, Z2X2′, Z2Z2′, Z2R′ =
+        _combine4_2q(Z2X11, Z2Z11, Z2X21, Z2Z21, Z2R1,
+                     X1X12, X1Z12, X1X22, X1Z22, X1R2,
+                     Z1X12, Z1Z12, Z1X22, Z1Z22, Z1R2,
+                     X2X12, X2Z12, X2X22, X2Z22, X2R2,
+                     Z2X12, Z2Z12, Z2X22, Z2Z22, Z2R2)
+
+    return Generic2Q{X1X1′,X1Z1′,X1X2′,X1Z2′,X1R′,
+                     Z1X1′,Z1Z1′,Z1X2′,Z1Z2′,Z1R′,
+                     X2X1′,X2Z1′,X2X2′,X2Z2′,X2R′,
+                     Z2X1′,Z2Z1′,Z2X2′,Z2Z2′,Z2R′}()
+end
+
 struct CNOTGate <: Clifford2Q
 end
 # Implementation of forward-propagation of Pauli
