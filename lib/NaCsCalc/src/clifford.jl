@@ -341,6 +341,54 @@ end
                        x1_12, z1_12, x2_12, z2_12, r_12,
                        x1_34, z1_34, x2_34, z2_34, r_34)
 end
+function _parse_2q(str)
+    val = MMatrix{5, 4, Bool}(undef)
+    cur_col = 1
+    for l in split(str, "\n")
+        l = strip(l)
+        if isempty(l)
+            continue
+        end
+        if cur_col > 4
+            error("Wrong tableau size")
+        end
+        if val[1] == '-'
+            val[5, cur_col] = true
+            l = strip(l[2:end])
+        else
+            val[5, cur_col] = false
+            if val[1] == '+'
+                l = strip(l[2:end])
+            end
+        end
+        if length(l) != 2
+            error("Wrong tableau size")
+        end
+        for i in 1:2
+            p = l[i]
+            if p == 'I'
+                val[i * 2 - 1, cur_col] = false
+                val[i * 2, cur_col] = false
+            elseif p == 'X'
+                val[i * 2 - 1, cur_col] = true
+                val[i * 2, cur_col] = false
+            elseif p == 'Y'
+                val[i * 2 - 1, cur_col] = true
+                val[i * 2, cur_col] = true
+            elseif p == 'Z'
+                val[i * 2 - 1, cur_col] = false
+                val[i * 2, cur_col] = true
+            else
+                error("Invalid pauli operator")
+            end
+        end
+        cur_col += 1
+    end
+    if cur_col != 5
+        error("Wrong tableau size")
+    end
+    return (val...,)
+end
 
 struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                  Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
