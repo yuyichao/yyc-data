@@ -517,6 +517,403 @@ function Base.inv(::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                              Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
 end
 
+function _try_find_I_for_qubit(tabs, qin)
+    for t in 1:2
+        tab = tabs[(qin - 1) * 2 + t]
+        if !tab[1] && !tab[2]
+            return t * 2 - 1
+        end
+        if !tab[3] && !tab[4]
+            return t * 2
+        end
+    end
+    return 0
+end
+
+# Check if there's an I term for either/both the first and the second qubit.
+# Return the position for the I term
+# (1 for X first term, 2 for X second term,
+#  3 for Z first term, 4 for Z second term).
+# If an I doesn't exist for the qubit, return 0 for the input qubit.
+function _try_find_Is(tabs)
+    return _try_find_I_for_qubit(tabs, 1), _try_find_I_for_qubit(tabs, 2)
+end
+
+function _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                            x1, z1, x2, z2)
+    args = Symbol[]
+    if x1
+        x1_used = true
+        push!(args, :xa)
+    end
+    if z1
+        z1_used = true
+        push!(args, :za)
+    end
+    if x2
+        x2_used = true
+        push!(args, :xb)
+    end
+    if z2
+        z1_used = true
+        push!(args, :zb)
+    end
+    if length(args) == 1
+        return x1_used, z1_used, x2_used, z2_used, args[1]
+    else
+        return x1_used, z1_used, x2_used, z2_used, :(⊻($(args...)))
+    end
+end
+
+function _generate_2q_apply(x1x1, x1z1, x1x2, x1z2, x1r,
+                            z1x1, z1z1, z1x2, z1z2, z1r,
+                            x2x1, x2z1, x2x2, x2z2, x2r,
+                            z2x1, z2z1, z2x2, z2z2, z2r)
+    # The tricky part is to determine the phase when multiplying different
+    # terms togeter. There are two types of multiplications involved.
+    # First we multiply the strings that corresponds to X and Z on the same input qubit
+    # (i.e. XI * ZI and IX * IZ) in which case the strings will not commute.
+    # Then we multiply the two resulting strings that corresponds to the two qubits
+    # together in which case the two strings are guaranteed to commute.
+    # The first type of phase only appear when both X and Z term for the qubit
+    # is selected on the input (i.e. `xa & za` or `xb & zb`) whereas the second
+    # type of phase appears when both the first and second input qubits
+    # has some strings selected and the exact phase depends on the exact strings
+    # being selected in the general case.
+
+    # The phase generally appears when there are non-commuting terms
+    # in the two strings being multiplied, which could happen
+    # even if the full strings commute. However, the overall commuting relation
+    # does give us some constraints as for what type of non-commuting terms
+    # could be in the string.
+
+    # For the first type, i.e. multiplying strings that corresponds to
+    # the same input qubit/same group, exactly one of the two terms
+    # can be non-commuting since the full string must anti-comute.
+    # Therefore, we can simply check if the first term commutes
+    # and compute the phase for the single anti-commuting term.
+
+    yphase1 = (_anti_commute_1q(x1x1, x1z1, z1x1, z1z1) ?
+        (z1z1 ⊻ x1x1 ⊻ (z1x1 | x1z1)) :
+        (z1z2 ⊻ x1x2 ⊻ (z1x2 | x1z2)))
+    yphase2 = (_anti_commute_1q(x2x1, x2z1, z2x1, z2z1) ?
+        (z2z1 ⊻ x2x1 ⊻ (z2x1 | x2z1)) :
+        (z2z2 ⊻ x2x2 ⊻ (z2x2 | x2z2)))
+
+    # The second type is more complicated in part because there are more options
+    # depending on which one(s) of the XZ in for the two input qubits is selected.
+    # Depending on the commutation relation we could have a few cases to deal with.
+    # Note that we are folding the expression for the first type phase in
+    # since LLVM doesn't seem to be doing as good of a job simplifying the logical
+    # expressions. We will, however, let LLVM handle the optimization with the
+    # direct phase from each of the terms (the [xz][12]r phases) for now
+    # since there are way too many of them (16x increase in the number of cases)
+    # and LLVM seems to be doing reasonably well on most of these...
+    # (Also CNOT doesn't have these type of phase so it won't benefit us for the
+    #  most important case)
+
+    if (!_anti_commute_1q(x1x1, x1z1, x2x1, x2z1) &&
+        !_anti_commute_1q(x1x1, x1z1, z2x1, z2z1) &&
+        !_anti_commute_1q(z1x1, z1z1, x2x1, x2z1) &&
+        !_anti_commute_1q(z1x1, z1z1, z2x1, z2z1))
+        # The first, and the simplest, case to handle is when
+        # the terms in the strings between the first and second input qubits
+        # all commute with each other.
+        # (Note that we only need to check the first term in each string
+        #  since the full string must commute).
+        # In this case, there's no phase when multiplying the parts for the two qubits
+        # and we only need to deal with the single qubit phase (first type).
+        x1_used |= yphase1
+        z1_used |= yphase1
+        x2_used |= yphase2
+        z2_used |= yphase2
+        r_changed |= yphase1 | yphase2
+        expr = quote
+            $(yphase1 ? :(r ⊻= xa & za) : nothing)
+            $(yphase2 ? :(r ⊻= xb & zb) : nothing)
+        end
+        @goto gen_common
+    end
+
+    x1_used = true
+    z1_used = true
+    x2_used = true
+    z2_used = true
+    r_changed = true
+    tabs = [(x1x1, x1z1, x1x2, x1z2, x1r),
+            (z1x1, z1z1, z1x2, z1z2, z1r),
+            (x2x1, x2z1, x2x2, x2z2, x2r),
+            (z2x1, z2z1, z2x2, z2z2, z2r)]
+
+    # Another special case to handle is if there is any I in the terms.
+    ipos1, ipos2 = _try_find_Is(tabs)
+    if ipos1 != 0 && ipos2 != 0
+        # There's an I for both input qubit.
+        # Without loss of generality, the mapping must look like
+        # XI -> XI
+        # ZI -> ??
+        # IX -> IX
+        # IZ -> ??
+        # Since the mapping for XI and IZ must commute,
+        # and the mapping for IX and ZI must commute,
+        # and given that we know there must at least be one pair of strings
+        # between the two qubit that doesn't commute, we must have,
+        # XI -> XI
+        # ZI -> ?X
+        # IX -> IX
+        # IZ -> X?
+        # There could be a phase if both ZI and IZ are
+        # selected and this phase is flipped when
+        # XI and IX is selected.
+
+        # The XZ index of the two strings with I in them.
+        ixz1 = ((ipos1 - 1) >> 1) + 1
+        ixz2 = ((ipos2 - 1) >> 1) + 1
+        # And the XZ index of the two without Is.
+        nxz1 = 3 - ixz1
+        nxz2 = 3 - ixz2
+
+        # The two strings without Is
+        t1 = tabs[nxz1]
+        t2 = tabs[2 + nxz2]
+        # The two terms in the string has the same phase (±i)
+        # which adds to a -1 phase.
+        cross_phase = _phase_2q(t1[1:4]..., t2[1:4]...)
+        i1 = ixz1 == 1 ? :xa : :za
+        i2 = ixz2 == 1 ? :xb : :zb
+        n1 = ixz1 != 1 ? :xa : :za
+        n2 = ixz2 != 1 ? :xb : :zb
+        if cross_phase
+            if yphase1
+                if yphase2
+                    expr = quote
+                        r ⊻= ($n1 | $i2) & ($n2 | ($i1 & $n1))
+                    end
+                else
+                    expr = quote
+                        r ⊻= $n1 & (($i1 | $n2) ⊻ ($i2 & $n2))
+                    end
+                end
+            elseif yphase2
+                expr = quote
+                    r ⊻= $n2 & (($i2 | $n1) ⊻ ($i1 & $n1))
+                end
+            else
+                expr = quote
+                    r ⊻= $n1 & $n2 & ~($i1 ⊻ $i2)
+                end
+            end
+        else
+            if yphase1
+                if yphase2
+                    expr = quote
+                        r ⊻= ($n1 ⊻ $n2) & (($i1 & $n1) | ($i2 & $n2))
+                    end
+                else
+                    expr = quote
+                        r ⊻= $n1 & ($i1 ⊻ ($n2 & ($i1 ⊻ $i2)))
+                    end
+                end
+            elseif yphase2
+                expr = quote
+                    r ⊻= $n2 & ($i2 ⊻ ($n1 & ($i1 ⊻ $i2)))
+                end
+            else
+                expr = quote
+                    r ⊻= $n1 & $n2 & ($i1 ⊻ $i2)
+                end
+            end
+        end
+        @goto gen_common
+    elseif ipos1 != 0 || ipos2 != 0
+        # Only one of the two input qubit has a I term.
+        qini = ipos1 != 0 ? 1 : 2
+        ixz = ((ipos1 + ipos2 - 1) >> 1) + 1
+        # There is only one I in the table.
+        # XI -> XI
+        # ZI -> ?P2
+        # IX -> XP3
+        # IZ -> XP4
+        # P2 P3 P4 must be all different and non-I
+        # We have a non-trivial phase between the two parts only if
+        # we have one of IX and IZ and also have ZI.
+        # ZI * IX will have one phase
+        # ZI * IZ will have the other
+        # Adding XI flips the phase.
+
+        # The name for the string with I
+        tidxi = (qini - 1) * 2 + ixz
+        i1 = (:xa, :za, :xb, :zb)[tidxi]
+        # The name for the other string for the qubit with the I term
+        n1 = (:za, :xa, :zb, :xb)[tidxi]
+
+        t1 = tabs[(qini - 1) * 2 + (3 - ixz)]
+        # X string for the qubit that doesn't have I term.
+        t2 = tabs[(2 - qini) * 2]
+        if _phase_2q(t1[1:4]..., t2[1:4]...)
+            # The name for the term that multiplies with a -1 phase to $n1
+            p2 = (:xb, :xb, :xa, :xa)[tidxi]
+            # The name for the term that multiplies with no phase to $n1
+            n2 = (:zb, :zb, :za, :za)[tidxi]
+        else
+            # The name for the term that multiplies with a -1 phase to $n1
+            p2 = (:zb, :zb, :za, :za)[tidxi]
+            # The name for the term that multiplies with no phase to $n1
+            n2 = (:xb, :xb, :xa, :xa)[tidxi]
+        end
+        yphasei = qini == 1 ? yphase1 : yphase2
+        yphasen = qini != 1 ? yphase1 : yphase2
+        if yphasei
+            if yphasen
+                expr = quote
+                    r ⊻= ((($n2 ⊻ $p2) | $i1) & $n1) ⊻ ($n2 & ($n1 | $p2))
+                end
+            else
+                expr = quote
+                    r ⊻= $n1 & ($i1 ⊻ (($n2 ⊻ $p2) & ($i1 ⊻ $p2)))
+                end
+            end
+        elseif yphasen
+            expr = quote
+                r ⊻= ($p2 | ($i1 & $n1)) & ($n2 | ($n1 & ~$i1))
+            end
+        else
+            expr = quote
+                r ⊻= $n1 & ($n2 ⊻ $p2) & ($p2 ⊻ $i1)
+            end
+        end
+    end
+
+    # Now there's no I in the table and at least some of the first term between
+    # the two parts don't commute.
+    # Within the two strings for each group, since there's no I but one of the term
+    # must commute between the two strings, this term must be the same between the two
+    # (the only way to get a commuting term without I) and the other term will not be
+    # the same.
+    # Between the strings for the two qubit, the string needs to commute
+    # but can't be the same so each term must be different.
+    # The only configuration allowed is
+    # (the XYZ's in the first and second term are allowed to exchange in any way),
+    # XI -> XX
+    # ZI -> XZ
+    # IX -> ZY
+    # IZ -> YY
+    # A phase between the two groups will only occur if only one string from each group
+    # is selected and it changes signs depending one which one was selected.
+    t1 = tabs[1]
+    t2 = tabs[3]
+    v1, v2 = _phase_2q(t1[1:4]..., t2[1:4]...) ? (:zb, :xb) : (:xb, :zb)
+    # (xa, v1) and (za, v2) will have a phase
+    # (za, v2) or (xa, v1) won't.
+    if yphase1
+        if yphase2
+            expr = quote
+                r ⊻= ($v2 & (xa ⊻ $v1)) | ((xa | $v1) & (za ⊻ $v2))
+            end
+        else
+            expr = quote
+                r ⊻= ((~$v2 & $v1) | xa) & (($v2 & ~$v1) | za)
+            end
+        end
+    elseif yphase2
+        expr = quote
+            r ⊻= ((~xa & za) | $v2) & ((xa & ~za) | $v1)
+        end
+    else
+        expr = quote
+            r ⊻= (xa ⊻ za) & (xb ⊻ zb) & (xa ⊻ $v1)
+        end
+    end
+    @goto gen_common
+
+    @label gen_common
+
+    x1_changed = (x1x1, z1x1, x2x1, z2x1) !== (true, false, false, false)
+    z1_changed = (x1z1, z1z1, x2z1, z2z1) !== (false, true, false, false)
+    x2_changed = (x1x2, z1x2, x2x2, z2x2) !== (false, false, true, false)
+    z2_changed = (x1z2, z1z2, x2z2, z2z2) !== (false, false, false, true)
+
+    if x1_changed
+        x1_used, z1_used, x2_used, z2_used, sub_expr =
+            _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                               x1x1, z1x1, x2x1, z2x1)
+        expr = quote
+            $expr
+            new_xa = $sub_expr
+        end
+    end
+    if z1_changed
+        x1_used, z1_used, x2_used, z2_used, sub_expr =
+            _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                               x1z1, z1z1, x2z1, z2z1)
+        expr = quote
+            $expr
+            new_za = $sub_expr
+        end
+    end
+    if x2_changed
+        x1_used, z1_used, x2_used, z2_used, sub_expr =
+            _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                               x1x2, z1x2, x2x2, z2x2)
+        expr = quote
+            $expr
+            new_xb = $sub_expr
+        end
+    end
+    if z2_changed
+        x1_used, z1_used, x2_used, z2_used, sub_expr =
+            _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                               x1z2, z1z2, x2z2, z2z2)
+        expr = quote
+            $expr
+            new_zb = $sub_expr
+        end
+    end
+    if x1r | z1r | x2r | z2r
+        r_changed = true
+        x1_used, z1_used, x2_used, z2_used, sub_expr =
+            _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
+                               x1r, z1r, x2r, z2r)
+        expr = quote
+            $expr
+            r ⊻= $sub_expr
+        end
+    end
+
+    expr = quote
+        $(x1_used ? :(xa = xas[]) : nothing)
+        $(z1_used ? :(za = zas[]) : nothing)
+        $(x2_used ? :(xb = xbs[]) : nothing)
+        $(z2_used ? :(zb = zbs[]) : nothing)
+        $(r_changed ? :(r = rs[]) : nothing)
+        $expr
+        $(x1_changed ? :(xas[] = new_xa) : nothing)
+        $(z1_changed ? :(zas[] = new_za) : nothing)
+        $(x2_changed ? :(xbs[] = new_xb) : nothing)
+        $(z2_changed ? :(zbs[] = new_zb) : nothing)
+        $(r_changed ? :(rs[] = r) : nothing)
+    end
+end
+
+@generated function apply!(
+    ::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                X2X1,X2Z1,X2X2,X2Z2,X2R,
+                Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R},
+    xas, zas, xbs, zbs, rs)  where {X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                    Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                    X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                    Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    return quote
+        $(Expr(:meta, :inline, :propagate_inbounds))
+        @inline $(_generate_2q_apply(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                                     Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                                     X2X1, X2Z1, X2X2, X2Z2, X2R,
+                                     Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R))
+        return
+    end
+end
+
 struct CNOTGate <: Clifford2Q
 end
 # Implementation of forward-propagation of Pauli
