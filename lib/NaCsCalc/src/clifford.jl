@@ -378,6 +378,19 @@ struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                             Z2X1, Z2Z1, Z2X2, Z2Z2)
             error("Z1 and Z2 mapping must commute")
         end
+
+        if (X1X1, X1Z1, X1X2, X1Z2) === (X2X1, X2Z1, X2X2, X2Z2)
+            error("X1 and X2 mapping must be distinct")
+        end
+        if (X1X1, X1Z1, X1X2, X1Z2) === (Z2X1, Z2Z1, Z2X2, Z2Z2)
+            error("X1 and Z2 mapping must be distinct")
+        end
+        if (Z1X1, Z1Z1, Z1X2, Z1Z2) === (X2X1, X2Z1, X2X2, X2Z2)
+            error("Z1 and X2 mapping must be distinct")
+        end
+        if (Z1X1, Z1Z1, Z1X2, Z1Z2) === (Z2X1, Z2Z1, Z2X2, Z2Z2)
+            error("Z1 and Z2 mapping must be distinct")
+        end
         return new{X1X1,X1Z1,X1X2,X1Z2,X1R,
                    Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
                    X2X1,X2Z1,X2X2,X2Z2,X2R,
