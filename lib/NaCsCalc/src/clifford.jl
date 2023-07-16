@@ -299,7 +299,7 @@ end
 @inline function _phase_2q_commute(x11, z11, x21, z21,
                                    x12, z12, x22, z22)
     if _anti_commute_1q(x11, z11, x12, z12)
-        return (z12 ⊻ x11 ⊻ (x12 | z11)) & (z22 ⊻ x21 ⊻ (x22 | z21))
+        return ~((z12 ⊻ x11 ⊻ (x12 | z11)) ⊻ (z22 ⊻ x21 ⊻ (x22 | z21)))
     else
         return zero(x11)
     end
