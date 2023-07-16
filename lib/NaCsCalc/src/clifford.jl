@@ -213,7 +213,7 @@ const _named_gates_1q = Dict((true, false, false, false, true, false)=>"I",
 function _to_pauli_name(x, z, r)
     return (r ? "-" : "+") * (x ? (z ? "Y" : "X") : "Z")
 end
-function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+function Base.show(io::IO, @nospecialize(g::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR})) where {XX,XZ,XR,ZX,ZZ,ZR}
     name = get(_named_gates_1q, (XX,XZ,XR,ZX,ZZ,ZR), nothing)
     if name === nothing
         YX = XX ⊻ ZX
