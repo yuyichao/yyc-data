@@ -281,6 +281,72 @@ end
 
 ## Two qubit gates
 abstract type Clifford2Q end
+@inline function _anti_commute_2q(x11, z11, x21, z21,
+                                  x12, z12, x22, z22)
+    ac1 = _anti_commute_1q(x11, z11, x12, z12)
+    ac2 = _anti_commute_1q(x21, z21, x22, z22)
+    return ac1 ⊻ ac2
+end
+@inline function _phase_2q_anti_commute(x11, z11, x21, z21,
+                                        x12, z12, x22, z22)
+    if _anti_commute_1q(x11, z11, x12, z12)
+        return z12 ⊻ x11 ⊻ (x12 | z11)
+    else
+        return z22 ⊻ x21 ⊻ (x22 | z21)
+    end
+end
+@inline function _phase_2q_commute(x11, z11, x21, z21,
+                                   x12, z12, x22, z22)
+    if _anti_commute_1q(x11, z11, x12, z12)
+        return (z12 ⊻ x11 ⊻ (x12 | z11)) & (z22 ⊻ x21 ⊻ (x22 | z21))
+    else
+        return zero(x11)
+    end
+end
+# For anti commuting string, the phase is computed relative to the phase of (X * Z)
+# For commuting string, the phase is absolute.
+@inline function _phase_2q(x11, z11, x21, z21,
+                           x12, z12, x22, z22)
+    if _anti_commute_2q(x11, z11, x21, z21, x12, z12, x22, z22)
+        return _phase_2q_anti_commute(x11, z11, x21, z21, x12, z12, x22, z22)
+    else
+        return _phase_2q_commute(x11, z11, x21, z21, x12, z12, x22, z22)
+    end
+end
+@inline function _combine_2q_nophase(b1, b2,
+                                     x11, z11, x21, z21, r1,
+                                     x12, z12, x22, z22, r2)
+    x1′ = (b1 & x11) ⊻ (b2 & x12)
+    z1′ = (b1 & z11) ⊻ (b2 & z12)
+    x2′ = (b1 & x21) ⊻ (b2 & x22)
+    z2′ = (b1 & z21) ⊻ (b2 & z22)
+    r = (b2 & r2) ⊻ (b1 & r1)
+    return x1′, z1′, x2′, z2′, r
+end
+@inline function _combine4_2q(b1, b2, b3, b4, r,
+                              x11, z11, x21, z21, r1,
+                              x12, z12, x22, z22, r2,
+                              x13, z13, x23, z23, r3,
+                              x14, z14, x24, z24, r4)
+
+    x1_12, z1_12, x2_12, z2_12, r_12 = _combine_2q_nophase(b1, b2,
+                                                           x11, z11, x21, z21, r1,
+                                                           x12, z12, x22, z22, r2)
+    r_12 ⊻= b1 & b2 & _phase_2q(x11, z11, x21, z21, x12, z12, x22, z22)
+    x1_34, z1_34, x2_34, z2_34, r_34 = _combine_2q_nophase(b3, b4,
+                                                           x13, z13, x23, z23, r3,
+                                                           x14, z14, x24, z24, r4)
+    r_34 ⊻= b3 & b4 & _phase_2q(x13, z13, x23, z23, x14, z14, x24, z24)
+
+    x1′ = x1_12 ⊻ x1_34
+    z1′ = z1_12 ⊻ z1_34
+    x2′ = x2_12 ⊻ x2_34
+    z2′ = z2_12 ⊻ z2_34
+    r ⊻= r_12 ⊻ r_34
+    r ⊻= _phase_2q(x1_12, z1_12, x2_12, z2_12, x1_34, z1_34, x2_34, z2_34)
+
+    return x1′, z1′, x2′, z2′
+end
 
 struct CNOTGate <: Clifford2Q
 end
