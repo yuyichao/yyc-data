@@ -564,6 +564,48 @@ function Base.inv(::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                              X2X1, X2Z1, X2X2, X2Z2, X2R,
                              Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
 end
+const _named_gates_2q = Dict(_parse_2q("XX\nZI\nIX\nZZ")=>"CNOT",
+                             _parse_2q("XI\nZZ\nXX\nIZ")=>"CNOT21")
+function _to_pauli_name(x1, z1, x2, z2, r)
+    return ((r ? "-" : "+") *
+        (x1 ? (z1 ? "Y" : "X") : (z1 ? "Z" : "I")) *
+        (x2 ? (z2 ? "Y" : "X") : (z2 ? "Z" : "I")))
+end
+function Base.show(io::IO, @nospecialize(g::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                      Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                      X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                      Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R})) where {
+                                                          X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                          Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                          X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                          Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+
+    name = get(_named_gates_2q, (X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                 Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                 X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                 Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R), nothing)
+    if name !== nothing
+        print(io, "$(name)Gate()")
+    elseif (!X1X2 && !X1Z2 && !Z1X2 && !Z1Z2 &&
+        !X2X1 && !X2Z1 && !Z2X1 && !Z2Z1)
+        # Single qubit gate
+        show(io, Generic1Q{X1X1,X1Z1,X1R,Z1X1,Z1Z1,Z1R}())
+        print(io, " ⊗ ")
+        show(io, Generic1Q{X2X2,X2Z2,X2R,Z2X2,Z2Z2,Z2R}())
+    else
+        xiname = _to_pauli_name(X1X1,X1Z1,X1X2,X1Z2,X1R)
+        ziname = _to_pauli_name(Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R)
+        ixname = _to_pauli_name(X2X1,X2Z1,X2X2,X2Z2,X2R)
+        izname = _to_pauli_name(Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R)
+        print(io, "Generic2Q(XI->$(xiname), ZI->$(ziname), IX->$(ixname), IZ->$(izname))")
+    end
+end
+# Create convinience alias for certain known-named gates.
+for (param, name) in _named_gates_2q
+    Generic2Q{param...}() # Builtin test
+    @eval const $(Symbol("$(name)Gate")) = $(Generic2Q{param...})
+end
+const CNOT12Gate = CNOTGate
 
 function _try_find_I_for_qubit(tabs, qin)
     for t in 1:2
@@ -960,22 +1002,6 @@ end
                                      Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R))
         return
     end
-end
-
-struct CNOTGate <: Clifford2Q
-end
-# Implementation of forward-propagation of Pauli
-Base.@propagate_inbounds @inline function apply!(::CNOTGate, xas, zas, xbs, zbs, rs)
-    xa = xas[]
-    xb = xbs[]
-    za = zas[]
-    zb = zbs[]
-    r = rs[]
-
-    rs[] = r ⊻ (xa & zb & ~(xb ⊻ za))
-    xbs[] = xb ⊻ xa
-    zas[] = za ⊻ zb
-    return
 end
 
 # Gate operation function that takes and returns the values
