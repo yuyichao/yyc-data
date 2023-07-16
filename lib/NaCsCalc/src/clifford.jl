@@ -195,26 +195,26 @@ end
     XX′, XZ′, XR′, ZX′, ZZ′, ZR′ = _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
     return Generic1Q{XX′,XZ′,XR′,ZX′,ZZ′,ZR′}()
 end
-const _named_gates = Dict((true, false, false, false, true, false)=>"I",
-                          (false, true, false, true, false, false)=>"H",
-                          (true, true, false, false, true, true)=>"HXY",
-                          (true, false, true, true, true, false)=>"HYZ",
-                          (true, false, false, false, true, true)=>"X",
-                          (true, false, true, false, true, true)=>"Y",
-                          (true, false, true, false, true, false)=>"Z",
-                          (true, true, false, false, true, false)=>"S",
-                          (true, true, true, false, true, false)=>"IS",
-                          (true, false, false, true, true, true)=>"SX",
-                          (true, false, false, true, true, false)=>"ISX",
-                          (false, true, true, true, false, false)=>"SY",
-                          (false, true, false, true, false, true)=>"ISY",
-                          (true, true, false, true, false, false)=>"CXYZ",
-                          (false, true, false, true, true, false)=>"CZYX")
+const _named_gates_1q = Dict((true, false, false, false, true, false)=>"I",
+                             (false, true, false, true, false, false)=>"H",
+                             (true, true, false, false, true, true)=>"HXY",
+                             (true, false, true, true, true, false)=>"HYZ",
+                             (true, false, false, false, true, true)=>"X",
+                             (true, false, true, false, true, true)=>"Y",
+                             (true, false, true, false, true, false)=>"Z",
+                             (true, true, false, false, true, false)=>"S",
+                             (true, true, true, false, true, false)=>"IS",
+                             (true, false, false, true, true, true)=>"SX",
+                             (true, false, false, true, true, false)=>"ISX",
+                             (false, true, true, true, false, false)=>"SY",
+                             (false, true, false, true, false, true)=>"ISY",
+                             (true, true, false, true, false, false)=>"CXYZ",
+                             (false, true, false, true, true, false)=>"CZYX")
 function _to_pauli_name(x, z, r)
     return (r ? "-" : "+") * (x ? (z ? "Y" : "X") : "Z")
 end
 function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
-    name = get(_named_gates, (XX,XZ,XR,ZX,ZZ,ZR), nothing)
+    name = get(_named_gates_1q, (XX,XZ,XR,ZX,ZZ,ZR), nothing)
     if name === nothing
         YX = XX ⊻ ZX
         YZ = XZ ⊻ ZZ
@@ -228,7 +228,7 @@ function Base.show(io::IO, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ
     end
 end
 # Create convinience alias for certain known-named gates.
-for (param, name) in _named_gates
+for (param, name) in _named_gates_1q
     Generic1Q{param...}() # Builtin test
     @eval const $(Symbol("$(name)Gate")) = $(Generic1Q{param...})
 end
