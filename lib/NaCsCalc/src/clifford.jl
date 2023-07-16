@@ -5,6 +5,7 @@ module Clifford
 using Random
 using ..Utils
 using SIMD
+using StaticArrays
 
 ##
 # Implement simulation of clifford circuit using the stabilizer state description
@@ -313,14 +314,15 @@ end
         return _phase_2q_commute(x11, z11, x21, z21, x12, z12, x22, z22)
     end
 end
-@inline function _combine_2q_nophase(b1, b2,
-                                     x11, z11, x21, z21, r1,
-                                     x12, z12, x22, z22, r2)
+@inline function _combine_2q(b1, b2, r,
+                             x11, z11, x21, z21, r1,
+                             x12, z12, x22, z22, r2)
     x1′ = (b1 & x11) ⊻ (b2 & x12)
     z1′ = (b1 & z11) ⊻ (b2 & z12)
     x2′ = (b1 & x21) ⊻ (b2 & x22)
     z2′ = (b1 & z21) ⊻ (b2 & z22)
-    r = (b2 & r2) ⊻ (b1 & r1)
+    r ⊻= (b2 & r2) ⊻ (b1 & r1)
+    r ⊻= b1 & b2 & _phase_2q(x11, z11, x21, z21, x12, z12, x22, z22)
     return x1′, z1′, x2′, z2′, r
 end
 @inline function _combine4_2q(b1, b2, b3, b4, r,
@@ -329,23 +331,15 @@ end
                               x13, z13, x23, z23, r3,
                               x14, z14, x24, z24, r4)
 
-    x1_12, z1_12, x2_12, z2_12, r_12 = _combine_2q_nophase(b1, b2,
-                                                           x11, z11, x21, z21, r1,
-                                                           x12, z12, x22, z22, r2)
-    r_12 ⊻= b1 & b2 & _phase_2q(x11, z11, x21, z21, x12, z12, x22, z22)
-    x1_34, z1_34, x2_34, z2_34, r_34 = _combine_2q_nophase(b3, b4,
-                                                           x13, z13, x23, z23, r3,
-                                                           x14, z14, x24, z24, r4)
-    r_34 ⊻= b3 & b4 & _phase_2q(x13, z13, x23, z23, x14, z14, x24, z24)
-
-    x1′ = x1_12 ⊻ x1_34
-    z1′ = z1_12 ⊻ z1_34
-    x2′ = x2_12 ⊻ x2_34
-    z2′ = z2_12 ⊻ z2_34
-    r ⊻= r_12 ⊻ r_34
-    r ⊻= _phase_2q(x1_12, z1_12, x2_12, z2_12, x1_34, z1_34, x2_34, z2_34)
-
-    return x1′, z1′, x2′, z2′
+    x1_12, z1_12, x2_12, z2_12, r_12 = _combine_2q(b1, b2, false,
+                                                   x11, z11, x21, z21, r1,
+                                                   x12, z12, x22, z22, r2)
+    x1_34, z1_34, x2_34, z2_34, r_34 = _combine_2q(b3, b4, false,
+                                                   x13, z13, x23, z23, r3,
+                                                   x14, z14, x24, z24, r4)
+    return _combine_2q(true, true, r,
+                       x1_12, z1_12, x2_12, z2_12, r_12,
+                       x1_34, z1_34, x2_34, z2_34, r_34)
 end
 
 struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
@@ -445,6 +439,69 @@ function Base.:*(::Generic2Q{X1X11,X1Z11,X1X21,X1Z21,X1R1,
                      Z1X1′,Z1Z1′,Z1X2′,Z1Z2′,Z1R′,
                      X2X1′,X2Z1′,X2X2′,X2Z2′,X2R′,
                      Z2X1′,Z2Z1′,Z2X2′,Z2Z2′,Z2R′}()
+end
+Base.@assume_effects :total function _inv_2q(x1x1, x1z1, x1x2, x1z2, x1r,
+                                             z1x1, z1z1, z1x2, z1z2, z1r,
+                                             x2x1, x2z1, x2x2, x2z2, x2r,
+                                             z2x1, z2z1, z2x2, z2z2, z2r)
+
+    M1 = MVector((true, false, false, false, false),
+                 (false, true, false, false, false),
+                 (false, false, true, false, false),
+                 (false, false, false, true, false))
+    M2 = MVector((x1x1, x1z1, x1x2, x1z2, x1r),
+                 (z1x1, z1z1, z1x2, z1z2, z1r),
+                 (x2x1, x2z1, x2x2, x2z2, x2r),
+                 (z2x1, z2z1, z2x2, z2z2, z2r))
+    for i in 1:4
+        for j in i:4
+            if M2[j][i]
+                if j != i
+                    mj = M2[j]
+                    mi = M2[i]
+                    M2[j] = mi
+                    M2[i] = mj
+                    mj = M1[j]
+                    mi = M1[i]
+                    M1[j] = mi
+                    M1[i] = mj
+                end
+                break
+            end
+        end
+        mi1 = M1[i]
+        mi2 = M2[i]
+        for j in 1:4
+            if j == i
+                continue
+            end
+            if !M2[j][i]
+                continue
+            end
+            M2[j] = _combine_2q(true, true, false, M2[j]..., mi2...)
+            M1[j] = _combine_2q(true, true, false, M1[j]..., mi1...)
+        end
+    end
+    for i in 1:4
+        if M2[i][5]
+            mi1 = M1[i]
+            M1[i] = mi1[1], mi1[2], mi1[3], mi1[4], ~mi1[5]
+        end
+    end
+    return (M1[1]..., M1[2]..., M1[3]..., M1[4]...)
+end
+function Base.inv(::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                              Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                              X2X1,X2Z1,X2X2,X2Z2,X2R,
+                              Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}) where {
+                                  X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                  Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                  X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                  Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    return Generic2Q{_inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                             Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                             X2X1, X2Z1, X2X2, X2Z2, X2R,
+                             Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
 end
 
 struct CNOTGate <: Clifford2Q
