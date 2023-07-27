@@ -350,19 +350,19 @@ function _parse_2q(str)
             continue
         end
         if cur_col > 4
-            error("Wrong tableau size")
+            error("Wrong tableau input size: $str")
         end
-        if val[1] == '-'
+        if l[1] == '-'
             val[5, cur_col] = true
             l = strip(l[2:end])
         else
             val[5, cur_col] = false
-            if val[1] == '+'
+            if l[1] == '+'
                 l = strip(l[2:end])
             end
         end
         if length(l) != 2
-            error("Wrong tableau size")
+            error("Wrong tableau Pauli string length: $str")
         end
         for i in 1:2
             p = l[i]
@@ -379,13 +379,13 @@ function _parse_2q(str)
                 val[i * 2 - 1, cur_col] = false
                 val[i * 2, cur_col] = true
             else
-                error("Invalid pauli operator")
+                error("Invalid pauli operator: $str")
             end
         end
         cur_col += 1
     end
     if cur_col != 5
-        error("Wrong tableau size")
+        error("Wrong tableau input size: $str")
     end
     return (val...,)
 end
