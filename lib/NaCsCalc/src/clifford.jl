@@ -2107,24 +2107,25 @@ end
 end
 
 @inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                   px1s_2, pz1s_2, px2s_2, pz2s_2, n)
+                                   px1s_2, pz1s_2, px2s_2, pz2s_2, n,
+                                   ds1::Val{do_swap1}=Val(false),
+                                   ds2::Val{do_swap2}=Val(false)) where {do_swap1,do_swap2}
     VT2 = Vec{2,ChT}
-    ds = Val(false)
 
     # Manual jump threading for the small n cases
     if n <= 2
         chi_1, clo_1 = _pauli_multiply_kernel_single_2!(px1s_1, pz1s_1,
-                                                        px2s_1, pz2s_1, ds)
+                                                        px2s_1, pz2s_1, ds1)
         chi_2, clo_2 = _pauli_multiply_kernel_single_2!(px1s_2, pz1s_2,
-                                                        px2s_2, pz2s_2, ds)
+                                                        px2s_2, pz2s_2, ds2)
         @goto n2_case_end
     elseif n < 8
         px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1 =
             _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                      nothing, nothing, ds)
+                                      nothing, nothing, ds1)
         px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2 =
             _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                      nothing, nothing, ds)
+                                      nothing, nothing, ds2)
         @goto n4_case_end
     end
     chi_1 = zero(VT2)
@@ -2137,9 +2138,9 @@ end
     @inbounds for i0 in 1:(n >> 3)
         i = (i0 - 1) * 8 + 1
         chi_1, clo_1 = _pauli_multiply_kernel_8!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                                 i, chi_1, clo_1, ds)
+                                                 i, chi_1, clo_1, ds1)
         chi_2, clo_2 = _pauli_multiply_kernel_8!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                                 i, chi_2, clo_2, ds)
+                                                 i, chi_2, clo_2, ds2)
     end
 
     px1s_1 += nalign * 8
@@ -2156,9 +2157,9 @@ end
     end
     @label n4_case
     px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1 =
-        _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1, ds)
+        _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s_1, pz2s_1, chi_1, clo_1, ds1)
     px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2 =
-        _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2, ds)
+        _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s_2, pz2s_2, chi_2, clo_2, ds2)
     @label n4_case_end
 
     if n & 2 == 0
@@ -2166,9 +2167,9 @@ end
     end
     @label n2_case
     chi_1, clo_1 = _pauli_multiply_kernel_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                                             chi_1, clo_1, ds)
+                                             chi_1, clo_1, ds1)
     chi_2, clo_2 = _pauli_multiply_kernel_2!(px1s_2, pz1s_2, px2s_2, pz2s_2,
-                                             chi_2, clo_2, ds)
+                                             chi_2, clo_2, ds2)
     @label n2_case_end
 
     return _pauli_multiply_phase(chi_1, clo_1), _pauli_multiply_phase(chi_2, clo_2)
