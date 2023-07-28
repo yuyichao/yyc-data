@@ -564,8 +564,47 @@ function Base.inv(::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                              X2X1, X2Z1, X2X2, X2Z2, X2R,
                              Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
 end
-const _named_gates_2q = Dict(_parse_2q("XX\nZI\nIX\nZZ")=>"CNOT",
-                             _parse_2q("XI\nZZ\nXX\nIZ")=>"CNOT21")
+const _named_gates_2q = Dict(_parse_2q("XI\nZX\nIX\nXZ")=>"XCX",
+                             _parse_2q("XI\nZY\nXX\nXZ")=>"XCY",
+                             _parse_2q("XI\nZZ\nXX\nIZ")=>"CNOT21", # XCZ
+                             _parse_2q("XI\n-ZZ\nXX\nIZ")=>"aCNOT21",
+
+                             _parse_2q("XX\nZX\nIX\nYZ")=>"YCX",
+                             _parse_2q("XY\nZY\nYX\nYZ")=>"YCY",
+                             _parse_2q("XZ\nZZ\nYX\nIZ")=>"YCZ",
+
+                             _parse_2q("XX\nZI\nIX\nZZ")=>"CNOT", # ZCX
+                             _parse_2q("XX\nZI\nIX\n-ZZ")=>"aCNOT",
+                             _parse_2q("XY\nZI\nZX\nZZ")=>"CY", # ZCY
+                             _parse_2q("XZ\nZI\nZX\nIZ")=>"CZ", # ZCZ
+
+                             _parse_2q("XX\nIZ\nXI\nZZ")=>"CXSWAP", # SWAPCX21
+                             _parse_2q("IX\nZZ\nXX\nZI")=>"SWAPCX", # DCNOT, CXSWAP21
+
+                             _parse_2q("IX\nIZ\nXI\nZI")=>"SWAP",
+                             _parse_2q("ZY\nIZ\nYZ\nZI")=>"iSWAP",
+                             _parse_2q("-ZY\nIZ\n-YZ\nZI")=>"IiSWAP",
+
+                             _parse_2q("XI\n-YX\nIX\n-XY")=>"XX",
+                             _parse_2q("XI\nYX\nIX\nXY")=>"IXX",
+                             _parse_2q("XI\n-YY\n-XZ\nXX")=>"XY",
+                             _parse_2q("XI\nYY\nXZ\n-XX")=>"IXY",
+                             _parse_2q("XI\n-YZ\nXY\nIZ")=>"XZ",
+                             _parse_2q("XI\nYZ\n-XY\nIZ")=>"IXZ",
+
+                             _parse_2q("-ZX\nXX\nIX\n-YY")=>"YX",
+                             _parse_2q("ZX\n-XX\nIX\nYY")=>"IYX",
+                             _parse_2q("-ZY\nXY\n-YZ\nYX")=>"YY",
+                             _parse_2q("ZY\n-XY\nYZ\n-YX")=>"IYY",
+                             _parse_2q("-ZZ\nXZ\nYY\nIZ")=>"YZ",
+                             _parse_2q("ZZ\n-XZ\n-YY\nIZ")=>"IYZ",
+
+                             _parse_2q("YX\nZI\nIX\n-ZY")=>"ZX",
+                             _parse_2q("-YX\nZI\nIX\nZY")=>"IZX",
+                             _parse_2q("YY\nZI\n-ZZ\nZX")=>"ZY",
+                             _parse_2q("-YY\nZI\nZZ\n-ZX")=>"IZY",
+                             _parse_2q("YZ\nZI\nZY\nIZ")=>"ZZ",
+                             _parse_2q("-YZ\nZI\n-ZY\nIZ")=>"IZZ")
 function _to_pauli_name(x1, z1, x2, z2, r)
     return ((r ? "-" : "+") *
         (x1 ? (z1 ? "Y" : "X") : (z1 ? "Z" : "I")) *
