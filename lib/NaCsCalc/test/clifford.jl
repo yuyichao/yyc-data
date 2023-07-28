@@ -139,7 +139,7 @@ end
 end
 
 const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
-const gates_1q = [Clf.Generic1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
+const gates_1q = [Clf.Clifford1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
                   for XZ in ((true, false, true, true),
                              (true, false, false, true),
                              (true, true, true, false),

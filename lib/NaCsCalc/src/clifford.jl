@@ -127,7 +127,6 @@ end
 ## Single qubit gates
 # For these gates, we also support a variety of operations on them for convenience
 # including multiplication and inverse.
-abstract type Clifford1Q end
 
 """
     _combine_1q(x, z, r, xx, xz, xr, zx, zz, zr)
@@ -147,7 +146,7 @@ end
 
 # We support the most generic set of single qubit Clifford gates.
 """
-    Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}
+    Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR}
 
 Generic one qubit Clifford rotation.
 The gate is represented by the operation done on the X and the Z operators.
@@ -157,8 +156,8 @@ and the Z operator is turned into the Pauli operator represented by `ZX, ZZ, ZR`
 Note that the X and Z Pauli string must anti-commute to maintain the unitarity
 of the gate and this is checked in the constructor.
 """
-struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
-    function Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}() where {XX,XZ,XR,ZX,ZZ,ZR}
+struct Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR}
+    function Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR}() where {XX,XZ,XR,ZX,ZZ,ZR}
         if !_anti_commute_1q(XX, XZ, ZX, ZZ)
             error("X and Z mapping must anti-commute")
         end
@@ -166,16 +165,16 @@ struct Generic1Q{XX,XZ,XR,ZX,ZZ,ZR} <: Clifford1Q
     end
 end
 """
-    *(g1::Generic1Q, g2::Generic1Q)
+    *(g1::Clifford1Q, g2::Clifford1Q)
 
 Return the gate corresponding to apply `g1` first and then `g2`.
 """
-function Base.:*(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
-                 ::Generic1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
-                                                              XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
+function Base.:*(::Clifford1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
+                 ::Clifford1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
+                                                               XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
     XX, XZ, XR = _combine_1q(XX1, XZ1, XR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
     ZX, ZZ, ZR = _combine_1q(ZX1, ZZ1, ZR1, XX2, XZ2, XR2, ZX2, ZZ2, ZR2)
-    return Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}()
+    return Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR}()
 end
 """
     _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
@@ -191,9 +190,9 @@ Return the X and Z Pauli strings representing the inverse of the 1Q gate.
     ZR′ = (XX & ZR) ⊻ (~(XR ⊻ XZ) & ZX)
     return XX′, XZ′, XR′, ZX′, ZZ′, ZR′
 end
-@inline function Base.inv(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
+@inline function Base.inv(::Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR}) where {XX,XZ,XR,ZX,ZZ,ZR}
     XX′, XZ′, XR′, ZX′, ZZ′, ZR′ = _inv_1q(XX, XZ, XR, ZX, ZZ, ZR)
-    return Generic1Q{XX′,XZ′,XR′,ZX′,ZZ′,ZR′}()
+    return Clifford1Q{XX′,XZ′,XR′,ZX′,ZZ′,ZR′}()
 end
 const _named_gates_1q = Dict((true, false, false, false, true, false)=>"I",
                              (false, true, false, true, false, false)=>"H",
@@ -213,7 +212,7 @@ const _named_gates_1q = Dict((true, false, false, false, true, false)=>"I",
 function _to_pauli_name(x, z, r)
     return (r ? "-" : "+") * (x ? (z ? "Y" : "X") : "Z")
 end
-function Base.show(io::IO, @nospecialize(g::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR})) where {XX,XZ,XR,ZX,ZZ,ZR}
+function Base.show(io::IO, @nospecialize(g::Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR})) where {XX,XZ,XR,ZX,ZZ,ZR}
     name = get(_named_gates_1q, (XX,XZ,XR,ZX,ZZ,ZR), nothing)
     if name === nothing
         YX = XX ⊻ ZX
@@ -222,15 +221,15 @@ function Base.show(io::IO, @nospecialize(g::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR})) where
         xname = _to_pauli_name(XX, XZ, XR)
         yname = _to_pauli_name(YX, YZ, YR)
         zname = _to_pauli_name(ZX, ZZ, ZR)
-        print(io, "Generic1Q(I->+I, X->$(xname), Y->$(yname), Z->$(zname))")
+        print(io, "Clifford1Q(I->+I, X->$(xname), Y->$(yname), Z->$(zname))")
     else
         print(io, "$(name)Gate()")
     end
 end
 # Create convinience alias for certain known-named gates.
 for (param, name) in _named_gates_1q
-    Generic1Q{param...}() # Builtin test
-    @eval const $(Symbol("$(name)Gate")) = $(Generic1Q{param...})
+    Clifford1Q{param...}() # Builtin test
+    @eval const $(Symbol("$(name)Gate")) = $(Clifford1Q{param...})
 end
 const SZGate = SGate
 const ISZGate = ISGate
@@ -240,7 +239,7 @@ const HYXGate = HXYGate
 const HZYGate = HYZGate
 
 # Implementation of forward-propagation of Pauli
-Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
+Base.@propagate_inbounds @inline function apply!(::Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR},
                                                  xas, zas, rs) where {XX,XZ,XR,ZX,ZZ,ZR}
     YPHASE = ZZ ⊻ XX ⊻ (ZX | XZ)
     NEED_X = ZX | XR | YPHASE
@@ -281,7 +280,6 @@ Base.@propagate_inbounds @inline function apply!(::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
 end
 
 ## Two qubit gates
-abstract type Clifford2Q end
 @inline function _anti_commute_2q(x11, z11, x21, z21,
                                   x12, z12, x22, z22)
     ac1 = _anti_commute_1q(x11, z11, x12, z12)
@@ -390,17 +388,17 @@ function _parse_2q(str)
     return (val...,)
 end
 
-struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
-                 Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                 X2X1,X2Z1,X2X2,X2Z2,X2R,
-                 Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R} <: Clifford2Q
-    function Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
-                       Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                       X2X1,X2Z1,X2X2,X2Z2,X2R,
-                       Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}() where {X1X1,X1Z1,X1X2,X1Z2,X1R,
-                                                         Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                                                         X2X1,X2Z1,X2X2,X2Z2,X2R,
-                                                         Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+struct Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                  Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                  X2X1,X2Z1,X2X2,X2Z2,X2R,
+                  Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    function Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                        Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                        X2X1,X2Z1,X2X2,X2Z2,X2R,
+                        Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}() where {X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                          Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                          X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                          Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
         if !_anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
                              Z1X1, Z1Z1, Z1X2, Z1Z2)
             error("X1 and Z1 mapping must anti-commute")
@@ -444,32 +442,32 @@ struct Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
                    X2X1,X2Z1,X2X2,X2Z2,X2R,
                    Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}()
     end
-    function Generic2Q(::Generic1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
-                       ::Generic1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {
-                           XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
-                           XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
-        return Generic2Q{XX1,XZ1,false,false,XR1,
-                         ZX1,ZZ1,false,false,ZR1,
-                         false,false,XX2,XZ2,XR2,
-                         false,false,ZX2,ZZ2,ZR2}()
+    function Clifford2Q(::Clifford1Q{XX1,XZ1,XR1,ZX1,ZZ1,ZR1},
+                        ::Clifford1Q{XX2,XZ2,XR2,ZX2,ZZ2,ZR2}) where {
+                            XX1,XZ1,XR1,ZX1,ZZ1,ZR1,
+                            XX2,XZ2,XR2,ZX2,ZZ2,ZR2}
+        return Clifford2Q{XX1,XZ1,false,false,XR1,
+                          ZX1,ZZ1,false,false,ZR1,
+                          false,false,XX2,XZ2,XR2,
+                          false,false,ZX2,ZZ2,ZR2}()
     end
 end
-function Base.:*(::Generic2Q{X1X11,X1Z11,X1X21,X1Z21,X1R1,
-                             Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
-                             X2X11,X2Z11,X2X21,X2Z21,X2R1,
-                             Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1},
-                 ::Generic2Q{X1X12,X1Z12,X1X22,X1Z22,X1R2,
-                             Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
-                             X2X12,X2Z12,X2X22,X2Z22,X2R2,
-                             Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}) where {
-                                 X1X11,X1Z11,X1X21,X1Z21,X1R1,
-                                 Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
-                                 X2X11,X2Z11,X2X21,X2Z21,X2R1,
-                                 Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1,
-                                 X1X12,X1Z12,X1X22,X1Z22,X1R2,
-                                 Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
-                                 X2X12,X2Z12,X2X22,X2Z22,X2R2,
-                                 Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}
+function Base.:*(::Clifford2Q{X1X11,X1Z11,X1X21,X1Z21,X1R1,
+                              Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
+                              X2X11,X2Z11,X2X21,X2Z21,X2R1,
+                              Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1},
+                 ::Clifford2Q{X1X12,X1Z12,X1X22,X1Z22,X1R2,
+                              Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
+                              X2X12,X2Z12,X2X22,X2Z22,X2R2,
+                              Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}) where {
+                                  X1X11,X1Z11,X1X21,X1Z21,X1R1,
+                                  Z1X11,Z1Z11,Z1X21,Z1Z21,Z1R1,
+                                  X2X11,X2Z11,X2X21,X2Z21,X2R1,
+                                  Z2X11,Z2Z11,Z2X21,Z2Z21,Z2R1,
+                                  X1X12,X1Z12,X1X22,X1Z22,X1R2,
+                                  Z1X12,Z1Z12,Z1X22,Z1Z22,Z1R2,
+                                  X2X12,X2Z12,X2X22,X2Z22,X2R2,
+                                  Z2X12,Z2Z12,Z2X22,Z2Z22,Z2R2}
 
     X1X1′, X1Z1′, X1X2′, X1Z2′, X1R′ =
         _combine4_2q(X1X11, X1Z11, X1X21, X1Z21, X1R1,
@@ -496,10 +494,10 @@ function Base.:*(::Generic2Q{X1X11,X1Z11,X1X21,X1Z21,X1R1,
                      X2X12, X2Z12, X2X22, X2Z22, X2R2,
                      Z2X12, Z2Z12, Z2X22, Z2Z22, Z2R2)
 
-    return Generic2Q{X1X1′,X1Z1′,X1X2′,X1Z2′,X1R′,
-                     Z1X1′,Z1Z1′,Z1X2′,Z1Z2′,Z1R′,
-                     X2X1′,X2Z1′,X2X2′,X2Z2′,X2R′,
-                     Z2X1′,Z2Z1′,Z2X2′,Z2Z2′,Z2R′}()
+    return Clifford2Q{X1X1′,X1Z1′,X1X2′,X1Z2′,X1R′,
+                      Z1X1′,Z1Z1′,Z1X2′,Z1Z2′,Z1R′,
+                      X2X1′,X2Z1′,X2X2′,X2Z2′,X2R′,
+                      Z2X1′,Z2Z1′,Z2X2′,Z2Z2′,Z2R′}()
 end
 Base.@assume_effects :total function _inv_2q(x1x1, x1z1, x1x2, x1z2, x1r,
                                              z1x1, z1z1, z1x2, z1z2, z1r,
@@ -551,20 +549,22 @@ Base.@assume_effects :total function _inv_2q(x1x1, x1z1, x1x2, x1z2, x1r,
     end
     return (M1[1]..., M1[2]..., M1[3]..., M1[4]...)
 end
-function Base.inv(::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
-                              Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                              X2X1,X2Z1,X2X2,X2Z2,X2R,
-                              Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}) where {
-                                  X1X1,X1Z1,X1X2,X1Z2,X1R,
-                                  Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                                  X2X1,X2Z1,X2X2,X2Z2,X2R,
-                                  Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
-    return Generic2Q{_inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
-                             Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
-                             X2X1, X2Z1, X2X2, X2Z2, X2R,
-                             Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
+function Base.inv(::Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                               Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                               X2X1,X2Z1,X2X2,X2Z2,X2R,
+                               Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}) where {
+                                   X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                   Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                   X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                   Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    return Clifford2Q{_inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                              Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                              X2X1, X2Z1, X2X2, X2Z2, X2R,
+                              Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)...}()
 end
-const _named_gates_2q = Dict(_parse_2q("XI\nZX\nIX\nXZ")=>"XCX",
+const _named_gates_2q = Dict(_parse_2q("XI\nZI\nIX\nIZ")=>"I2Q",
+
+                             _parse_2q("XI\nZX\nIX\nXZ")=>"XCX",
                              _parse_2q("XI\nZY\nXX\nXZ")=>"XCY",
                              _parse_2q("XI\nZZ\nXX\nIZ")=>"CNOT21", # XCZ
                              _parse_2q("XI\n-ZZ\nXX\nIZ")=>"aCNOT21",
@@ -578,7 +578,7 @@ const _named_gates_2q = Dict(_parse_2q("XI\nZX\nIX\nXZ")=>"XCX",
                              _parse_2q("XY\nZI\nZX\nZZ")=>"CY", # ZCY
                              _parse_2q("XZ\nZI\nZX\nIZ")=>"CZ", # ZCZ
 
-                             _parse_2q("XX\nIZ\nXI\nZZ")=>"CXSWAP", # SWAPCX21
+                             _parse_2q("XX\nIZ\nXI\nZZ")=>"CXSWAP", # DCNOT21, SWAPCX21
                              _parse_2q("IX\nZZ\nXX\nZI")=>"SWAPCX", # DCNOT, CXSWAP21
 
                              _parse_2q("IX\nIZ\nXI\nZI")=>"SWAP",
@@ -610,14 +610,14 @@ function _to_pauli_name(x1, z1, x2, z2, r)
         (x1 ? (z1 ? "Y" : "X") : (z1 ? "Z" : "I")) *
         (x2 ? (z2 ? "Y" : "X") : (z2 ? "Z" : "I")))
 end
-function Base.show(io::IO, @nospecialize(g::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
-                                                      Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                                                      X2X1,X2Z1,X2X2,X2Z2,X2R,
-                                                      Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R})) where {
-                                                          X1X1,X1Z1,X1X2,X1Z2,X1R,
-                                                          Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                                                          X2X1,X2Z1,X2X2,X2Z2,X2R,
-                                                          Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+function Base.show(io::IO, @nospecialize(g::Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                       Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                       X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                       Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R})) where {
+                                                           X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                                           Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                                           X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                                           Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
 
     name = get(_named_gates_2q, (X1X1,X1Z1,X1X2,X1Z2,X1R,
                                  Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
@@ -628,23 +628,34 @@ function Base.show(io::IO, @nospecialize(g::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
     elseif (!X1X2 && !X1Z2 && !Z1X2 && !Z1Z2 &&
         !X2X1 && !X2Z1 && !Z2X1 && !Z2Z1)
         # Single qubit gate
-        show(io, Generic1Q{X1X1,X1Z1,X1R,Z1X1,Z1Z1,Z1R}())
+        show(io, Clifford1Q{X1X1,X1Z1,X1R,Z1X1,Z1Z1,Z1R}())
         print(io, " ⊗ ")
-        show(io, Generic1Q{X2X2,X2Z2,X2R,Z2X2,Z2Z2,Z2R}())
+        show(io, Clifford1Q{X2X2,X2Z2,X2R,Z2X2,Z2Z2,Z2R}())
     else
         xiname = _to_pauli_name(X1X1,X1Z1,X1X2,X1Z2,X1R)
         ziname = _to_pauli_name(Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R)
         ixname = _to_pauli_name(X2X1,X2Z1,X2X2,X2Z2,X2R)
         izname = _to_pauli_name(Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R)
-        print(io, "Generic2Q(XI->$(xiname), ZI->$(ziname), IX->$(ixname), IZ->$(izname))")
+        print(io, "Clifford2Q(XI->$(xiname), ZI->$(ziname), IX->$(ixname), IZ->$(izname))")
     end
 end
 # Create convinience alias for certain known-named gates.
 for (param, name) in _named_gates_2q
-    Generic2Q{param...}() # Builtin test
-    @eval const $(Symbol("$(name)Gate")) = $(Generic2Q{param...})
+    Clifford2Q{param...}() # Builtin test
+    @eval const $(Symbol("$(name)Gate")) = $(Clifford2Q{param...})
 end
+const XCZGate = CNOT21Gate
 const CNOT12Gate = CNOTGate
+const CXGate = CNOTGate
+const ZCXGate = CNOTGate
+const ZCYGate = CYGate
+const ZCZGate = CZGate
+
+const DCNOT21Gate = CXSWAPGate
+const SWAPCX21Gate = CXSWAPGate
+
+const DCNOTGate = SWAPCXGate
+const CXSWAP21Gate = SWAPCXGate
 
 function _try_find_I_for_qubit(tabs, qin)
     for t in 1:2
@@ -1025,10 +1036,10 @@ function _generate_2q_apply(x1x1, x1z1, x1x2, x1z2, x1r,
 end
 
 @generated function apply!(
-    ::Generic2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
-                Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
-                X2X1,X2Z1,X2X2,X2Z2,X2R,
-                Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R},
+    ::Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                 Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                 X2X1,X2Z1,X2X2,X2Z2,X2R,
+                 Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R},
     xas, zas, xbs, zbs, rs)  where {X1X1,X1Z1,X1X2,X1Z2,X1R,
                                     Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
                                     X2X1,X2Z1,X2X2,X2Z2,X2R,
@@ -2164,7 +2175,7 @@ end
 end
 
 Base.@propagate_inbounds @inline function apply!(
-    state::InvStabilizerState, ::Generic1Q{XX,XZ,XR,ZX,ZZ,ZR},
+    state::InvStabilizerState, ::Clifford1Q{XX,XZ,XR,ZX,ZZ,ZR},
     a) where {XX,XZ,XR,ZX,ZZ,ZR}
 
     n = state.n
