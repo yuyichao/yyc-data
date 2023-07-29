@@ -3038,4 +3038,63 @@ Base.@propagate_inbounds @inline function inject_pauli!(state::_StabilizerState,
     return state
 end
 
+function _precompile()
+    precompile(init_state_x!, (StabilizerState, Bool))
+    precompile(init_state_y!, (StabilizerState, Bool))
+    precompile(init_state_z!, (StabilizerState, Bool))
+
+    precompile(init_state_x!, (InvStabilizerState, Bool))
+    precompile(init_state_y!, (InvStabilizerState, Bool))
+    precompile(init_state_z!, (InvStabilizerState, Bool))
+
+    precompile(_measure_z!, (StabilizerState, Int, Int, Nothing))
+    precompile(_measure_z!, (StabilizerState, Int, Int, Bool))
+    precompile(_measure_z!, (InvStabilizerState, Int, Int, Nothing))
+    precompile(_measure_z!, (InvStabilizerState, Int, Int, Bool))
+
+    gates_1q = [Clifford1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
+                for XZ in ((true, false, true, true),
+                           (true, false, false, true),
+                           (true, true, true, false),
+                           (true, true, false, true),
+                           (false, true, true, false),
+                           (false, true, true, true)),
+                    R in Iterators.product((false, true), (false, true))]
+    for g1 in gates_1q
+        inv(g1)
+        for T in (Bool, Int128, Int16, Int32, Int64, Int8,
+                  UInt128, UInt16, UInt32, UInt64, UInt8)
+            precompile(apply, (typeof(g1), T, T, T))
+            precompile(apply!, (PauliString{T}, typeof(g1), Int))
+        end
+        precompile(apply!, (StabilizerState, typeof(g1), Int))
+        precompile(apply!, (InvStabilizerState, typeof(g1), Int))
+        for g2 in gates_1q
+            g1 * g2
+            Clifford2Q(g1, g2)
+        end
+    end
+
+    str2q_iter = (p for p in Iterators.product((false, true), (false, true),
+                                               (false, true), (false, true))
+                      if any(p))
+    # Too many gates to iterate through all of them...
+    gates_2q = [Clifford2Q{k...}() for (k, v) in _named_gates_2q]
+    for g1 in gates_2q
+        inv(g1)
+        for T in (Bool, Int128, Int16, Int32, Int64, Int8,
+                  UInt128, UInt16, UInt32, UInt64, UInt8)
+            precompile(apply, (typeof(g1), T, T, T, T, T))
+            precompile(apply!, (PauliString{T}, typeof(g1), Int, Int))
+        end
+        precompile(apply!, (StabilizerState, typeof(g1), Int, Int))
+        precompile(apply!, (InvStabilizerState, typeof(g1), Int, Int))
+        for g2 in gates_2q
+            g1 * g2
+        end
+    end
+end
+
+_precompile()
+
 end
