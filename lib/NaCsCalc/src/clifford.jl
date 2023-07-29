@@ -2106,6 +2106,7 @@ end
     return _pauli_multiply_phase(chi, clo)
 end
 
+# TODO: Add a version that multiply one string to two strings
 @inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
                                    px1s_2, pz1s_2, px2s_2, pz2s_2, n,
                                    ds1::Val{do_swap1}=Val(false),
@@ -2268,40 +2269,415 @@ Base.@propagate_inbounds @inline function apply!(
     return state
 end
 
-Base.@propagate_inbounds @inline function apply!(state::InvStabilizerState,
-                                                 gate::CNOTGate, a, b)
-    n = state.n
-    @boundscheck check_qubit_bound(n, a)
-    @boundscheck check_qubit_bound(n, b)
-    xzs = state.xzs
-    rs = state.rs
-    nchunks = size(xzs, 1)
-    assume(nchunks & 1 == 0)
-    assume(nchunks >= 2)
-    assume(size(xzs, 2) == 4)
-    assume(size(rs, 1) == n)
-    @inbounds GC.@preserve xzs begin
-        # Xa′ = Xa * Xb
-        px1s_1 = pointer(@view(xzs[1, 1, a]))
-        pz1s_1 = pointer(@view(xzs[1, 2, a]))
-        px2s_1 = pointer(@view(xzs[1, 1, b]))
-        pz2s_1 = pointer(@view(xzs[1, 2, b]))
+struct _ComputeStep
+    i1::Int
+    i2::Int
+    is_mul::Bool
+    is_swap::Bool
+end
 
-        # Zb′ = Za * Zb
-        px1s_2 = pointer(@view(xzs[1, 3, b]))
-        pz1s_2 = pointer(@view(xzs[1, 4, b]))
-        px2s_2 = pointer(@view(xzs[1, 3, a]))
-        pz2s_2 = pointer(@view(xzs[1, 4, a]))
+mutable struct _ComputeInfo
+    cost::NTuple{2,Int}
+    steps::Vector{_ComputeStep}
+    process_step::Int
+end
 
-        prod_phase_1, prod_phase_2 =
-            pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
-                              px1s_2, pz1s_2, px2s_2, pz2s_2, nchunks)
-        assume(prod_phase_1 & 0x1 == 0)
-        assume(prod_phase_2 & 0x1 == 0)
-        rs[a, 1] = u8_to_bool(rs[a, 1]) ⊻ u8_to_bool(rs[b, 1]) ⊻ (prod_phase_1 != 0)
-        rs[b, 2] = u8_to_bool(rs[b, 2]) ⊻ u8_to_bool(rs[a, 2]) ⊻ (prod_phase_2 != 0)
+@noinline function _try_add_step!(infos, v, old_info, step)
+    if !step.is_mul
+        cost_diff = (0, 2)
+    elseif step.is_swap
+        cost_diff = (1, 1)
+    else
+        cost_diff = (1, 0)
     end
-    return state
+    new_cost = old_info.cost .+ cost_diff
+    if v in keys(infos)
+        info2 = infos[v]
+        if info2.cost <= new_cost
+            return false
+        end
+        info2.cost = new_cost
+        info2.steps = [old_info.steps; step]
+        info2.process_step = 0
+    else
+        infos[copy(v)] = _ComputeInfo(new_cost, [old_info.steps; step], 0)
+    end
+    return true
+end
+
+@noinline function _enumerate_all_steps!(infos)
+    v2 = Matrix{Bool}(undef, 4, 4)
+    while true
+        added = 0
+        for (v, info) in infos
+            if info.process_step >= 1
+                continue
+            end
+            info.process_step = 1
+            for i1 = 1:4
+                for i2 = 1:4
+                    if i1 == i2
+                        continue
+                    end
+                    for j in 1:4
+                        for i in 1:4
+                            if i == i1
+                                v2[i, j] = v[i2, j]
+                            elseif i == i2
+                                v2[i, j] = v[i1, j]
+                            else
+                                v2[i, j] = v[i, j]
+                            end
+                        end
+                    end
+                    if _try_add_step!(infos, v2, info, _ComputeStep(i1, i2, false, true))
+                        added += 1
+                    end
+                end
+            end
+        end
+        if added == 0
+            break
+        end
+    end
+    nsteps = 0
+    while true
+        added = 0
+        nsteps += 1
+        for (v, info) in infos
+            if info.process_step >= 2
+                continue
+            end
+            info.process_step = 2
+            for i1 = 1:4
+                for i2 = 1:4
+                    if i1 == i2
+                        continue
+                    end
+                    for j in 1:4
+                        for i in 1:4
+                            if i == i1
+                                v2[i, j] = v[i2, j] ⊻ v[i, j]
+                            else
+                                v2[i, j] = v[i, j]
+                            end
+                        end
+                    end
+                    if _try_add_step!(infos, v2, info, _ComputeStep(i1, i2, true, false))
+                        added += 1
+                    end
+                    for j in 1:4
+                        for i in 1:4
+                            if i == i1
+                                v2[i, j] = v[i2, j] ⊻ v[i, j]
+                            elseif i == i2
+                                v2[i, j] = v[i1, j]
+                            else
+                                v2[i, j] = v[i, j]
+                            end
+                        end
+                    end
+                    if _try_add_step!(infos, v2, info, _ComputeStep(i1, i2, true, true))
+                        added += 1
+                    end
+                end
+            end
+        end
+        if added == 0
+            break
+        end
+    end
+    return
+end
+
+function _generate_apply_info_2q()
+    infos = Dict([true false false false
+                  false true false false
+                  false false true false
+                  false false false true]=>_ComputeInfo((0, 0), _ComputeStep[], 0))
+    _enumerate_all_steps!(infos)
+    filter!(infos) do (v, info)
+        anti_commute(l1, l2) = _anti_commute_2q(l1[1], l1[2], l1[3], l1[4],
+                                                l2[1], l2[2], l2[3], l2[4])
+        return anti_commute(v[1, :], v[2, :]) && anti_commute(v[3, :], v[4, :]) &&
+            !anti_commute(v[1, :], v[3, :]) && !anti_commute(v[1, :], v[4, :]) &&
+            !anti_commute(v[2, :], v[3, :]) && !anti_commute(v[2, :], v[4, :])
+    end
+    return infos
+end
+
+const _apply_info_2q = _generate_apply_info_2q()
+
+function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
+    nsteps = length(steps)
+    px_exprs = [:(pointer(@view(xzs[1, 1, a]))),
+                :(pointer(@view(xzs[1, 3, a]))),
+                :(pointer(@view(xzs[1, 1, b]))),
+                :(pointer(@view(xzs[1, 3, b])))]
+    pz_exprs = [:(pointer(@view(xzs[1, 2, a]))),
+                :(pointer(@view(xzs[1, 4, a]))),
+                :(pointer(@view(xzs[1, 2, b]))),
+                :(pointer(@view(xzs[1, 4, b])))]
+    r_syms = [:x1r, :z1r, :x2r, :z2r]
+    r2_syms = [:x1r2, :z1r2, :x2r2, :z2r2]
+
+    tab = [true false false false
+           false true false false
+           false false true false
+           false false false true]
+
+    mul_exprs = []
+
+    function _lhs_multiply(step)
+        i1 = step.i1
+        i2 = step.i2
+        hi = false
+        lo = false
+        hi, lo = _accum_pauli_prod_phase(hi, lo, tab[i1, 1], tab[i1, 2],
+                                         tab[i2, 1], tab[i2, 2])
+        hi, lo = _accum_pauli_prod_phase(hi, lo, tab[i1, 3], tab[i1, 4],
+                                         tab[i2, 3], tab[i2, 4])
+        for i in 1:4
+            v1 = tab[i1, i]
+            v2 = tab[i2, i]
+            tab[i1, i] = v1 ⊻ v2
+            if step.is_swap
+                tab[i2, i] = v1
+            end
+        end
+        return 0x2 * hi + 0x1 * lo
+    end
+
+    function _phase_expr(phase, prod_phase_var)
+        if phase == 0
+            return :($prod_phase_var != 0)
+        elseif phase == 1
+            return :(($prod_phase_var & 0x2) != 0)
+        elseif phase == 2
+            return :($prod_phase_var == 0)
+        else
+            return :(($prod_phase_var & 0x2) == 0)
+        end
+    end
+
+    while mul_idx <= nsteps
+        step1 = steps[mul_idx]
+        phase1 = _lhs_multiply(step1)
+        i11 = step1.i1
+        i12 = step1.i2
+        mul_idx += 1
+        r_used[i11] = true
+        r_used[i12] = true
+        r_changed[i11] = true
+        if step1.is_swap
+            r_changed[i12] = true
+        end
+        if mul_idx <= nsteps
+            step2 = steps[mul_idx]
+            if step1.i1 != step2.i1 && step1.i1 != step2.i2 &&
+                step1.i2 != step2.i1 && step1.i2 != step2.i2
+                # We can use a multiply_2 here.
+                phase2 = _lhs_multiply(step2)
+                i21 = step2.i1
+                i22 = step2.i2
+                mul_idx += 1
+                r_used[i21] = true
+                r_used[i22] = true
+                r_changed[i21] = true
+                if step2.is_swap
+                    r_changed[i22] = true
+                end
+                push!(mul_exprs,
+                      quote
+                          prod_phase_1, prod_phase_2 =
+                              pauli_multiply_2!($(px_exprs[i11]), $(pz_exprs[i11]),
+                                                $(px_exprs[i12]), $(pz_exprs[i12]),
+                                                $(px_exprs[i21]), $(pz_exprs[i21]),
+                                                $(px_exprs[i22]), $(pz_exprs[i22]),
+                                                nchunks,
+                                                $(Val(step1.is_swap)),
+                                                $(Val(step2.is_swap)))
+                          assume(prod_phase_1 & 0x1 == $(phase1 & 0x1))
+                          assume(prod_phase_2 & 0x1 == $(phase2 & 0x1))
+                          $(r2_syms[i11]) = $(r_syms[i11])
+                          $(r2_syms[i12]) = $(r_syms[i12])
+                          $(r2_syms[i21]) = $(r_syms[i21])
+                          $(r2_syms[i22]) = $(r_syms[i22])
+                          $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
+                              $(_phase_expr(phase1, :prod_phase_1)))
+                          $(r_syms[i21]) = ($(r2_syms[i21]) ⊻ $(r2_syms[i22]) ⊻
+                              $(_phase_expr(phase2, :prod_phase_2)))
+                          $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) :
+                              nothing)
+                          $(step2.is_swap ? :($(r_syms[i22]) = $(r2_syms[i21])) :
+                              nothing)
+                      end)
+                continue
+            end
+        end
+        push!(mul_exprs,
+              quote
+                  prod_phase =
+                      pauli_multiply!($(px_exprs[i11]), $(pz_exprs[i11]),
+                                      $(px_exprs[i12]), $(pz_exprs[i12]),
+                                      nchunks, $(Val(step1.is_swap)))
+                  assume(prod_phase & 0x1 == $(phase1 & 0x1))
+                  $(r2_syms[i11]) = $(r_syms[i11])
+                  $(r2_syms[i12]) = $(r_syms[i12])
+                  $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
+                      $(_phase_expr(phase1, :prod_phase_1)))
+                  $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) : nothing)
+              end)
+    end
+
+    return :(GC.@preserve xzs begin
+                 $(mul_exprs...)
+             end)
+end
+
+function _generate_2q_apply_invstab(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                                    Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                                    X2X1, X2Z1, X2X2, X2Z2, X2R,
+                                    Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)
+    inv_X1X1, inv_X1Z1, inv_X1X2, inv_X1Z2, inv_X1R,
+    inv_Z1X1, inv_Z1Z1, inv_Z1X2, inv_Z1Z2, inv_Z1R,
+    inv_X2X1, inv_X2Z1, inv_X2X2, inv_X2Z2, inv_X2R,
+    inv_Z2X1, inv_Z2Z1, inv_Z2X2, inv_Z2Z2, inv_Z2R =
+        _inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                X2X1, X2Z1, X2X2, X2Z2, X2R,
+                Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)
+
+    info = _apply_info_2q[[inv_X1X1 inv_X1Z1 inv_X1X2 inv_X1Z2
+                           inv_Z1X1 inv_Z1Z1 inv_Z1X2 inv_Z1Z2
+                           inv_X2X1 inv_X2Z1 inv_X2X2 inv_X2Z2
+                           inv_Z2X1 inv_Z2Z1 inv_Z2X2 inv_Z2Z2]]
+
+    steps = info.steps
+    nsteps = length(steps)
+
+    perm_idx = [1, 2, 3, 4]
+    mul_start_idx = 1
+    for i in 1:nsteps
+        step = steps[i]
+        if step.is_mul
+            continue
+        end
+        mul_start_idx = i + 1
+        i1 = step.i1
+        i2 = step.i2
+        perm_idx[i1], perm_idx[i2] = perm_idx[i2], perm_idx[i1]
+    end
+
+    r_syms = [:x1r, :z1r, :x2r, :z2r]
+    r2_syms = [:x1r2, :z1r2, :x2r2, :z2r2]
+
+    if mul_start_idx != 1
+        r_used = perm_idx .== 1:4
+        r_changed = perm_idx .== 1:4
+        x_syms = [:x1x, :z1x, :x2x, :z2x]
+        z_syms = [:x1z, :z1z, :x2z, :z2z]
+        expr = quote
+            $(perm_idx[1] == 1 ? nothing : :($(r2_syms[1]) = $(r_syms[1])))
+            $(perm_idx[2] == 2 ? nothing : :($(r2_syms[2]) = $(r_syms[2])))
+            $(perm_idx[3] == 3 ? nothing : :($(r2_syms[3]) = $(r_syms[3])))
+            $(perm_idx[4] == 4 ? nothing : :($(r2_syms[4]) = $(r_syms[4])))
+
+            $(perm_idx[1] == 1 ? nothing : :($(r_syms[1]) = $(r2_syms[perm_idx[1]])))
+            $(perm_idx[2] == 2 ? nothing : :($(r_syms[2]) = $(r2_syms[perm_idx[2]])))
+            $(perm_idx[3] == 3 ? nothing : :($(r_syms[3]) = $(r2_syms[perm_idx[3]])))
+            $(perm_idx[4] == 4 ? nothing : :($(r_syms[4]) = $(r2_syms[perm_idx[4]])))
+            @inbounds @simd ivdep for i in 1:nchunks
+                $(perm_idx[1] == 1 ? nothing :
+                    :($(x_syms[1]) = xzs[i, 1, a];
+                      $(z_syms[1]) = xzs[i, 2, a]))
+                $(perm_idx[2] == 2 ? nothing :
+                    :($(x_syms[2]) = xzs[i, 3, a];
+                      $(z_syms[2]) = xzs[i, 4, a]))
+                $(perm_idx[3] == 3 ? nothing :
+                    :($(x_syms[3]) = xzs[i, 1, b];
+                      $(z_syms[3]) = xzs[i, 2, b]))
+                $(perm_idx[4] == 4 ? nothing :
+                    :($(x_syms[4]) = xzs[i, 3, b];
+                      $(z_syms[4]) = xzs[i, 4, b]))
+
+                $(perm_idx[1] == 1 ? nothing :
+                    :(xzs[i, 1, a] = $(x_syms[perm_idx[1]]);
+                      xzs[i, 2, a] = $(z_syms[perm_idx[1]])))
+                $(perm_idx[2] == 2 ? nothing :
+                    :(xzs[i, 3, a] = $(x_syms[perm_idx[2]]);
+                      xzs[i, 4, a] = $(z_syms[perm_idx[2]])))
+                $(perm_idx[3] == 3 ? nothing :
+                    :(xzs[i, 1, b] = $(x_syms[perm_idx[3]]);
+                      xzs[i, 2, b] = $(z_syms[perm_idx[3]])))
+                $(perm_idx[4] == 4 ? nothing :
+                    :(xzs[i, 3, b] = $(x_syms[perm_idx[4]]);
+                      xzs[i, 4, b] = $(z_syms[perm_idx[4]])))
+            end
+        end
+    else
+        r_used = [false, false, false, false]
+        r_changed = [false, false, false, false]
+        expr = nothing
+    end
+
+    if mul_start_idx <= nsteps
+        expr = quote
+            $expr
+            $(_generate_2q_apply_invstab_mul(steps, mul_start_idx, r_used, r_changed))
+        end
+    end
+
+    r_used .|= (X1R, Z1R, X2R, Z2R)
+    r_changed .|= (X1R, Z1R, X2R, Z2R)
+    expr = quote
+        $expr
+        $(X1R ? :($(r_syms[1]) = ~r_syms[1]) : nothing)
+        $(Z1R ? :($(r_syms[2]) = ~r_syms[2]) : nothing)
+        $(X2R ? :($(r_syms[3]) = ~r_syms[3]) : nothing)
+        $(Z2R ? :($(r_syms[4]) = ~r_syms[4]) : nothing)
+    end
+
+    return quote
+        $(r_used[1] ? :($(r_syms[1]) = u8_to_bool(rs[a, 1])) : nothing)
+        $(r_used[2] ? :($(r_syms[2]) = u8_to_bool(rs[a, 2])) : nothing)
+        $(r_used[3] ? :($(r_syms[3]) = u8_to_bool(rs[b, 1])) : nothing)
+        $(r_used[4] ? :($(r_syms[4]) = u8_to_bool(rs[b, 2])) : nothing)
+        $expr
+        $(r_changed[1] ? :(rs[a, 1] = $(r_syms[1])) : nothing)
+        $(r_changed[2] ? :(rs[a, 2] = $(r_syms[2])) : nothing)
+        $(r_changed[3] ? :(rs[b, 1] = $(r_syms[3])) : nothing)
+        $(r_changed[4] ? :(rs[b, 2] = $(r_syms[4])) : nothing)
+    end
+end
+
+@generated function apply!(state::InvStabilizerState,
+                           ::Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                        Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                        X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                        Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R},
+                           a, b) where {X1X1,X1Z1,X1X2,X1Z2,X1R,
+                                        Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
+                                        X2X1,X2Z1,X2X2,X2Z2,X2R,
+                                        Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    return quote
+        $(Expr(:meta, :inline, :propagate_inbounds))
+        n = state.n
+        @boundscheck check_qubit_bound(n, a)
+        @boundscheck check_qubit_bound(n, b)
+        xzs = state.xzs
+        rs = state.rs
+        nchunks = size(xzs, 1)
+        assume(nchunks & 1 == 0)
+        assume(nchunks >= 2)
+        assume(size(xzs, 2) == 4)
+        assume(size(rs, 1) == n)
+        @inline @inbounds $(_generate_2q_apply_invstab(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                                                       Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                                                       X2X1, X2Z1, X2X2, X2Z2, X2R,
+                                                       Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R))
+        return state
+    end
 end
 
 Base.@propagate_inbounds @inline function measure_z!(state::InvStabilizerState, a;
