@@ -2535,24 +2535,7 @@ function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
              end)
 end
 
-function _generate_2q_apply_invstab(X1X1, X1Z1, X1X2, X1Z2, X1R,
-                                    Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
-                                    X2X1, X2Z1, X2X2, X2Z2, X2R,
-                                    Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)
-    inv_X1X1, inv_X1Z1, inv_X1X2, inv_X1Z2, inv_X1R,
-    inv_Z1X1, inv_Z1Z1, inv_Z1X2, inv_Z1Z2, inv_Z1R,
-    inv_X2X1, inv_X2Z1, inv_X2X2, inv_X2Z2, inv_X2R,
-    inv_Z2X1, inv_Z2Z1, inv_Z2X2, inv_Z2Z2, inv_Z2R =
-        _inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
-                Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
-                X2X1, X2Z1, X2X2, X2Z2, X2R,
-                Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)
-
-    info = _apply_info_2q[[inv_X1X1 inv_X1Z1 inv_X1X2 inv_X1Z2
-                           inv_Z1X1 inv_Z1Z1 inv_Z1X2 inv_Z1Z2
-                           inv_X2X1 inv_X2Z1 inv_X2X2 inv_X2Z2
-                           inv_Z2X1 inv_Z2Z1 inv_Z2X2 inv_Z2Z2]]
-
+function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     steps = info.steps
     nsteps = length(steps)
 
@@ -2660,6 +2643,20 @@ end
                                         Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
                                         X2X1,X2Z1,X2X2,X2Z2,X2R,
                                         Z2X1,Z2Z1,Z2X2,Z2Z2,Z2R}
+    inv_X1X1, inv_X1Z1, inv_X1X2, inv_X1Z2, inv_X1R,
+    inv_Z1X1, inv_Z1Z1, inv_Z1X2, inv_Z1Z2, inv_Z1R,
+    inv_X2X1, inv_X2Z1, inv_X2X2, inv_X2Z2, inv_X2R,
+    inv_Z2X1, inv_Z2Z1, inv_Z2X2, inv_Z2Z2, inv_Z2R =
+        _inv_2q(X1X1, X1Z1, X1X2, X1Z2, X1R,
+                Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
+                X2X1, X2Z1, X2X2, X2Z2, X2R,
+                Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R)
+
+    info = _apply_info_2q[[inv_X1X1 inv_X1Z1 inv_X1X2 inv_X1Z2
+                           inv_Z1X1 inv_Z1Z1 inv_Z1X2 inv_Z1Z2
+                           inv_X2X1 inv_X2Z1 inv_X2X2 inv_X2Z2
+                           inv_Z2X1 inv_Z2Z1 inv_Z2X2 inv_Z2Z2]]
+
     return quote
         $(Expr(:meta, :inline, :propagate_inbounds))
         n = state.n
@@ -2672,10 +2669,8 @@ end
         assume(nchunks >= 2)
         assume(size(xzs, 2) == 4)
         assume(size(rs, 1) == n)
-        @inline @inbounds $(_generate_2q_apply_invstab(X1X1, X1Z1, X1X2, X1Z2, X1R,
-                                                       Z1X1, Z1Z1, Z1X2, Z1Z2, Z1R,
-                                                       X2X1, X2Z1, X2X2, X2Z2, X2R,
-                                                       Z2X1, Z2Z1, Z2X2, Z2Z2, Z2R))
+        @inline @inbounds $(_generate_2q_apply_invstab(info, inv_X1R, inv_Z1R,
+                                                       inv_X2R, inv_Z2R))
         return state
     end
 end
