@@ -695,7 +695,7 @@ function _generate_xor_expr(x1_used, z1_used, x2_used, z2_used,
         push!(args, :xb)
     end
     if z2
-        z1_used = true
+        z2_used = true
         push!(args, :zb)
     end
     if length(args) == 1
@@ -763,11 +763,11 @@ function _generate_2q_apply(x1x1, x1z1, x1x2, x1z2, x1r,
         #  since the full string must commute).
         # In this case, there's no phase when multiplying the parts for the two qubits
         # and we only need to deal with the single qubit phase (first type).
-        x1_used |= yphase1
-        z1_used |= yphase1
-        x2_used |= yphase2
-        z2_used |= yphase2
-        r_changed |= yphase1 | yphase2
+        x1_used = yphase1
+        z1_used = yphase1
+        x2_used = yphase2
+        z2_used = yphase2
+        r_changed = yphase1 | yphase2
         expr = quote
             $(yphase1 ? :(r ⊻= xa & za) : nothing)
             $(yphase2 ? :(r ⊻= xb & zb) : nothing)
@@ -889,7 +889,7 @@ function _generate_2q_apply(x1x1, x1z1, x1x2, x1z2, x1r,
 
         t1 = tabs[(qini - 1) * 2 + (3 - ixz)]
         # X string for the qubit that doesn't have I term.
-        t2 = tabs[(2 - qini) * 2]
+        t2 = tabs[(2 - qini) * 2 + 1]
         if _phase_2q(t1[1:4]..., t2[1:4]...)
             # The name for the term that multiplies with a -1 phase to $n1
             p2 = (:xb, :xb, :xa, :xa)[tidxi]
@@ -2606,7 +2606,7 @@ function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
                   $(r2_syms[i11]) = $(r_syms[i11])
                   $(r2_syms[i12]) = $(r_syms[i12])
                   $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
-                      $(_phase_expr(phase1, :prod_phase_1)))
+                      $(_phase_expr(phase1, :prod_phase)))
                   $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) : nothing)
               end)
     end
@@ -2637,8 +2637,8 @@ function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     r2_syms = [:x1r2, :z1r2, :x2r2, :z2r2]
 
     if mul_start_idx != 1
-        r_used = perm_idx .== 1:4
-        r_changed = perm_idx .== 1:4
+        r_used = perm_idx .!= 1:4
+        r_changed = perm_idx .!= 1:4
         x_syms = [:x1x, :z1x, :x2x, :z2x]
         z_syms = [:x1z, :z1z, :x2z, :z2z]
         expr = quote
@@ -2696,10 +2696,10 @@ function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     r_changed .|= (X1R, Z1R, X2R, Z2R)
     expr = quote
         $expr
-        $(X1R ? :($(r_syms[1]) = ~r_syms[1]) : nothing)
-        $(Z1R ? :($(r_syms[2]) = ~r_syms[2]) : nothing)
-        $(X2R ? :($(r_syms[3]) = ~r_syms[3]) : nothing)
-        $(Z2R ? :($(r_syms[4]) = ~r_syms[4]) : nothing)
+        $(X1R ? :($(r_syms[1]) = ~$(r_syms[1])) : nothing)
+        $(Z1R ? :($(r_syms[2]) = ~$(r_syms[2])) : nothing)
+        $(X2R ? :($(r_syms[3]) = ~$(r_syms[3])) : nothing)
+        $(Z2R ? :($(r_syms[4]) = ~$(r_syms[4])) : nothing)
     end
 
     return quote
