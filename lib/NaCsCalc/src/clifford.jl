@@ -2555,46 +2555,42 @@ function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
         end
         if mul_idx <= nsteps
             step2 = steps[mul_idx]
-            if step1.i1 != step2.i1 && step1.i1 != step2.i2 &&
-                step1.i2 != step2.i1 && step1.i2 != step2.i2
-                # We can use a multiply_2 here.
-                phase2 = _lhs_multiply(step2)
-                i21 = step2.i1
-                i22 = step2.i2
-                mul_idx += 1
-                r_used[i21] = true
-                r_used[i22] = true
-                r_changed[i21] = true
-                if step2.is_swap
-                    r_changed[i22] = true
-                end
-                push!(mul_exprs,
-                      quote
-                          prod_phase_1, prod_phase_2 =
-                              pauli_multiply_2!($(px_exprs[i11]), $(pz_exprs[i11]),
-                                                $(px_exprs[i12]), $(pz_exprs[i12]),
-                                                $(px_exprs[i21]), $(pz_exprs[i21]),
-                                                $(px_exprs[i22]), $(pz_exprs[i22]),
-                                                nchunks,
-                                                $(Val(step1.is_swap)),
-                                                $(Val(step2.is_swap)))
-                          assume(prod_phase_1 & 0x1 == $(phase1 & 0x1))
-                          assume(prod_phase_2 & 0x1 == $(phase2 & 0x1))
-                          $(r2_syms[i11]) = $(r_syms[i11])
-                          $(r2_syms[i12]) = $(r_syms[i12])
-                          $(r2_syms[i21]) = $(r_syms[i21])
-                          $(r2_syms[i22]) = $(r_syms[i22])
-                          $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
-                              $(_phase_expr(phase1, :prod_phase_1)))
-                          $(r_syms[i21]) = ($(r2_syms[i21]) ⊻ $(r2_syms[i22]) ⊻
-                              $(_phase_expr(phase2, :prod_phase_2)))
-                          $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) :
-                              nothing)
-                          $(step2.is_swap ? :($(r_syms[i22]) = $(r2_syms[i21])) :
-                              nothing)
-                      end)
-                continue
+            phase2 = _lhs_multiply(step2)
+            i21 = step2.i1
+            i22 = step2.i2
+            mul_idx += 1
+            r_used[i21] = true
+            r_used[i22] = true
+            r_changed[i21] = true
+            if step2.is_swap
+                r_changed[i22] = true
             end
+            push!(mul_exprs,
+                  quote
+                      prod_phase_1, prod_phase_2 =
+                          pauli_multiply_2!($(px_exprs[i11]), $(pz_exprs[i11]),
+                                            $(px_exprs[i12]), $(pz_exprs[i12]),
+                                            $(px_exprs[i21]), $(pz_exprs[i21]),
+                                            $(px_exprs[i22]), $(pz_exprs[i22]),
+                                            nchunks,
+                                            $(Val(step1.is_swap)),
+                                            $(Val(step2.is_swap)))
+                      assume(prod_phase_1 & 0x1 == $(phase1 & 0x1))
+                      assume(prod_phase_2 & 0x1 == $(phase2 & 0x1))
+                      $(r2_syms[i11]) = $(r_syms[i11])
+                      $(r2_syms[i12]) = $(r_syms[i12])
+                      $(r2_syms[i21]) = $(r_syms[i21])
+                      $(r2_syms[i22]) = $(r_syms[i22])
+                      $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
+                          $(_phase_expr(phase1, :prod_phase_1)))
+                      $(r_syms[i21]) = ($(r2_syms[i21]) ⊻ $(r2_syms[i22]) ⊻
+                          $(_phase_expr(phase2, :prod_phase_2)))
+                      $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) :
+                          nothing)
+                      $(step2.is_swap ? :($(r_syms[i22]) = $(r2_syms[i21])) :
+                          nothing)
+                  end)
+            continue
         end
         push!(mul_exprs,
               quote
