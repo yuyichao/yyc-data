@@ -1917,18 +1917,19 @@ function init_state_y!(state::InvStabilizerState, v::Bool)
 end
 
 @inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo,
-                                           ::Val{do_swap}) where {do_swap}
+                                           ::Val{do_swap},
+                                           _x2=nothing, _z2=nothing) where {do_swap}
     VT8 = Vec{8,ChT}
 
     x1 = vload(VT8, _gep_array(px1s, (), (i,)))
-    x2 = vload(VT8, _gep_array(px2s, (), (i,)))
+    x2 = _x2 === nothing ? vload(VT8, _gep_array(px2s, (), (i,))) : _x2
     new_x1 = x1 ⊻ x2
     vstore(new_x1, _gep_array(px1s, (), (i,)))
     if do_swap
         vstore(x1, _gep_array(px2s, (), (i,)))
     end
     z1 = vload(VT8, _gep_array(pz1s, (), (i,)))
-    z2 = vload(VT8, _gep_array(pz2s, (), (i,)))
+    z2 = _z2 === nothing ? vload(VT8, _gep_array(pz2s, (), (i,))) : _z2
     new_z1 = z1 ⊻ z2
     vstore(new_z1, _gep_array(pz1s, (), (i,)))
     if do_swap
@@ -1961,18 +1962,19 @@ end
 end
 
 @inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo,
-                                           ::Val{do_swap}) where {do_swap}
+                                           ::Val{do_swap},
+                                           _x2=nothing, _z2=nothing) where {do_swap}
     VT4 = Vec{4,ChT}
 
     x1 = vload(VT4, px1s)
-    x2 = vload(VT4, px2s)
+    x2 = _x2 === nothing ? vload(VT4, px2s) : _x2
     new_x1 = x1 ⊻ x2
     vstore(new_x1, px1s)
     if do_swap
         vstore(x1, px2s)
     end
     z1 = vload(VT4, pz1s)
-    z2 = vload(VT4, pz2s)
+    z2 = _z2 === nothing ? vload(VT4, pz2s) : _z2
     new_z1 = z1 ⊻ z2
     vstore(new_z1, pz1s)
     if do_swap
@@ -2006,17 +2008,18 @@ end
 end
 
 @inline function _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo,
-                                           ::Val{do_swap}) where {do_swap}
+                                           ::Val{do_swap},
+                                           _x2=nothing, _z2=nothing) where {do_swap}
     VT2 = Vec{2,ChT}
     x1 = vloada(VT2, px1s)
-    x2 = vloada(VT2, px2s)
+    x2 = _x2 === nothing ? vloada(VT2, px2s) : _x2
     new_x1 = x1 ⊻ x2
     vstorea(new_x1, px1s)
     if do_swap
         vstorea(x1, px2s)
     end
     z1 = vloada(VT2, pz1s)
-    z2 = vloada(VT2, pz2s)
+    z2 = _z2 === nothing ? vloada(VT2, pz2s) : _z2
     new_z1 = z1 ⊻ z2
     vstorea(new_z1, pz1s)
     if do_swap
@@ -2031,10 +2034,11 @@ end
 end
 
 @inline function _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s,
-                                                  ::Val{do_swap}) where {do_swap}
+                                                  ::Val{do_swap},
+                                                  _xz2=nothing) where {do_swap}
     VT4 = Vec{4,ChT}
     xz1 = vload(VT4, px1s)
-    xz2 = vload(VT4, px2s)
+    xz2 = _xz2 === nothing ? vload(VT4, px2s) : _xz2
     new_xz1 = xz1 ⊻ xz2
     vstore(new_xz1, px1s)
     if do_swap
@@ -2106,7 +2110,6 @@ end
     return _pauli_multiply_phase(chi, clo)
 end
 
-# TODO: Add a version that multiply one string to two strings
 @inline function pauli_multiply_2!(px1s_1, pz1s_1, px2s_1, pz2s_1,
                                    px1s_2, pz1s_2, px2s_2, pz2s_2, n,
                                    ds1::Val{do_swap1}=Val(false),
@@ -2171,6 +2174,84 @@ end
                                              chi_1, clo_1, ds1)
     chi_2, clo_2 = _pauli_multiply_kernel_2!(px1s_2, pz1s_2, px2s_2, pz2s_2,
                                              chi_2, clo_2, ds2)
+    @label n2_case_end
+
+    return _pauli_multiply_phase(chi_1, clo_1), _pauli_multiply_phase(chi_2, clo_2)
+end
+
+@inline function pauli_multiply_2b!(px1s_1, pz1s_1, px1s_2, pz1s_2, px2s, pz2s, n,
+                                    ds::Val{do_swap}=Val(0)) where {do_swap}
+    VT2 = Vec{2,ChT}
+    VT4 = Vec{4,ChT}
+    VT8 = Vec{8,ChT}
+    ds1 = Val(do_swap == 1)
+    ds2 = Val(do_swap == 2)
+
+    # Manual jump threading for the small n cases
+    if n <= 2
+        xz2 = vload(VT4, px2s)
+        chi_1, clo_1 = _pauli_multiply_kernel_single_2!(px1s_1, pz1s_1,
+                                                        px2s, pz2s, ds1, xz2)
+        chi_2, clo_2 = _pauli_multiply_kernel_single_2!(px1s_2, pz1s_2,
+                                                        px2s, pz2s, ds2, xz2)
+        @goto n2_case_end
+    elseif n < 8
+        x2 = vload(VT4, px2s)
+        z2 = vload(VT4, pz2s)
+        px1s_1, pz1s_1, _, _, chi_1, clo_1 =
+            _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s, pz2s,
+                                      nothing, nothing, ds1, x2, z2)
+        px1s_2, pz1s_2, px2s, pz2s, chi_2, clo_2 =
+            _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s, pz2s,
+                                      nothing, nothing, ds2, x2, z2)
+        @goto n4_case_end
+    end
+    chi_1 = zero(VT2)
+    clo_1 = zero(VT2)
+    chi_2 = zero(VT2)
+    clo_2 = zero(VT2)
+    nalign = n & ~7
+    # LLVM may think the vstore in the loop aliases the array pointer
+    # so we extract the array pointer out of the loop.
+    @inbounds for i0 in 1:(n >> 3)
+        i = (i0 - 1) * 8 + 1
+        x2 = vload(VT8, _gep_array(px2s, (), (i,)))
+        z2 = vload(VT8, _gep_array(pz2s, (), (i,)))
+        chi_1, clo_1 = _pauli_multiply_kernel_8!(px1s_1, pz1s_1, px2s, pz2s,
+                                                 i, chi_1, clo_1, ds1, x2, z2)
+        chi_2, clo_2 = _pauli_multiply_kernel_8!(px1s_2, pz1s_2, px2s, pz2s,
+                                                 i, chi_2, clo_2, ds2, x2, z2)
+    end
+
+    px1s_1 += nalign * 8
+    pz1s_1 += nalign * 8
+    px1s_2 += nalign * 8
+    pz1s_2 += nalign * 8
+    px2s += nalign * 8
+    pz2s += nalign * 8
+
+    if n & 4 == 0
+        @goto n4_case_end
+    end
+    @label n4_case
+    x2 = vload(VT4, px2s)
+    z2 = vload(VT4, pz2s)
+    px1s_1, pz1s_1, _, _, chi_1, clo_1 =
+        _pauli_multiply_kernel_4!(px1s_1, pz1s_1, px2s, pz2s, chi_1, clo_1, ds1, x2, z2)
+    px1s_2, pz1s_2, px2s, pz2s, chi_2, clo_2 =
+        _pauli_multiply_kernel_4!(px1s_2, pz1s_2, px2s, pz2s, chi_2, clo_2, ds2, x2, z2)
+    @label n4_case_end
+
+    if n & 2 == 0
+        @goto n2_case_end
+    end
+    @label n2_case
+    x2 = vload(VT2, px2s)
+    z2 = vload(VT2, pz2s)
+    chi_1, clo_1 = _pauli_multiply_kernel_2!(px1s_1, pz1s_1, px2s, pz2s,
+                                             chi_1, clo_1, ds1, x2, z2)
+    chi_2, clo_2 = _pauli_multiply_kernel_2!(px1s_2, pz1s_2, px2s, pz2s,
+                                             chi_2, clo_2, ds2, x2, z2)
     @label n2_case_end
 
     return _pauli_multiply_phase(chi_1, clo_1), _pauli_multiply_phase(chi_2, clo_2)
