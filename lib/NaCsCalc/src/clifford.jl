@@ -1916,31 +1916,19 @@ function init_state_y!(state::InvStabilizerState, v::Bool)
     return state
 end
 
-@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo,
-                                           ::Val{do_swap},
-                                           _x2=nothing, _z2=nothing) where {do_swap}
-    VT8 = Vec{8,ChT}
-
-    x1 = vload(VT8, _gep_array(px1s, (), (i,)))
-    x2 = _x2 === nothing ? vload(VT8, _gep_array(px2s, (), (i,))) : _x2
+@inline function _pauli_multiply_kernel(x1, z1, x2, z2)
     new_x1 = x1 ⊻ x2
-    vstore(new_x1, _gep_array(px1s, (), (i,)))
-    if do_swap
-        vstore(x1, _gep_array(px2s, (), (i,)))
-    end
-    z1 = vload(VT8, _gep_array(pz1s, (), (i,)))
-    z2 = _z2 === nothing ? vload(VT8, _gep_array(pz2s, (), (i,))) : _z2
     new_z1 = z1 ⊻ z2
-    vstore(new_z1, _gep_array(pz1s, (), (i,)))
-    if do_swap
-        vstore(z1, _gep_array(pz2s, (), (i,)))
-    end
 
     v1 = x1 & z2
     v2 = x2 & z1
     m = new_x1 ⊻ new_z1 ⊻ v1
     change = v1 ⊻ v2
 
+    return new_x1, new_z1, m, change
+end
+
+@inline function _pauli_phase_kernel(chi, clo, m::Vec{8,ChT}, change::Vec{8,ChT})
     m_1 = Vec((m[1], m[2]))
     m_2 = Vec((m[3], m[4]))
     m_3 = Vec((m[5], m[6]))
@@ -1961,30 +1949,7 @@ end
     return chi, clo
 end
 
-@inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo,
-                                           ::Val{do_swap},
-                                           _x2=nothing, _z2=nothing) where {do_swap}
-    VT4 = Vec{4,ChT}
-
-    x1 = vload(VT4, px1s)
-    x2 = _x2 === nothing ? vload(VT4, px2s) : _x2
-    new_x1 = x1 ⊻ x2
-    vstore(new_x1, px1s)
-    if do_swap
-        vstore(x1, px2s)
-    end
-    z1 = vload(VT4, pz1s)
-    z2 = _z2 === nothing ? vload(VT4, pz2s) : _z2
-    new_z1 = z1 ⊻ z2
-    vstore(new_z1, pz1s)
-    if do_swap
-        vstore(z1, pz2s)
-    end
-
-    v1 = x1 & z2
-    v2 = x2 & z1
-    m = new_x1 ⊻ new_z1 ⊻ v1
-    change = v1 ⊻ v2
+@inline function _pauli_phase_kernel(chi, clo, m::Vec{4,ChT}, change::Vec{4,ChT})
     m_1 = Vec((m[1], m[2]))
     m_2 = Vec((m[3], m[4]))
     change_1 = Vec((change[1], change[2]))
@@ -2000,11 +1965,59 @@ end
         chi ⊻= (m_2 ⊻ clo) & change_2
         clo ⊻= change_2
     end
+    return chi, clo
+end
+
+@inline function _pauli_phase_kernel(chi, clo, m::Vec{2,ChT}, change::Vec{2,ChT})
+    if chi !== nothing
+        return chi ⊻ ((m ⊻ clo) & change), clo ⊻ change
+    else
+        return m & change, change
+    end
+end
+
+@inline function _pauli_multiply_kernel_8!(px1s, pz1s, px2s, pz2s, i, chi, clo,
+                                           ::Val{do_swap},
+                                           _x2=nothing, _z2=nothing) where {do_swap}
+    VT8 = Vec{8,ChT}
+    x1 = vload(VT8, _gep_array(px1s, (), (i,)))
+    x2 = _x2 === nothing ? vload(VT8, _gep_array(px2s, (), (i,))) : _x2
+    z1 = vload(VT8, _gep_array(pz1s, (), (i,)))
+    z2 = _z2 === nothing ? vload(VT8, _gep_array(pz2s, (), (i,))) : _z2
+    new_x1, new_z1, m, change = _pauli_multiply_kernel(x1, z1, x2, z2)
+    vstore(new_x1, _gep_array(px1s, (), (i,)))
+    if do_swap
+        vstore(x1, _gep_array(px2s, (), (i,)))
+    end
+    vstore(new_z1, _gep_array(pz1s, (), (i,)))
+    if do_swap
+        vstore(z1, _gep_array(pz2s, (), (i,)))
+    end
+    return _pauli_phase_kernel(chi, clo, m, change)
+end
+
+@inline function _pauli_multiply_kernel_4!(px1s, pz1s, px2s, pz2s, chi, clo,
+                                           ::Val{do_swap},
+                                           _x2=nothing, _z2=nothing) where {do_swap}
+    VT4 = Vec{4,ChT}
+    x1 = vload(VT4, px1s)
+    x2 = _x2 === nothing ? vload(VT4, px2s) : _x2
+    z1 = vload(VT4, pz1s)
+    z2 = _z2 === nothing ? vload(VT4, pz2s) : _z2
+    new_x1, new_z1, m, change = _pauli_multiply_kernel(x1, z1, x2, z2)
+    vstore(new_x1, px1s)
+    if do_swap
+        vstore(x1, px2s)
+    end
+    vstore(new_z1, pz1s)
+    if do_swap
+        vstore(z1, pz2s)
+    end
     px1s += sizeof(VT4)
     pz1s += sizeof(VT4)
     px2s += sizeof(VT4)
     pz2s += sizeof(VT4)
-    return px1s, pz1s, px2s, pz2s, chi, clo
+    return px1s, pz1s, px2s, pz2s, _pauli_phase_kernel(chi, clo, m, change)...
 end
 
 @inline function _pauli_multiply_kernel_2!(px1s, pz1s, px2s, pz2s, chi, clo,
@@ -2013,24 +2026,18 @@ end
     VT2 = Vec{2,ChT}
     x1 = vloada(VT2, px1s)
     x2 = _x2 === nothing ? vloada(VT2, px2s) : _x2
-    new_x1 = x1 ⊻ x2
+    z1 = vloada(VT2, pz1s)
+    z2 = _z2 === nothing ? vloada(VT2, pz2s) : _z2
+    new_x1, new_z1, m, change = _pauli_multiply_kernel(x1, z1, x2, z2)
     vstorea(new_x1, px1s)
     if do_swap
         vstorea(x1, px2s)
     end
-    z1 = vloada(VT2, pz1s)
-    z2 = _z2 === nothing ? vloada(VT2, pz2s) : _z2
-    new_z1 = z1 ⊻ z2
     vstorea(new_z1, pz1s)
     if do_swap
         vstorea(z1, pz2s)
     end
-
-    v1 = x1 & z2
-    v2 = x2 & z1
-    m = new_x1 ⊻ new_z1 ⊻ v1
-    change = v1 ⊻ v2
-    return chi ⊻ ((m ⊻ clo) & change), clo ⊻ change
+    return _pauli_phase_kernel(chi, clo, m, change)
 end
 
 @inline function _pauli_multiply_kernel_single_2!(px1s, pz1s, px2s, pz2s,
@@ -2039,24 +2046,17 @@ end
     VT4 = Vec{4,ChT}
     xz1 = vload(VT4, px1s)
     xz2 = _xz2 === nothing ? vload(VT4, px2s) : _xz2
-    new_xz1 = xz1 ⊻ xz2
-    vstore(new_xz1, px1s)
-    if do_swap
-        vstorea(xz1, px2s)
-    end
-
     x1 = Vec((xz1[1], xz1[2]))
     z1 = Vec((xz1[3], xz1[4]))
     x2 = Vec((xz2[1], xz2[2]))
     z2 = Vec((xz2[3], xz2[4]))
-    new_x1 = Vec((new_xz1[1], new_xz1[2]))
-    new_z1 = Vec((new_xz1[3], new_xz1[4]))
-
-    v1 = x1 & z2
-    v2 = x2 & z1
-    m = new_x1 ⊻ new_z1 ⊻ v1
-    change = v1 ⊻ v2
-    return m & change, change
+    new_x1, new_z1, m, change = _pauli_multiply_kernel(x1, z1, x2, z2)
+    new_xz1 = Vec((new_x1[1], new_x1[2], new_z1[1], new_z1[2]))
+    vstore(new_xz1, px1s)
+    if do_swap
+        vstorea(xz1, px2s)
+    end
+    return _pauli_phase_kernel(nothing, nothing, m, change)
 end
 
 @inline function _pauli_multiply_phase(chi, clo)
