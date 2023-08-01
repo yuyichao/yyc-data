@@ -137,3 +137,18 @@ function correct_error!(state, lot, stab_vals)
     end
     return
 end
+
+struct UniformInit{T,RD}
+    rd::RD
+    function UniformInit{T}(p) where T
+        rd = RandDepol{T}(p)
+        return new{T,typeof(rd)}(rd)
+    end
+end
+
+function init!(state, init::UniformInit)
+    init!(state)
+    for i in 1:state.n
+        noise_1q!(state, i, init.rd)
+    end
+end
