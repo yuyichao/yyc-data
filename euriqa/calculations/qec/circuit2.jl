@@ -109,3 +109,31 @@ function apply_noisy!(state, gate::Clf.Clifford2Q, i, j, rd2)
     noise_2q!(state, i, j, rd2)
     return
 end
+
+measure_noisy_z(state, i, rm) = Clf.measure_stabilizer_z(state, (i,)) ⊻ rand(rm)
+
+function correct_error!(state, lot, stab_vals)
+    T = eltype(state)
+    for (syndrome, errs) in lot
+        mask = zero(T)
+        for (s, sv) in zip(syndrome, stab_vals)
+            if s
+                mask &= sv
+            else
+                mask &= ~sv
+            end
+        end
+        if mask != 0
+            for err in errs
+                if err.type == 1
+                    Clf.inject_pauli!(state, mask, zero(T), err.bit)
+                elseif err.type == 2
+                    Clf.inject_pauli!(state, mask, mask, err.bit)
+                elseif err.type == 3
+                    Clf.inject_pauli!(state, zero(T), mask, err.bit)
+                end
+            end
+        end
+    end
+    return
+end
