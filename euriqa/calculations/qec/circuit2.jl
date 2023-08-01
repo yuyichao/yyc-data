@@ -152,3 +152,20 @@ function init!(state, init::UniformInit)
         noise_1q!(state, i, init.rd)
     end
 end
+
+mutable struct ErrorStat
+    err::Int
+    tot::Int
+    ErrorStat() = new(0, 0)
+end
+
+function collect_results(state::Clf.PauliString, err_stat::ErrorStat,
+                         logics_x, logics_z)
+    err_stat.tot += Clf.nbits(eltype(state))
+    mask = zero(eltype(state))
+    for (logic_x, logic_z) in zip(logics_x, logics_z)
+        mask |= @inbounds Clf.measure_stabilizer(state, logic_x, logic_z)
+    end
+    err_stat.err += @inbounds Clf.count_ones(mask)
+    return
+end
