@@ -1153,6 +1153,27 @@ end
     return str
 end
 
+@inline function init_single_x!(str::PauliString{T}, a, v=false) where T
+    @boundscheck check_qubit_bound(str.n, a)
+    @inbounds str.xs[a] = zero(T)
+    @inbounds str.zs[a] = zero(T)
+    return str
+end
+
+@inline function init_single_y!(str::PauliString{T}, a, v=false) where T
+    @boundscheck check_qubit_bound(str.n, a)
+    @inbounds str.xs[a] = zero(T)
+    @inbounds str.zs[a] = zero(T)
+    return str
+end
+
+@inline function init_single_z!(str::PauliString{T}, a, v=false) where T
+    @boundscheck check_qubit_bound(str.n, a)
+    @inbounds str.xs[a] = zero(T)
+    @inbounds str.zs[a] = zero(T)
+    return str
+end
+
 function pauli_commute(xas, zas, xbs, zbs)
     TA = eltype(xas)
     TB = eltype(xbs)
@@ -2968,7 +2989,7 @@ const _StabilizerState = Union{StabilizerState,InvStabilizerState}
 @inline init_state_x!(state::_StabilizerState) = init_state_x!(state, false)
 @inline init_state_y!(state::_StabilizerState) = init_state_y!(state, false)
 
-function measure_x!(state::_StabilizerState, a; force=nothing)
+@inline function measure_x!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, HGate(), a)
     res = @inbounds measure_z!(state, a; force=force)
@@ -2976,12 +2997,39 @@ function measure_x!(state::_StabilizerState, a; force=nothing)
     return res
 end
 
-function measure_y!(state::_StabilizerState, a; force=nothing)
+@inline function measure_y!(state::_StabilizerState, a; force=nothing)
     @boundscheck check_qubit_bound(state.n, a)
     @inbounds apply!(state, SXGate(), a)
     res = @inbounds measure_z!(state, a; force=force)
     @inbounds apply!(state, ISXGate(), a)
     return res
+end
+
+@inline function init_single_x!(state::_StabilizerState, a, v=false)
+    @boundscheck check_qubit_bound(state.n, a)
+    v2, det = @inbounds measure_x!(state, a; force=v)
+    if !det && v2 != v
+        @inbounds apply!(state, ZGate(), a)
+    end
+    return state
+end
+
+@inline function init_single_y!(state::_StabilizerState, a, v=false)
+    @boundscheck check_qubit_bound(state.n, a)
+    v2, det = @inbounds measure_y!(state, a; force=v)
+    if !det && v2 != v
+        @inbounds apply!(state, ZGate(), a)
+    end
+    return state
+end
+
+@inline function init_single_z!(state::_StabilizerState, a, v=false)
+    @boundscheck check_qubit_bound(state.n, a)
+    v2, det = @inbounds measure_z!(state, a; force=v)
+    if !det && v2 != v
+        @inbounds apply!(state, XGate(), a)
+    end
+    return state
 end
 
 function measure_zs!(state::_StabilizerState, idxs; force=nothing)
