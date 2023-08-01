@@ -79,3 +79,18 @@ function decoding_table(nq, t, stabs_x, stabs_z)
     end
     return lot
 end
+
+function init!(state::Clf.PauliString)
+    empty!(state)
+end
+
+function noise_1q!(state, i, rd)
+    xmask, zmask = rand(rd)
+    @inbounds Clf.inject_pauli!(state, xmask, zmask, i)
+end
+
+function noise_2q!(state, i, j, rd2)
+    x1, z1, x2, z2 = rand(rd2)
+    @inbounds Clf.inject_pauli!(state, x1, z1, i)
+    @inbounds Clf.inject_pauli!(state, x2, z2, j)
+end
