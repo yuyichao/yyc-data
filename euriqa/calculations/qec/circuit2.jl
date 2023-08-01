@@ -82,15 +82,30 @@ end
 
 function init!(state::Clf.PauliString)
     empty!(state)
+    return
 end
 
 function noise_1q!(state, i, rd)
     xmask, zmask = rand(rd)
     @inbounds Clf.inject_pauli!(state, xmask, zmask, i)
+    return
 end
 
 function noise_2q!(state, i, j, rd2)
     x1, z1, x2, z2 = rand(rd2)
     @inbounds Clf.inject_pauli!(state, x1, z1, i)
     @inbounds Clf.inject_pauli!(state, x2, z2, j)
+    return
+end
+
+function apply_noisy!(state, gate::Clf.Clifford1Q, i, rd)
+    @inbounds Clf.apply!(state, gate, i)
+    noise_1q!(state, i, rd)
+    return
+end
+
+function apply_noisy!(state, gate::Clf.Clifford2Q, i, j, rd2)
+    @inbounds Clf.apply!(state, gate, i, j)
+    noise_2q!(state, i, j, rd2)
+    return
 end
