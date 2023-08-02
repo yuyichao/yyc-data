@@ -272,6 +272,108 @@ function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
     return err_stat
 end
 
+function is_css_code(stabs_x, stabs_z)
+    for (stab_x, stab_z) in zip(stabs_x, stabs_z)
+        if any(stab_x) && any(stab_z)
+            return false
+        end
+    end
+    return true
+end
+
+struct SteaneMeasureCircuit{T,Init,RM,RD,RD2}
+    nq::Int
+    init::Init
+    stabs_x::Vector{Vector{Bool}}
+    stabs_z::Vector{Vector{Bool}}
+    logics_x::Vector{Vector{Bool}}
+    logics_z::Vector{Vector{Bool}}
+    rms::Matrix{RM}
+    rds::Matrix{RD}
+    rd2s::Matrix{RD2}
+    function SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+                                      pms, pds, pd2s, init::Init) where {T,Init}
+        @assert is_css_code(stabs_x, stabs_z)
+
+        nstab = length(stabs_x)
+        @assert nstab > 0
+        @assert length(stabs_z) == nstab
+        nq = length(stabs_x[1])
+        @assert all(length.(stabs_x) .== nq)
+        @assert all(length.(stabs_z) .== nq)
+        nl = length(logics_x)
+        @assert length(logics_z) == nl
+        @assert all(length.(logics_x) .== nq)
+        @assert all(length.(logics_z) .== nq)
+
+        @assert size(pms) == (nq, 2)
+        @assert size(pds) == (nq, 2)
+        @assert size(pd2s) == (nq, 2)
+
+        rms = [RandSetBits{T}(p) for p in pms]
+        rds = [RandDepol{T}(p) for p in pds]
+        rd2s = [Rand2QDepol{T}(p) for p in pd2s]
+        return new{T,Init,eltype(rms),eltype(rds),eltype(rd2s)}(
+            nq, init, stabs_x, stabs_z, logics_x, logics_z, rms, rds, rd2s)
+    end
+end
+
+function _measure_steane(circ::SteaneMeasureCircuit, state, copy_id, isz, res)
+    offset = copy_id * circ.nq
+    for i in 1:circ.nq
+        if isz
+            apply_noisy!(state, Clf.CNOTGate(), i, offset + i, circ.rd2s[i, copy_id])
+        else
+            rd = circ.rds[i, copy_id]
+            apply_noisy!(state, Clf.HGate(), offset + i, rd)
+            apply_noisy!(state, Clf.CNOTGate(), offset + i, i, circ.rd2s[i, copy_id])
+            apply_noisy!(state, Clf.HGate(), offset + i, rd)
+        end
+        res[i] = measure_noisy_z(state, offset + i, circ.rms[i, copy_id])
+    end
+end
+
+function _measure_stab_steane(circ::SteaneMeasureCircuit{T},
+                              state, stabi, res_x, res_z) where T
+    stab_x = circ.stabs_x[stabi]
+    stab_z = circ.stabs_z[stabi]
+    res = zero(T)
+    for i in 1:circ.nq
+        x = stab_x[i]
+        z = stab_z[i]
+        if x
+            res ⊻= res_x[i]
+        elseif z
+            res ⊻= res_z[i]
+        end
+    end
+    return res
+end
+
+function run(circ::SteaneMeasureCircuit{T}, nrep, final_round=true) where T
+    nstab = length(circ.stabs_x)
+    state = Clf.PauliString{T}(circ.nq * 3)
+    err_stat = ErrorStat()
+    res_x = zeros(T, circ.nq)
+    res_z = zeros(T, circ.nq)
+    stab_vals = zeros(T, nstab)
+    lot = decoding_table(circ.nq, circ.stabs_x, circ.stabs_z)
+    while err_stat.tot[] < nrep
+        init!(state, circ.init)
+        _measure_steane(circ, state, 1, false, res_x)
+        _measure_steane(circ, state, 2, true, res_z)
+        stab_vals .= _measure_stab_steane.(Ref(circ), Ref(state), 1:nstab,
+                                           Ref(res_x), Ref(res_z))
+        correct_error!(state, lot, stab_vals)
+        if final_round
+            stab_vals .= Clf.measure_stabilizer.(Ref(state), stabs_x, stabs_z)
+            correct_error!(state, lot, stab_vals)
+        end
+        collect_results(state, err_stat, circ.logics_x, circ.logics_z)
+    end
+    return err_stat
+end
+
 # const stabs_x = [[true, true, true, true, false, false, false],
 #                  [false, true, true, false, true, true, false],
 #                  [false, false, true, true, false, true, true],
