@@ -204,8 +204,8 @@ struct RawStabMeasureCircuit{T,Init,RM,RD,RD2}
     rms::Vector{RM}
     rds::Vector{RD}
     rd2s::Matrix{RD2}
-    function RawStabMeasureCircuit{T,Init}(stabs_x, stabs_z, logics_x, logics_z,
-                                           pms, pds, pd2s, init::Init) where {T,Init}
+    function RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+                                      pms, pds, pd2s, init::Init) where {T,Init}
         nstab = length(stabs_x)
         @assert nstab > 0
         @assert length(stabs_z) == nstab
@@ -229,7 +229,7 @@ struct RawStabMeasureCircuit{T,Init,RM,RD,RD2}
     end
 end
 
-function _measure_stab_raw(circ::RawStabMeasureCircuit{T}, state, stabi)
+function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
     anc = stabi + circ.nq
     rd = circ.rds[stabi]
     stab_x = circ.stabs_x[stabi]
@@ -253,7 +253,7 @@ function _measure_stab_raw(circ::RawStabMeasureCircuit{T}, state, stabi)
     return measure_noisy_z(state, anc, circ.rms[stabi])
 end
 
-function run(circ::RawStabMeasureCircuit{T}, nrep)
+function run(circ::RawStabMeasureCircuit{T}, nrep) where T
     nstab = length(circ.stabs_x)
     state = Clf.PauliString{T}(circ.nq + nstab)
     err_stat = ErrorStat()
