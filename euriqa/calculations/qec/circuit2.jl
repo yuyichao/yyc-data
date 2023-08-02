@@ -431,27 +431,29 @@ const logics_z = [[false, false, false, false, false, false, false],
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))
     T = UInt128
+    nstab = length(stabs_x)
+    nq = length(stabs_x[1])
     for (i, p) in enumerate(ps)
-        # init = UniformInit2{T}(7, p, 0.0)
+        # init = UniformInit2{T}(nq, p, 0.0)
         init = UniformInit{T}(p)
+        circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+                                        zeros(nstab), zeros(nstab),
+                                        zeros(nq, nstab), init)
         # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-        #                                 zeros(6), zeros(6),
-        #                                 zeros(7, 6), init)
+        #                                 ones(nstab) .* 0.0001, ones(nstab) .* 0.0001,
+        #                                 ones(nq, nstab) .* 0.0001, init)
         # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-        #                                 ones(6) .* 0.0001, ones(6) .* 0.0001,
-        #                                 ones(7, 6) .* 0.0001, init)
-        # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-        #                                 ones(6) .* p, ones(6) .* p,
-        #                                 ones(7, 6) .* p, init)
+        #                                 ones(nstab) .* p, ones(nstab) .* p,
+        #                                 ones(nq, nstab) .* p, init)
         # circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-        #                                zeros(7, 2), zeros(7, 2),
-        #                                zeros(7, 2), init)
+        #                                zeros(nq, 2), zeros(nq, 2),
+        #                                zeros(nq, 2), init)
         # circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-        #                                ones(7, 2) .* 0.0001, ones(7, 2) .* 0.0001,
-        #                                ones(7, 2) .* 0.0001, init)
-        circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                       ones(7, 2) .* p, ones(7, 2) .* p,
-                                       ones(7, 2) .* p, init)
+        #                                ones(nq, 2) .* 0.0001, ones(nq, 2) .* 0.0001,
+        #                                ones(nq, 2) .* 0.0001, init)
+        # circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+        #                                ones(nq, 2) .* p, ones(nq, 2) .* p,
+        #                                ones(nq, 2) .* p, init)
         err_stat = run(circ, n)
         eps[i] = err_stat.err / err_stat.tot
     end
