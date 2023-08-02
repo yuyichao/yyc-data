@@ -169,10 +169,10 @@ end
 
 function init!(state, init::UniformInit2)
     init!(state)
-    for i in 1:n1
+    for i in 1:init.n1
         noise_1q!(state, i, init.rd)
     end
-    for i in (n1 + 1):state.n
+    for i in (init.n1 + 1):state.n
         noise_1q!(state, i, init.rd_2)
     end
 end
