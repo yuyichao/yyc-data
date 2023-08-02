@@ -118,7 +118,7 @@ measure_noisy_z(state, i, rm) = Clf.measure_stabilizer_z(state, (i,)) ⊻ rand(r
 function correct_error!(state, lot, stab_vals)
     T = eltype(state)
     for (syndrome, errs) in lot
-        mask = zero(T)
+        mask = ~zero(T)
         for (s, sv) in zip(syndrome, stab_vals)
             if s
                 mask &= sv
