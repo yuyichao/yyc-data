@@ -440,9 +440,18 @@ function calc_errors(ps, n)
         # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
         #                                 ones(6) .* 0.0001, ones(6) .* 0.0001,
         #                                 ones(7, 6) .* 0.0001, init)
+        # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+        #                                 ones(6) .* p, ones(6) .* p,
+        #                                 ones(7, 6) .* p, init)
+        # circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+        #                                zeros(7, 2), zeros(7, 2),
+        #                                zeros(7, 2), init)
+        # circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+        #                                ones(7, 2) .* 0.0001, ones(7, 2) .* 0.0001,
+        #                                ones(7, 2) .* 0.0001, init)
         circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                       zeros(7, 2), zeros(7, 2),
-                                       zeros(7, 2), init)
+                                       ones(7, 2) .* p, ones(7, 2) .* p,
+                                       ones(7, 2) .* p, init)
         err_stat = run(circ, n)
         eps[i] = err_stat.err / err_stat.tot
     end
