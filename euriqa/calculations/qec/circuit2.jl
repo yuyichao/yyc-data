@@ -156,6 +156,27 @@ function init!(state, init::UniformInit)
     end
 end
 
+struct UniformInit2{T,RD}
+    n1::Int
+    rd::RD
+    rd_2::RD
+    function UniformInit2{T}(n1, p1, p2) where T
+        rd = RandDepol{T}(p1)
+        rd_2 = RandDepol{T}(p2)
+        return new{T,typeof(rd)}(n1, rd, rd_2)
+    end
+end
+
+function init!(state, init::UniformInit2)
+    init!(state)
+    for i in 1:n1
+        noise_1q!(state, i, init.rd)
+    end
+    for i in (n1 + 1):state.n
+        noise_1q!(state, i, init.rd_2)
+    end
+end
+
 mutable struct ErrorStat
     err::Int
     tot::Int
