@@ -374,72 +374,75 @@ function run(circ::SteaneMeasureCircuit{T}, nrep, final_round=true) where T
     return err_stat
 end
 
-# const stabs_x = [[true, true, true, true, false, false, false],
-#                  [false, true, true, false, true, true, false],
-#                  [false, false, true, true, false, true, true],
-#                  [false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false]]
-# const stabs_z = [[false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false],
-#                  [true, true, true, true, false, false, false],
-#                  [false, true, true, false, true, true, false],
-#                  [false, false, true, true, false, true, true]]
-
-# const stabs_x = [[true, true, true, true, false, false, false],
-#                  [false, true, true, false, true, true, false],
-#                  [false, false, true, true, false, true, true],
-#                  [true, true, true, true, false, false, false],
-#                  [false, true, true, false, true, true, false],
-#                  [false, false, true, true, false, true, true]]
-# const stabs_z = [[false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false],
-#                  [false, false, false, false, false, false, false],
-#                  [true, true, true, true, false, false, false],
-#                  [false, true, true, false, true, true, false],
-#                  [false, false, true, true, false, true, true]]
-
 const stabs_x = [[true, true, true, true, false, false, false],
                  [false, true, true, false, true, true, false],
                  [false, false, true, true, false, true, true],
                  [false, false, false, false, false, false, false],
                  [false, false, false, false, false, false, false],
                  [false, false, false, false, false, false, false]]
-const stabs_z = [[true, true, true, true, false, false, false],
-                 [false, true, true, false, true, true, false],
-                 [false, false, true, true, false, true, true],
+const stabs_z = [[false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false],
                  [true, true, true, true, false, false, false],
                  [false, true, true, false, true, true, false],
                  [false, false, true, true, false, true, true]]
 
-# const logics_x = [[false, false, false, false, true, true, true],
-#                   [false, false, false, false, false, false, false]]
-# const logics_z = [[false, false, false, false, false, false, false],
-#                   [false, false, false, false, true, true, true]]
+# const stabs_x = [[true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true],
+#                  [true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true]]
+# const stabs_z = [[false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true]]
 
-# const logics_x = [[false, false, false, false, true, true, true],
-#                   [false, false, false, false, true, true, true]]
-# const logics_z = [[false, false, false, false, false, false, false],
-#                   [false, false, false, false, true, true, true]]
+# const stabs_x = [[true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false]]
+# const stabs_z = [[true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true],
+#                  [true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true]]
 
 const logics_x = [[false, false, false, false, true, true, true],
                   [false, false, false, false, false, false, false]]
-const logics_z = [[false, false, false, false, true, true, true],
+const logics_z = [[false, false, false, false, false, false, false],
                   [false, false, false, false, true, true, true]]
+
+# const logics_x = [[false, false, false, false, true, true, true],
+#                   [false, false, false, false, true, true, true]]
+# const logics_z = [[false, false, false, false, false, false, false],
+#                   [false, false, false, false, true, true, true]]
+
+# const logics_x = [[false, false, false, false, true, true, true],
+#                   [false, false, false, false, false, false, false]]
+# const logics_z = [[false, false, false, false, true, true, true],
+#                   [false, false, false, false, true, true, true]]
 
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))
     T = UInt128
     for (i, p) in enumerate(ps)
-        init = UniformInit2{T}(7, p, 0.0)
-        # init = UniformInit{T}(p)
-        circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                        zeros(6), zeros(6),
-                                        zeros(7, 6), init)
+        # init = UniformInit2{T}(7, p, 0.0)
+        init = UniformInit{T}(p)
+        # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+        #                                 zeros(6), zeros(6),
+        #                                 zeros(7, 6), init)
         # circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
         #                                 ones(6) .* 0.0001, ones(6) .* 0.0001,
         #                                 ones(7, 6) .* 0.0001, init)
+        circ = SteaneMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+                                       zeros(7, 2), zeros(7, 2),
+                                       zeros(7, 2), init)
         err_stat = run(circ, n)
         eps[i] = err_stat.err / err_stat.tot
     end
