@@ -1182,7 +1182,7 @@ function pauli_commute(xas, zas, xbs, zbs)
     end
     T = TA === Bool ? TB : TA
     commute = ~zero(T)
-    n = length(xas)
+    n = min(length(xas), length(xbs))
     @inbounds @simd for i in 1:n
         xa = _cast_bits(T, xas[i])
         za = _cast_bits(T, zas[i])
