@@ -374,18 +374,19 @@ function run(circ::SteaneMeasureCircuit{T}, nrep, final_round=true) where T
     return err_stat
 end
 
-const stabs_x = [[true, true, true, true, false, false, false],
-                 [false, true, true, false, true, true, false],
-                 [false, false, true, true, false, true, true],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false]]
-const stabs_z = [[false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [true, true, true, true, false, false, false],
-                 [false, true, true, false, true, true, false],
-                 [false, false, true, true, false, true, true]]
+# Steane
+# const stabs_x = [[true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false]]
+# const stabs_z = [[false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true]]
 
 # const stabs_x = [[true, true, true, true, false, false, false],
 #                  [false, true, true, false, true, true, false],
@@ -413,10 +414,10 @@ const stabs_z = [[false, false, false, false, false, false, false],
 #                  [false, true, true, false, true, true, false],
 #                  [false, false, true, true, false, true, true]]
 
-const logics_x = [[false, false, false, false, true, true, true],
-                  [false, false, false, false, false, false, false]]
-const logics_z = [[false, false, false, false, false, false, false],
-                  [false, false, false, false, true, true, true]]
+# const logics_x = [[false, false, false, false, true, true, true],
+#                   [false, false, false, false, false, false, false]]
+# const logics_z = [[false, false, false, false, false, false, false],
+#                   [false, false, false, false, true, true, true]]
 
 # const logics_x = [[false, false, false, false, true, true, true],
 #                   [false, false, false, false, true, true, true]]
@@ -427,6 +428,29 @@ const logics_z = [[false, false, false, false, false, false, false],
 #                   [false, false, false, false, false, false, false]]
 # const logics_z = [[false, false, false, false, true, true, true],
 #                   [false, false, false, false, true, true, true]]
+
+const stabs_x = [[true, true, false, false, false, false, false, false, false],
+                 [false, true, true, false, false, false, false, false, false],
+                 [false, false, false, true, true, false, false, false, false],
+                 [false, false, false, false, true, true, false, false, false],
+                 [false, false, false, false, false, false, true, true, false],
+                 [false, false, false, false, false, false, false, true, true],
+                 [false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false]]
+const stabs_z = [[false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false],
+                 [false, false, false, false, false, false, false, false, false],
+                 [true, true, true, true, true, true, false, false, false],
+                 [false, false, false, true, true, true, true, true, true]]
+
+const logics_x = [[true, false, false, true, false, false, true, false, false],
+                  [false, false, false, false, false, false, false, false, false]]
+const logics_z = [[false, false, false, false, false, false, false, false, false],
+                  [true, true, true, false, false, false, false, false, false]]
+
 
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))
