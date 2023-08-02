@@ -58,17 +58,20 @@ function _next_bit!(errs, nq)
     return false
 end
 
-function decoding_table(nq, t, stabs_x, stabs_z)
+function decoding_table(nq, stabs_x, stabs_z)
     nstab = length(stabs_x)
     lot = Dict{Vector{Bool},Vector{ErrorBit}}()
     @assert length(stabs_z) == nstab
-    for nerr in 1:t
+    for nerr in 1:nq
         errs = [ErrorBit(i, 1) for i in 1:nerr]
         while true
             syndrome = [_compute_syndrome(errs, stabs_x[i], stabs_z[i])
                         for i in 1:nstab]
             if any(syndrome) && !(syndrome in keys(lot))
                 lot[syndrome] = copy(errs)
+                if length(lot) == 2^nstab - 1
+                    break
+                end
             end
             if !_next_err_type!(errs)
                 if !_next_bit!(errs, nq)
