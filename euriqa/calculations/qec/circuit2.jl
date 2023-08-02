@@ -172,3 +172,77 @@ function collect_results(state::Clf.PauliString, err_stat::ErrorStat,
     err_stat.err += @inbounds Clf.count_ones(mask)
     return
 end
+
+struct RawStabMeasureCircuit{T,Init,RM,RD,RD2}
+    nq::Int
+    init::Init
+    stabs_x::Vector{Vector{Bool}}
+    stabs_z::Vector{Vector{Bool}}
+    logics_x::Vector{Vector{Bool}}
+    logics_z::Vector{Vector{Bool}}
+    rms::Vector{RM}
+    rds::Vector{RD}
+    rd2s::Matrix{RD2}
+    function RawStabMeasureCircuit{T,Init}(stabs_x, stabs_z, logics_x, logics_z,
+                                           pms, pds, pd2s, init::Init) where {T,Init}
+        nstab = length(stabs_x)
+        @assert nstab > 0
+        @assert length(stabs_z) == nstab
+        nq = length(stabs_x[1])
+        @assert all(length.(stabs_x) .== nq)
+        @assert all(length.(stabs_z) .== nq)
+        nl = length(logics_x)
+        @assert length(logics_z) == nl
+        @assert all(length.(logics_x) .== nq)
+        @assert all(length.(logics_z) .== nq)
+
+        @assert length(pms) == nstab
+        @assert length(pds) == nstab
+        @assert size(pd2s) == (nq, nstab)
+
+        rms = [RandSetBits{T}(p) for p in pms]
+        rds = [RandDepol{T}(p) for p in pds]
+        rd2s = [Rand2QDepol{T}(p) for p in pd2s]
+        return new{T,Init,eltype(rms),eltype(rds),eltype(rd2s)}(
+            nq, init, stabs_x, stabs_z, logics_x, logics_z, rms, rds, rd2s)
+    end
+end
+
+function _measure_stab_raw(circ::RawStabMeasureCircuit{T}, state, stabi)
+    anc = stabi + circ.nq
+    rd = circ.rds[stabi]
+    stab_x = circ.stabs_x[stabi]
+    stab_z = circ.stabs_z[stabi]
+    apply_noisy!(state, Clf.HGate(), anc, rd)
+    for i in 1:circ.nq
+        x = stab_x[i]
+        z = stab_z[i]
+        rd2 = circ.rd2s[i, stabi]
+        if x
+            if z
+                apply_noisy!(state, Clf.CYGate(), anc, i, rd2)
+            else
+                apply_noisy!(state, Clf.CXGate(), anc, i, rd2)
+            end
+        elseif z
+            apply_noisy!(state, Clf.CZGate(), anc, i, rd2)
+        end
+    end
+    apply_noisy!(state, Clf.HGate(), anc, rd)
+    return measure_noisy_z(state, anc, circ.rms[stabi])
+end
+
+function run(circ::RawStabMeasureCircuit{T}, nrep)
+    nstab = length(circ.stabs_x)
+    state = Clf.PauliString{T}(circ.nq + nstab)
+    err_stat = ErrorStat()
+    stab_vals = zeros(T, nstab)
+    lot = decoding_table(circ.nq, circ.stabs_x, circ.stabs_z)
+    while err_stat.tot[] < nrep
+        init!(state, circ.init)
+        stab_vals .= _measure_stab_raw.(Ref(circ), Ref(state), 1:nstab)
+        correct_error!(state, lot, stab_vals)
+        collect_results(state, err_stat, circ.logics_x, circ.logics_z)
+    end
+    return err_stat
+end
