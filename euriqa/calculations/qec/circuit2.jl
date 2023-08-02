@@ -253,7 +253,7 @@ function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
     return measure_noisy_z(state, anc, circ.rms[stabi])
 end
 
-function run(circ::RawStabMeasureCircuit{T}, nrep) where T
+function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
     nstab = length(circ.stabs_x)
     state = Clf.PauliString{T}(circ.nq + nstab)
     err_stat = ErrorStat()
@@ -263,6 +263,10 @@ function run(circ::RawStabMeasureCircuit{T}, nrep) where T
         init!(state, circ.init)
         stab_vals .= _measure_stab_raw.(Ref(circ), Ref(state), 1:nstab)
         correct_error!(state, lot, stab_vals)
+        if final_round
+            stab_vals .= Clf.measure_stabilizer.(Ref(state), stabs_x, stabs_z)
+            correct_error!(state, lot, stab_vals)
+        end
         collect_results(state, err_stat, circ.logics_x, circ.logics_z)
     end
     return err_stat
