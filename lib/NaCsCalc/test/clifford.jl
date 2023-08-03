@@ -169,6 +169,55 @@ end
     end
 end
 
+function _anti_commute_1q(x1, z1, x2, z2)
+    return (x1 & z2) ⊻ (z1 & x2)
+end
+function _anti_commute_2q(x11, z11, x21, z21,
+                          x12, z12, x22, z22)
+    ac1 = _anti_commute_1q(x11, z11, x12, z12)
+    ac2 = _anti_commute_1q(x21, z21, x22, z22)
+    return ac1 ⊻ ac2
+end
+function _commute_neq_2q(x11, z11, x21, z21,
+                         x12, z12, x22, z22)
+    return (x11, z11, x21, z21) != (x12, z12, x22, z22) &&
+        !_anti_commute_2q(x11, z11, x21, z21, x12, z12, x22, z22)
+end
+
+const pauli_2q = [x for x in Iterators.product((false, true), (false, true),
+                                               (false, true), (false, true)) if any(x)]
+const xz_2q = [(x, z) for (x, z) in Iterators.product(pauli_2q, pauli_2q)
+                   if _anti_commute_2q(x..., z...)]
+const xz2_2q = [(x1, z1, x2, z2) for ((x1, z1), (x2, z2)) in
+                    Iterators.product(xz_2q, xz_2q)
+                    if (_commute_neq_2q(x1..., x2...) &&
+                        _commute_neq_2q(x1..., z2...) &&
+                        _commute_neq_2q(z1..., x2...) &&
+                        _commute_neq_2q(z1..., z2...))]
+
+const inputs_2q = (0xffff_0000, 0xff00_ff00, 0xf0f0_f0f0, 0xcccc_cccc, 0xaaaa_aaaa)
+const gates_2q = [Clf.Clifford2Q{X1...,R[1],Z1...,R[2],X2...,R[3],Z2...,R[4]}()
+                  for (X1, Z1, X2, Z2) in xz2_2q,
+                      R in Iterators.product((false, true), (false, true),
+                                             (false, true), (false, true))]
+
+@testset "inv 2q" begin
+    for gate in gates_2q
+        @test gate * inv(gate) === Clf.I2QGate()
+        @test Clf.apply(inv(gate), Clf.apply(gate, inputs_2q...)...) === inputs_2q
+    end
+end
+
+# This takes way too long...
+# @testset "prod 2q" begin
+#     for gate1 in gates_2q
+#         @time for gate2 in gates_2q
+#             @test(Clf.apply(gate2, Clf.apply(gate1, inputs_2q...)...) ===
+#                 Clf.apply(gate1 * gate2, inputs_2q...))
+#         end
+#     end
+# end
+
 function test_flip_base(::Type{SST}, n) where SST
     state = SST(n)
 
