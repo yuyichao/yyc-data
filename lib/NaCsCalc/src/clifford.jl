@@ -922,6 +922,7 @@ function _generate_2q_apply(x1x1, x1z1, x1x2, x1z2, x1r,
                 r ⊻= $n1 & ($n2 ⊻ $p2) & ($p2 ⊻ $i1)
             end
         end
+        @goto gen_common
     end
 
     # Now there's no I in the table and at least some of the first term between
