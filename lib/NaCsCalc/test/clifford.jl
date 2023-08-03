@@ -138,7 +138,7 @@ end
               (true, false, false, true), true)
 end
 
-const inputs_1q = Iterators.product((false, true), (false, true), (false, true))
+const inputs_1q = (0b1111_0000, 0b1100_1100, 0b1010_1010)
 const gates_1q = [Clf.Clifford1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
                   for XZ in ((true, false, true, true),
                              (true, false, false, true),
@@ -148,27 +148,23 @@ const gates_1q = [Clf.Clifford1Q{XZ[1],XZ[2],R[1],XZ[3],XZ[4],R[2]}()
                              (false, true, true, true)),
                       R in Iterators.product((false, true), (false, true))]
 
-@testset "inv" begin
+@testset "inv 1q" begin
     for gate in gates_1q
         @test gate * inv(gate) === Clf.IGate()
-        for input in inputs_1q
-            @test Clf.apply(inv(gate), Clf.apply(gate, input...)...) === input
-            @test Clf.apply(gate, Clf.apply(inv(gate), input...)...) === input
-        end
+        @test Clf.apply(inv(gate), Clf.apply(gate, inputs_1q...)...) === inputs_1q
+        @test Clf.apply(gate, Clf.apply(inv(gate), inputs_1q...)...) === inputs_1q
     end
 end
 
-@testset "prod" begin
+@testset "prod 1q" begin
     for gate1 in gates_1q
         for gate2 in gates_1q
-            for input in inputs_1q
-                @test(Clf.apply(gate2, Clf.apply(gate1, input...)...) ===
-                    Clf.apply(gate1 * gate2, input...))
-                @test(Clf.apply(inv(gate1), Clf.apply(inv(gate2), input...)...) ===
-                    Clf.apply(inv(gate1 * gate2), input...))
-                @test(Clf.apply(inv(gate2) * inv(gate1), input...) ===
-                    Clf.apply(inv(gate1 * gate2), input...))
-            end
+            @test(Clf.apply(gate2, Clf.apply(gate1, inputs_1q...)...) ===
+                Clf.apply(gate1 * gate2, inputs_1q...))
+            @test(Clf.apply(inv(gate1), Clf.apply(inv(gate2), inputs_1q...)...) ===
+                Clf.apply(inv(gate1 * gate2), inputs_1q...))
+            @test(Clf.apply(inv(gate2) * inv(gate1), inputs_1q...) ===
+                Clf.apply(inv(gate1 * gate2), inputs_1q...))
         end
     end
 end
