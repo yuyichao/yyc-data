@@ -236,6 +236,44 @@ function collect_results(state::Clf.PauliString, err_stat::ErrorStat,
     return
 end
 
+function _convert_stab_orders(nq, stabs_x, stabs_z, stab_orders::Nothing)
+    nstab = length(stabs_x)
+    return [(i, j) for i in 1:nq, j in 1:nstab if stabs_x[j][i] || stabs_z[j][i]]
+end
+
+function _check_stab_orders(nq, stabs_x, stabs_z, stab_orders)
+    nstab = length(stabs_x)
+    masks = zeros(Bool, nq, nstab)
+    for (q, s) in stab_orders
+        masks[q, s] = true
+    end
+    for q in 1:nq
+        for s in 1:nstab
+            @assert masks[q, s] == stabs_x[s][q] || stabs_z[s][q]
+        end
+    end
+end
+
+function _convert_stab_orders(nq, stabs_x, stabs_z,
+                              stab_orders::AbstractVector{VI}
+                              where VI <: AbstractVector{Int})
+    nstab = length(stabs_x)
+    new_orders = NTuple{2,Int}[]
+    for s in 1:nstab
+        for q in stab_orders[s]
+            push!(new_orders, (q, s))
+        end
+    end
+    _check_stab_orders(nq, stabs_x, stabs_z, new_orders)
+    return new_orders
+end
+
+function _convert_stab_orders(nq, stabs_x, stabs_z,
+                              stab_orders::AbstractVector{NTuple{2,Int}})
+    _check_stab_orders(nq, stabs_x, stabs_z, stab_orders)
+    return new_orders
+end
+
 struct RawStabMeasureCircuit{T,Init,R}
     nq::Int
     init::Init
@@ -243,7 +281,7 @@ struct RawStabMeasureCircuit{T,Init,R}
     stabs_z::Vector{Vector{Bool}}
     logics_x::Vector{Vector{Bool}}
     logics_z::Vector{Vector{Bool}}
-    stab_orders::Vector{Vector{Int}}
+    stab_orders::Vector{NTuple{2,Int}}
     rngs::R
     function RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
                                       rngs::R, init::Init;
@@ -259,22 +297,18 @@ struct RawStabMeasureCircuit{T,Init,R}
         @assert all(length.(logics_x) .== nq)
         @assert all(length.(logics_z) .== nq)
 
-        if stab_orders === nothing
-            stab_orders = [[i for i in 1:nq if stabs_x[j][i] || stabs_z[j][i]]
-                           for j in 1:nstab]
-        end
+        stab_orders = _convert_stab_orders(nq, stabs_x, stabs_z, stab_orders)
 
         return new{T,Init,R}(nq, init, stabs_x, stabs_z, logics_x, logics_z,
                              stab_orders, rngs)
     end
 end
 
-function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
-    anc = stabi + circ.nq
-    stab_x = circ.stabs_x[stabi]
-    stab_z = circ.stabs_z[stabi]
-    apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
-    for i in circ.stab_orders[stabi]
+function _do_stab_raw_2q!(circ::RawStabMeasureCircuit, state)
+    for (i, stabi) in circ.stab_orders
+        anc = stabi + circ.nq
+        stab_x = circ.stabs_x[stabi]
+        stab_z = circ.stabs_z[stabi]
         x = stab_x[i]
         z = stab_z[i]
         if x
@@ -287,8 +321,6 @@ function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
             apply_noisy_next!(state, Clf.CZGate(), anc, i, circ.rngs)
         end
     end
-    apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
-    return measure_noisy_z_next(state, anc, circ.rngs)
 end
 
 function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
@@ -300,7 +332,17 @@ function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
     while err_stat.tot[] < nrep
         init!(state, circ.init)
         init!(circ.rngs)
-        stab_vals .= _measure_stab_raw.(Ref(circ), Ref(state), 1:nstab)
+        for stabi in 1:nstab
+            anc = stabi + circ.nq
+            apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
+        end
+        _do_stab_raw_2q!(circ, state)
+        for stabi in 1:nstab
+            anc = stabi + circ.nq
+            apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
+            stab_vals[stabi] = measure_noisy_z_next(state, anc, circ.rngs)
+        end
+
         correct_error!(state, lot, stab_vals)
         if final_round
             stab_vals .= Clf.measure_stabilizer.(Ref(state), stabs_x, stabs_z)
