@@ -243,9 +243,11 @@ struct RawStabMeasureCircuit{T,Init,R}
     stabs_z::Vector{Vector{Bool}}
     logics_x::Vector{Vector{Bool}}
     logics_z::Vector{Vector{Bool}}
+    stab_orders::Vector{Vector{Int}}
     rngs::R
     function RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                      rngs::R, init::Init) where {T,Init,R}
+                                      rngs::R, init::Init,
+                                      stab_orders=nothing) where {T,Init,R}
         nstab = length(stabs_x)
         @assert nstab > 0
         @assert length(stabs_z) == nstab
@@ -257,7 +259,13 @@ struct RawStabMeasureCircuit{T,Init,R}
         @assert all(length.(logics_x) .== nq)
         @assert all(length.(logics_z) .== nq)
 
-        return new{T,Init,R}(nq, init, stabs_x, stabs_z, logics_x, logics_z, rngs)
+        if stab_orders === nothing
+            stab_orders = [[i for i in 1:nq if stabs_x[j][i] || stabs_z[j][i]]
+                           for j in 1:nstab]
+        end
+
+        return new{T,Init,R}(nq, init, stabs_x, stabs_z, logics_x, logics_z,
+                             stab_orders, rngs)
     end
 end
 
@@ -266,7 +274,7 @@ function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
     stab_x = circ.stabs_x[stabi]
     stab_z = circ.stabs_z[stabi]
     apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
-    for i in 1:circ.nq
+    for i in circ.stab_orders[stabi]
         x = stab_x[i]
         z = stab_z[i]
         if x

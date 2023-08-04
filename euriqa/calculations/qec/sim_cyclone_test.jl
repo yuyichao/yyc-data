@@ -95,6 +95,11 @@ const logics_x = [[true, false, true, true, false],
 const logics_z = [[false, false, false, false, false],
                   [true, false, true, true, false]]
 
+const stab_orders = [[1, 4, 5, 3],
+                     [2, 5, 1, 4],
+                     [3, 4, 1, 5],
+                     [2, 3, 4, 5]]
+
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))
     T = UInt128
@@ -107,7 +112,7 @@ function calc_errors(ps, n)
         # rngs = RNGs{T}(ones(6) .* 0.0001, ones(6 * 2) .* 0.0001, ones(24) .* 0.0001)
         # rngs = RNGs{T}(ones(6) .* p, ones(6 * 2) .* p, ones(24) .* p)
         circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                        rngs, init)
+                                        rngs, init, stab_orders)
         err_stat = run(circ, n)
         eps[i] = err_stat.err / err_stat.tot
     end
