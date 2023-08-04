@@ -90,6 +90,9 @@ function sim_cyclone_513()
     pds = zeros(8)
     pd2s_base = parse_lists(base_indexes, base_fidelities)
     pd2s_cyclone = parse_lists(cyclone_indexes, cyclone_fidelities)
+    @show pd2s_base
+    @show pd2s_cyclone
+    @show pd2s_base .- pd2s_cyclone
     le_base = sim_513(pds, pd2s_base, 1000_000_000, false)
     # @show sim_513(pds, pd2s_base, 1000_000_000, true)
     le_cyclone = sim_513(pds, pd2s_cyclone, 1000_000_000, false)
