@@ -95,10 +95,14 @@ const logics_x = [[true, false, true, true, false],
 const logics_z = [[false, false, false, false, false],
                   [true, false, true, true, false]]
 
-const stab_orders = [[1, 4, 5, 3],
-                     [2, 5, 1, 4],
-                     [3, 4, 1, 5],
-                     [2, 3, 4, 5]]
+# const stab_orders = [[1, 4, 5, 3],
+#                      [2, 5, 1, 4],
+#                      [3, 4, 1, 5],
+#                      [2, 3, 4, 5]]
+const stab_orders = [(1, 1), (4, 1), (5, 1), (3, 1),
+                     (2, 2), (5, 2), (1, 2), (4, 2),
+                     (3, 3), (4, 3), (1, 3), (5, 3),
+                     (2, 4), (3, 4), (4, 4), (5, 4)]
 
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))

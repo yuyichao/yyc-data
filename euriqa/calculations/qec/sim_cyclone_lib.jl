@@ -271,7 +271,7 @@ end
 function _convert_stab_orders(nq, stabs_x, stabs_z,
                               stab_orders::AbstractVector{NTuple{2,Int}})
     _check_stab_orders(nq, stabs_x, stabs_z, stab_orders)
-    return new_orders
+    return stab_orders
 end
 
 struct RawStabMeasureCircuit{T,Init,R}
