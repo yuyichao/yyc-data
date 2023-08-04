@@ -235,3 +235,70 @@ function collect_results(state::Clf.PauliString, err_stat::ErrorStat,
     err_stat.err += @inbounds Clf.count_ones(mask)
     return
 end
+
+struct RawStabMeasureCircuit{T,Init,R}
+    nq::Int
+    init::Init
+    stabs_x::Vector{Vector{Bool}}
+    stabs_z::Vector{Vector{Bool}}
+    logics_x::Vector{Vector{Bool}}
+    logics_z::Vector{Vector{Bool}}
+    rngs::R
+    function RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
+                                      rngs::R, init::Init) where {T,Init,R}
+        nstab = length(stabs_x)
+        @assert nstab > 0
+        @assert length(stabs_z) == nstab
+        nq = length(stabs_x[1])
+        @assert all(length.(stabs_x) .== nq)
+        @assert all(length.(stabs_z) .== nq)
+        nl = length(logics_x)
+        @assert length(logics_z) == nl
+        @assert all(length.(logics_x) .== nq)
+        @assert all(length.(logics_z) .== nq)
+
+        return new{T,Init,R}(nq, init, stabs_x, stabs_z, logics_x, logics_z, rngs)
+    end
+end
+
+function _measure_stab_raw(circ::RawStabMeasureCircuit, state, stabi)
+    anc = stabi + circ.nq
+    stab_x = circ.stabs_x[stabi]
+    stab_z = circ.stabs_z[stabi]
+    apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
+    for i in 1:circ.nq
+        x = stab_x[i]
+        z = stab_z[i]
+        if x
+            if z
+                apply_noisy_next!(state, Clf.CYGate(), anc, i, circ.rngs)
+            else
+                apply_noisy_next!(state, Clf.CXGate(), anc, i, circ.rngs)
+            end
+        elseif z
+            apply_noisy_next!(state, Clf.CZGate(), anc, i, circ.rngs)
+        end
+    end
+    apply_noisy_next!(state, Clf.HGate(), anc, circ.rngs)
+    return measure_noisy_z_next(state, anc, circ.rngs)
+end
+
+function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
+    nstab = length(circ.stabs_x)
+    state = Clf.PauliString{T}(circ.nq + nstab)
+    err_stat = ErrorStat()
+    stab_vals = zeros(T, nstab)
+    lot = decoding_table(circ.nq, circ.stabs_x, circ.stabs_z)
+    while err_stat.tot[] < nrep
+        init!(state, circ.init)
+        init!(circ.rngs)
+        stab_vals .= _measure_stab_raw.(Ref(circ), Ref(state), 1:nstab)
+        correct_error!(state, lot, stab_vals)
+        if final_round
+            stab_vals .= Clf.measure_stabilizer.(Ref(state), stabs_x, stabs_z)
+            correct_error!(state, lot, stab_vals)
+        end
+        collect_results(state, err_stat, circ.logics_x, circ.logics_z)
+    end
+    return err_stat
+end
