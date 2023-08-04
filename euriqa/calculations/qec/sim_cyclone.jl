@@ -52,7 +52,7 @@ function sim_513(pds, pd2s, n, final_round)
     init = UniformInit{T}(0.0)
     rngs = RNGs{T}(zeros(4), pds, pd2s)
     circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                    rngs, init, stab_orders)
+                                    rngs, init; stab_orders=stab_orders)
     err_stat = run(circ, n)
     return (err_stat.err, sqrt(err_stat.err)) / err_stat.tot
 end

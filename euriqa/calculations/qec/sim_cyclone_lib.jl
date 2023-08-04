@@ -246,7 +246,7 @@ struct RawStabMeasureCircuit{T,Init,R}
     stab_orders::Vector{Vector{Int}}
     rngs::R
     function RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
-                                      rngs::R, init::Init,
+                                      rngs::R, init::Init;
                                       stab_orders=nothing) where {T,Init,R}
         nstab = length(stabs_x)
         @assert nstab > 0
