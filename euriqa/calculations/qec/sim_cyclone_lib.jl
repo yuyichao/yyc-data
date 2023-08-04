@@ -345,7 +345,8 @@ function run(circ::RawStabMeasureCircuit{T}, nrep, final_round=true) where T
 
         correct_error!(state, lot, stab_vals)
         if final_round
-            stab_vals .= Clf.measure_stabilizer.(Ref(state), stabs_x, stabs_z)
+            stab_vals .= Clf.measure_stabilizer.(Ref(state),
+                                                 circ.stabs_x, circ.stabs_z)
             correct_error!(state, lot, stab_vals)
         end
         collect_results(state, err_stat, circ.logics_x, circ.logics_z)
