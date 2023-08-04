@@ -3,18 +3,18 @@
 include("sim_cyclone_lib.jl")
 
 # Steane
-const stabs_x = [[true, true, true, true, false, false, false],
-                 [false, true, true, false, true, true, false],
-                 [false, false, true, true, false, true, true],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false]]
-const stabs_z = [[false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [false, false, false, false, false, false, false],
-                 [true, true, true, true, false, false, false],
-                 [false, true, true, false, true, true, false],
-                 [false, false, true, true, false, true, true]]
+# const stabs_x = [[true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false]]
+# const stabs_z = [[false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [false, false, false, false, false, false, false],
+#                  [true, true, true, true, false, false, false],
+#                  [false, true, true, false, true, true, false],
+#                  [false, false, true, true, false, true, true]]
 
 # const stabs_x = [[true, true, true, true, false, false, false],
 #                  [false, true, true, false, true, true, false],
@@ -42,10 +42,10 @@ const stabs_z = [[false, false, false, false, false, false, false],
 #                  [false, true, true, false, true, true, false],
 #                  [false, false, true, true, false, true, true]]
 
-const logics_x = [[false, false, false, false, true, true, true],
-                  [false, false, false, false, false, false, false]]
-const logics_z = [[false, false, false, false, false, false, false],
-                  [false, false, false, false, true, true, true]]
+# const logics_x = [[false, false, false, false, true, true, true],
+#                   [false, false, false, false, false, false, false]]
+# const logics_z = [[false, false, false, false, false, false, false],
+#                   [false, false, false, false, true, true, true]]
 
 # const logics_x = [[false, false, false, false, true, true, true],
 #                   [false, false, false, false, true, true, true]]
@@ -80,6 +80,20 @@ const logics_z = [[false, false, false, false, false, false, false],
 # const logics_z = [[false, false, false, false, false, false, false, false, false],
 #                   [true, true, true, false, false, false, false, false, false]]
 
+# 513
+const stabs_x = [[true, false, false, true, true],
+                 [false, true, false, false, true],
+                 [false, false, true, true, false],
+                 [false, false, false, false, false]]
+const stabs_z = [[true, false, true, false, true],
+                 [true, false, false, true, true],
+                 [true, false, false, true, true],
+                 [false, true, true, true, true]]
+
+const logics_x = [[true, false, true, true, false],
+                  [false, false, false, false, false]]
+const logics_z = [[false, false, false, false, false],
+                  [true, false, true, true, false]]
 
 function calc_errors(ps, n)
     eps = Vector{Float64}(undef, length(ps))
@@ -89,8 +103,8 @@ function calc_errors(ps, n)
     for (i, p) in enumerate(ps)
         init = UniformInit2{T}(nq, p, 0.0)
         # init = UniformInit{T}(p)
-        # rngs = RNGs{T}(zeros(6), zeros(6 * 2), zeros(24))
-        rngs = RNGs{T}(ones(6) .* 0.0001, ones(6 * 2) .* 0.0001, ones(24) .* 0.0001)
+        rngs = RNGs{T}(zeros(4), zeros(4 * 2), zeros(16))
+        # rngs = RNGs{T}(ones(6) .* 0.0001, ones(6 * 2) .* 0.0001, ones(24) .* 0.0001)
         # rngs = RNGs{T}(ones(6) .* p, ones(6 * 2) .* p, ones(24) .* p)
         circ = RawStabMeasureCircuit{T}(stabs_x, stabs_z, logics_x, logics_z,
                                         rngs, init)
