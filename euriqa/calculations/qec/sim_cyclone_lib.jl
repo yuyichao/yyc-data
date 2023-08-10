@@ -127,19 +127,38 @@ function noise_2q!(state, i, j, rd2)
     return
 end
 
-function apply_noisy!(state, gate::Clf.Clifford1Q, i, rd)
+function apply_noisy!(state, gate::Clf.Clifford1Q, i, rd::RandDepol)
     @inbounds Clf.apply!(state, gate, i)
     noise_1q!(state, i, rd)
     return
 end
 
-function apply_noisy!(state, gate::Clf.Clifford2Q, i, j, rd2)
+function apply_noisy!(state::Clf.PauliString{T}, gate::Clf.Clifford1Q,
+                      i, err::NTuple{2,T}) where T
+    @inbounds Clf.apply!(state, gate, i)
+    @inbounds Clf.inject_pauli!(state, err..., i)
+    return
+end
+
+function apply_noisy!(state, gate::Clf.Clifford2Q, i, j, rd2::Rand2QDepol)
     @inbounds Clf.apply!(state, gate, i, j)
     noise_2q!(state, i, j, rd2)
     return
 end
 
-measure_noisy_z(state, i, rm) = Clf.measure_stabilizer_z(state, (i,)) ⊻ rand(rm)
+function apply_noisy!(state::Clf.PauliString{T}, gate::Clf.Clifford2Q,
+                      i, j, err::NTuple{4,T}) where T
+    @inbounds Clf.apply!(state, gate, i, j)
+    @inbounds Clf.inject_pauli!(state, err[1], err[2], i)
+    @inbounds Clf.inject_pauli!(state, err[3], err[4], j)
+    return
+end
+
+measure_noisy_z(state, i, rm::RandSetBits) =
+    Clf.measure_stabilizer_z(state, (i,)) ⊻ rand(rm)
+
+measure_noisy_z(state::Clf.PauliString{T}, i, err::T) where T =
+    Clf.measure_stabilizer_z(state, (i,)) ⊻ err
 
 mutable struct RNGs{T,RM,RD,RD2}
     const rms::Vector{RM}
@@ -181,6 +200,45 @@ function measure_noisy_z_next(state, i, rngs)
     idx = rngs.idx_m
     rngs.idx_m = idx + 1
     return measure_noisy_z(state, i, rngs.rms[idx])
+end
+
+mutable struct Errors{T}
+    const ems::Vector{T}
+    const eds::Vector{NTuple{2,T}}
+    const ed2s::Vector{NTuple{4,T}}
+    idx_1q::Int
+    idx_2q::Int
+    idx_m::Int
+    function Errors{T}(ems, eds, ed2s) where {T}
+        return new{T}(ems, eds, ed2s, 1, 1, 1)
+    end
+end
+
+function init!(errs::Errors)
+    errs.idx_1q = 1
+    errs.idx_2q = 1
+    errs.idx_m = 1
+    return
+end
+
+function apply_noisy_next!(state, gate::Clf.Clifford1Q, i, errs)
+    idx = errs.idx_1q
+    errs.idx_1q = idx + 1
+    apply_noisy!(state, gate, i, errs.rds[idx])
+    return
+end
+
+function apply_noisy_next!(state, gate::Clf.Clifford2Q, i, j, errs)
+    idx = errs.idx_2q
+    errs.idx_2q = idx + 1
+    apply_noisy!(state, gate, i, j, errs.rd2s[idx])
+    return
+end
+
+function measure_noisy_z_next(state, i, errs)
+    idx = errs.idx_m
+    errs.idx_m = idx + 1
+    return measure_noisy_z(state, i, errs.rms[idx])
 end
 
 struct UniformInit{T,RD}
