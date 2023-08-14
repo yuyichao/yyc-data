@@ -1932,7 +1932,7 @@ function init_state_y!(state::InvStabilizerState, v::Bool)
     rs = state.rs
     assume(size(rs, 1) == n)
     @inbounds begin
-        rs[:, 1] .= false
+        rs[:, 1] .= true
         rs[:, 2] .= v
     end
     return state
