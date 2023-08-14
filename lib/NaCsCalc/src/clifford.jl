@@ -2601,14 +2601,21 @@ function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
                       assume(prod_phase_2 & 0x1 == $(phase2 & 0x1))
                       $(r2_syms[i11]) = $(r_syms[i11])
                       $(r2_syms[i12]) = $(r_syms[i12])
-                      $(r2_syms[i21]) = $(r_syms[i21])
-                      $(r2_syms[i22]) = $(r_syms[i22])
                       $(r_syms[i11]) = ($(r2_syms[i11]) ⊻ $(r2_syms[i12]) ⊻
                           $(_phase_expr(phase1, :prod_phase_1)))
-                      $(r_syms[i21]) = ($(r2_syms[i21]) ⊻ $(r2_syms[i22]) ⊻
-                          $(_phase_expr(phase2, :prod_phase_2)))
                       $(step1.is_swap ? :($(r_syms[i12]) = $(r2_syms[i11])) :
                           nothing)
+
+                      # Note that we have to update the phase for the second multiply
+                      # after the phase for the first multiply is written back
+                      # in case it's needed in the second phase computation.
+                      # This is accounted for in the multiply function
+                      # since we always write the pauli terms back to the memory
+                      # before we load for the second multiply.
+                      $(r2_syms[i21]) = $(r_syms[i21])
+                      $(r2_syms[i22]) = $(r_syms[i22])
+                      $(r_syms[i21]) = ($(r2_syms[i21]) ⊻ $(r2_syms[i22]) ⊻
+                          $(_phase_expr(phase2, :prod_phase_2)))
                       $(step2.is_swap ? :($(r_syms[i22]) = $(r2_syms[i21])) :
                           nothing)
                   end)
