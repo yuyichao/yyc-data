@@ -524,18 +524,19 @@ function test_deterministic_measure(::Type{SST}, nbit, ngates, nrep) where SST
     stabx = Vector{Bool}(undef, nbit)
     stabz = Vector{Bool}(undef, nbit)
     state = SST(nbit)
-    str = Clf.PauliString{UInt64}(nbit)
+    T = UInt64
+    str = Clf.PauliString{T}(nbit)
     for i in 1:nrep
         if rand(Bool)
             Clf.init_state_z!(state)
-            str.zs .= rand.(UInt64)
-            str.xs .= zero(UInt64)
+            str.zs .= one.(T)
+            str.xs .= zero(T)
         else
             Clf.init_state_x!(state)
-            str.zs .= zero(UInt64)
-            str.xs .= rand.(UInt64)
+            str.zs .= zero(T)
+            str.xs .= rand.(T)
         end
-        str.rs[] = zero(UInt64)
+        str.rs[] = zero(T)
         for _ in 1:ngates
             for i in 1:100
                 apply_random_clifford!(nbit) do (args...)
