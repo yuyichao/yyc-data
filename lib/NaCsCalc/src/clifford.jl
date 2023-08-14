@@ -2511,7 +2511,7 @@ end
 
 const _apply_info_2q = _generate_apply_info_2q()
 
-function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
+function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed, tab)
     nsteps = length(steps)
     px_exprs = [:(pointer(@view(xzs[1, 1, a]))),
                 :(pointer(@view(xzs[1, 3, a]))),
@@ -2523,11 +2523,6 @@ function _generate_2q_apply_invstab_mul(steps, mul_idx, r_used, r_changed)
                 :(pointer(@view(xzs[1, 4, b])))]
     r_syms = [:x1r, :z1r, :x2r, :z2r]
     r2_syms = [:x1r2, :z1r2, :x2r2, :z2r2]
-
-    tab = [true false false false
-           false true false false
-           false false true false
-           false false false true]
 
     mul_exprs = []
 
@@ -2661,7 +2656,13 @@ function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     r_syms = [:x1r, :z1r, :x2r, :z2r]
     r2_syms = [:x1r2, :z1r2, :x2r2, :z2r2]
 
+    tab = [true false false false
+           false true false false
+           false false true false
+           false false false true]
+
     if mul_start_idx != 1
+        tab = tab[perm_idx, :]
         r_used = perm_idx .!= 1:4
         r_changed = perm_idx .!= 1:4
         x_syms = [:x1x, :z1x, :x2x, :z2x]
@@ -2713,7 +2714,8 @@ function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     if mul_start_idx <= nsteps
         expr = quote
             $expr
-            $(_generate_2q_apply_invstab_mul(steps, mul_start_idx, r_used, r_changed))
+            $(_generate_2q_apply_invstab_mul(steps, mul_start_idx, r_used,
+                                             r_changed, tab))
         end
     end
 
