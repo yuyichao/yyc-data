@@ -504,19 +504,31 @@ function test_gap2(::Type{SST}, pos1, pos2, nqubit) where SST
     @test Clf.measure_z!(state, pos2) == (false, true)
 end
 
+const named_gates_2q = [Clf.Clifford2Q{param...}()
+                        for (param, name) in Clf._named_gates_2q]
+
 function apply_random_clifford!(cb, nbit)
-    id = rand(1:32)
+    n1q = length(gates_1q)
+    n2q = length(named_gates_2q)
     n1 = rand(1:nbit)
-    gate1q = get(gates_1q, id, Clf.IGate())
-    if gate1q !== Clf.IGate()
+    @label retry
+    id = rand(1:(n1q + n2q))
+    if id <= n1q
+        gate1q = gates_1q[id]
+        if gate1q === Clf.IGate()
+            @goto retry
+        end
         cb(gate1q, n1)
     else
-        # CNOT
+        gate2q = named_gates_2q[id - n1q]
+        if gate2q === Clf.I2QGate()
+            @goto retry
+        end
         n2 = rand(1:(nbit - 1))
         if n2 >= n1
             n2 += 1
         end
-        cb(Clf.CNOTGate(), n1, n2)
+        cb(gate2q, 2, 1)
     end
 end
 
