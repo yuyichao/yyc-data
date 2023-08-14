@@ -2345,7 +2345,7 @@ Base.@propagate_inbounds @inline function apply!(
             if x_was_y
                 # Z is multiplied into X, so is the phase
                 new_rx = rx ⊻ rz ⊻ pr
-                if inv_XR
+                if ~inv_XR
                     new_rx = ~new_rx
                 end
                 rs[a, 1] = new_rx
@@ -2357,7 +2357,7 @@ Base.@propagate_inbounds @inline function apply!(
             else
                 # X is multiplied into Z, so is the phase
                 new_rz = rz ⊻ rx ⊻ pr
-                if ~inv_ZR
+                if inv_ZR
                     new_rz = ~new_rz
                 end
                 rs[a, 2] = new_rz
