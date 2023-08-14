@@ -2650,7 +2650,7 @@ function _generate_2q_apply_invstab(info, X1R, Z1R, X2R, Z2R)
     for i in 1:nsteps
         step = steps[i]
         if step.is_mul
-            continue
+            break
         end
         mul_start_idx = i + 1
         i1 = step.i1
