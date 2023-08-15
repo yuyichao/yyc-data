@@ -286,6 +286,11 @@ end
     ac2 = _anti_commute_1q(x21, z21, x22, z22)
     return ac1 ⊻ ac2
 end
+function _commute_neq_2q(x11, z11, x21, z21,
+                         x12, z12, x22, z22)
+    return (x11, z11, x21, z21) != (x12, z12, x22, z22) &&
+        !_anti_commute_2q(x11, z11, x21, z21, x12, z12, x22, z22)
+end
 @inline function _phase_2q_anti_commute(x11, z11, x21, z21,
                                         x12, z12, x22, z22)
     if _anti_commute_1q(x11, z11, x12, z12)
@@ -408,34 +413,21 @@ struct Clifford2Q{X1X1,X1Z1,X1X2,X1Z2,X1R,
             error("X2 and Z2 mapping must anti-commute")
         end
 
-        if _anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
+        if !_commute_neq_2q(X1X1, X1Z1, X1X2, X1Z2,
                             X2X1, X2Z1, X2X2, X2Z2)
-            error("X1 and X2 mapping must commute")
+            error("X1 and X2 mapping must be different and commute")
         end
-        if _anti_commute_2q(X1X1, X1Z1, X1X2, X1Z2,
+        if !_commute_neq_2q(X1X1, X1Z1, X1X2, X1Z2,
                             Z2X1, Z2Z1, Z2X2, Z2Z2)
-            error("X1 and Z2 mapping must commute")
+            error("X1 and Z2 mapping must be different and commute")
         end
-        if _anti_commute_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
+        if !_commute_neq_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
                             X2X1, X2Z1, X2X2, X2Z2)
-            error("Z1 and X2 mapping must commute")
+            error("Z1 and X2 mapping must be different and commute")
         end
-        if _anti_commute_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
+        if !_commute_neq_2q(Z1X1, Z1Z1, Z1X2, Z1Z2,
                             Z2X1, Z2Z1, Z2X2, Z2Z2)
-            error("Z1 and Z2 mapping must commute")
-        end
-
-        if (X1X1, X1Z1, X1X2, X1Z2) === (X2X1, X2Z1, X2X2, X2Z2)
-            error("X1 and X2 mapping must be distinct")
-        end
-        if (X1X1, X1Z1, X1X2, X1Z2) === (Z2X1, Z2Z1, Z2X2, Z2Z2)
-            error("X1 and Z2 mapping must be distinct")
-        end
-        if (Z1X1, Z1Z1, Z1X2, Z1Z2) === (X2X1, X2Z1, X2X2, X2Z2)
-            error("Z1 and X2 mapping must be distinct")
-        end
-        if (Z1X1, Z1Z1, Z1X2, Z1Z2) === (Z2X1, Z2Z1, Z2X2, Z2Z2)
-            error("Z1 and Z2 mapping must be distinct")
+            error("Z1 and Z2 mapping must be different and commute")
         end
         return new{X1X1,X1Z1,X1X2,X1Z2,X1R,
                    Z1X1,Z1Z1,Z1X2,Z1Z2,Z1R,
