@@ -1,0 +1,315 @@
+\documentclass[10pt,fleqn]{article}
+% \usepackage[journal=rsc]{chemstyle}
+% \usepackage{mhchem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{esint}
+\usepackage{bbm}
+\usepackage{amscd}
+\usepackage{picinpar}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{indentfirst}
+\usepackage{wrapfig}
+\usepackage{units}
+\usepackage{textcomp}
+\usepackage[utf8x]{inputenc}
+% \usepackage{feyn}
+% \usepackage{feynmp}
+\usepackage{xkeyval}
+\usepackage{xargs}
+\usepackage{verbatim}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes
+}
+
+\DeclareGraphicsRule{*}{mps}{*}{}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\ue}{\mathrm{e}}
+\newcommand{\ui}{\mathrm{i}}
+\newcommand{\res}{\mathrm{Res}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\dsum}{\displaystyle\sum}
+\newcommand{\dprod}{\displaystyle\prod}
+\newcommand{\dlim}{\displaystyle\lim}
+\newcommand{\dint}{\displaystyle\int}
+\newcommand{\fsno}[1]{{\!\not\!{#1}}}
+\newcommand{\eqar}[1]
+{
+  \begin{align}
+    #1
+  \end{align}
+}
+\newcommand{\texp}[2]{\ensuremath{{#1}\times10^{#2}}}
+\newcommand{\dexp}[2]{\ensuremath{{#1}\cdot10^{#2}}}
+\newcommand{\eval}[2]{{\left.{#1}\right|_{#2}}}
+\newcommand{\paren}[1]{{\left({#1}\right)}}
+\newcommand{\lparen}[1]{{\left({#1}\right.}}
+\newcommand{\rparen}[1]{{\left.{#1}\right)}}
+\newcommand{\abs}[1]{{\left|{#1}\right|}}
+\newcommand{\sqr}[1]{{\left[{#1}\right]}}
+\newcommand{\crly}[1]{{\left\{{#1}\right\}}}
+\newcommand{\angl}[1]{{\left\langle{#1}\right\rangle}}
+\newcommand{\tpdiff}[4][{}]{{\paren{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}_{#4}}}
+\newcommand{\tpsdiff}[4][{}]{{\paren{\frac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pdiff}[3][{}]{{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\diff}[3][{}]{{\frac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psdiff}[3][{}]{{\frac{\partial^{#1}}{\partial {#3}{}^{#1}} {#2}}}
+\newcommand{\sdiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\newcommand{\tpddiff}[4][{}]{{\left(\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}\right)_{#4}}}
+\newcommand{\tpsddiff}[4][{}]{{\paren{\dfrac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pddiff}[3][{}]{{\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\ddiff}[3][{}]{{\dfrac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psddiff}[3][{}]{{\frac{\partial^{#1}}{\partial{}^{#1} {#3}} {#2}}}
+\newcommand{\sddiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{fontenc}
+% \usepackage{tipa}
+\usepackage{ulem}
+\usepackage{color}
+\usepackage{cancel}
+\newcommand{\hcancel}[2][black]{\setbox0=\hbox{#2}%
+  \rlap{\raisebox{.45\ht0}{\textcolor{#1}{\rule{\wd0}{1pt}}}}#2}
+\pagestyle{fancy}
+\setlength{\headheight}{67pt}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+\fancyhead[R]{}
+\renewcommand{\footruleskip}{0pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand\pgfmathsinandcos[3]{%
+  \pgfmathsetmacro#1{sin(#3)}%
+  \pgfmathsetmacro#2{cos(#3)}%
+}
+\newcommand\LongitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % azimuth
+  \tikzset{#1/.estyle={cm={\cost,\sint*\sinEl,0,\cosEl,(0,0)}}}
+}
+\newcommand\LatitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % latitude
+  \pgfmathsetmacro\yshift{\cosEl*\sint}
+  \tikzset{#1/.estyle={cm={\cost,0,0,\cost*\sinEl,(0,\yshift)}}} %
+}
+\newcommand\DrawLongitudeCircle[2][1]{
+  \LongitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{atan(sin(#2)*cos(\angEl)/sin(\angEl))} %
+  \draw[current plane] (\angVis:1) arc (\angVis:\angVis+180:1);
+  \draw[current plane,dashed] (\angVis-180:1) arc (\angVis-180:\angVis:1);
+}
+\newcommand\DrawLatitudeCircleArrow[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane,decoration={markings, mark=at position 0.6 with {\arrow{<}}},postaction={decorate},line width=.6mm] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed,line width=.6mm] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\DrawLatitudeCircle[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\coil[1]{
+  {\rh * cos(\t * pi r)}, {\apart * (2 * #1 + \t) + \rv * sin(\t * pi r)}
+}
+\makeatletter
+\define@key{DrawFromCenter}{style}[{->}]{
+  \tikzset{DrawFromCenterPlane/.style={#1}}
+}
+\define@key{DrawFromCenter}{r}[1]{
+  \def\@R{#1}
+}
+\define@key{DrawFromCenter}{center}[(0, 0)]{
+  \def\@Center{#1}
+}
+\define@key{DrawFromCenter}{theta}[0]{
+  \def\@Theta{#1}
+}
+\define@key{DrawFromCenter}{phi}[0]{
+  \def\@Phi{#1}
+}
+\presetkeys{DrawFromCenter}{style, r, center, theta, phi}{}
+\newcommand*\DrawFromCenter[1][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
+  }
+}
+\newcommand*\DrawFromCenterText[2][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+  }
+}
+\makeatother
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
+  post length=0.2cm, snake, amplitude=.4mm,
+  segment length=2mm},thick, ->]
+%% document-wide tikz options and styles
+\tikzset{%
+  >=latex, % option for nice arrows
+  inner sep=0pt,%
+  outer sep=2pt,%
+  mark coordinate/.style={inner sep=0pt,outer sep=0pt,minimum size=3pt,
+    fill=black,circle}%
+}
+\addtolength{\hoffset}{-1.3cm}
+\addtolength{\voffset}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{2.5cm}
+\renewcommand{\footskip}{10pt}
+\setlength{\headwidth}{\textwidth}
+\setlength{\headsep}{20pt}
+\setlength{\marginparwidth}{0pt}
+\parindent=0pt
+\title{Raman between $F=1/2$ states with dipole transition}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+As a special case of the general effective Hamiltonian caused by second order
+perturbation from dipole transition,
+if the ground states have total angular momentum $\dfrac12$,
+the only allowed terms in the effective Hamiltonian would be scalar and vector shifts
+due the the limited degrees of freedoms.\footnote{This applies even if the transition
+  inducing the shift is not a dipole transition but we'll limit the calculation here
+  to that from dipole transitions.}
+
+This is a special case that is particularly easy to show and we'll calculate
+the effective Hamiltonian of such a system in this note.
+
+\section{Calculation}
+We can calculate the effective Hamiltonian in any reference frame of choice
+so we can pick a reference frame where the decomposition of the polarization
+is the easist to handle. We'll pick the polarization plane\footnote{which must exist
+  for monotonic light with pure polarization} as the $x$-$y$ plane
+(\textit{for a single beam this means the $z$ axis
+  is along the $k$ vector of the beam}),
+which means that the polarization will only have $\sigma^\pm$ components.\footnote{
+  This choice is also motivated by the general knowledge that the effective $B$
+  field from the vector shift would be along the $z$ axis given this choice.
+}
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    \node[left] at (-2.9, 4.8) {$m_F$};
+
+    \node at (-2.1, 4.8) {$-\dfrac32$};
+    \node at (-0.7, 4.8) {$-\dfrac12$};
+    \node at (0.7, 4.8) {$\dfrac12$};
+    \node at (2.1, 4.8) {$\dfrac32$};
+
+    \draw[line width=1,double] (-2.6, 4) -- (-1.6, 4);
+    \draw[line width=1] (-1.2, 4) -- (-0.2, 4);
+    \draw[line width=1] (0.2, 4) -- (1.2, 4);
+    \draw[line width=1,double] (1.6, 4) -- (2.6, 4);
+
+    \draw[->,>=stealth,line width=1,red] (-0.7, 0) -- node[pos=0.7,right] {$\abs{M_1}$} (0.7, 3.6);
+    \draw[->,>=stealth,line width=1,red] (0.7, 0) -- node[pos=0.7,right] {$\abs{M_2}$} (2.1, 3.6);
+    \draw[->,>=stealth,line width=1,blue] (-0.7, 0) -- node[pos=0.7,left] {$\abs{M_2}$} (-2.1, 3.6);
+    \draw[->,>=stealth,line width=1,blue] (0.7, 0) -- node[pos=0.7,left] {$\abs{M_1}$} (-0.7, 3.6);
+
+    \draw[dashed] (-2.6, 3.6) -- (2.9, 3.6);
+    \draw[->,>=stealth,line width=0.8] (2.8, 4.3) -- (2.8, 4);
+    \draw[->,>=stealth,line width=0.8] (2.8, 3.3) -- (2.8, 3.6);
+    \node[right] at (2.8, 3.8) {$\Delta$};
+
+    \draw[line width=1] (-1.2, 0) -- (-0.2, 0);
+    \draw[line width=1] (0.2, 0) -- (1.2, 0);
+  \end{tikzpicture}
+  \caption{Coupling to the excited state with $\sigma^\pm$ polarizations
+    and single-photon detuning $\Delta$.
+    The double-lined excited states only exists if the exited states have $F=3/2$.
+    The allowed coupling between the ground and excited states are drawn in
+    {\color{red} red for $\sigma^+$} and {\color{blue} blue for $\sigma^-$}.
+    The absolute value of the matrix elements are labeled next to the arrow.
+    Note that there are only two distinct values $\abs{M_1}$ and $\abs{M_2}$
+    from symmetry. For excited state with $F=1/2$, we would have $M_2=0$.}
+  \label{fig:sigma-couple}
+\end{figure}
+
+The energy diagram of the system is shown in Fig.~\ref{fig:sigma-couple},
+where we can clearly see that the only effect from the light is causing light shift
+on the states, as the two ground states never couple to the same excited state
+in this frame. Therefore, we just need to calculate the light shift
+on the two ground states. The energy shift for the two ground states are,
+\eqar{
+  E_{1/2}=&\frac{\abs{\Omega_{1/2\rightarrow3/2}}^2+\abs{\Omega_{1/2\rightarrow-1/2}}^2}{4\Delta}\\
+  E_{-1/2}=&\frac{\abs{\Omega_{-1/2\rightarrow-3/2}}^2+\abs{\Omega_{-1/2\rightarrow1/2}}^2}{4\Delta}
+}
+Ignoring the global energy shift (i.e. scalar shift),
+the effective Hamiltonian on the ground state is proportional to $\sigma_z$,
+and more specifically,
+\eqar{
+  H_{\mathrm{eff}}=&\frac{E_{1/2}-E_{-1/2}}{2}\sigma_z\label{eq:eff-origin}
+}
+To obtain the effective Hamiltonian in a different frame,
+one can simply replace the $\sigma_z$ matrix with a Pauli matrix
+along the appropriate axis in the desired frame.\\
+
+We can further simplify the expression for the effective
+Hamiltonian~(eq.~\ref{eq:eff-origin}) to show the dependency on the polarization
+and power more directly. Using the matrix elements labeled in
+fig.~\ref{fig:sigma-couple}, and assuming the $\sigma^\pm$ polarization have amplitude
+$A_\pm$, we can rewrite the effective Hamiltonian
+\eqar{
+  \begin{split}
+    H_{\mathrm{eff}}=&\frac{\sigma_z}{2}\paren{E_{1/2}-E_{-1/2}}\\
+    =&\frac{\sigma_z}{8\Delta}\paren{\abs{\Omega_{1/2\rightarrow3/2}}^2+\abs{\Omega_{1/2\rightarrow-1/2}}^2-\abs{\Omega_{-1/2\rightarrow-3/2}}^2-\abs{\Omega_{-1/2\rightarrow1/2}}^2}\\
+    =&\frac{\sigma_z}{8\Delta}\paren{\abs{M_2}^2\abs{A_+}^2+\abs{M_1}^2\abs{A_-}^2-\abs{M_1}^2\abs{A_+}^2-\abs{M_2}^2\abs{A_-}^2}\\
+    =&\frac{\sigma_z}{8\Delta}\paren{\abs{M_2}^2-\abs{M_1}^2}\paren{\abs{A_+}^2-\abs{A_-}^2}\\
+  \end{split}
+}
+Note that the effective Hamiltonian is proportional to the difference in the amplitude
+of $\sigma^+$ and $\sigma^-$ polarization. The effect is $0$ for linear polarization
+where $\abs{A_+}=\abs{A_-}$ and is maximized (at a given total power,
+i.e. a fixed $\abs{A_+}^2+\abs{A_-}^2$) for circular polarization where
+either $A_+=0$ or $A_-=0$.
+
+\end{document}
