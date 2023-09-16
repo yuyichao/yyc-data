@@ -342,7 +342,7 @@ function _load(io, E, comm_type, WAVEDESC)
             x0 = [HORIZ_OFFSET]
         end
     end
-    return WAVEDESC, x0, y1, y2
+    return (WAVEDESC=WAVEDESC, x0=x0, y1=y1, y2=y2)
 end
 
 end
