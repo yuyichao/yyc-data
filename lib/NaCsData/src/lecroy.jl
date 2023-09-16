@@ -155,7 +155,7 @@ array(SUBARRAY_COUNT,WAVE_ARRAY_COUNT/SUBARRAY_COUNT).
     WAVE_SOURCE                             Int (1-based)
     FILE_SIZE                               Union{Int,Nothing}
 """
-function load(io)
+function load(io::IO)
     read(io, UInt8) # "#"
     read(io, UInt8) # "9": number of digits representing the file size
     file_size_str = readuntil(io, "WAVEDESC")
@@ -194,6 +194,8 @@ function load(io)
         return _load(io, Val(LittleEndian), comm_type, WAVEDESC)
     end
 end
+
+load(filename::AbstractString) = open(load, filename)
 
 function _read(io, ::Type{T}, ::Val{E}) where {T, E}
     v = read(io, T)
