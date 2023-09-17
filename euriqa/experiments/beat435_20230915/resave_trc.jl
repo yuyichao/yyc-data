@@ -22,8 +22,8 @@ function resave_data(inname, outname)
     coord = [x0, dx, y0, dy]
     open(outname, "w") do fd
         write(fd, coord)
-        write(fd, length(y1))
-        write(fd, sizeof(eltype(y1)))
+        write(fd, length(y1) % Int64)
+        write(fd, sizeof(eltype(y1)) % Int64)
         write(fd, y1)
     end
 end
