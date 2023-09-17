@@ -98,7 +98,7 @@ function kernel(t, v0, amp, f, ϕf)
     return v0 .+ amp .* sinpi.(2 .* (f .* t .+ ϕf))
 end
 
-function fit_freqs(data, block_size)
+function fit_freqs(data::AbstractArray, block_size)
     minv, maxv = extrema(data)
     v0_init = (minv + maxv) / 2
     amp_init = (maxv - minv) / 2
@@ -149,5 +149,13 @@ function fit_freqs(data, block_size)
         i = i2
     end
 
-    return idx_center, freq, freq_unc
+    return (idxs=idx_center, freqs=freq, freqs_unc=freq_unc)
+end
+
+function fit_freqs(bin::NamedTuple, block_size)
+    idxs, freqs, freqs_unc = fit_freqs(bin.data, block_size)
+    idxs .*= bin.dx
+    freqs ./= bin.dx
+    freqs_unc ./= bin.dx
+    return (ts=idxs, freqs=freqs, freqs_unc=freqs_unc)
 end
