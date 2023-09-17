@@ -338,9 +338,9 @@ function _load(io, E, comm_type, WAVEDESC)
                     y2 .= ltoh(y2)
                 end
             end
-            # Generate time intervals
-            x0 = [HORIZ_OFFSET]
         end
+        # Generate time intervals
+        x0 = [HORIZ_OFFSET]
     end
     return (WAVEDESC=WAVEDESC, x0=x0, y1=y1, y2=y2)
 end
