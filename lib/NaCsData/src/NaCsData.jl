@@ -9,5 +9,6 @@ include("load_artiq.jl")
 include("selector.jl")
 include("fitting.jl")
 include("lecroy.jl")
+include("agilent.jl")
 
 end
