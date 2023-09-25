@@ -2,8 +2,6 @@
 
 using LibArchive
 
-using DelimitedFiles
-
 function read_bin_compressed(fname)
     LibArchive.Reader(fname) do reader
         LibArchive.support_format_raw(reader)
@@ -15,9 +13,12 @@ function read_bin_compressed(fname)
         dy = read(reader, Float64)
         len = read(reader, Int64)
         elsz = read(reader, Int64)
-        @assert elsz == 1
-        res = Vector{Int8}(undef, len)
-        read!(reader, res)
+        if elsz == 1
+            res = read!(reader, Vector{Int8}(undef, len))
+        else
+            @assert elsz == 2
+            res = read!(reader, Vector{Int16}(undef, len))
+        end
         return (x0=x0, dx=dx, y0=y0, dy=dy, data=res)
     end
 end
