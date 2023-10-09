@@ -33,7 +33,8 @@
   fadings,
   positioning,
   shapes,
-  arrows.meta
+  arrows.meta,
+  quantikz
 }
 \usepgfmodule{oo}
 
@@ -434,7 +435,7 @@
 % caused by collisions with background gas molecules,
 % which was one of the factors limiting the usable time
 % on the first generation experiment.
-%
+% 
 % In fact, we could measure this collision rate with the ion and infer
 % our vacuum pressure. The way this works is to create a double well protential
 % using our electrodes with a very weak barrier. If the barrier height
@@ -444,7 +445,7 @@
 % randomly with a 50/50 chance. The collision rate is therefore twice the rate
 % the ion changes site and the rate can be converted to pressure using the known
 % temperature and collision cross-section from the Hydrogen-dominated background gas.
-%
+% 
 % You can see the result of this measurement here on this plot.
 % This is a recording of the ion position (labelled as 1 and -1)
 % over just over a day. We get a site-hopping event every just under an hour.
@@ -491,14 +492,14 @@
 % The trap incorporated several design features that allows better and faster loading
 % of the ion as well as a better electrode configuration to allow more precise
 % and more flexible ion chain constrol.
-%
+% 
 % However, more importantly, the fabrication process of the trap is improved
 % to reduce the electric field noise caused by the trap surface.
 % Such noise could cause heating of the ion motion and this,
 % especially the heating on the axial motional mode of the ion,
 % was one of the main limiting factor on the two qubit gate fidelity
 % on the first generation system.
-%
+% 
 % We measured the heating rate of the ion by holding the ion in the dark
 % for a variable length of time and then measure it's temperature
 % by driving a motion sensitive transition on the 435 nm line
@@ -632,7 +633,7 @@
 % the same high numerical aperture objective to collect the photons from the ions.
 % The light is then focused onto an array of multi-mode fibers through a second
 % imaging stage to allow us to distinguish between the signal from different ions.
-%
+% 
 % This system was aligned and here you can see the signal we got on different
 % photo-multiplier tubes as we move a single ion across the trap axis.
 % The detection extinction is very good and we measured
@@ -723,7 +724,17 @@
   \end{center}
 \end{frame}
 
-% TODO: MS gate
+% MS Gate on two ions.
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: M{\o}lmer-S{\o}rensen Gate}
+  \begin{center}
+    \begin{quantikz}
+      &&\gate[2]{U_{MS}}&\gate{R_{\phi}(\pi/2)}& \meter{} \\
+      &&&\gate{R_{\phi}(\pi/2)}& \meter{}
+    \end{quantikz}
+    \visible<2->{
+    }
+  \end{center}
+\end{frame}
 
 % With that
 {
