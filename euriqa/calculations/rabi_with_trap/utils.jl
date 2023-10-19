@@ -5,6 +5,7 @@ push!(LOAD_PATH, joinpath(@__DIR__, "../../lib"))
 using NaCsCalc.Trap
 using NaCsPlot
 using PyPlot
+using LinearAlgebra
 
 function get_H(N, ω_m, δ, Ω, η)
     H = zeros(ComplexF64, 2N, 2N)
@@ -40,4 +41,34 @@ function get_pe(ψ)
         p += abs2(ψ[i + N])
     end
     return p
+end
+
+function get_pg(ψ)
+    p = 0.0
+    N = length(ψ) ÷ 2
+    for i in 1:N
+        p += abs2(ψ[i])
+    end
+    return p
+end
+
+mutable struct ExpCache{T,TH,TU}
+    const H::TH
+    const U::TU
+    t::T
+    function ExpCache(H::AbstractMatrix{T}) where T
+        TR = real(T)
+        TC = complex(TR)
+        TH = typeof(H)
+        TU = Matrix{TC}
+        return new{TR,TH,TU}(H, TU(I, size(H)...), 0)
+    end
+end
+
+function get_U(cache::ExpCache, t)
+    if cache.t != t
+        cache.t = t
+        cache.U .= exp((im * t) .* cache.H)
+    end
+    return cache.U
 end
