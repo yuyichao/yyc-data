@@ -43,6 +43,21 @@ function get_H2(N, ω_m, δ, Ω, η)
     return H
 end
 
+function filter_n(H, ngmin, ngmax, nemin, nemax)
+    H = copy(H)
+    N = size(H, 1) ÷ 2
+    for i in 1:2N
+        for j in 1:2N
+            if (ngmin <= i - 1 <= ngmax || nemin + N <= i - 1 <= nemax + N) &&
+                (ngmin <= j - 1 <= ngmax || nemin + N <= j - 1 <= nemax + N)
+                continue
+            end
+            H[i, j] = 0
+        end
+    end
+    return H
+end
+
 function get_ψ(N, n, e=false)
     @assert n < N
     ψ = zeros(ComplexF64, 2N)
@@ -80,6 +95,10 @@ mutable struct ExpCache{T,TH,TU}
         TU = Matrix{TC}
         return new{TR,TH,TU}(H, TU(I, size(H)...), 0)
     end
+end
+
+function filter_n(cache::ExpCache, ngmin, ngmax, nemin, nemax)
+    return ExpCache(filter_n(cache.H, ngmin, ngmax, nemin, nemax))
 end
 
 function get_U(cache::ExpCache, t)

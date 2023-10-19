@@ -29,20 +29,103 @@ function evolve(H, t, nbar)
     return pe, pg
 end
 
+struct FilterNCache{T}
+    orig::T
+    Δng₋::Int
+    Δng₊::Int
+    Δne₋::Int
+    Δne₊::Int
+    filtered::Dict{Int,T}
+    function FilterNCache(orig::T, Δng₋, Δng₊, Δne₋, Δne₊) where T
+        return new{T}(orig, Δng₋, Δng₊, Δne₋, Δne₊, Dict{Int,T}())
+    end
+end
+
+function Base.get(cache::FilterNCache, n)
+    return get!(cache.filtered, n) do
+        return filter_n(cache.orig, n - cache.Δng₋, n + cache.Δng₊,
+                        n - cache.Δne₋, n + cache.Δne₊)
+    end
+end
+
+function evolve_filter_n(H, t, nbar)
+    N = size(H.orig.H, 1) ÷ 2
+    pe = 0.0
+    pg = 0.0
+    nmax = ceil(Int, max(nbar * 4, 3))
+    a = (1 + nbar) / nbar
+    for n in 0:nmax
+        U = get_U(get(H, n), t)
+        w = a^(-n - 1) * (a - 1)
+        pe′ = get_pe(U * get_ψ(N, n))
+        pe += w * pe′
+        pg += w * (1 - pe′)
+    end
+    return pe, pg
+end
+
 const N = 60
 const H_drive = ExpCache(get_H(N, ω_m, 0, Ω, η1))
 const H_drive2 = ExpCache(get_H2(N, ω_m, 0, Ω, η1))
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 0, 0, 0)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 1, 1)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 2, 2, 2)
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 0, 1, 1)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 2, 2)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 2, 0, 0)
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 0, 2, 2)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 0, 0)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 2, 1, 1)
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 2, 0, 2)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 1, 1)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 0, 2, 0)
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 2, 1, 1)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 2, 0)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 0, 0, 2)
 
-const ts = range(0, 20e-6, 1000)
+# const H_drive2_filter1 = FilterNCache(H_drive, 0, 0, 0, 0)
+# const H_drive2_filter2 = FilterNCache(H_drive, 1, 1, 1, 1)
+# const H_drive2_filter3 = FilterNCache(H_drive, 2, 2, 2, 2)
+# const H_drive2_filter1 = FilterNCache(H_drive, 0, 0, 1, 1)
+# const H_drive2_filter2 = FilterNCache(H_drive, 1, 1, 2, 2)
+# const H_drive2_filter3 = FilterNCache(H_drive, 2, 2, 0, 0)
+# const H_drive2_filter1 = FilterNCache(H_drive, 0, 0, 2, 2)
+# const H_drive2_filter2 = FilterNCache(H_drive, 1, 1, 0, 0)
+# const H_drive2_filter3 = FilterNCache(H_drive, 2, 2, 1, 1)
+# const H_drive2_filter1 = FilterNCache(H_drive, 0, 2, 0, 2)
+# const H_drive2_filter2 = FilterNCache(H_drive, 1, 1, 1, 1)
+# const H_drive2_filter3 = FilterNCache(H_drive, 2, 0, 2, 0)
+# const H_drive2_filter1 = FilterNCache(H_drive, 0, 2, 1, 1)
+# const H_drive2_filter2 = FilterNCache(H_drive, 1, 1, 2, 0)
+# const H_drive2_filter3 = FilterNCache(H_drive, 2, 0, 0, 2)
+
+# const H_drive2_filter1 = FilterNCache(H_drive2, 0, 0, 2, 2)
+# const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 2, 2)
+# const H_drive2_filter3 = FilterNCache(H_drive2, 2, 2, 2, 2)
+
+const H_drive2_filter1 = FilterNCache(H_drive2, 0, 0, 1, 1)
+const H_drive2_filter2 = FilterNCache(H_drive2, 1, 1, 1, 1)
+const H_drive2_filter3 = FilterNCache(H_drive2, 2, 2, 1, 1)
+
+const ts = range(0, 20e-6, 30)
 
 const pes = Vector{Float64}(undef, length(ts))
 const pgs = Vector{Float64}(undef, length(ts))
 const pes2 = Vector{Float64}(undef, length(ts))
 const pgs2 = Vector{Float64}(undef, length(ts))
+const pes3_1 = Vector{Float64}(undef, length(ts))
+const pgs3_1 = Vector{Float64}(undef, length(ts))
+const pes3_2 = Vector{Float64}(undef, length(ts))
+const pgs3_2 = Vector{Float64}(undef, length(ts))
+const pes3_3 = Vector{Float64}(undef, length(ts))
+const pgs3_3 = Vector{Float64}(undef, length(ts))
 
 @time for i in 1:length(ts)
     pes[i], pgs[i] = evolve(H_drive, ts[i], T / ω_m)
     pes2[i], pgs2[i] = evolve(H_drive2, ts[i], T / ω_m)
+    pes3_1[i], pgs3_1[i] = evolve_filter_n(H_drive2_filter1, ts[i], T / ω_m)
+    pes3_2[i], pgs3_2[i] = evolve_filter_n(H_drive2_filter2, ts[i], T / ω_m)
+    pes3_3[i], pgs3_3[i] = evolve_filter_n(H_drive2_filter3, ts[i], T / ω_m)
 end
 
 figure()
@@ -50,6 +133,12 @@ plot(ts .* 1e6, pes, "C0-", label="e")
 plot(ts .* 1e6, pgs, "C1-", label="g")
 plot(ts .* 1e6, pes2, "C2--", label="e2")
 plot(ts .* 1e6, pgs2, "C3--", label="g2")
+plot(ts .* 1e6, pes3_1, "C4--", label="e3")
+# plot(ts .* 1e6, pgs3_1, "C5--", label="g3")
+plot(ts .* 1e6, pes3_2, "C5--", label="e3")
+# plot(ts .* 1e6, pgs3_2, "C7--", label="g3")
+plot(ts .* 1e6, pes3_3, "C6--", label="e3")
+# plot(ts .* 1e6, pgs3_3, "C9--", label="g3")
 grid()
 xlabel("t (\$\\mu s\$)")
 
