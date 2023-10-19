@@ -26,6 +26,23 @@ function get_H(N, ω_m, δ, Ω, η)
     return H
 end
 
+function get_H2(N, ω_m, δ, Ω, η)
+    H = zeros(ComplexF64, 2N, 2N)
+    for i in 1:N
+        n = i - 1
+        H[i, i] += n * ω_m # ground
+        H[i + N, i + N] += (n + η^2) * ω_m - δ # excited
+        H[i, i + N] = Ω / 2
+        H[i + N, i] = Ω / 2
+        if i < N
+            M = η * ω_m * sqrt(i)
+            H[i + N, i + 1 + N] = im * M
+            H[i + 1 + N, i + N] = -im * M
+        end
+    end
+    return H
+end
+
 function get_ψ(N, n, e=false)
     @assert n < N
     ψ = zeros(ComplexF64, 2N)

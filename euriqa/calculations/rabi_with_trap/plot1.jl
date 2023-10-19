@@ -9,8 +9,6 @@ const λ = 578e-9
 
 const η1 = Trap.η(m_Yb171, ω_m / (2π), 2π / λ)
 
-@show η1
-
 const Ω = 2π * 50e3
 
 const T = 10 * 20e3 * 2π
@@ -33,19 +31,25 @@ end
 
 const N = 60
 const H_drive = ExpCache(get_H(N, ω_m, 0, Ω, η1))
+const H_drive2 = ExpCache(get_H2(N, ω_m, 0, Ω, η1))
 
 const ts = range(0, 20e-6, 1000)
 
 const pes = Vector{Float64}(undef, length(ts))
 const pgs = Vector{Float64}(undef, length(ts))
+const pes2 = Vector{Float64}(undef, length(ts))
+const pgs2 = Vector{Float64}(undef, length(ts))
 
 @time for i in 1:length(ts)
     pes[i], pgs[i] = evolve(H_drive, ts[i], T / ω_m)
+    pes2[i], pgs2[i] = evolve(H_drive2, ts[i], T / ω_m)
 end
 
 figure()
-plot(ts .* 1e6, pes, label="e")
-plot(ts .* 1e6, pgs, label="g")
+plot(ts .* 1e6, pes, "C0-", label="e")
+plot(ts .* 1e6, pgs, "C1-", label="g")
+plot(ts .* 1e6, pes2, "C2--", label="e2")
+plot(ts .* 1e6, pgs2, "C3--", label="g2")
 grid()
 xlabel("t (\$\\mu s\$)")
 
