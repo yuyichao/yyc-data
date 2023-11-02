@@ -4,6 +4,8 @@ from qutip import *
 import numpy as np
 from scipy.linalg import expm
 from qutip.ui.progressbar import BaseProgressBar, TextProgressBar
+from qutip.superoperator import spre
+from qutip.expect import expect_rho_vec
 
 def _add_H(M, N, H):
     if isinstance(H, (QobjEvo,)):
@@ -79,6 +81,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
     output.states = []
     output.num_collapse = len(c_ops)
 
+    e_ops_data = []
     if callable(e_ops):
         n_expt_op = 0
         expt_callback = True
@@ -90,11 +93,13 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
         for op in e_ops:
             if not isinstance(op, Qobj) and callable(op):
                 output.expect.append(np.zeros(n_tsteps, dtype=complex))
+                e_ops_data.append(None)
                 continue
             if op.dims != rho0.dims:
                 raise TypeError(f"e_ops dims ({op.dims}) are not "
                                 f"compatible with the state's "
                                 f"({rho0.dims})")
+            e_ops_data.append(spre(op).data)
             if op.isherm and rho0.isherm:
                 output.expect.append(np.zeros(n_tsteps))
             else:
@@ -120,10 +125,8 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
             if not isinstance(op, Qobj) and callable(op):
                 output.expect[m][t_idx] = op(t, rho_t)
                 continue
-            if op.isherm and rho0.isherm:
-                output.expect[m][t_idx] = expect(e_ops[m], rho).real
-            else:
-                output.expect[m][t_idx] = expect(e_ops[m], rho)
+            output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
+                                                     op.isherm and rho0.isherm)
 
     if e_ops_dict:
         output.expect = {e: output.expect[n] for n, e in enumerate(e_ops_dict.keys())}
