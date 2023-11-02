@@ -40,6 +40,15 @@ def _construct_matrix(H, c_ops, use_sparse):
     assert len(hshape) == 2
     assert hshape[0] == hshape[1]
     N = hshape[0]
+
+    coherent = len(c_ops) == 0
+
+    if coherent:
+        if use_sparse:
+            return csc_matrix(Qobj(H), dtype=complex), N, True
+        else:
+            return np.array(Qobj(H), dtype=complex), N, True
+
     if use_sparse:
         M = lil_matrix((N**2, N**2), dtype=complex)
     else:
@@ -49,7 +58,7 @@ def _construct_matrix(H, c_ops, use_sparse):
         _add_C(M, N, C)
     if use_sparse:
         M = csc_matrix(M)
-    return M, N
+    return M, N, False
 
 def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
                   use_sparse=True):
@@ -75,8 +84,6 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
         progress_bar = BaseProgressBar()
     if progress_bar is True:
         progress_bar = TextProgressBar()
-
-    M, N = _construct_matrix(H, c_ops, use_sparse)
 
     if isket(rho0):
         rho0 = ket2dm(rho0)
@@ -115,27 +122,51 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
     else:
         raise TypeError("Expectation parameter must be a list or a function")
 
-    rhof0 = np.ndarray.flatten(np.array(rho0))
+    M, N, coherent = _construct_matrix(H, c_ops, use_sparse)
 
     progress_bar.start(n_tsteps)
-    for t_idx, t in enumerate(tlist):
-        progress_bar.update(t_idx)
-        # TODO: try use the form of expm_multiply with sampling
-        rhof = expm_multiply(t * M, rhof0)
-        rho = Qobj(rhof.reshape(N, N))
-        output.states.append(rho)
 
-        if expt_callback:
-            # use callback method
-            output.expect.append(e_ops(t, rho))
+    if not coherent:
+        rhof0 = np.ndarray.flatten(np.array(rho0))
+        for t_idx, t in enumerate(tlist):
+            progress_bar.update(t_idx)
+            # TODO: try use the form of expm_multiply with sampling
+            rhof = expm_multiply(t * M, rhof0)
+            rho = Qobj(rhof.reshape(N, N))
+            output.states.append(rho)
 
-        for m in range(n_expt_op):
-            op = e_ops[m]
-            if not isinstance(op, Qobj) and callable(op):
-                output.expect[m][t_idx] = op(t, rho_t)
-                continue
-            output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
-                                                     op.isherm and rho0.isherm)
+            if expt_callback:
+                # use callback method
+                output.expect.append(e_ops(t, rho))
+
+            for m in range(n_expt_op):
+                op = e_ops[m]
+                if not isinstance(op, Qobj) and callable(op):
+                    output.expect[m][t_idx] = op(t, rho_t)
+                    continue
+                output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
+                                                         op.isherm and rho0.isherm)
+    else:
+        _rho0 = np.array(rho0, dtype=complex)
+        for t_idx, t in enumerate(tlist):
+            progress_bar.update(t_idx)
+            U = expm((t / 1j) * M)
+            _rho = U @ _rho0 @ U.conj().T
+            rho = Qobj(_rho)
+            output.states.append(rho)
+            rhof = np.ndarray.flatten(_rho)
+
+            if expt_callback:
+                # use callback method
+                output.expect.append(e_ops(t, rho))
+
+            for m in range(n_expt_op):
+                op = e_ops[m]
+                if not isinstance(op, Qobj) and callable(op):
+                    output.expect[m][t_idx] = op(t, rho_t)
+                    continue
+                output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
+                                                         op.isherm and rho0.isherm)
 
     if e_ops_dict:
         output.expect = {e: output.expect[n] for n, e in enumerate(e_ops_dict.keys())}
