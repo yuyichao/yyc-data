@@ -2,10 +2,12 @@
 
 from qutip import *
 import numpy as np
-from scipy.linalg import expm
+# from scipy.linalg import expm
 from qutip.ui.progressbar import BaseProgressBar, TextProgressBar
 from qutip.superoperator import spre
 from qutip.expect import expect_rho_vec
+from scipy.sparse import csc_matrix, lil_matrix
+from scipy.sparse.linalg import expm, expm_multiply
 
 def _add_H(M, N, H):
     if isinstance(H, (QobjEvo,)):
@@ -33,18 +35,24 @@ def _add_C(M, N, C):
                 M[mi, k * N + j] -= L[i, k] / 2
                 M[mi, i * N + k] -= L[k, j] / 2
 
-def _construct_matrix(H, c_ops):
+def _construct_matrix(H, c_ops, use_sparse):
     hshape = H.shape
     assert len(hshape) == 2
     assert hshape[0] == hshape[1]
     N = hshape[0]
-    M = np.zeros((N**2, N**2), dtype=complex) # Use dense matrix for now
+    if use_sparse:
+        M = lil_matrix((N**2, N**2), dtype=complex)
+    else:
+        M = np.zeros((N**2, N**2), dtype=complex)
     _add_H(M, N, H)
     for C in c_ops:
         _add_C(M, N, C)
+    if use_sparse:
+        M = csc_matrix(M)
     return M, N
 
-def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
+def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
+                  use_sparse=True):
     if c_ops is None:
         c_ops = []
     elif isinstance(c_ops, (Qobj,)):
@@ -68,7 +76,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
     if progress_bar is True:
         progress_bar = TextProgressBar()
 
-    M, N = _construct_matrix(H, c_ops)
+    M, N = _construct_matrix(H, c_ops, use_sparse)
 
     if isket(rho0):
         rho0 = ket2dm(rho0)
@@ -112,7 +120,8 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None):
     progress_bar.start(n_tsteps)
     for t_idx, t in enumerate(tlist):
         progress_bar.update(t_idx)
-        rhof = expm(t * M) @ rhof0
+        # TODO: try use the form of expm_multiply with sampling
+        rhof = expm_multiply(t * M, rhof0)
         rho = Qobj(rhof.reshape(N, N))
         output.states.append(rho)
 
