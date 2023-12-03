@@ -7,5 +7,21 @@ using BenchmarkTools
 const param = Params{Float64}(1.0, 0.01, 1.0, 110, (24, 24, 24))
 const state = State(param)
 
-@btime sweep!(state)
-@btime sweep!(state)
+@time for i in 1:10000
+    sweep!(state)
+end
+
+@time for i in 1:10000
+    sweep!(state)
+end
+
+@btime for i in 1:1000
+    sweep!(state)
+end
+@btime for i in 1:1000
+    sweep!(state)
+end
+
+@time for i in 1:10000
+    sweep!(state)
+end
