@@ -15,13 +15,15 @@ struct Params{T,D}
     end
 end
 
-struct State{T,D,_D}
-    param::Params{T,D}
-    graph::Array{UInt8,_D}
+mutable struct State{T,D,_D}
+    const param::Params{T,D}
+    const graph::Array{UInt8,_D}
+    nstraight::Int
+    nhop::Int
     function State(param::Params{T,D}) where {T,D}
         @assert D <= 7 # The UInt8 state can support up to 7 dimensions
         _D = D + 1
-        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)))
+        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)), 0, 0)
     end
 end
 
@@ -78,8 +80,6 @@ end
 end
 
 @inline function gather_result(state)
-    nstraight = 0
-    nhop = 0
     nlines = 0
     @inbounds for si in CartesianIndices(state.param.nspace)
         dir0, = get_dir(state, (1, si.I...))
@@ -87,23 +87,8 @@ end
             continue
         end
         nlines += 1
-        if dir0 == 1
-            nstraight += 1
-        else
-            nhop += 1
-        end
-        pidx = get_next(state, si.I, dir0)
-        for ti in 2:state.param.ntime
-            dir, = get_dir(state, (ti, pidx...))
-            if dir == 1
-                nstraight += 1
-            else
-                nhop += 1
-            end
-            pidx = get_next(state, pidx, dir)
-        end
     end
-    return nlines, nstraight * state.param.Estraight + nhop * state.param.Ehop
+    return nlines, state.nstraight * state.param.Estraight + state.nhop * state.param.Ehop
 end
 
 struct Step{D}
@@ -131,12 +116,14 @@ end
         if r >= 2 * D
             dirf = 0x1
             dirb_next_new = 0x1
+            state.nstraight += 1
         else
             # Forward direction
             dirf = (r + 2) % UInt8
             # Backward direction for the next site.
             # This is the direction along the same axis but reversed.
             dirb_next_new = dirf ⊻ 0x1
+            state.nhop += 1
         end
         set_dir(state, (step.tidx, step.pidx...), (dirf, step.dirb))
         pidx_next = get_next(state, step.pidx, dirf)
@@ -163,6 +150,11 @@ end
         end
 
         # Next coordinate
+        if step.dirb == 1
+            state.nstraight -= 1
+        else
+            state.nhop -= 1
+        end
         pidx_next = get_next(state, step.pidx, step.dirb)
         dirf_next, dirb_next = get_dir(state, (tidx_next, pidx_next...))
         # @assert dirf_next != 0
