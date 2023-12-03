@@ -6,9 +6,12 @@ struct Params{T,D}
     forward_turn::Bool # 1 > exp(με)
     ntime::Int
     nspace::NTuple{D,Int}
+    Estraight::T
+    Ehop::T
     function Params{T}(μ, ε, t, ntime, nspace::NTuple{D}) where {T,D}
         με = μ * ε
-        return new{T,D}(1 - exp(-abs(με)), t * ε, με < 0, ntime, nspace)
+        return new{T,D}(1 - exp(-abs(με)), t * ε, με < 0, ntime, nspace,
+                        2 * D * t / (1 - 2 * D * t * ε) / ntime, -1 / ε / ntime)
     end
 end
 
@@ -73,7 +76,7 @@ end
     return _pidx
 end
 
-function gather_result(state)
+@inline function gather_result(state)
     nstraight = 0
     nhop = 0
     nlines = 0
@@ -99,7 +102,7 @@ function gather_result(state)
             pidx = get_next(state, pidx, dir)
         end
     end
-    return nlines, nstraight, nhop
+    return nlines, nstraight * state.param.Estraight + nhop * state.param.Ehop
 end
 
 struct Step{D}
