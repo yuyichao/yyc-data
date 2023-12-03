@@ -15,11 +15,9 @@ end
 struct State{T,D,_D}
     param::Params{T,D}
     graph::Array{UInt8,_D}
-    line_map::Dict{NTuple{D,Int},NTuple{D,Int}}
     function State(param::Params{T,D}) where {T,D}
         _D = D + 1
-        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)),
-                           Dict{NTuple{D,Int},NTuple{D,Int}}())
+        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)))
     end
 end
 
@@ -39,14 +37,15 @@ end
 end
 
 @inline function get_next(state::State{T,D}, pidx, dir) where {T,D}
-    @assert dir != 0
+    # @assert dir != 0
     if dir == 1
         return pidx
     end
     _dir = dir >> 1
+    # @assert 1 <= _dir <= D
     nspace = state.param.nspace
     if dir & 1 == 0
-        return ntuple(Val(D)) do i
+        _pidx = ntuple(Val(D)) do i
             v = @inbounds pidx[i]
             if i != _dir
                 return v
@@ -58,7 +57,7 @@ end
             return v
         end
     else
-        return ntuple(Val(D)) do i
+        _pidx = ntuple(Val(D)) do i
             v = @inbounds pidx[i]
             if i != _dir
                 return v
@@ -70,17 +69,20 @@ end
             return v
         end
     end
+    # @assert pidx != _pidx
+    return _pidx
 end
 
 function gather_result(state)
-    empty!(state.line_map)
     nstraight = 0
     nhop = 0
+    nlines = 0
     @inbounds for si in CartesianIndices(state.param.nspace)
         dir0, = get_dir(state, (1, si.I...))
         if dir0 == 0
             continue
         end
+        nlines += 1
         if dir0 == 1
             nstraight += 1
         else
@@ -96,15 +98,6 @@ function gather_result(state)
             end
             pidx = get_next(state, pidx, dir)
         end
-        state.line_map[si.I] = pidx
-    end
-    nlines = 0
-    while !isempty(state.line_map)
-        i0, i1 = pop!(state.line_map)
-        while i1 != i0
-            i1 = pop!(state.line_map, i1)
-        end
-        nlines += 1
     end
     return nlines, nstraight, nhop
 end
@@ -127,11 +120,11 @@ end
     param = state.param
     if step.forward
         # Next time
-        tidx_next = step.tidx >= param.ntime ? 1 : step.tidx + 1
+        tidx_next = step.tidx == param.ntime ? 1 : step.tidx + 1
 
         # Next coordinate
         r = floor(Int, rand(T) / param.P_hop)
-        if r > 2 * D
+        if r >= 2 * D
             dirf = 0x1
             dirb_next_new = 0x1
         else
