@@ -1,30 +1,25 @@
 #!/usr/bin/julia
 
-# exp(με)
-# exp(-με)
-# d
-# tε
-
 struct Params{T,D}
     P_turn::T # 1 - exp(με) or 1 - exp(-με)
     P_hop::T # tε
-    forward_turn::Bool # 1 < exp(με)
+    forward_turn::Bool # 1 > exp(με)
     ntime::Int
     nspace::NTuple{D,Int}
     function Params{T}(μ, ε, t, ntime, nspace::NTuple{D}) where {T,D}
         με = μ * ε
-        return Params{T,D}(1 - exp(-abs(με)), t * ε, με > 0, ntime, nspace)
+        return new{T,D}(1 - exp(-abs(με)), t * ε, με < 0, ntime, nspace)
     end
 end
 
 struct State{T,D,_D}
     param::Params{T,D}
     graph::Array{UInt8,_D}
-    line_map::Dict{NTuple{D,Int}}
+    line_map::Dict{NTuple{D,Int},NTuple{D,Int}}
     function State(param::Params{T,D}) where {T,D}
         _D = D + 1
         return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)),
-                           Dict{NTuple{D,Int}}())
+                           Dict{NTuple{D,Int},NTuple{D,Int}}())
     end
 end
 
@@ -44,13 +39,12 @@ end
 end
 
 @inline function get_next(state::State{T,D}, pidx, dir) where {T,D}
-    # assume dir != 0
-    # @assert dir != 0
+    @assert dir != 0
     if dir == 1
         return pidx
     end
     _dir = dir >> 1
-    nspace = state.params.nspace
+    nspace = state.param.nspace
     if dir & 1 == 0
         return ntuple(Val(D)) do i
             v = @inbounds pidx[i]
@@ -82,7 +76,7 @@ function gather_result(state)
     empty!(state.line_map)
     nstraight = 0
     nhop = 0
-    @inbounds for si in CartesianIndices(state.params.nspace)
+    @inbounds for si in CartesianIndices(state.param.nspace)
         dir0, = get_dir(state, (1, si.I...))
         if dir0 == 0
             continue
@@ -93,8 +87,8 @@ function gather_result(state)
             nhop += 1
         end
         pidx = get_next(state, si.I, dir0)
-        for ti in 2:state.params.ntime
-            dir = get_dir(state, (ti, pidx...))
+        for ti in 2:state.param.ntime
+            dir, = get_dir(state, (ti, pidx...))
             if dir == 1
                 nstraight += 1
             else
@@ -105,10 +99,10 @@ function gather_result(state)
         state.line_map[si.I] = pidx
     end
     nlines = 0
-    while isempty(state.line_map)
+    while !isempty(state.line_map)
         i0, i1 = pop!(state.line_map)
         while i1 != i0
-            _, i1 = pop!(state.line_map, i1)
+            i1 = pop!(state.line_map, i1)
         end
         nlines += 1
     end
@@ -144,7 +138,7 @@ end
             dirf = (r + 2) % UInt8
             dirb_next_new = dirf ⊻ 0x1
         end
-        set_dir(state, (step.tidx, step.pidx), (dirf, step.dirb))
+        set_dir(state, (step.tidx, step.pidx...), (dirf, step.dirb))
         pidx_next = get_next(state, step.pidx, dirf)
         dirf_next, dirb_next_orig = get_dir(state, (tidx_next, pidx_next...))
         if dirf_next == 0
@@ -152,7 +146,7 @@ end
             return false, Step{D}(!param.forward_turn || rand(T) >= param.P_turn,
                                   tidx_next, pidx_next, dirb_next_new)
         end
-        set_dir(state, (tidx_next, pidx_next), (dirf_next, dirb_next_new))
+        set_dir(state, (tidx_next, pidx_next...), (dirf_next, dirb_next_new))
         if dirb_next_orig == 0
             # Found a start, finish!
             return true, Step{D}(false, tidx_next, pidx_next, 0x0)
@@ -161,29 +155,27 @@ end
         return false, Step{D}(false, tidx_next, pidx_next, dirb_next_orig)
     else
         # Next time
-        tidx_next = step.tidx <= 0 ? param.ntime : step.tidx - 1
+        tidx_next = step.tidx - 1
+        if tidx_next <= 0
+            tidx_next = param.ntime
+        end
 
         # Next coordinate
-        pidx_next = get_next(state, step.pidx, step.backward_dir)
+        pidx_next = get_next(state, step.pidx, step.dirb)
         dirf_next, dirb_next = get_dir(state, (tidx_next, pidx_next...))
-        set_dir(state, (tidx_next, pidx_next), (0x0, 0x0))
+        set_dir(state, (tidx_next, pidx_next...), (0x0, 0x0))
 
-        if dirb_next == 0
-            # Site is now empty, check if we should finish or turn around
-            if !param.forward_turn && rand(T) < param.P_turn
-                # Turn around
-                return false, Step{D}(true, tidx_next, pidx_next, 0x0)
-            end
-            return true, Step{D}(false, tidx_next, pidx_next, 0x0)
+        if !param.forward_turn && rand(T) < param.P_turn
+            # Turn around
+            return false, Step{D}(true, tidx_next, pidx_next, dirb_next)
         end
-        # Keep erasing
-        return false, Step{D}(false, tidx_next, pidx_next, dirb_next)
+        return dirb_next == 0, Step{D}(false, tidx_next, pidx_next, dirb_next)
     end
 end
 
 function sweep!(state::State{T,D}) where {T,D}
     param = state.param
-    tidx, pidx... = rand(CartesianIndices((param.ntime, param.nspace...))).T
+    tidx, pidx... = rand(CartesianIndices((param.ntime, param.nspace...))).I
     dirf, dirb = get_dir(state, (tidx, pidx...))
 
     step = Step{D}(dirb == 0, tidx, pidx, dirb)
