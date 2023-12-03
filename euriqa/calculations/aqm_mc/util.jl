@@ -165,6 +165,7 @@ end
         # Next coordinate
         pidx_next = get_next(state, step.pidx, step.dirb)
         dirf_next, dirb_next = get_dir(state, (tidx_next, pidx_next...))
+        # @assert dirf_next != 0
         set_dir(state, (tidx_next, pidx_next...), (0x0, 0x0))
 
         turn_around = !param.forward_turn && rand(T) < param.P_turn
@@ -179,6 +180,11 @@ function sweep!(state::State{T,D}) where {T,D}
     dirf, dirb = get_dir(state, (tidx, pidx...))
 
     step = Step{D}(dirb == 0, tidx, pidx, dirb)
+
+    if !step.forward
+        # sweep_iterate! backward expect the state to be updated for the site.
+        set_dir(state, (tidx, pidx...), (dirf, 0x0))
+    end
 
     while true
         finish, step = sweep_iterate!(state, step)
