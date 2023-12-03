@@ -20,10 +20,12 @@ mutable struct State{T,D,_D}
     const graph::Array{UInt8,_D}
     nstraight::Int
     nhop::Int
+    nlines::Int
     function State(param::Params{T,D}) where {T,D}
         @assert D <= 7 # The UInt8 state can support up to 7 dimensions
         _D = D + 1
-        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)), 0, 0)
+        return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)),
+                           0, 0, 0)
     end
 end
 
@@ -80,15 +82,7 @@ end
 end
 
 @inline function gather_result(state)
-    nlines = 0
-    @inbounds for si in CartesianIndices(state.param.nspace)
-        dir0, = get_dir(state, (1, si.I...))
-        if dir0 == 0
-            continue
-        end
-        nlines += 1
-    end
-    return nlines, state.nstraight * state.param.Estraight + state.nhop * state.param.Ehop
+    return state.nlines, state.nstraight * state.param.Estraight + state.nhop * state.param.Ehop
 end
 
 struct Step{D}
@@ -109,7 +103,12 @@ end
     param = state.param
     if step.forward
         # Next time
-        tidx_next = step.tidx == param.ntime ? 1 : step.tidx + 1
+        if step.tidx == param.ntime
+            state.nlines += 1
+            tidx_next = 1
+        else
+            tidx_next = step.tidx + 1
+        end
 
         # Next coordinate
         r = floor(Int, rand(T) / param.P_hop)
@@ -146,6 +145,7 @@ end
         # Next time
         tidx_next = step.tidx - 1
         if tidx_next <= 0
+            state.nlines -= 1
             tidx_next = param.ntime
         end
 
