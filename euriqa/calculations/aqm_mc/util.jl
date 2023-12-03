@@ -19,6 +19,7 @@ struct State{T,D,_D}
     param::Params{T,D}
     graph::Array{UInt8,_D}
     function State(param::Params{T,D}) where {T,D}
+        @assert D <= 7 # The UInt8 state can support up to 7 dimensions
         _D = D + 1
         return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)))
     end
@@ -131,24 +132,29 @@ end
             dirf = 0x1
             dirb_next_new = 0x1
         else
+            # Forward direction
             dirf = (r + 2) % UInt8
+            # Backward direction for the next site.
+            # This is the direction along the same axis but reversed.
             dirb_next_new = dirf ⊻ 0x1
         end
         set_dir(state, (step.tidx, step.pidx...), (dirf, step.dirb))
         pidx_next = get_next(state, step.pidx, dirf)
         dirf_next, dirb_next_orig = get_dir(state, (tidx_next, pidx_next...))
         if dirf_next == 0
-            # Empty site
-            return false, Step{D}(!param.forward_turn || rand(T) >= param.P_turn,
-                                  tidx_next, pidx_next, dirb_next_new)
+            # Empty site, we might want to turn around.
+            turn_around = param.forward_turn && rand(T) < param.P_turn
+            # In either case, the `dirb` for the step
+            # needs to be the backward direction we've just created.
+            return false, Step{D}(!turn_around, tidx_next, pidx_next, dirb_next_new)
         end
+        # We are either turning around (since we hit a line in the middle)
+        # or stopping (since we've hit a start).
+        # In both cases, we need to save the state for the next site since
+        # the next step (if it exists) won't save this.
         set_dir(state, (tidx_next, pidx_next...), (dirf_next, dirb_next_new))
-        if dirb_next_orig == 0
-            # Found a start, finish!
-            return true, Step{D}(false, tidx_next, pidx_next, 0x0)
-        end
-        # Found an intersection
-        return false, Step{D}(false, tidx_next, pidx_next, dirb_next_orig)
+        # Finish if the line we hit didn't have a backward edge (it's a starting point)
+        return dirb_next_orig == 0, Step{D}(false, tidx_next, pidx_next, dirb_next_orig)
     else
         # Next time
         tidx_next = step.tidx - 1
@@ -161,11 +167,9 @@ end
         dirf_next, dirb_next = get_dir(state, (tidx_next, pidx_next...))
         set_dir(state, (tidx_next, pidx_next...), (0x0, 0x0))
 
-        if !param.forward_turn && rand(T) < param.P_turn
-            # Turn around
-            return false, Step{D}(true, tidx_next, pidx_next, dirb_next)
-        end
-        return dirb_next == 0, Step{D}(false, tidx_next, pidx_next, dirb_next)
+        turn_around = !param.forward_turn && rand(T) < param.P_turn
+        return (!turn_around && dirb_next == 0,
+                Step{D}(turn_around, tidx_next, pidx_next, dirb_next))
     end
 end
 
