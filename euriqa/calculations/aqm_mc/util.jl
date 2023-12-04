@@ -21,11 +21,13 @@ mutable struct State{T,D,_D}
     nstraight::Int
     nhop::Int
     nlines::Int
+    winding::Int
+    χ₀::Int
     function State(param::Params{T,D}) where {T,D}
         @assert D <= 7 # The UInt8 state can support up to 7 dimensions
         _D = D + 1
         return new{T,D,_D}(param, zeros(UInt8, (param.ntime, param.nspace...)),
-                           0, 0, 0)
+                           0, 0, 0, 0, 0)
     end
 end
 
@@ -47,11 +49,12 @@ end
 @inline function get_next(state::State{T,D}, pidx, dir) where {T,D}
     # @assert dir != 0
     if dir == 1
-        return pidx
+        return pidx, 0
     end
     _dir = dir >> 1
     # @assert 1 <= _dir <= D
     nspace = state.param.nspace
+    edge_cross = Ref(0)
     if dir & 1 == 0
         _pidx = ntuple(Val(D)) do i
             v = @inbounds pidx[i]
@@ -60,6 +63,7 @@ end
             end
             v += 1
             @inbounds if v > nspace[i]
+                edge_cross[] = 1
                 return 1
             end
             return v
@@ -72,17 +76,14 @@ end
             end
             v -= 1
             @inbounds if v <= 0
+                edge_cross[] = -1
                 return nspace[i]
             end
             return v
         end
     end
     # @assert pidx != _pidx
-    return _pidx
-end
-
-@inline function gather_result(state)
-    return state.nlines, state.nstraight * state.param.Estraight + state.nhop * state.param.Ehop
+    return _pidx, edge_cross[]
 end
 
 struct Step{D}
@@ -125,11 +126,15 @@ end
             state.nhop += 1
         end
         set_dir(state, (step.tidx, step.pidx...), (dirf, step.dirb))
-        pidx_next = get_next(state, step.pidx, dirf)
+        pidx_next, edge_cross = get_next(state, step.pidx, dirf)
+        state.winding += edge_cross
         dirf_next, dirb_next_orig = get_dir(state, (tidx_next, pidx_next...))
         if dirf_next == 0
             # Empty site, we might want to turn around.
             turn_around = param.forward_turn && rand(T) < param.P_turn
+            if !turn_around
+                state.χ₀ += 1
+            end
             # In either case, the `dirb` for the step
             # needs to be the backward direction we've just created.
             return false, Step{D}(!turn_around, tidx_next, pidx_next, dirb_next_new)
@@ -155,12 +160,17 @@ end
         else
             state.nhop -= 1
         end
-        pidx_next = get_next(state, step.pidx, step.dirb)
+        pidx_next, edge_cross = get_next(state, step.pidx, step.dirb)
+        state.winding -= edge_cross
         dirf_next, dirb_next = get_dir(state, (tidx_next, pidx_next...))
         # @assert dirf_next != 0
         set_dir(state, (tidx_next, pidx_next...), (0x0, 0x0))
 
         turn_around = !param.forward_turn && rand(T) < param.P_turn
+        if turn_around
+            state.χ₀ += 1
+        end
+        state.χ₀ += 1
         return (!turn_around && dirb_next == 0,
                 Step{D}(turn_around, tidx_next, pidx_next, dirb_next))
     end
@@ -173,7 +183,10 @@ function sweep!(state::State{T,D}) where {T,D}
 
     step = Step{D}(dirb == 0, tidx, pidx, dirb)
 
-    if !step.forward
+    if step.forward
+        state.χ₀ = 1
+    else
+        state.χ₀ = 0
         # sweep_iterate! backward expect the state to be updated for the site.
         set_dir(state, (tidx, pidx...), (dirf, 0x0))
     end
@@ -185,5 +198,7 @@ function sweep!(state::State{T,D}) where {T,D}
         end
     end
 
-    return gather_result(state)
+    return (state.nlines,
+            state.nstraight * state.param.Estraight + state.nhop * state.param.Ehop,
+            state.winding, state.χ₀)
 end
