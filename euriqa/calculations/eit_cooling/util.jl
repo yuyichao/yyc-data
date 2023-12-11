@@ -132,7 +132,7 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
             H[lidx1 + nmotion * 2, lidx2] = 0
 
             # 1-2 and 2-3
-            M = prod(get_sideband_nocheck.(builder.sideband_caches, n1, n2, ηs))
+            M = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs))
             H[lidx1, lidx2 + nmotion] = Ω₁ * M
             H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M
         end
