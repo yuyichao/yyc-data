@@ -6,8 +6,92 @@ using NaCsCalc.Trap
 
 using LinearAlgebra
 
-function fill_lambda_H!(H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
-                        ωs::NTuple{N}, ηs::NTuple{N}, nmotions::NTuple{N}) where N
+mutable struct SidebandCache{T}
+    η::T
+    const values::Vector{Complex{T}}
+    function SidebandCache{T}() where T
+        return new(0, Complex{T}[])
+    end
+end
+
+# Have these inlined somehow cause the parent function to bloat
+@noinline function _clear_sideband!(cache::SidebandCache, η)
+    empty!(cache.values)
+    cache.η = η
+end
+@noinline function _resize_sideband!(values::Vector, new_nvalues, nvalues)
+    resize!(values, new_nvalues)
+    @inbounds values[nvalues + 1:new_nvalues] .= NaN
+    return
+end
+@noinline function _fill_sideband_value!(values::Vector{CT}, idx, n1, n2, η) where CT
+    val = CT(Trap.sideband_with_phase(n1, n2, η))
+    @inbounds values[idx] = val
+    return val
+end
+
+@inline function get_sideband(cache::SidebandCache, n1, n2, η)
+    if n1 < n2
+        n1, n2 = n2, n1
+    end
+    n1_offset = (n1 * (n1 + 1)) >> 1
+    idx = n1_offset + 1 + n2
+
+    if cache.η != η
+        _clear_sideband!(cache, η)
+    end
+
+    values = cache.values
+    nvalues = length(values)
+    if idx > nvalues
+        _resize_sideband!(values, n1_offset + n1 + 1, nvalues)
+    end
+    cached_val = @inbounds values[idx]
+    if isnan(real(cached_val))
+        cached_val = _fill_sideband_value!(values, idx, n1, n2, η)
+    end
+    return cached_val
+end
+
+@noinline function fill_upto!(cache::SidebandCache, n, η)
+    if cache.η != η
+        _clear_sideband!(cache, η)
+    end
+    values = cache.values
+    nvalues = length(values)
+    new_nvalues = (n + 1) * (n + 2) >> 1 + 1
+    if new_nvalues > nvalues
+        _resize_sideband!(cache, new_nvalues, nvalues)
+    end
+    idx = 0
+    @inbounds for n1 in 0:n
+        for n2 in 0:n1
+            idx += 1
+            cached_val = values[idx]
+            if !isnan(real(cached_val))
+                continue
+            end
+            values[idx] = Trap.sideband_with_phase(n1, n2, η)
+        end
+    end
+end
+
+@inline function get_sideband_nocheck(cache::SidebandCache, n1, n2, η)
+    if n1 < n2
+        n1, n2 = n2, n1
+    end
+    return @inbounds cache.values[(n1 * (n1 + 1)) >> 1 + 1 + n2]
+end
+
+struct Builder{T,N}
+    sideband_caches::NTuple{N,SidebandCache{T}}
+    function Builder{T,N}() where {T,N}
+        return new(ntuple(x->SidebandCache{T}(), Val(N)))
+    end
+end
+
+function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
+                        ωs::NTuple{N}, ηs::NTuple{N}, nmotions::NTuple{N}) where {T,N}
     nmotion = prod(nmotions)
     if size(H) != (nmotion * 3, nmotion * 3)
         error("Hamiltonian dimension is wrong")
@@ -16,10 +100,12 @@ function fill_lambda_H!(H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
     motion_idxs = CartesianIndices(nmotions)
     motion_lidxs = LinearIndices(nmotions)
 
+    fill_upto!.(builder.sideband_caches, nmotions .- 1, ηs)
+
     @inbounds for idx1 in motion_idxs
         lidx1 = motion_lidxs[idx1]
         n1 = idx1.I .- 1
-        for i2 in motion_idxs
+        for idx2 in motion_idxs
             lidx2 = motion_lidxs[idx2]
             n2 = idx2.I .- 1
             # Diagnal
@@ -38,9 +124,9 @@ function fill_lambda_H!(H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
             H[lidx1 + nmotion * 2, lidx2] = 0
 
             # 1-2 and 2-3
-            M = prod(Trap.sideband_with_phase.(n1, n2, ηs))
-            H[lidx1, lidx2 + nmotion] .= Ω₁ * M
-            H[lidx1 + nmotion, lidx2 + nmotion * 2] .= Ω₂ * M
+            M = prod(get_sideband_nocheck.(builder.sideband_caches, n1, n2, ηs))
+            H[lidx1, lidx2 + nmotion] = Ω₁ * M
+            H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M
         end
     end
 end
