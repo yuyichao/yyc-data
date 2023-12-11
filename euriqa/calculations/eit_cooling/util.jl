@@ -55,13 +55,16 @@ end
 
 @noinline function fill_upto!(cache::SidebandCache, n, η)
     if cache.η != η
+        if η == 0
+            return
+        end
         _clear_sideband!(cache, η)
     end
     values = cache.values
     nvalues = length(values)
     new_nvalues = (n + 1) * (n + 2) >> 1 + 1
     if new_nvalues > nvalues
-        _resize_sideband!(cache, new_nvalues, nvalues)
+        _resize_sideband!(values, new_nvalues, nvalues)
     end
     idx = 0
     @inbounds for n1 in 0:n
@@ -76,9 +79,12 @@ end
     end
 end
 
-@inline function get_sideband_nocheck(cache::SidebandCache, n1, n2, η)
+@inline function get_sideband_nocheck(cache::SidebandCache{T}, n1, n2, η) where T
     if n1 < n2
         n1, n2 = n2, n1
+    end
+    if η == 0
+        return Complex{T}(n1 == n2 ? 1 : 0)
     end
     return @inbounds cache.values[(n1 * (n1 + 1)) >> 1 + 1 + n2]
 end
