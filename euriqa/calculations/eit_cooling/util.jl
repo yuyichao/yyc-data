@@ -106,14 +106,16 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
     motion_idxs = CartesianIndices(nmotions)
     motion_lidxs = LinearIndices(nmotions)
 
-    fill_upto!.(builder.sideband_caches, nmotions .- 1, ηs)
+    sideband_caches = builder.sideband_caches
 
-    @inbounds for idx1 in motion_idxs
-        lidx1 = motion_lidxs[idx1]
-        n1 = idx1.I .- 1
-        for idx2 in motion_idxs
-            lidx2 = motion_lidxs[idx2]
-            n2 = idx2.I .- 1
+    fill_upto!.(sideband_caches, nmotions .- 1, ηs)
+
+    @inbounds for idx2 in motion_idxs
+        lidx2 = motion_lidxs[idx2]
+        n2 = idx2.I .- 1
+        for idx1 in motion_idxs
+            lidx1 = motion_lidxs[idx1]
+            n1 = idx1.I .- 1
             # Diagnal
             if n1 == n2
                 E_motion = sum(ωs .* n1)
