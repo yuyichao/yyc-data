@@ -139,6 +139,32 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
     end
 end
 
+function fill_scatter_branch!(builder::Builder{T,N}, B::AbstractMatrix, ηs::NTuple{N},
+                              nmotions::NTuple{N}) where {T,N}
+    nmotion = prod(nmotions)
+    if size(B) != (nmotion, nmotion)
+        error("Branching matrix dimension is wrong")
+    end
+
+    motion_idxs = CartesianIndices(nmotions)
+    motion_lidxs = LinearIndices(nmotions)
+
+    sideband_caches = builder.sideband_caches
+
+    fill_upto!.(sideband_caches, nmotions .- 1, ηs)
+
+    @inbounds for idx2 in motion_idxs
+        lidx2 = motion_lidxs[idx2]
+        n2 = idx2.I .- 1
+        for idx1 in motion_idxs
+            lidx1 = motion_lidxs[idx1]
+            n1 = idx1.I .- 1
+
+            B[lidx1, lidx2] = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs))
+        end
+    end
+end
+
 # function Λ_scatter(Γ, Ω₁, Ω₂, Δ₁, Δ₂)
 #     M = [    Δ₁   Ω₁ / 2        0
 #          Ω₁ / 2   im * Γ   Ω₂ / 2
