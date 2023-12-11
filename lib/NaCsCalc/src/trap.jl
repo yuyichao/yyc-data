@@ -45,6 +45,8 @@ function (sideband(n1::Integer, n2::Integer, η::T)::T) where {T<:AbstractFloat}
 end
 sideband(n1::Integer, n2::Integer, η) = sideband(n1, n2, float(η))
 
+sideband_with_phase(n1, n2, η) = sideband(n1, n2, η) * im^mod(abs(n1 - n2), 4)
+
 @noinline function resize_caches_thread(tid, Ωcache, pcache)
     old_len = size(Ωcache, 1)
     resize!(Ωcache, tid)
