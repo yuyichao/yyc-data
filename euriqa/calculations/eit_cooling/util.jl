@@ -120,7 +120,7 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
             if n1 == n2
                 E_motion = sum(ωs .* n1)
                 H[lidx1, lidx1] = Δ₁ + E_motion
-                H[lidx1 + nmotion, lidx1 + nmotion] = im * Γ + E_motion
+                H[lidx1 + nmotion, lidx1 + nmotion] = im * Γ / 2 + E_motion
                 H[lidx1 + nmotion * 2, lidx1 + nmotion * 2] = Δ₂ + E_motion
             else
                 H[lidx1, lidx2] = 0
@@ -165,45 +165,67 @@ function fill_scatter_branch!(builder::Builder{T,N}, B::AbstractMatrix, ηs::NTu
     end
 end
 
-# function Λ_scatter(Γ, Ω₁, Ω₂, Δ₁, Δ₂)
-#     M = [    Δ₁   Ω₁ / 2        0
-#          Ω₁ / 2   im * Γ   Ω₂ / 2
-#               0   Ω₂ / 2       Δ₂]
-#     E = eigen(M)
-#     vecs = E.vectors
-#     vals = E.values
+@kwdef struct DecayParams{T,N}
+    p::T
+    amp::NTuple{2,T} # Amplitude of 1/2 ground state
+    ηs::NTuple{N,T}
+end
 
-#     idx = 0
-#     max_prob = 0.0
-#     for i in 1:3
-#         prob = abs2(vecs[1, i])
-#         if prob >= max_prob
-#             max_prob = prob
-#             idx = i
-#         end
-#     end
-#     return imag(vals[idx])
-# end
+@kwdef struct SystemParams{T,N}
+    Γ::T
+    Ω₁::T
+    Ω₂::T
+    Δ₁::T
+    Δ₂::T
+    ωs::NTuple{N,T}
+    ηs::NTuple{N,T}
+    nmotions::NTuple{N,Int}
+    decay_branch::Vector{DecayParams{T,N}} = DecayParams{T,N}[]
+end
 
-# function Λ_scatter(Γ, Ω₁, Ω₂, Δ₁, Δ₂)
-#     M = [    Δ₁   Ω₁ / 2        0
-#          Ω₁ / 2   im * Γ   Ω₂ / 2
-#               0   Ω₂ / 2       Δ₂]
-#     E = eigen(M)
-#     vecs = E.vectors
-#     vals = E.values
+struct RateMatrices{T,N}
+    R::Matrix{T}
+    U::Matrix{T}
+end
 
-#     idx = 0
-#     max_prob = 0.0
-#     for i in 1:3
-#         prob = abs2(vecs[2, i])
-#         if prob >= max_prob
-#             max_prob = prob
-#             idx = i
-#         end
-#     end
-#     popat!(vals, idx)
-#     g1 = imag(vals[1])
-#     g2 = imag(vals[2])
-#     return g1 * g2 / (g1 + g2)
-# end
+function build_rate_matrices(builder::Builder{T,N},
+                             params::SystemParams{T,N}) where {T,N}
+    nmotion = prod(params.nmotions)
+    H = Matrix{Complex{T}}(undef, nmotion * 3, nmotion * 3)
+    fill_lambda_H!(builder, H, params.Γ, params.Ω₁, params.Ω₂, params.Δ₁, params.Δ₂,
+                   params.ωs, params.ηs, params.nmotions)
+    F = eigen!(H)
+
+    U = F.vectors # Unitary from new basis to old basis
+    Ud = U' # Unitary from old basis to new basis
+
+    rates = imag.(F.values) .* 2
+
+    # Rates
+    R = zeros(T, nmotion * 3, nmotion * 3)
+    B = Matrix{Complex{T}}(undef, nmotion, nmotion)
+    tmp = Matrix{Complex{T}}(undef, nmotion * 3, nmotion)
+
+    for decay in params.decay_branch
+        fill_scatter_branch!(builder, B, decay.ηs, params.nmotions)
+        mul!(tmp, @view(Ud[:, nmotion + 1:nmotion * 2]), B)
+        tmp .*= rates
+        if decay.amp[1] > 0
+            mul!(H, tmp, @view(U[1:nmotion, :]), decay.amp[1], 0)
+            if decay.amp[2] > 0
+                mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
+                     decay.amp[2], 1)
+            end
+        else
+            mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
+                 decay.amp[2], 0)
+        end
+        R .+= decay.p .* abs2.(H)
+    end
+
+    for i in 1:nmotion * 3
+        R[i, i] -= rates[i]
+    end
+
+    return RateMatrices{T,N}(R, abs2.(U))
+end
