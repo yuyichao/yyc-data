@@ -89,16 +89,39 @@ end
     return @inbounds cache.values[(n1 * (n1 + 1)) >> 1 + 1 + n2]
 end
 
+@kwdef struct DecayParams{T,N}
+    p::T
+    amp::NTuple{2,T} # Amplitude of 1/2 ground state
+    ηs::NTuple{N,T}
+end
+
+@kwdef struct SystemParams{T,N}
+    Γ::T
+    Ω₁::T
+    Ω₂::T
+    Δ₁::T
+    Δ₂::T
+    ωs::NTuple{N,T}
+    ηs::NTuple{N,T}
+    nmotions::NTuple{N,Int}
+    decay_branch::Vector{DecayParams{T,N}} = DecayParams{T,N}[]
+end
+
 struct Builder{T,N}
+    params::SystemParams{T,N}
+    H::Matrix{Complex{T}}
     sideband_caches::NTuple{N,SidebandCache{T}}
-    function Builder{T,N}() where {T,N}
-        return new(ntuple(x->SidebandCache{T}(), Val(N)))
+    function Builder(params::SystemParams{T,N}) where {T,N}
+        nmotion = prod(params.nmotions, init=1)
+        return new{T,N}(params,
+                        Matrix{Complex{T}}(undef, nmotion * 3, nmotion * 3),
+                        ntuple(x->SidebandCache{T}(), Val(N)))
     end
 end
 
 function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
                         ωs::NTuple{N}, ηs::NTuple{N}, nmotions::NTuple{N}) where {T,N}
-    nmotion = prod(nmotions)
+    nmotion = prod(nmotions, init=1)
     if size(H) != (nmotion * 3, nmotion * 3)
         error("Hamiltonian dimension is wrong")
     end
@@ -118,7 +141,7 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
             n1 = idx1.I .- 1
             # Diagnal
             if n1 == n2
-                E_motion = sum(ωs .* n1)
+                E_motion = sum(ωs .* n1, init=zero(T))
                 H[lidx1, lidx1] = Δ₁ + E_motion
                 H[lidx1 + nmotion, lidx1 + nmotion] = im * Γ / 2 + E_motion
                 H[lidx1 + nmotion * 2, lidx1 + nmotion * 2] = Δ₂ + E_motion
@@ -132,7 +155,8 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
             H[lidx1 + nmotion * 2, lidx2] = 0
 
             # 1-2 and 2-3
-            M = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs))
+            M = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs),
+                     init=one(Complex{T}))
             H[lidx1, lidx2 + nmotion] = Ω₁ * M
             H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M
         end
@@ -141,7 +165,7 @@ end
 
 function fill_scatter_branch!(builder::Builder{T,N}, B::AbstractMatrix, ηs::NTuple{N},
                               nmotions::NTuple{N}) where {T,N}
-    nmotion = prod(nmotions)
+    nmotion = prod(nmotions, init=1)
     if size(B) != (nmotion, nmotion)
         error("Branching matrix dimension is wrong")
     end
@@ -160,27 +184,10 @@ function fill_scatter_branch!(builder::Builder{T,N}, B::AbstractMatrix, ηs::NTu
             lidx1 = motion_lidxs[idx1]
             n1 = idx1.I .- 1
 
-            B[lidx1, lidx2] = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs))
+            B[lidx1, lidx2] = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs),
+                                   init=one(Complex{T}))
         end
     end
-end
-
-@kwdef struct DecayParams{T,N}
-    p::T
-    amp::NTuple{2,T} # Amplitude of 1/2 ground state
-    ηs::NTuple{N,T}
-end
-
-@kwdef struct SystemParams{T,N}
-    Γ::T
-    Ω₁::T
-    Ω₂::T
-    Δ₁::T
-    Δ₂::T
-    ωs::NTuple{N,T}
-    ηs::NTuple{N,T}
-    nmotions::NTuple{N,Int}
-    decay_branch::Vector{DecayParams{T,N}} = DecayParams{T,N}[]
 end
 
 struct RateMatrices{T,N}
@@ -204,10 +211,9 @@ function propagate!(cb::F, p, rates::RateMatrices, ts) where F
     return compute_result.(ts)
 end
 
-function build_rate_matrices(builder::Builder{T,N},
-                             params::SystemParams{T,N}) where {T,N}
-    nmotion = prod(params.nmotions)
-    H = Matrix{Complex{T}}(undef, nmotion * 3, nmotion * 3)
+function build_rate_matrices(builder::Builder{T,N}) where {T,N}
+    params = builder.params
+    H = builder.H
     fill_lambda_H!(builder, H, params.Γ, params.Ω₁, params.Ω₂, params.Δ₁, params.Δ₂,
                    params.ωs, params.ηs, params.nmotions)
     F = eigen!(H)
@@ -218,6 +224,7 @@ function build_rate_matrices(builder::Builder{T,N},
     rates = imag.(F.values) .* 2
 
     # Rates
+    nmotion = prod(params.nmotions, init=1)
     R = zeros(T, nmotion * 3, nmotion * 3)
     B = Matrix{Complex{T}}(undef, nmotion, nmotion)
     tmp = Matrix{Complex{T}}(undef, nmotion * 3, nmotion)
