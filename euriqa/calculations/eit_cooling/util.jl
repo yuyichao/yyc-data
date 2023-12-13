@@ -186,6 +186,22 @@ end
 struct RateMatrices{T,N}
     R::Matrix{T}
     U::Matrix{T}
+    rates::Vector{T}
+end
+
+function propagate!(cb::F, p, rates::RateMatrices, ts) where F
+    cur_t = Ref(zero(ts[1]))
+    _p = Ref(rates.U' * p)
+
+    @inline function compute_result(t)
+        dt = t - cur_t[]
+        if dt != 0
+            _p[] = LinearAlgebra.exp!(dt .* rates.R) * _p[]
+            cur_t[] = t
+        end
+        return cb(t, _p[], rates)
+    end
+    return compute_result.(ts)
 end
 
 function build_rate_matrices(builder::Builder{T,N},
@@ -227,5 +243,5 @@ function build_rate_matrices(builder::Builder{T,N},
         R[i, i] -= rates[i]
     end
 
-    return RateMatrices{T,N}(R, abs2.(U))
+    return RateMatrices{T,N}(R, abs2.(U), rates)
 end
