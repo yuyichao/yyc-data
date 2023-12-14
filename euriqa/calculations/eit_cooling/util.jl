@@ -95,7 +95,7 @@ end
     ηs::NTuple{N,T}
 end
 
-@kwdef struct SystemParams{T,N}
+@kwdef mutable struct SystemParams{T,N}
     Γ::T
     Ω₁::T
     Ω₂::T
@@ -103,28 +103,38 @@ end
     Δ₂::T
     ωs::NTuple{N,T}
     ηs::NTuple{N,T}
-    nmotions::NTuple{N,Int}
-    decay_branch::Vector{DecayParams{T,N}} = DecayParams{T,N}[]
+    const nmotions::NTuple{N,Int}
+    const decay_branch::Vector{DecayParams{T,N}} = DecayParams{T,N}[]
 end
 
 struct Builder{T,N}
     params::SystemParams{T,N}
     H::Matrix{Complex{T}}
+    B::Matrix{Complex{T}}
+    tmp::Matrix{Complex{T}}
     sideband_caches::NTuple{N,SidebandCache{T}}
     function Builder(params::SystemParams{T,N}) where {T,N}
         nmotion = prod(params.nmotions, init=1)
         return new{T,N}(params,
                         Matrix{Complex{T}}(undef, nmotion * 3, nmotion * 3),
+                        Matrix{Complex{T}}(undef, nmotion, nmotion),
+                        Matrix{Complex{T}}(undef, nmotion * 3, nmotion),
                         ntuple(x->SidebandCache{T}(), Val(N)))
     end
 end
 
-function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω₂, Δ₁, Δ₂,
-                        ωs::NTuple{N}, ηs::NTuple{N}, nmotions::NTuple{N}) where {T,N}
+function _fill_H!(builder::Builder{T,N}) where {T,N}
+    H = builder.H
+    params = builder.params
+    Γ = params.Γ
+    Ω₁ = params.Ω₁
+    Ω₂ = params.Ω₂
+    Δ₁ = params.Δ₁
+    Δ₂ = params.Δ₂
+    ωs = params.ωs
+    ηs = params.ηs
+    nmotions = params.nmotions
     nmotion = prod(nmotions, init=1)
-    if size(H) != (nmotion * 3, nmotion * 3)
-        error("Hamiltonian dimension is wrong")
-    end
 
     motion_idxs = CartesianIndices(nmotions)
     motion_lidxs = LinearIndices(nmotions)
@@ -163,8 +173,10 @@ function fill_lambda_H!(builder::Builder{T,N}, H::AbstractMatrix, Γ, Ω₁, Ω�
     end
 end
 
-function fill_scatter_branch!(builder::Builder{T,N}, B::AbstractMatrix, ηs::NTuple{N},
-                              nmotions::NTuple{N}) where {T,N}
+function _fill_scatter_branch!(builder::Builder{T,N}, ηs::NTuple{N}) where {T,N}
+    B = builder.B
+    nmotions = builder.params.nmotions
+
     nmotion = prod(nmotions, init=1)
     if size(B) != (nmotion, nmotion)
         error("Branching matrix dimension is wrong")
@@ -212,10 +224,10 @@ function propagate!(cb::F, p, rates::RateMatrices, ts) where F
 end
 
 function build_rate_matrices(builder::Builder{T,N}) where {T,N}
+    _fill_H!(builder)
+
     params = builder.params
     H = builder.H
-    fill_lambda_H!(builder, H, params.Γ, params.Ω₁, params.Ω₂, params.Δ₁, params.Δ₂,
-                   params.ωs, params.ηs, params.nmotions)
     F = eigen!(H)
 
     U = F.vectors # Unitary from new basis to old basis
@@ -226,11 +238,11 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
     # Rates
     nmotion = prod(params.nmotions, init=1)
     R = zeros(T, nmotion * 3, nmotion * 3)
-    B = Matrix{Complex{T}}(undef, nmotion, nmotion)
-    tmp = Matrix{Complex{T}}(undef, nmotion * 3, nmotion)
+    B = builder.B
+    tmp = builder.tmp
 
     for decay in params.decay_branch
-        fill_scatter_branch!(builder, B, decay.ηs, params.nmotions)
+        _fill_scatter_branch!(builder, decay.ηs)
         mul!(tmp, @view(Ud[:, nmotion + 1:nmotion * 2]), B)
         tmp .*= rates
         if decay.amp[1] > 0
