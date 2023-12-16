@@ -1,7 +1,7 @@
 #!/usr/bin/julia
 
 function load_lines(lines)
-    M = Matrix{Int}(undef, length(lines), length(lines[1]))
+    M = Matrix{Int8}(undef, length(lines), length(lines[1]))
     for i in 1:length(lines)
         line = lines[i]
         for j in 1:length(line)
