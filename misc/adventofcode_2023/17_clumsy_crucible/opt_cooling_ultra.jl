@@ -46,6 +46,20 @@ function load_lines(lines)
     return sites
 end
 
+struct WorkSet
+    vec::Vector{NTuple{2,Int}}
+    function WorkSet()
+        return new(NTuple{2,Int}[])
+    end
+end
+
+@inline function Base.push!(workset::WorkSet, v)
+    idx = searchsortedfirst(workset.vec, v, by=x->-max(x[1] + x[2]))
+    insert!(workset.vec, idx, v)
+end
+@inline Base.pop!(workset::WorkSet) = pop!(workset.vec)
+@inline Base.isempty(workset::WorkSet) = isempty(workset.vec)
+
 function check_site_dir(sites, workset, x, y, dir)
     site = sites[y, x]
     x2, y2 = next_site(x, y, dir)
@@ -98,7 +112,9 @@ end
 
 function opt_cooling(file)
     sites = load_lines(readlines(file))
-    propagate(sites, Set(((1, 1),)))
+    workset = WorkSet()
+    push!(workset, (1, 1))
+    @time propagate(sites, workset)
     return minimum(sites[end, end].min_cooling)
 end
 @show opt_cooling(ARGS[1])
