@@ -21,9 +21,6 @@ function collect_corners(instructions)
             error()
         end
     end
-    for cs in values(corners)
-        @assert length(cs) % 2 == 0
-    end
     return corners
 end
 
@@ -64,39 +61,21 @@ function count_line_area(edges1, edges2)
     i2 = 1
     last_end = typemin(Int)
     while i1 <= n1 || i2 <= n2
-        if i1 <= n1
-            x11 = edges1[i1]
-            x12 = edges1[i1 + 1]
-        else
-            x11 = typemax(Int)
-            x12 = typemax(Int)
-        end
-        if i2 <= n2
-            x21 = edges2[i2]
-            x22 = edges2[i2 + 1]
-        else
-            x21 = typemax(Int)
-            x22 = typemax(Int)
-        end
-        if x12 < x21
+        x11 = i1 <= n1 ? edges1[i1] : typemax(Int)
+        x21 = i2 <= n2 ? edges2[i2] : typemax(Int)
+        if x11 < x21
             x1 = x11
-            x2 = x12
+            x2 = edges1[i1 + 1]
             i1 += 2
-        elseif x22 < x11
-            x1 = x21
-            x2 = x22
-            i2 += 2
         else
-            x1 = min(x11, x21)
-            x2 = max(x12, x22)
-            i1 += 2
+            x1 = x21
+            x2 = edges2[i2 + 1]
             i2 += 2
         end
-        if last_end >= x2
-            continue
+        if last_end < x2
+            a += x2 - max(x1 - 1, last_end)
+            last_end = x2
         end
-        a += x2 - max(x1 - 1, last_end)
-        last_end = x2
     end
     return a
 end
