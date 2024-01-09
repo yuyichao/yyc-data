@@ -25,6 +25,14 @@ function linear_rate(λ0, n)
     @assert n > 1
     return total_count(2λ0 / n * (i - 1) / (n - 1) for i in 1:n)
 end
+function binary_rate(λ1, λ2, n)
+    if rand(Bool)
+        return uniform_rate(λ1, n)
+    else
+        return uniform_rate(λ2, n)
+    end
+    # return total_count((i <= n ÷ 2) ? (λ1 / n) : (λ2 / n) for i in 1:n)
+end
 
 function random_samples(cb, n)
     accum = Accumulator{Int,Int}()
@@ -43,15 +51,19 @@ end
 const linear = random_samples(10000) do
     linear_rate(100, 100000)
 end
+const binary = random_samples(10000) do
+    binary_rate(90, 110, 100000)
+end
 
 figure()
-plot_counts(single, color="C0")
-plot_counts(split, color="C1")
+plot_counts(single, color="C0", alpha=0.7)
+plot_counts(split, color="C1", alpha=0.7)
 grid()
 
 figure()
-plot_counts(linear, color="C0")
-plot_counts(split, color="C1")
+plot_counts(linear, color="C0", alpha=0.7)
+plot_counts(split, color="C1", alpha=0.7)
+plot_counts(binary, color="C2", alpha=0.7)
 grid()
 
 show()
