@@ -168,7 +168,9 @@ function _fill_H!(builder::Builder{T,N}) where {T,N}
             M = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs),
                      init=one(Complex{T}))
             H[lidx1, lidx2 + nmotion] = Ω₁ * M
+            H[lidx1 + nmotion, lidx2] = Ω₁ * M
             H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M
+            H[lidx1 + nmotion * 2, lidx2 + nmotion] = Ω₂ * M
         end
     end
 end
@@ -208,9 +210,9 @@ struct RateMatrices{T,N}
     rates::Vector{T}
 end
 
-function propagate!(cb::F, p, rates::RateMatrices, ts) where F
+function propagate(cb::F, p0, rates::RateMatrices, ts) where F
     cur_t = Ref(zero(ts[1]))
-    _p = Ref(rates.U' * p)
+    _p = Ref(rates.U \ p0)
 
     @inline function compute_result(t)
         dt = t - cur_t[]
@@ -218,7 +220,7 @@ function propagate!(cb::F, p, rates::RateMatrices, ts) where F
             _p[] = LinearAlgebra.exp!(dt .* rates.R) * _p[]
             cur_t[] = t
         end
-        return cb(t, _p[], rates)
+        return cb(t, rates.U * _p[], rates)
     end
     return compute_result.(ts)
 end
@@ -230,8 +232,8 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
     H = builder.H
     F = eigen!(H)
 
-    U = F.vectors # Unitary from new basis to old basis
-    Ud = U' # Unitary from old basis to new basis
+    U = F.vectors # From new basis to old basis
+    Ud = inv(U) # From old basis to new basis
 
     rates = imag.(F.values) .* 2
 
@@ -244,22 +246,22 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
     for decay in params.decay_branch
         _fill_scatter_branch!(builder, decay.ηs)
         mul!(tmp, @view(Ud[:, nmotion + 1:nmotion * 2]), B)
-        tmp .*= rates
+        tmp .*= sqrt.(rates)
         if decay.amp[1] > 0
-            mul!(H, tmp, @view(U[1:nmotion, :]), decay.amp[1], 0)
+            mul!(H, tmp, @view(U[1:nmotion, :]), decay.amp[1], false)
             if decay.amp[2] > 0
                 mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
-                     decay.amp[2], 1)
+                     decay.amp[2], true)
             end
         else
             mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
-                 decay.amp[2], 0)
+                 decay.amp[2], false)
         end
-        R .+= decay.p .* abs2.(H)
+        R .-= decay.p .* abs2.(H)
     end
 
     for i in 1:nmotion * 3
-        R[i, i] -= rates[i]
+        R[i, i] += rates[i]
     end
 
     return RateMatrices{T,N}(R, abs2.(U), rates)
