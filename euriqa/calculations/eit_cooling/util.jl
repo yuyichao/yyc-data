@@ -167,10 +167,10 @@ function _fill_H!(builder::Builder{T,N}) where {T,N}
             # 1-2 and 2-3
             M = prod(get_sideband_nocheck.(sideband_caches, n1, n2, ηs),
                      init=one(Complex{T}))
-            H[lidx1, lidx2 + nmotion] = Ω₁ * M
-            H[lidx1 + nmotion, lidx2] = Ω₁ * M
-            H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M
-            H[lidx1 + nmotion * 2, lidx2 + nmotion] = Ω₂ * M
+            H[lidx1, lidx2 + nmotion] = Ω₁ * M / 2
+            H[lidx1 + nmotion, lidx2] = Ω₁ * M / 2
+            H[lidx1 + nmotion, lidx2 + nmotion * 2] = Ω₂ * M / 2
+            H[lidx1 + nmotion * 2, lidx2 + nmotion] = Ω₂ * M / 2
         end
     end
 end
