@@ -62,7 +62,7 @@ end
     end
     values = cache.values
     nvalues = length(values)
-    new_nvalues = (n + 1) * (n + 2) >> 1 + 1
+    new_nvalues = ((n + 1) * (n + 2)) >> 1 + 1
     if new_nvalues > nvalues
         _resize_sideband!(values, new_nvalues, nvalues)
     end
