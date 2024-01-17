@@ -310,7 +310,7 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
             @simd for i in 1:nmotion * 3
                 R[i, j] = muladd(scale, tmp2[i], R[i, j])
             end
-            R[j, j] -= r
+            R[j, j] -= r * decay.p
         end
     end
 
