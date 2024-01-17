@@ -112,13 +112,15 @@ struct Builder{T,N}
     H::Matrix{Complex{T}}
     B::Matrix{Complex{T}}
     tmp::Matrix{Complex{T}}
+    tmp2::Vector{T}
     sideband_caches::NTuple{N,SidebandCache{T}}
     function Builder(params::SystemParams{T,N}) where {T,N}
         nmotion = prod(params.nmotions, init=1)
         return new{T,N}(params,
                         Matrix{Complex{T}}(undef, nmotion * 3, nmotion * 3),
                         Matrix{Complex{T}}(undef, nmotion, nmotion),
-                        Matrix{Complex{T}}(undef, nmotion * 3, nmotion),
+                        Matrix{Complex{T}}(undef, nmotion, nmotion * 3),
+                        Vector{T}(undef, nmotion * 3),
                         ntuple(x->SidebandCache{T}(), Val(N)))
     end
 end
@@ -242,26 +244,39 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
     R = zeros(T, nmotion * 3, nmotion * 3)
     B = builder.B
     tmp = builder.tmp
+    tmp2 = builder.tmp2
 
     for decay in params.decay_branch
         _fill_scatter_branch!(builder, decay.ηs)
-        mul!(tmp, @view(Ud[:, nmotion + 1:nmotion * 2]), B)
-        tmp .*= sqrt.(rates)
+        mul!(tmp, B, @view(U[nmotion + 1:nmotion * 2, :]))
         if decay.amp[1] > 0
-            mul!(H, tmp, @view(U[1:nmotion, :]), decay.amp[1], false)
+            mul!(H, @view(Ud[:, 1:nmotion]), tmp, decay.amp[1], false)
             if decay.amp[2] > 0
-                mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
-                     decay.amp[2], true)
+                mul!(H, @view(Ud[:, nmotion * 2 + 1:nmotion * 3]),
+                     tmp, decay.amp[2], true)
             end
         else
-            mul!(H, tmp, @view(U[nmotion * 2 + 1:nmotion * 3, :]),
-                 decay.amp[2], false)
+            mul!(H, @view(Ud[:, nmotion * 2 + 1:nmotion * 3]),
+                 tmp, decay.amp[2], false)
         end
-        R .-= decay.p .* abs2.(H)
-    end
 
-    for i in 1:nmotion * 3
-        R[i, i] += rates[i]
+        @inbounds for j in 1:nmotion * 3
+            s = zero(T)
+            r = rates[j]
+            @simd for i in 1:nmotion * 3
+                p = abs2(H[i, j])
+                tmp2[i] = p
+                s += p
+            end
+            if s == 0
+                continue
+            end
+            scale = r / s * decay.p
+            @simd for i in 1:nmotion * 3
+                R[i, j] = muladd(scale, tmp2[i], R[i, j])
+            end
+            R[j, j] -= r
+        end
     end
 
     return RateMatrices{T,N}(R, abs2.(U), rates)
