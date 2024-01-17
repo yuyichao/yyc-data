@@ -209,22 +209,57 @@ end
 struct RateMatrices{T,N}
     R::Matrix{T}
     U::Matrix{T}
+    Ud::Matrix{T}
     rates::Vector{T}
 end
 
-function propagate(cb::F, p0, rates::RateMatrices, ts) where F
-    cur_t = Ref(zero(ts[1]))
-    _p = Ref(rates.U \ p0)
+mutable struct RateResult{T,N}
+    const rates::RateMatrices{T,N}
+    cur_t::T
 
-    @inline function compute_result(t)
-        dt = t - cur_t[]
-        if dt != 0
-            _p[] = LinearAlgebra.exp!(dt .* rates.R) * _p[]
-            cur_t[] = t
-        end
-        return cb(t, rates.U * _p[], rates)
+    _p2_done::Bool
+    _rate_done::Bool
+
+    _p::Vector{T}
+    _p2::Vector{T}
+    _rate::T
+
+    function RateResult(rates::RateMatrices{T,N}, p0) where {T,N}
+        cur_t = zero(T)
+        _p = rates.Ud * p0
+        _p2 = copy(p0)
+
+        return new{T,N}(rates, cur_t, true, false, _p, _p2, zero(T))
     end
-    return compute_result.(ts)
+end
+
+function propagate!(result::RateResult, t)
+    dt = t - result.cur_t
+    if dt != 0
+        @assert dt > 0
+        mul!(result._p2, LinearAlgebra.exp!(dt .* result.rates.R), result._p)
+        result.cur_t = t
+        result._p2, result._p = result._p, result._p2
+        result._p2_done = false
+        result._rate_done = false
+    end
+    return result
+end
+
+function get_probabilities(result::RateResult)
+    if !result._p2_done
+        mul!(result._p2, result.rates.U, result._p)
+        result._p2_done = true
+    end
+    return result._p2
+end
+
+function get_total_rate(result::RateResult)
+    if !result._rate_done
+        result._rate = sum(p * r for (p, r) in zip(result._p, result.rates.rates))
+        result._rate_done = true
+    end
+    return result._rate
 end
 
 function build_rate_matrices(builder::Builder{T,N}) where {T,N}
@@ -279,5 +314,5 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
         end
     end
 
-    return RateMatrices{T,N}(R, abs2.(U), rates)
+    return RateMatrices{T,N}(R, abs2.(U), abs2.(Ud), rates)
 end
