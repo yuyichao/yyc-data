@@ -246,7 +246,7 @@ mutable struct RateResult{T,N}
 
     function RateResult(rates::RateMatrices{T,N}, p0) where {T,N}
         cur_t = zero(T)
-        _p = rates.Ud * p0
+        _p = rates.U \ p0
         _p2 = copy(p0)
 
         return new{T,N}(rates, ExpMCache(rates.R),
@@ -259,7 +259,7 @@ function propagate!(result::RateResult, t)
     if dt != 0
         @assert dt > 0
         mul!(result._p2, get(result.expm_cache, dt), result._p)
-        # normalize!(result._p2, 1)
+        result._p2 ./= sum(result._p2)
         result.cur_t = t
         result._p2, result._p = result._p, result._p2
         result._p2_done = false
