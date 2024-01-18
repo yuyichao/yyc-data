@@ -238,6 +238,7 @@ function propagate!(result::RateResult, t)
     if dt != 0
         @assert dt > 0
         mul!(result._p2, LinearAlgebra.exp!(dt .* result.rates.R), result._p)
+        # normalize!(result._p2, 1)
         result.cur_t = t
         result._p2, result._p = result._p, result._p2
         result._p2_done = false
@@ -307,9 +308,14 @@ function build_rate_matrices(builder::Builder{T,N}) where {T,N}
                 continue
             end
             scale = r / s * decay.p
+            # s = zero(T)
             @simd for i in 1:nmotion * 3
                 R[i, j] = muladd(scale, tmp2[i], R[i, j])
+                # p = scale * tmp2[i]
+                # R[i, j] += p
+                # s += p
             end
+            # R[j, j] -= s
             R[j, j] -= r * decay.p
         end
     end
