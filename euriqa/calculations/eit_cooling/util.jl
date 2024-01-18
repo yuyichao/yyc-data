@@ -213,8 +213,28 @@ struct RateMatrices{T,N}
     rates::Vector{T}
 end
 
+mutable struct ExpMCache{T}
+    const R::Matrix{T}
+    dt::T
+    expM::Matrix{T}
+    function ExpMCache(R::Matrix{T}) where T
+        return new{T}(R, zero(T), Matrix{T}(undef, 0, 0))
+    end
+end
+
+function Base.get(cache::ExpMCache{T}, dt) where T
+    # TODO...
+    if cache.dt != 0 && isapprox(dt, cache.dt)
+        return cache.expM
+    end
+    cache.expM = LinearAlgebra.exp!(dt .* cache.R)
+    cache.dt = dt
+    return cache.expM
+end
+
 mutable struct RateResult{T,N}
     const rates::RateMatrices{T,N}
+    const expm_cache::ExpMCache{T}
     cur_t::T
 
     _p2_done::Bool
@@ -229,7 +249,8 @@ mutable struct RateResult{T,N}
         _p = rates.Ud * p0
         _p2 = copy(p0)
 
-        return new{T,N}(rates, cur_t, true, false, _p, _p2, zero(T))
+        return new{T,N}(rates, ExpMCache(rates.R),
+                        cur_t, true, false, _p, _p2, zero(T))
     end
 end
 
@@ -237,7 +258,7 @@ function propagate!(result::RateResult, t)
     dt = t - result.cur_t
     if dt != 0
         @assert dt > 0
-        mul!(result._p2, LinearAlgebra.exp!(dt .* result.rates.R), result._p)
+        mul!(result._p2, get(result.expm_cache, dt), result._p)
         # normalize!(result._p2, 1)
         result.cur_t = t
         result._p2, result._p = result._p, result._p2
