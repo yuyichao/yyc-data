@@ -23,6 +23,8 @@ function plot_data(Tlo, Thi, data, color, label)
 end
 
 figure()
+gca().add_patch(matplotlib.patches.Rectangle((50, 5e-5), 860 - 50, 2e-3 - 5e-5,
+                                             fill=true, alpha=0.2, color="g"))
 plot_data(60, 850, NaData, "C0", "Na")
 plot_data(60, 850, YbData, "C1", "Yb")
 plot_data(60, 850, LiData, "C2", "Li")
