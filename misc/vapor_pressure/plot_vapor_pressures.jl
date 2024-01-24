@@ -24,7 +24,8 @@ end
 
 figure()
 gca().add_patch(matplotlib.patches.Rectangle((50, 5e-5), 860 - 50, 2e-3 - 5e-5,
-                                             fill=true, alpha=0.2, color="g"))
+                                             fill=true, alpha=0.2, facecolor="g",
+                                             edgecolor=nothing))
 plot_data(60, 850, NaData, "C0", "Na")
 plot_data(60, 850, YbData, "C1", "Yb")
 plot_data(60, 850, LiData, "C2", "Li")
