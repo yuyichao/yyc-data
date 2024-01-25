@@ -42,3 +42,5 @@ const TlData = VaporPressureData(Tmelt=577 - 273.15, As=5.971, Bs=-9447,
                                  Al=5.259, Bl=-9037)
 const AgData = VaporPressureData(Tmelt=1234.93 - 273.15, As=9.127, Bs=-14999, Cs=0.7845,
                                  Al=5.752, Bl=-13827)
+const YData = VaporPressureData(Tmelt=1799 - 273.15, As=9.735, Bs=-22306, Cs=-0.8705,
+                                Al=5.795, Bl=-20341)
