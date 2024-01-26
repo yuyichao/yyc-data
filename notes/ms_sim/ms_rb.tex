@@ -205,15 +205,17 @@
   }
 \fi
 
+\allowdisplaybreaks
+
 \begin{document}
 
 \maketitle
 
 In the laser frame (rotating at the average frequency of the red and blue tones),
 \eqar{
-  H(t)=&\frac{\Omega(t)}{2}\sum_{j=1,2}\sum_{k}\eta_{jk}\lparen{(1+\varepsilon_j)\paren{a_k\ue^{-\ui\theta_k(t)}\sigma^j_++a_k^\dagger\ue^{\ui\theta_k(t)}\sigma^j_-}}\\
+  H(t)=&\sum_{j=1,2}\frac{\Omega(t)}{2}\sum_{k}\eta_{jk}\lparen{(1+\varepsilon_j)\paren{a_k\ue^{-\ui\theta_k(t)}\sigma^j_++a_k^\dagger\ue^{\ui\theta_k(t)}\sigma^j_-}}\\*
   &\rparen{+(1-\varepsilon_j)\paren{a_k^\dagger\ue^{\ui\theta_k(t)}\sigma^j_++a_k\ue^{-\ui\theta_k(t)}\sigma^j_-}} - \frac{\Delta_j}{2}\sigma_z^j\\
-  =&\frac{\Omega(t)}{2}\sum_{j=1,2}\sum_{k}\eta_{jk}\paren{
+  =&\sum_{j=1,2}\frac{\Omega(t)}{2}\sum_{k}\eta_{jk}\paren{
     \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t)}+a_k^\dagger\ue^{\ui\theta_k(t)}}
     +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t)}-a_k^\dagger\ue^{\ui\theta_k(t)}}
   } - \frac{\Delta_j}{2}\sigma_z^j
@@ -233,5 +235,64 @@ where
 }
 similar to the ideal case. Assuming closure of all $\alpha_k$,
 the none trivial part of this term would also vanish other than the detuning.
+
+Second order in Magnus expansion,
+\eqar{
+  &\sqr{H(t_1), H(t_2)}\\
+  =&\left[\sum_{j=1,2}\frac{\Omega(t_1)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+    } - \frac{\Delta_j}{2}\sigma_z^j,\right.\\*
+  &\left.\sum_{j=1,2}\frac{\Omega(t_2)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+    } - \frac{\Delta_j}{2}\sigma_z^j\right]\\
+  =&\left[\sum_{j=1,2}\frac{\Omega(t_1)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+    },\right.\\*
+  &\left.\sum_{j=1,2}\frac{\Omega(t_2)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+    }\right]\\*
+  &-\left[\sum_{j=1,2}\frac{\Omega(t_1)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+    },\sum_{j=1,2}\frac{\Delta_j}{2}\sigma_z^j\right]\\*
+  &-\left[\sum_{j=1,2}\frac{\Delta_j}{2}\sigma_z^j,
+    \sum_{j=1,2}\frac{\Omega(t_2)}{2}\sum_{k}\eta_{jk}\paren{
+      \sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+      +\ui\varepsilon_j\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+    }\right]\\
+  =&\frac{\Omega(t_1)\Omega(t_2)}{4}\sum_{k}\paren{\sum_{j=1,2}\sigma^j_x\eta_{jk}}^2
+  \left[
+    a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}
+    ,a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}
+  \right]\\*
+  &+\ui\frac{\Omega(t_1)\Omega(t_2)}{4}\left[\sum_{j=1,2}\sigma^j_x\sum_{k}\eta_{jk}
+    \paren{a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+    ,\sum_{j=1,2}\varepsilon_j\sigma^j_y\sum_{k}\eta_{jk}
+    \paren{a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+  \right]\\*
+  &+\ui\frac{\Omega(t_1)\Omega(t_2)}{4}\left[\sum_{j=1,2}\varepsilon_j\sigma^j_y
+    \sum_{k}\eta_{jk}
+    \paren{a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)}},
+    \sum_{j=1,2}\sigma^j_x\sum_{k}\eta_{jk}
+    \paren{a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+  \right]\\*
+  &-\frac{\Omega(t_1)\Omega(t_2)}{4}\sum_{k}\paren{\sum_{j=1,2}\varepsilon_j\sigma^j_y\eta_{jk}}^2\left[
+    a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)},
+    a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}
+  \right]\\*
+  &+\sum_{j=1,2}\frac{\Omega(t_1)\Delta_j}{2}\sum_{k}\eta_{jk}\paren{
+    \ui\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_1)}+a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+    +\varepsilon_j\sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_1)}-a_k^\dagger\ue^{\ui\theta_k(t_1)}}
+  }\\*
+  &-\sum_{j=1,2}\frac{\Omega(t_2)\Delta_j}{2}
+  \sum_{k}\eta_{jk}\paren{
+    \ui\sigma^j_y\paren{a_k\ue^{-\ui\theta_k(t_2)}+a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+    +\varepsilon_j\sigma^j_x\paren{a_k\ue^{-\ui\theta_k(t_2)}-a_k^\dagger\ue^{\ui\theta_k(t_2)}}
+  }
+}
 
 \end{document}
