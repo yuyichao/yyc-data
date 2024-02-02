@@ -42,9 +42,9 @@ function CNOT(εr)
     C = -sinpi(εr / 2)
     S = cospi(εr / 2)
     return [1 0 0 0
-            0 1 0 0
-            0 0 C S
-            0 0 S C]
+            0 C 0 S
+            0 0 1 0
+            0 S 0 C]
 end
 
 function SWAP(εr)
