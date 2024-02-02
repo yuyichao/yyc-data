@@ -80,6 +80,40 @@ function distillation_circuit(εr, εz)
         expand_operator(VN, SWAP(εr) * CNOT(εr), (3, 4)))
 end
 
+measure_bit(::Val{N}, ψ::AbstractVector, bit) where N =
+    measure_bit(Val(N), ψ * ψ', bit)
+function measure_bit(::Val{N}, ρ::AbstractMatrix, bit) where N
+    ρ0 = similar(ρ)
+    ρ1 = similar(ρ)
+    indices = CartesianIndices(ntuple(_->2, N))
+    M_sz = length(indices)
+    for (li1, ci1) in zip(1:M_sz, indices)
+        v1 = ci1[bit] == 2
+        for (li2, ci2) in zip(1:M_sz, indices)
+            v2 = ci2[bit] == 2
+            if v1 != v2
+                ρ0[li2, li1] = 0
+                ρ1[li2, li1] = 0
+            elseif v1
+                ρ0[li2, li1] = 0
+                ρ1[li2, li1] = ρ[li2, li1]
+            else
+                ρ0[li2, li1] = ρ[li2, li1]
+                ρ1[li2, li1] = 0
+            end
+        end
+    end
+    p0 = tr(ρ0)
+    p1 = tr(ρ1)
+    if p0 != 0
+        ρ0 ./= p0
+    end
+    if p1 != 0
+        ρ1 ./= p1
+    end
+    return [(p0, ρ0), (p1, ρ1)]
+end
+
 const ψ0 = zeros(16)
 ψ0[6] = 1
 
