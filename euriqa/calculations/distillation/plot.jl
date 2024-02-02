@@ -34,7 +34,7 @@ function compute_fidelities(εm, εr, εz)
     return p, f1, f2
 end
 
-const εzs = range(0, 1, 1000)
+const εzs = range(0, 0.2, 1000)
 
 const ps = Float64[]
 const f1s = Float64[]
@@ -50,13 +50,16 @@ end
 figure()
 plot(1 .- f1s, 1 .- f1s)
 plot(1 .- f1s, 1 .- f2s)
-plot(1 .- f1s, ps)
 grid()
 
 figure()
-plot(εzs, 1 .- f1s)
-plot(εzs, 1 .- f2s)
-plot(εzs, ps)
+plot(1 .- f1s, ps)
 grid()
+
+# figure()
+# plot(εzs, 1 .- f1s)
+# plot(εzs, 1 .- f2s)
+# plot(εzs, ps)
+# grid()
 
 show()
