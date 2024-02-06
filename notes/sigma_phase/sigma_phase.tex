@@ -229,7 +229,8 @@ I'd like to derive/check how to get a consistent definition of the phase
 based only on definitions/formulas that we use, to see how the definition
 can propagate from one part to another.
 
-\section{Calculation}
+\section{Derivation}
+\subsection{Angular momentum eigenstate phase}
 The convention in quantum mechanics is to relate the angular momentum states
 using the ladder operators,
 \eqar{
@@ -240,25 +241,49 @@ and we have
   j_{\pm}|jm\rangle=C_{\pm}|j(m\pm1)\rangle
 }
 where $C_{\pm}$ are non-negative constant factors.
-This uniquely defines the phase of the angular momentum eigenstates.\\
+This uniquely defines the phase of the angular momentum eigenstates.
 
-
+\subsection{Tensor operator phase}
 When calculating the value of a tensor operator, we use Wigner-Eckart theorem
 to convert it to CG coefficients and a reduced matrix element.
 The derivation for Wigner-Eckart uses the definition/convention
 for the spherical basis,
 \eqar{
-  V_0=&V_z\\
-  V_{\pm1}=&\mp\frac{1}{\sqrt{2}}\paren{V_x\pm\ui V_y}
+  V^0=&V_z\\
+  V^{\pm1}=&\mp\frac{1}{\sqrt{2}}\paren{V_x\pm\ui V_y}
 }
 
-This should also be the polarization basis used for the $\pi$
-and $\sigma^{\pm}$ polarizations.
+\subsection{Polarization phase}
+The light polarization can be expressed in the Cartesian and spherical basis as,
+\eqar{
+  \sum_{i=x,y,z}\!A_i\hat e_i=\sum_{i=-1,0,1}\!A_i\hat e^i
+}
+Similarly, the inner product between the polarization and an operator
+can be expressed as,
+\eqar{
+  \sum_{i=x,y,z}\!A_i V_i=\sum_{i=-1,0,1}\!A_i V^i
+}
+Comparing the two, we can see that the transformation between the spherical
+and Cartesian polarization basis should be the same as that for the operators, i.e.
+\eqar{
+  \hat e^\pi=&\hat e_z\\
+  \hat e^{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\pm\ui\hat e_y}
+}
+and the conjugate basis,
 \eqar{
   \hat e_\pi=&\hat e_z\\
-  \hat e_{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\pm\ui\hat e_y}
+  \hat e_{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\mp\ui\hat e_y}
 }
-Or the amplitude relation,
+that satisfies,
+\eqar{
+  \hat e_i\cdot\hat e^j=&\delta_i^j\\
+  A_i=&\hat e_i\cdot\vec A
+}
+
+\section{Properties of polarization amplitude and phase}
+\subsection{Amplitude transformation}
+From the relation between the basis, we can get the relation between
+the (complex) polarization amplitude in the two basis,
 \eqar{
   A_z=&A_\pi\\
   A_x=&-\frac{1}{\sqrt{2}}\paren{A_{\sigma^+}-A_{\sigma^-}}\\
@@ -267,9 +292,42 @@ Or the amplitude relation,
 and
 \eqar{
   A_\pi=&A_z\\
-  A_{\sigma^+}=&\frac{1}{\sqrt{2}}\paren{\ui A_y-A_x}\\
-  A_{\sigma^-}=&\frac{1}{\sqrt{2}}\paren{\ui A_y+A_x}
+  A_{\sigma^\pm}=&\frac{1}{\sqrt{2}}\paren{\ui A_y\mp A_x}
 }
 
+\subsection{Condition for linear polarization}
+For linear polarization, we need $\vec A\times\vec A^*=0$, or
+\eqar{
+  A_xA_y^*=&A_x^*A_y\\
+  A_yA_z^*=&A_y^*A_z\\
+  A_zA_x^*=&A_z^*A_x
+}
+From $A_xA_y^*=A_x^*A_y$
+\eqar{
+  -\paren{A_{\sigma^+}-A_{\sigma^-}}\paren{A_{\sigma^+}^*+A_{\sigma^-}^*}=&\paren{A_{\sigma^+}^*-A_{\sigma^-}^*}\paren{A_{\sigma^+}+A_{\sigma^-}}\\
+  \abs{A_{\sigma^+}}=&\abs{A_{\sigma^-}}
+}
+i.e. the $\sigma^\pm$ components must have the same amplitude.\\
+
+From $A_yA_z^*=A_y^*A_z$ and $A_zA_x^*=A_z^*A_x$,
+\eqar{
+  A_\pi^*\paren{A_{\sigma^+}+A_{\sigma^-}}=&-A_\pi\paren{A_{\sigma^+}^*+A_{\sigma^-}^*}\\
+  A_\pi^*\paren{A_{\sigma^+}-A_{\sigma^-}}=&A_\pi\paren{A_{\sigma^+}^*-A_{\sigma^-}^*}\\
+  A_\pi^*A_{\sigma^+}=&-A_\pi A_{\sigma^-}^*
+}
+Let $\phi_\pi$ and $\phi_{\sigma^\pm}$ be the phase for the three polarization components,
+i.e. $A_\pi=\abs{A_\pi}\ue^{\ui\phi_\pi}$ and
+$A_{\sigma^\pm}=\abs{A_{\sigma^\pm}}\ue^{\ui\phi_{\sigma^\pm}}$,
+also given $\abs{A_{\sigma^+}}=\abs{A_{\sigma^-}}=\abs{A_{\sigma}}$
+\eqar{
+  \abs{A_\pi}\abs{A_{\sigma}}\paren{\ue^{\ui\paren{\phi_{\sigma^+}+\phi_{\sigma^-}-2\phi_\pi}}-1}=&0
+}
+i.e. either one of $\abs{A_\pi}$ and $\abs{A_{\sigma}}$ is zero,
+or $\phi_\sigma-\phi_\pi=n\pi+\dfrac{\pi}2$,
+where $\phi_\sigma\equiv\dfrac{\phi_{\sigma^+}+\phi_{\sigma^-}}{2}$
+is the average phase of the $\sigma$ polarizations.
+In another word, unless the polarization is purely $z$ or purely in the $x-y$ plane,
+linear polarization is achieved when the phase between $\pi$ polarization
+and the average $\sigma$ polarizations is off by $\dfrac\pi2$ ($90^\circ$).
 
 \end{document}
