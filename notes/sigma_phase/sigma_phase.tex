@@ -330,4 +330,40 @@ In another word, unless the polarization is purely $z$ or purely in the $x-y$ pl
 linear polarization is achieved when the phase between $\pi$ polarization
 and the average $\sigma$ polarizations is off by $\dfrac\pi2$ ($90^\circ$).
 
+\subsection{$\phi_{HV}$}
+We can generalize the result above by introducing a phase difference between
+horizontal ($x-y$ plane) and vertical ($z$) polarization.
+\eqar{
+  \begin{split}
+    \vec A=&A_\pi\vec e^\pi+A_{\sigma^+}\vec e^{\sigma^+}+A_{\sigma^-}\vec e^{\sigma^-}\\
+    =&A_\pi\vec e_z-\frac{1}{\sqrt{2}}\abs{A_{\sigma^+}}\ue^{\ui\phi_{\sigma^+}}\paren{\hat e_x+\ui\hat e_y}+\frac{1}{\sqrt{2}}\abs{A_{\sigma^-}}\ue^{\ui\phi_{\sigma^-}}\paren{\hat e_x-\ui\hat e_y}
+  \end{split}
+}
+Define $A_H\equiv\dfrac{\abs{A_{\sigma^+}}+\abs{A_{\sigma^-}}}{\sqrt2}$, $A_\Delta\equiv\dfrac{\abs{A_{\sigma^+}}-\abs{A_{\sigma^-}}}{\sqrt2}$, $\theta\equiv\dfrac{\phi_{\sigma^+}-\phi_{\sigma^-}}{2}$
+\eqar{
+  \begin{split}
+    \vec A=&A_\pi\vec e_z-\frac{\ue^{\ui\phi_{\sigma}}}{2}\paren{\paren{A_H+A_\Delta}\ue^{\ui\theta}\paren{\hat e_x+\ui\hat e_y}-\paren{A_H-A_\Delta}\ue^{-\ui\theta}\paren{\hat e_x-\ui\hat e_y}}\\
+    =&A_\pi\vec e_z-\frac{\ue^{\ui\phi_{\sigma}}}{2}\paren{
+       A_H\paren{\ue^{\ui\theta}\paren{\hat e_x+\ui\hat e_y}
+       -\ue^{-\ui\theta}\paren{\hat e_x-\ui\hat e_y}}
+       +A_\Delta\paren{\ue^{\ui\theta}\paren{\hat e_x+\ui\hat e_y}
+       +\ue^{-\ui\theta}\paren{\hat e_x-\ui\hat e_y}
+       }
+       }\\
+    =&\abs{A_\pi}\ue^{\ui\phi_{\pi}}\vec e_z-\ue^{\ui\phi_{\sigma}}\paren{
+       \ui A_H\paren{\sin\theta\hat e_x+\cos\theta\hat e_y}
+       +A_\Delta\paren{\cos\theta\hat e_x-\sin\theta\hat e_y}
+       }\\
+    =&\ue^{\ui\phi_{\pi}}\paren{
+       \abs{A_\pi}\vec e_z
+       +A_H \ue^{\ui\phi_{HV}}\paren{\sin\theta\hat e_x+\cos\theta\hat e_y}
+       +A_\Delta\ue^{\ui\paren{\phi_{HV}+\pi/2}}
+       \paren{\cos\theta\hat e_x-\sin\theta\hat e_y}
+       }
+  \end{split}
+}
+where $\phi_{HV}\equiv\phi_{\sigma}-\phi_\pi-\dfrac{\pi}{2}$.\\
+
+This describes a polarization with an $x-y$ plane major axis along $\sin\theta\hat e_x+\cos\theta\hat e_y$ with amplitude $A_H$ and minor axis along $\cos\theta\hat e_x-\sin\theta\hat e_y$ with amplitude $A_\Delta$. The phase difference between the $x-y$ plane major axis and the $z$ polarization is $\phi_{HV}$ which, again, is $\dfrac\pi2$ ($90^\circ$) off from the phase difference between average $\sigma$ polarization and $\pi$.
+
 \end{document}
