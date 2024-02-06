@@ -265,36 +265,50 @@ can be expressed as,
 }
 Comparing the two, we can see that the transformation between the spherical
 and Cartesian polarization basis should be the same as that for the operators, i.e.
-\eqar{
-  \hat e^\pi=&\hat e_z\\
-  \hat e^{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\pm\ui\hat e_y}
+{
+  \color{red}
+  \eqar{
+    \hat e^\pi=&\hat e_z\\
+    \hat e^{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\pm\ui\hat e_y}
+  }
+  that satisfies
+  \eqar{
+    \vec A=&\sum_{i=-1,0,1}\!A_i\hat e^i
+  }
 }
 and the conjugate basis,
-\eqar{
-  \hat e_\pi=&\hat e_z\\
-  \hat e_{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\mp\ui\hat e_y}
+{
+  \color{blue}
+  \eqar{
+    \hat e_\pi=&\hat e_z\\
+    \hat e_{\sigma^\pm}=&\mp\frac{1}{\sqrt{2}}\paren{\hat e_x\mp\ui\hat e_y}
+  }
+  that satisfies,
+  \eqar{
+    \hat e_i\cdot\hat e^j=&\delta_i^j\\
+    A_i=&\hat e_i\cdot\vec A
+  }
 }
-that satisfies,
-\eqar{
-  \hat e_i\cdot\hat e^j=&\delta_i^j\\
-  A_i=&\hat e_i\cdot\vec A
-}
-
 \section{Properties of polarization amplitude and phase}
 \subsection{Amplitude transformation}
 From the relation between the basis, we can get the relation between
 the (complex) polarization amplitude in the two basis,
-\eqar{
-  A_z=&A_\pi\\
-  A_x=&-\frac{1}{\sqrt{2}}\paren{A_{\sigma^+}-A_{\sigma^-}}\\
-  A_y=&-\frac{\ui}{\sqrt{2}}\paren{A_{\sigma^+}+A_{\sigma^-}}
+{
+  \color{red}
+  \eqar{
+    A_z=&A_\pi\\
+    A_x=&-\frac{1}{\sqrt{2}}\paren{A_{\sigma^+}-A_{\sigma^-}}\\
+    A_y=&-\frac{\ui}{\sqrt{2}}\paren{A_{\sigma^+}+A_{\sigma^-}}
+  }
 }
 and
-\eqar{
-  A_\pi=&A_z\\
-  A_{\sigma^\pm}=&\frac{1}{\sqrt{2}}\paren{\ui A_y\mp A_x}
+{
+  \color{red}
+  \eqar{
+    A_\pi=&A_z\\
+    A_{\sigma^\pm}=&\frac{1}{\sqrt{2}}\paren{\ui A_y\mp A_x}
+  }
 }
-
 \subsection{Condition for linear polarization}
 For linear polarization, we need $\vec A\times\vec A^*=0$, or
 \eqar{
@@ -324,7 +338,7 @@ also given $\abs{A_{\sigma^+}}=\abs{A_{\sigma^-}}=\abs{A_{\sigma}}$
 }
 i.e. either one of $\abs{A_\pi}$ and $\abs{A_{\sigma}}$ is zero,
 or $\phi_\sigma-\phi_\pi=n\pi+\dfrac{\pi}2$,
-where $\phi_\sigma\equiv\dfrac{\phi_{\sigma^+}+\phi_{\sigma^-}}{2}$
+where {\color{red}$\phi_\sigma\equiv\dfrac{\phi_{\sigma^+}+\phi_{\sigma^-}}{2}$}
 is the average phase of the $\sigma$ polarizations.
 In another word, unless the polarization is purely $z$ or purely in the $x-y$ plane,
 linear polarization is achieved when the phase between $\pi$ polarization
@@ -339,7 +353,7 @@ horizontal ($x-y$ plane) and vertical ($z$) polarization.
     =&A_\pi\vec e_z-\frac{1}{\sqrt{2}}\abs{A_{\sigma^+}}\ue^{\ui\phi_{\sigma^+}}\paren{\hat e_x+\ui\hat e_y}+\frac{1}{\sqrt{2}}\abs{A_{\sigma^-}}\ue^{\ui\phi_{\sigma^-}}\paren{\hat e_x-\ui\hat e_y}
   \end{split}
 }
-Define $A_H\equiv\dfrac{\abs{A_{\sigma^+}}+\abs{A_{\sigma^-}}}{\sqrt2}$, $A_\Delta\equiv\dfrac{\abs{A_{\sigma^+}}-\abs{A_{\sigma^-}}}{\sqrt2}$, $\theta\equiv\dfrac{\phi_{\sigma^+}-\phi_{\sigma^-}}{2}$
+Define {\color{red}$A_H\equiv\dfrac{\abs{A_{\sigma^+}}+\abs{A_{\sigma^-}}}{\sqrt2}$, $A_\Delta\equiv\dfrac{\abs{A_{\sigma^+}}-\abs{A_{\sigma^-}}}{\sqrt2}$, $\theta\equiv\dfrac{\phi_{\sigma^+}-\phi_{\sigma^-}}{2}$}
 \eqar{
   \begin{split}
     \vec A=&A_\pi\vec e_z-\frac{\ue^{\ui\phi_{\sigma}}}{2}\paren{\paren{A_H+A_\Delta}\ue^{\ui\theta}\paren{\hat e_x+\ui\hat e_y}-\paren{A_H-A_\Delta}\ue^{-\ui\theta}\paren{\hat e_x-\ui\hat e_y}}\\
@@ -354,15 +368,15 @@ Define $A_H\equiv\dfrac{\abs{A_{\sigma^+}}+\abs{A_{\sigma^-}}}{\sqrt2}$, $A_\Del
        \ui A_H\paren{\sin\theta\hat e_x+\cos\theta\hat e_y}
        +A_\Delta\paren{\cos\theta\hat e_x-\sin\theta\hat e_y}
        }\\
-    =&\ue^{\ui\phi_{\pi}}\paren{
+    =&\ue^{\ui\phi_{\pi}}\paren{\color{red}{
        \abs{A_\pi}\vec e_z
        +A_H \ue^{\ui\phi_{HV}}\paren{\sin\theta\hat e_x+\cos\theta\hat e_y}
        +A_\Delta\ue^{\ui\paren{\phi_{HV}+\pi/2}}
        \paren{\cos\theta\hat e_x-\sin\theta\hat e_y}
-       }
+       }}
   \end{split}
 }
-where $\phi_{HV}\equiv\phi_{\sigma}-\phi_\pi-\dfrac{\pi}{2}$.\\
+where {\color{red}$\phi_{HV}\equiv\phi_{\sigma}-\phi_\pi-\dfrac{\pi}{2}$}.\\
 
 This describes a polarization with an $x-y$ plane major axis along $\sin\theta\hat e_x+\cos\theta\hat e_y$ with amplitude $A_H$ and minor axis along $\cos\theta\hat e_x-\sin\theta\hat e_y$ with amplitude $A_\Delta$. The phase difference between the $x-y$ plane major axis and the $z$ polarization is $\phi_{HV}$ which, again, is $\dfrac\pi2$ ($90^\circ$) off from the phase difference between average $\sigma$ polarization and $\pi$.
 
