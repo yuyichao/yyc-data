@@ -218,11 +218,14 @@ and related quantities.
 \section{Two level system}
 For a two level system with Rabi frequency $\Omega$ and Detuning $\Delta$,
 the Hamiltonian is,
-\eqar{
-  H=&\begin{pmatrix}
-    \dfrac{\Delta}2&\dfrac{\Omega}2\\
-    \dfrac{\Omega^*}2&-\dfrac{\Delta}2
-  \end{pmatrix}
+{
+  \color{red}
+  \eqar{
+    H=&\begin{pmatrix}
+      \dfrac{\Delta}2&\dfrac{\Omega}2\\
+      \dfrac{\Omega^*}2&-\dfrac{\Delta}2
+    \end{pmatrix}
+  }
 }
 The generalized Rabi frequency $\Omega_g$ is $\sqrt{\abs{\Omega}^2+\Delta^2}$
 and this is the (angular) frequency the population is going to be oscillating at
@@ -233,29 +236,32 @@ is the (angular) frequency the population oscillate at.\\
 
 $\pi$-time is defined as the time it takes for the oscillation to reach maximum
 and is,
-\eqar{
-  \tau_\pi=&\frac{\pi}{\Omega_g}
+{
+  \color{red}
+  \eqar{
+    \tau_\pi=&\frac{\pi}{\Omega_g}
+  }
 }
 
-The AC stark shift on the {\color{red}transition} is
+The AC stark shift on the {\color{blue}transition} is
 \eqar{
   \begin{split}
     \delta_{\text{transition}}=&\Omega_g-\Delta\\
-    \approx&\frac{\abs{\Omega}^2}{2\Delta}\ \ \ (\text{for $\Omega\ll\Delta$})
+    \approx&{\color{red}\frac{\abs{\Omega}^2}{2\Delta}}\ \ \ (\text{for $\Omega\ll\Delta$})
   \end{split}
 }
 
-The AC stark shift on {\color{red}each of the states} is
+The AC stark shift on {\color{blue}each of the states} is
 \eqar{
   \begin{split}
     \delta_{\text{state}}=&\pm\frac12\paren{\Omega_g-\Delta}\\
-    \approx&\pm\frac{\abs{\Omega}^2}{4\Delta}\ \ \ (\text{for $\Omega\ll\Delta$})
+    \approx&{\color{red}\pm\frac{\abs{\Omega}^2}{4\Delta}}\ \ \ (\text{for $\Omega\ll\Delta$})
   \end{split}
 }
 
 \section{Three level system}
-The Raman Rabi frequency is $\Omega_R=\dfrac{\Omega_1\Omega_2^*}{2\Delta}$ where
-$\Delta$ is the single photon detuning.\\
+The Raman Rabi frequency is {\color{red}$\Omega_R=\dfrac{\Omega_1\Omega_2^*}{2\Delta}$}
+where $\Delta$ is the single photon detuning.\\
 
 For the following 3-level Hamiltonian,
 \eqar{
@@ -272,10 +278,10 @@ the effective Hamiltonian after eliminating the excited state up to the second o
       \dfrac{\delta}2+\dfrac{\abs{\Omega_1}^2}{4\Delta}&\dfrac{\Omega_R}2\\
       \dfrac{\Omega_R^*}2&-\dfrac{\delta}2+\dfrac{\abs{\Omega_2}^2}{4\Delta}
     \end{pmatrix}\\
-    =&\begin{pmatrix}
+    =&{\color{red}\begin{pmatrix}
       \dfrac{\delta}2+\dfrac{\abs{\Omega_1}^2}{4\Delta}&\dfrac{\Omega_1\Omega_2^*}{4\Delta}\\
       \dfrac{\Omega_1^*\Omega_2}{4\Delta}&-\dfrac{\delta}2+\dfrac{\abs{\Omega_2}^2}{4\Delta}
-    \end{pmatrix}
+    \end{pmatrix}}
   \end{split}
 }
 
