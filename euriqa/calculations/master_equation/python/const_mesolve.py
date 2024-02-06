@@ -13,12 +13,12 @@ def _add_H(M, N, H):
     if isinstance(H, (QobjEvo,)):
         raise Exception("Time dependent Hamiltonian not supported.")
     H = Qobj(H)
-    for i in range(N):
-        for j in range(N):
-            mi = i * N + j
-            for k in range(N):
-                M[mi, k * N + j] += H[i, k] / 1j
-                M[mi, i * N + k] -= H[k, j] / 1j
+    d = H.data
+    for (i, j) in zip(*d.nonzero()):
+        v = d[i, j] / 1j
+        for k in range(N):
+            M[i * N + k, j * N + k] += v
+            M[k * N + j, k * N + i] -= v
 
 def _add_C(M, N, C):
     if isinstance(C, (QobjEvo,)):
@@ -26,14 +26,14 @@ def _add_C(M, N, C):
     C = Qobj(C)
     Ch = C.conj().trans()
     L = Ch * C
-    for i in range(N):
-        for j in range(N):
-            mi = i * N + j
-            for k in range(N):
-                for l in range(N):
-                    M[mi, k * N + l] += C[i, k] * Ch[l, j]
-                M[mi, k * N + j] -= L[i, k] / 2
-                M[mi, i * N + k] -= L[k, j] / 2
+    for (i, k) in zip(*C.data.nonzero()):
+        for (l, j) in zip(*Ch.data.nonzero()):
+            M[i * N + j, k * N + l] += C[i, k] * Ch[l, j]
+    for (i, j) in zip(*L.data.nonzero()):
+        v = L[i, j] / 2
+        for k in range(N):
+            M[i * N + k, j * N + k] -= v
+            M[k * N + j, k * N + i] -= v
 
 def _construct_matrix(H, c_ops, use_sparse):
     hshape = H.shape
@@ -127,11 +127,14 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
     progress_bar.start(n_tsteps)
 
     if not coherent:
-        rhof0 = np.ndarray.flatten(np.array(rho0))
+        rhof = np.ndarray.flatten(np.array(rho0))
+        tlast = 0
         for t_idx, t in enumerate(tlist):
             progress_bar.update(t_idx)
             # TODO: try use the form of expm_multiply with sampling
-            rhof = expm_multiply(t * M, rhof0)
+            Mt = M * (t - tlast)
+            tlast = t
+            rhof = expm_multiply(Mt, rhof)
             rho = Qobj(rhof.reshape(N, N))
             output.states.append(rho)
 
