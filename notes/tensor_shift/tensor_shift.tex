@@ -17,7 +17,7 @@
 \usepackage{textcomp}
 \usepackage[utf8x]{inputenc}
 % \usepackage{feyn}
-\usepackage{feynmp}
+% \usepackage{feynmp}
 \usepackage{xkeyval}
 \usepackage{xargs}
 \usepackage{verbatim}
@@ -396,11 +396,11 @@ we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
 \subsection{Direct derivation}
 The coupling between state $|F,m_F\rangle$ and $|F',m_F'\rangle$
 \eqar{
-  \langle F,m_F|d_q|F',m_F'\rangle=&\langle F||\mathbf{d}||F'\rangle\langle F,m_F|F',1;m_F',q\rangle\\
+  \langle F,m_F|d_{-q}|F',m_F'\rangle=&\langle F||\mathbf{d}||F'\rangle\langle F,m_F|F',1;m_F',-q\rangle\\
   =&\langle F||\mathbf{d}||F'\rangle (-1)^{F'-1+m_F}\sqrt{2F+1}
   \begin{pmatrix}
     F'&1&F\\
-    m_F'&q&m_F
+    m_F'&-q&m_F
   \end{pmatrix}
 }
 where $F$ and $m_F$ ($F'$ and $m_F'$) are the total angular momentum and its projection
@@ -409,40 +409,205 @@ for the spherical harmonic component ($-1$, $0$, or $1$).
 $q=\pm1$ corresponds to the $\sigma^\pm$ polarization/transition
 and $q=0$ corresponds to the $\pi$ polarization/transition.\\
 
-% Shift
-From this, we can first calculate the stark shift for a pure
+\subsubsection{Diagonal terms (Stark shifts) only}
+We can first calculate the Stark shift for a pure
 ($\sigma^+$, $\pi$ or $\sigma^-$) polarization.
-We only care about a single polarization and a single pair of state for each shift
-so there's no summation. We'll also ignore the detuning
-and all of the other pre-factors since we only care about
-the ratio between different states/polaritions.
+This is the case that contains no non-diagonal terms.
+We should be able to use this to verify the $m_F$ dependency of the final effect.
+(Scalar, vector and tensor shift should corresponds to $0$, $1$ and $2$ order terms
+of $m_F$ respectively).\\
+
+Since we only care about the $m_F$ dependency, we can ignore everything that's
+$m_F$ independent.\\
+
+The Stark shift,
 \eqar{
-  \Delta E\propto&\langle F,m_F|d_q|F',m_F'\rangle\langle F',m_F'|d_q|F,m_F\rangle\\
-  =&\langle F||\mathbf{d}||F'\rangle^2\abs{\langle F,m_F|F',1;m_F',q\rangle}^2\\
-  =&\langle F||\mathbf{d}||F'\rangle^2\paren{2F+1}
-  \begin{pmatrix}
-    F'&1&F\\
-    m_F'&q&m_F
-  \end{pmatrix}^2
+  \begin{split}
+    \Delta E\propto&\langle F,m_F|d_{-q}|F',m_F'\rangle
+                     \langle F',m_F'|d_{-q}|F,m_F\rangle\\
+    \propto&\abs{\langle F,m_F|F',1;m_F',-q\rangle}^2\\
+    \propto&(F+m_F)!(F-m_F)!(F'-m_F-q)!(F'+m_F+q)!\\
+                   &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!q\!-\!k)!(F'\!-\!F\!+\!1\!-\!k)!(F\!-\!F'\!+\!q\!+\!k)!(F'\!-\!q\!-\!k\!-\!m_F)!(F\!-\!1\!+\!q\!+\!k\!+\!m_F)!}}^2
+  \end{split}
+}
+The last proportionality relation uses the generic explicit expression for the
+Clebsch-Gordan coefficients (ignoring $m_F$ independent factors).
+The sum is over all the $k$'s where the factorials are non-negative.
+We'll call the last expression $\Delta'(m_F,q)$ in the following part for simplicity.
+
+For $q=-1$
+\eqar{
+  \begin{split}
+    &\Delta'(m_F,-1)\\
+    =&(F+m_F)!(F-m_F)!(F'-m_F+1)!(F'+m_F-1)!\\
+    &\abs{\sum_{k}\frac{(-1)^k}{k!(2\!-\!k)!(F'\!-\!F\!+\!1\!-\!k)!(F\!-\!F'\!-\!1\!+\!k)!(F'\!+\!1\!-\!k\!-\!m_F)!(F\!-\!2\!+\!k\!+\!m_F)!}}^2
+  \end{split}
+}
+Since we have $F'\!-\!F\!+\!1\!-\!k\geqslant0$ and $F\!-\!F'\!-\!1\!+\!k\geqslant0$, we have $k=F'-F+1$, (with the explicit condition to make sure $F'+m_F-1\geqslant0$)
+\eqar{
+  \begin{split}
+    &\Delta'(m_F,-1)\\
+    =&\begin{cases}
+      \dfrac{(F+m_F)!(F'-m_F+1)!}{\paren{(F'-F+1)!(F-F'+1)!}^2(F-m_F)!(F'+m_F-1)!}&(m_F\geqslant1-F')\\
+      0&(m_F<1-F')
+    \end{cases}
+  \end{split}
+}
+To simplify this further, we used the fact that $F'=F-1,F,F+1$
+\eqar{
+  \begin{split}
+    \Delta'(m_F,-1)=&\begin{cases}
+      \dfrac{(F+m_F)!(F-m_F)!}{4(F-m_F)!(F+m_F-2)!}&(m_F\geqslant2-F,F'=F-1)\\
+      0&(m_F<2-F,F'=F-1)\\
+      \dfrac{(F+m_F)!(F-m_F+1)!}{(F-m_F)!(F+m_F-1)!}&(m_F\geqslant1-F,F'=F)\\
+      0&(m_F<1-F,F'=F)\\
+      \dfrac{(F+m_F)!(F-m_F+2)!}{4(F-m_F)!(F+m_F)!}&(m_F\geqslant1-(F+1),F'=F+1)\\
+      0&(m_F<1-(F+1),F'=F+1)
+    \end{cases}
+  \end{split}\\
+  \begin{split}
+    \Delta'(m_F,-1)=&\begin{cases}
+      \dfrac{(F+m_F)(F+m_F-1)}{4}&(F'=F-1)\\
+      (F+m_F)(F-m_F+1)&(F'=F)\\
+      \dfrac{(F-m_F+2)(F-m_F+1)}{4}&(F'=F+1)
+    \end{cases}
+  \end{split}
+}
+The final simplification uses the fact that $m_F\geqslant F$
+and that the expression produces the right value (i.e. $0$) even for out-of-bound $m_F$.
+
+For $q=0$,
+\eqar{
+  \begin{split}
+    &\Delta'(m_F,0)\\
+    =&(F+m_F)!(F-m_F)!(F'-m_F)!(F'+m_F)!\\
+    &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!k)!(F'\!-\!F\!+\!1\!-\!k)!(F\!-\!F'\!+\!k)!(F'\!-\!k\!-\!m_F)!(F\!-\!1\!+\!k\!+\!m_F)!}}^2
+  \end{split}
+}
+Conditional on the value of $F'$
+\eqar{
+  \begin{split}
+    &\Delta'(m_F,0)\\
+    =&\begin{cases}
+      \begin{aligned}
+        &(F+m_F)!(F-m_F)!(F-1-m_F)!(F-1+m_F)!\\
+        &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!k)!(-k)!(1\!+\!k)!(F\!-\!1\!-\!k\!-\!m_F)!(F\!-\!1\!+\!k\!+\!m_F)!}}^2
+      \end{aligned}&(F'=F-1)\\
+      \begin{aligned}
+        &(F+m_F)!(F-m_F)!(F-m_F)!(F+m_F)!\\
+        &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!k)!(1\!-\!k)!k!(F\!-\!k\!-\!m_F)!(F\!-\!1\!+\!k\!+\!m_F)!}}^2
+      \end{aligned}&(F'=F)\\
+      \begin{aligned}
+        &(F+m_F)!(F-m_F)!(F'-m_F)!(F'+m_F)!\\
+        &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!k)!(2\!-\!k)!(-1\!+\!k)!(F\!+\!1\!-\!k\!-\!m_F)!(F\!-\!1\!+\!k\!+\!m_F)!}}^2
+      \end{aligned}&(F'=F+1)
+    \end{cases}
+  \end{split}
+}
+For the first and third case, $k$ can only be $0$ and $1$ respectively.
+For the second case, $k$ can be either $0$ or $1$ and we need to sum over both.
+\eqar{
+  \Delta'(m_F,0)=&\begin{cases}
+    \dfrac{(F+m_F)!(F-m_F)!(F-1-m_F)!(F-1+m_F)!}{\paren{(F\!-\!1\!-\!m_F)!(F\!-\!1\!+\!m_F)!}^2}&(F'=F-1)\\
+    \begin{aligned}
+      &(F+m_F)!(F-m_F)!(F-m_F)!(F+m_F)!\\
+      &\paren{
+        \frac{1}{(F\!-\!m_F)!(F\!-\!1\!+\!m_F)!}
+        -\frac{1}{(F\!-\!1\!-\!m_F)!(F\!+\!m_F)!}
+        }^2
+    \end{aligned}&(F'=F)\\
+    \dfrac{(F+m_F)!(F-m_F)!(F+1-m_F)!(F+1+m_F)!}{\paren{(F\!-\!m_F)!(F\!+\!m_F)!}^2}
+                                                                                                &(F'=F+1)
+  \end{cases}\\
+  \Delta'(m_F,0)=&\begin{cases}
+    F^2-m_F^2&(F'=F-1)\\
+    4m_F^2&(F'=F)\\
+    (F+1)^2-m_F^2&(F'=F+1)
+  \end{cases}
 }
 
-% Full matrix
+For $q=1$,
+\eqar{
+  \begin{split}
+    &\Delta'(m_F,1)\\
+    =&(F+m_F)!(F-m_F)!(F'-m_F-1)!(F'+m_F+1)!\\
+    &\abs{\sum_{k}\frac{(-1)^k}{k!(-k)!(F'-F+1-k)!(F-F'+1+k)!(F'-1-k-m_F)!(F+k+m_F)!}}^2
+  \end{split}
+}
+which requires $k=0$,
+\eqar{
+  \begin{split}
+    \Delta'(m_F,1)=&\frac{(F+m_F)!(F-m_F)!(F'-m_F-1)!(F'+m_F+1)!}
+                     {\paren{(F'-F+1)!(F-F'+1)!(F'-1-m_F)!(F+m_F)!}^2}\\
+    =&\frac{(F-m_F)!(F'+m_F+1)!}{\paren{(F'-F+1)!(F-F'+1)!}^2(F'-m_F-1)!(F+m_F)!}
+  \end{split}
+}
+Here we omitted the check for $F'-m_F-1\geqslant0$ since the final expression
+would not depend on it. Conditional on the $F'$ values
+\eqar{
+  \Delta'(m_F,1)=&\begin{cases}
+    \dfrac{(F-m_F)!(F+m_F)!}{4(F-m_F-2)!(F+m_F)!}&(F'=F-1)\\
+    \dfrac{(F-m_F)!(F+m_F+1)!}{(F-m_F-1)!(F+m_F)!}&(F'=F)\\
+    \dfrac{(F-m_F)!(F+m_F+2)!}{4(F-m_F)!(F+m_F)!}&(F'=F+1)
+  \end{cases}\\
+  \Delta'(m_F,1)=&\begin{cases}
+    \dfrac{(F-m_F)(F-m_F-1)}{4}&(F'=F-1)\\
+    (F-m_F)(F+m_F+1)&(F'=F)\\
+    \dfrac{(F+m_F+2)(F+m_F+1)}{4}&(F'=F+1)
+  \end{cases}
+}
+
+We can see that the expressions for $\Delta'(m_F,q)$ are
+all second order polynomials of $m_F$. We can also verify that
+$\Delta'(-m_F,1)=\Delta'(m_F,-1)$ as required by symmetry.\\
+
+We can also see that for circular polarization ($q=\pm1$) the resulting shift
+always have a non-zero linear term. The slope of this term is $\dfrac{1-2F}{4}$, $-1$,
+and $\dfrac{2F+3}{4}$ for $\sigma^+$ polarization ($q=1$)
+and $F'=F-1,F,F+1$ respectively\footnote{For the $F'=F-1$ expression, $1-2F$ may be $0$ for $F=\dfrac{1}{2}$ but this cannot happen for $F'=F-1$.}.
+On the other hand, the expressions for $\pi$ polarization never
+have any linear $m_F$ term which is also consistent with symmetry.\\
+
+It is somewhat interesting that the coefficient for the second order terms
+are never zero, even for $F=0,\dfrac{1}{2}$ cases where tensor shift does not exist.
+Of course since there are not enough ``sampling points'' on the polynomial
+the $m_F^2$ term would just appear at most as a global energy shift in such cases.
+
+\subsubsection{Full effective Hamiltonian}
+When the polarization of the light is not one of the pure polarizations,
+the effect of the second order perturbation would contain off-diagnal terms in addition
+to the diagonal ones. In such cases, we would need to calculate the full effective
+Hamiltonian matrix instead of only the Stark shifts.\\
+
 Amplitude of the light $A_q$
 
 \eqar{
-  &\langle F,m_F|H|F',m_F'\rangle\\
-  \propto&\sum_{F'',m_F'',q,q'}\langle F,m_F|A_qd_q|F'',m_F''\rangle\langle F'',m_F''|A_{q'}^*d_{q'}|F',m_F'\rangle\\
-  \propto&\sum_{F'',m_F'',q,q'}A_qA_{q'}^*\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
-  =&\sum_{k,p}T_p^k\sum_{F'',m_F'',q,q'}\langle k,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
-  =&T_0^0\sum_{F'',m_F'',q,q'}\langle 0,0|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
-  &+\sum_{p}T_p^1\sum_{F'',m_F'',q,q'}\langle 1,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle\\
-  &+\sum_{p}T_p^2\sum_{F'',m_F'',q,q'}\langle 2,p|1,1;q,q'\rangle\langle F,m_F|F'',1;m_F'',q\rangle\langle F'',1;m_F'',q'|F',m_F'\rangle
+  \begin{split}
+    &\langle F,m_F|H|F',m_F'\rangle\\
+    \propto&\sum_{m_F'',q,q'}\langle F,m_F|A_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|A_{-q'}^*d_{-q'}|F',m_F'\rangle\\
+    \propto&\sum_{m_F'',q,q'}A_qA_{-q'}^*\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    =&\sum_{k,p}T_p^k\sum_{m_F'',q,q'}\langle k,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    =&T_0^0\sum_{m_F'',q,q'}\langle 0,0|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    &+\sum_{p}T_p^1\sum_{m_F'',q,q'}\langle 1,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    &+\sum_{p}T_p^2\sum_{m_F'',q,q'}\langle 2,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle
+  \end{split}
+}
+
+Scalar term,
+\eqar{
+  \begin{split}
+    H_{\text{s}}=&T_0^0\sum_{m_F'',q,q'}\langle 0,0|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    =&T_0^0\sum_{m_F'',q}\langle 0,0|1,1;q,-q\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q|F',m_F'\rangle\\
+    =&T_0^0\sum_{q}\langle F,m_F|F'',1;m_F+q,-q\rangle\langle F'',1;m_F+q,-q|F',m_F'\rangle
+  \end{split}
 }
 
 \eqar{
   \langle F,m_F|V_q|F',m_F'\rangle=&\langle F||V||F'\rangle\langle F,1;m_F,q|F',m_F'\rangle\\
   \langle F,m_F|F_q|F,m_F'\rangle=&\langle F,m_F|F_q|F,m_F'\rangle
 }
+
+% Angular momentum summation.
 
 \section{Vector light shift as effective magnetic field}
 
