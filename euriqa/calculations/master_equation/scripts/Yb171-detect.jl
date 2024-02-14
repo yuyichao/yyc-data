@@ -38,8 +38,10 @@ function get_sys(Ω, Δ, B)
 
     couple_F0 = true
 
-    Ωπ = Ω / 2
-    Ωσ = Ω / sqrt(2)
+    θ = π / 2
+
+    Ωπ = Ω * cos(θ)
+    Ωσ = Ω * sin(θ) / sqrt(2)
     # π transition
     # (0, 0) -> (1, 0)
     H_add_Ω!(H, Ωπ, 1, 7)
@@ -175,7 +177,7 @@ const ρ1 = zeros(8, 8)
 #     return γs, r10s, r01s
 # end
 
-const B0 = 0
+const B0 = 3
 # const B1 = 20.0
 
 # const ss = range(0.01, 3, 100)

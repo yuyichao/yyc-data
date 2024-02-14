@@ -21,8 +21,8 @@ function get_sys(Ω, Δ, B)
     H_add_E!(H, 2π * -1.4 * B, 1)
     H_add_E!(H, 2π * 1.4 * B, 3)
 
-    Ωπ = Ω / 2
-    Ωσ = Ω / sqrt(2)
+    Ωπ = Ω / sqrt(2)
+    Ωσ = Ω / 2
     # π transition
     # (1, 0) -> (0, 0)
     H_add_Ω!(H, Ωπ, 2, 4)
