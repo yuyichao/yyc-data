@@ -52,7 +52,7 @@ function get_sys(Ω, Δ, B)
     H_add_E!(H, E_3D1(B, 3, 3) - Δ, 8)
     # Dummy state
 
-    Ωπ = Ω / sqrt(2)
+    Ωπ = Ω / sqrt(2) # * im
     Ωσ = Ω / 2
     # π transition
     # (1/2, -1/2) -> (1/2, -1/2)
