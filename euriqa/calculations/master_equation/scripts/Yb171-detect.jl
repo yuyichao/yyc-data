@@ -40,7 +40,7 @@ function get_sys(Ω, Δ, B)
 
     θ = π / 2
 
-    Ωπ = Ω * cos(θ)
+    Ωπ = Ω * cos(θ) * im
     Ωσ = Ω * sin(θ) / sqrt(2)
     # π transition
     # (0, 0) -> (1, 0)
