@@ -44,6 +44,11 @@ function f_final(k, p, F, mF, F′, mF′, F′′)
         threeJ(k, F, F′, p, mF, -mF′) * sixJ(k, F, F′, F′′, 1, 1))
 end
 
+function f_final_cg(k, p, F, mF, F′, mF′, F′′)
+    return ((-1)^Int(F′′ - F + k + 2 * mF) * exact_sqrt((2 * k + 1) * (2 * F + 1)) *
+        CG(k, F, F′, p, mF, mF′) * sixJ(k, F, F′, F′′, 1, 1))
+end
+
 function check_upto(Fmax, F′max)
     for k in 0:2
         for dF in 0:2 * Fmax
@@ -64,7 +69,7 @@ function check_upto(Fmax, F′max)
                                     continue
                                 end
                                 v1 = f0(k, p, F, mF, F′, mF′, F′′)
-                                v2 = f_final(k, p, F, mF, F′, mF′, F′′)
+                                v2 = f_final_cg(k, p, F, mF, F′, mF′, F′′)
                                 if v1 - v2 != 0
                                     @assert v1 + v2 == 0
                                     @show k, p, F, mF, F′, mF′, F′′

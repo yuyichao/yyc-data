@@ -225,12 +225,12 @@ See the linked sections for the quantitative results.
 \item Section~\ref{stark-shift-explicit} checks the Stark shift's dependency
   on $m_F$ by explicitly compute it using the Clebsch-Gordan coefficients.
   It confirms that {\color{blue}the dependency of the Stark shift on $m_F$
-  is at most a second order polynomial} and it has the expected symmetry
+    is at most a second order polynomial} and it has the expected symmetry
   when driven with linear or circular polarized light.
 \item Section~\ref{full-effective-explicit} proves that the second order coupling
-  between to states $F$ and $F'$ is proportional to the Clebsch-Gordan coefficients
-  $\langle F',m_F'|F,k;m_F,p\rangle$ where $k=0,1,2$ denoting
-  scalar, vector and tensor coupling.
+  between to states $F$ and $F'$ is {\color{blue}proportional to
+    the Clebsch-Gordan coefficients $\langle F',m_F'|F,k;m_F,p\rangle$}
+  where $k=0,1,2$ denotes scalar, vector and tensor coupling.
 \end{enumerate}
 
 \section{Some useful formulas}
@@ -624,7 +624,8 @@ are never zero, even for $F=0,\dfrac{1}{2}$ cases where tensor shift does not ex
 Of course since there are not enough ``sampling points'' on the polynomial
 the $m_F^2$ term would just appear at most as a global energy shift in such cases.
 
-\subsubsection{Full effective Hamiltonian}\label{full-effective-explicit}
+\subsubsection{Full generic effective Hamiltonian for a single excited state}
+\label{full-effective-explicit}
 When the polarization of the light is not one of the pure polarizations,
 the effect of the second order perturbation would contain off-diagonal terms in addition
 to the diagonal ones. In such cases, we would need to calculate the full effective
@@ -651,7 +652,7 @@ where $(A^*)_{q}$ is the spherical component of the complex conjugate of $A$ (re
       \langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle
   \end{split}
 }
-Rewriting in $3j$ symbol,
+Rewriting in $3-j$ symbol,
 \eqar{
   \begin{split}
     &\sum_{m_F'',q,q'}\!\!(-1)^q\langle k,p|1,1;q,-q'\rangle
@@ -696,11 +697,29 @@ Rewriting in $3j$ symbol,
        \end{pmatrix}\begin{Bmatrix}
          k&F&F'\\
          F''&1&1
+       \end{Bmatrix}\\
+    =&(-1)^{F''-F+k+2m_F}\sqrt{\paren{2k+1}\paren{2F+1}}
+       \langle k,F;p,m_F|F',m_F'\rangle\begin{Bmatrix}
+         k&F&F'\\
+         F''&1&1
        \end{Bmatrix}
   \end{split}
 }
 
-% Angular momentum summation.
+For $F'=F$,
+\eqar{
+  \begin{split}
+    &\sum_{m_F'',q,q'}\!\!(-1)^q\langle k,p|1,1;q,-q'\rangle
+      \langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F,m_F'\rangle\\
+    =&(-1)^{F''-F+k+2m_F}\sqrt{\paren{2k+1}\paren{2F+1}}
+       \langle k,F;p,m_F|F,m_F'\rangle\begin{Bmatrix}
+         k&F&F\\
+         F''&1&1
+       \end{Bmatrix}
+  \end{split}
+}
+
+% Angular momentum summation/coupling.
 
 \section{Vector light shift as effective magnetic field}
 
