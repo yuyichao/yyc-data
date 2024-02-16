@@ -218,6 +218,21 @@ Most, if not all of the discussion will be limited to E1 transitions.
 I'm not really looking for the most mathematically straight forward derivation,
 rather trying to see this from different angle for better understanding.
 
+\section[Summary of main results]{Summary of main results\protect\footnote{``Results'' as in ones that are hard to find elsewhere in a form that I like. I'm sure many people have derived/used these before. This does not include standard ones like Wigner-Eckart theorem since it's easy to find reference for it.}}
+
+See the linked sections for the quantitative results.
+\begin{enumerate}
+\item Section~\ref{stark-shift-explicit} checks the Stark shift's dependency
+  on $m_F$ by explicitly compute it using the Clebsch-Gordan coefficients.
+  It confirms that {\color{blue}the dependency of the Stark shift on $m_F$
+  is at most a second order polynomial} and it has the expected symmetry
+  when driven with linear or circular polarized light.
+\item Section~\ref{full-effective-explicit} proves that the second order coupling
+  between to states $F$ and $F'$ is proportional to the Clebsch-Gordan coefficients
+  $\langle F',m_F'|F,k;m_F,p\rangle$ where $k=0,1,2$ denoting
+  scalar, vector and tensor coupling.
+\end{enumerate}
+
 \section{Some useful formulas}
 
 \subsection{Spherical component of vector}
@@ -445,7 +460,7 @@ for the spherical harmonic component ($-1$, $0$, or $1$).
 $q=\pm1$ corresponds to the $\sigma^\pm$ polarization/transition
 and $q=0$ corresponds to the $\pi$ polarization/transition.\\
 
-\subsubsection{Diagonal terms (Stark shifts) only}
+\subsubsection{Diagonal terms (Stark shifts) only}\label{stark-shift-explicit}
 We can first calculate the Stark shift for a pure
 ($\sigma^+$, $\pi$ or $\sigma^-$) polarization.
 This is the case that contains no non-diagonal terms.
@@ -609,9 +624,9 @@ are never zero, even for $F=0,\dfrac{1}{2}$ cases where tensor shift does not ex
 Of course since there are not enough ``sampling points'' on the polynomial
 the $m_F^2$ term would just appear at most as a global energy shift in such cases.
 
-\subsubsection{Full effective Hamiltonian}
+\subsubsection{Full effective Hamiltonian}\label{full-effective-explicit}
 When the polarization of the light is not one of the pure polarizations,
-the effect of the second order perturbation would contain off-diagnal terms in addition
+the effect of the second order perturbation would contain off-diagonal terms in addition
 to the diagonal ones. In such cases, we would need to calculate the full effective
 Hamiltonian matrix instead of only the Stark shifts.\\
 
