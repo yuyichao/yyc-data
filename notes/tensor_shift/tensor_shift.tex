@@ -226,19 +226,55 @@ Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
 every 3D vector (operator) can be equivalently expressed
 as a rank-$1$ spherical tensor,
 \eqar{
-  V_0=&V_z\\
-  V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
+  \begin{split}
+    V_0=&V_z\\
+    V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
+  \end{split}
 }
 
 In particular, when applied to the angular momentum operator,
 \eqar{
-  J_0=&J_z\\
   \begin{split}
+    J_0=&J_z\\
     J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
     =&\mp\frac{J_{\pm}}{\sqrt2}
   \end{split}
 }
-where $J_{\pm}$ are the angular momentum raising and lowering operators.
+where $J_{\pm}$ are the angular momentum raising and lowering operators.\\
+
+For the complex conjugate of the vector $V^*$, defined as
+\eqar{
+  (V^*)_{x,y,z}=&V^*_{x,y,z}
+}
+The spherical components are
+\eqar{
+  \begin{split}
+    (V^*)_0=&V^*_z\\
+    (V^*)_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\pm\ui V^*_y}
+  \end{split}\label{eq:spherical:conj}
+}
+Note that in general $(V^*)_{\pm1}\neq V^*_{\pm1}$. In fact,
+\eqar{
+  \begin{split}
+    V^*_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\mp\ui V^*_y}\\
+    =&-(V^*)_{\mp1}
+  \end{split}\\
+  \begin{split}
+    V^*_q=&(-1)^q(V^*)_{-q}
+  \end{split}
+}
+i.e. the $+1$ component of $V^*$ is related to the $-1$ component of $V$,
+and the $-1$ component of $V^*$ is related to the $+1$ component of $V$.\\
+
+Dot product of two vector
+\eqar{
+  \begin{split}
+    \vec A\cdot\vec B=&\sum_{i=x,y,z}A_iB_i\\
+    =&-A_{-1}B_{+1}-A_{+1}B_{-1}+A_0B_0\\
+    =&\sum_{q=-1,0,1}(-1)^qA_{q}B_{-q}\\
+    =&\sum_{q=-1,0,1}\sqrt{3}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
+  \end{split}
+}
 
 \subsection{Wigner-Eckart theorem}
 This describes the relation between matrix elements of a vector/tensor operator
@@ -424,7 +460,7 @@ The Stark shift,
 \eqar{
   \begin{split}
     \Delta E\propto&\langle F,m_F|d_{-q}|F',m_F'\rangle
-                     \langle F',m_F'|d_{-q}|F,m_F\rangle\\
+                     \langle F',m_F'|d_q|F,m_F\rangle\\
     \propto&\abs{\langle F,m_F|F',1;m_F',-q\rangle}^2\\
     \propto&(F+m_F)!(F-m_F)!(F'-m_F-q)!(F'+m_F+q)!\\
                    &\abs{\sum_{k}\frac{(-1)^k}{k!(1\!-\!q\!-\!k)!(F'\!-\!F\!+\!1\!-\!k)!(F\!-\!F'\!+\!q\!+\!k)!(F'\!-\!q\!-\!k\!-\!m_F)!(F\!-\!1\!+\!q\!+\!k\!+\!m_F)!}}^2
@@ -579,32 +615,74 @@ the effect of the second order perturbation would contain off-diagnal terms in a
 to the diagonal ones. In such cases, we would need to calculate the full effective
 Hamiltonian matrix instead of only the Stark shifts.\\
 
-Amplitude of the light $A_q$
+Let the amplitude of the light be $A_q$, where $q=-1,0,1$ corresponds to the $\sigma^-$, $\pi$ and $\sigma^+$ polarizations. The matrix element for the effective Hamiltonian is,
 
 \eqar{
   \begin{split}
-    &\langle F,m_F|H|F',m_F'\rangle\\
-    \propto&\sum_{m_F'',q,q'}\langle F,m_F|A_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|A_{-q'}^*d_{-q'}|F',m_F'\rangle\\
-    \propto&\sum_{m_F'',q,q'}A_qA_{-q'}^*\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
-    =&\sum_{k,p}T_p^k\sum_{m_F'',q,q'}\langle k,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
-    =&T_0^0\sum_{m_F'',q,q'}\langle 0,0|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
-    &+\sum_{p}T_p^1\sum_{m_F'',q,q'}\langle 1,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
-    &+\sum_{p}T_p^2\sum_{m_F'',q,q'}\langle 2,p|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle
+    &\langle F,m_F|H_{\mathrm{eff}}|F',m_F'\rangle\\
+    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}\langle F,m_F|(-1)^qA_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|((-1)^{q'}A_{q'}d_{-q'})^\dagger|F',m_F'\rangle\\
+    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}(-1)^q\langle F,m_F|A_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|(A^*)_{q'}d_{-q'}|F',m_F'\rangle
   \end{split}
 }
+where $(A^*)_{q}$ is the spherical component of the complex conjugate of $A$ (ref Eq.~\ref{eq:spherical:conj}). Using Wigner-Echart and the spherical decomposition of rank-2 tensor.
 
-Scalar term,
 \eqar{
   \begin{split}
-    H_{\text{s}}=&T_0^0\sum_{m_F'',q,q'}\langle 0,0|1,1;q,-q'\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
-    =&T_0^0\sum_{m_F'',q}\langle 0,0|1,1;q,-q\rangle\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q|F',m_F'\rangle\\
-    =&T_0^0\sum_{q}\langle F,m_F|F'',1;m_F+q,-q\rangle\langle F'',1;m_F+q,-q|F',m_F'\rangle
+    &\langle F,m_F|H_{\mathrm{eff}}|F',m_F'\rangle\\
+    =&\frac{\langle F||d||F''\rangle\langle F'||d||F''\rangle^*}{4\Delta}\!\!\sum_{m_F'',q,q'}\!\!(-1)^qA_{q}(A^*)_{-q'}\langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    =&\frac{\langle F||d||F''\rangle\langle F'||d||F''\rangle^*}{4\Delta}
+       \!\sum_{k,p}T_p^k\\
+    &\sum_{m_F'',q,q'}\!\!(-1)^q\langle k,p|1,1;q,-q'\rangle
+      \langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle
   \end{split}
 }
-
+Rewriting in $3j$ symbol,
 \eqar{
-  \langle F,m_F|V_q|F',m_F'\rangle=&\langle F||V||F'\rangle\langle F,1;m_F,q|F',m_F'\rangle\\
-  \langle F,m_F|F_q|F,m_F'\rangle=&\langle F,m_F|F_q|F,m_F'\rangle
+  \begin{split}
+    &\sum_{m_F'',q,q'}\!\!(-1)^q\langle k,p|1,1;q,-q'\rangle
+      \langle F,m_F|F'',1;m_F'',-q\rangle\langle F'',1;m_F'',-q'|F',m_F'\rangle\\
+    =&(-1)^{2F''+p-m_F-m_F'}\sqrt{\paren{2k+1}\paren{2F+1}\paren{2F'+1}}\\
+    &\sum_{m_F'',q,q'}\!\!(-1)^q\begin{pmatrix}
+      1&1&k\\
+      q&-q'&-p
+    \end{pmatrix}\begin{pmatrix}
+      F''&1&F\\
+      m_F''&-q&-m_F
+    \end{pmatrix}\begin{pmatrix}
+      F''&1&F'\\
+      m_F''&-q'&-m_F'
+    \end{pmatrix}\\
+    =&(-1)^{2F''+p-m_F-m_F'}\sqrt{\paren{2k+1}\paren{2F+1}\paren{2F'+1}}\\
+    &\sum_{m_F'',q,q'}\!\!(-1)^q\begin{pmatrix}
+      1&k&1\\
+      q'&-p&-q
+    \end{pmatrix}\begin{pmatrix}
+      1&F&F''\\
+      q&-m_F&-m_F''
+    \end{pmatrix}\begin{pmatrix}
+      F''&F'&1\\
+      m_F''&m_F'&-q'
+    \end{pmatrix}\\
+    =&(-1)^{F''-2m_F-m_F'}\sqrt{\paren{2k+1}\paren{2F+1}\paren{2F'+1}}\\
+    &\sum_{m_F'',q,q'}\!\!(-1)^{1+1+F''-q-q'-m_F''}\begin{pmatrix}
+      1&k&1\\
+      q'&-p&-q
+    \end{pmatrix}\begin{pmatrix}
+      1&F&F''\\
+      q&-m_F&-m_F''
+    \end{pmatrix}\begin{pmatrix}
+      F''&F'&1\\
+      m_F''&m_F'&-q'
+    \end{pmatrix}\\
+    =&(-1)^{F''-2m_F-m_F'}\sqrt{\paren{2k+1}\paren{2F+1}\paren{2F'+1}}
+       \begin{pmatrix}
+         k&F&F'\\
+         p&m_F&-m_F'
+       \end{pmatrix}\begin{Bmatrix}
+         k&F&F'\\
+         F''&1&1
+       \end{Bmatrix}
+  \end{split}
 }
 
 % Angular momentum summation.
@@ -612,5 +690,7 @@ Scalar term,
 \section{Vector light shift as effective magnetic field}
 
 \section{Mitigating the effect of transverse circular polarization in optical tweezers}
+
+% Use effective hamiltonian to explain Raman transitions.
 
 \end{document}
