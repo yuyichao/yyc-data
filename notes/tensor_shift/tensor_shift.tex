@@ -444,6 +444,9 @@ we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
 
 \section{Vector and tensor light shift}
 
+\subsection{Generic expression}
+% TODO
+
 \subsection{Direct derivation}
 The coupling between state $|F,m_F\rangle$ and $|F',m_F'\rangle$
 \eqar{
@@ -636,8 +639,9 @@ Let the amplitude of the light be $A_q$, where $q=-1,0,1$ corresponds to the $\s
 \eqar{
   \begin{split}
     &\langle F,m_F|H_{\mathrm{eff}}|F',m_F'\rangle\\
-    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}\langle F,m_F|(-1)^qA_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|((-1)^{q'}A_{q'}d_{-q'})^\dagger|F',m_F'\rangle\\
-    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}(-1)^q\langle F,m_F|A_{q}d_{-q}|F'',m_F''\rangle\langle F'',m_F''|(A^*)_{q'}d_{-q'}|F',m_F'\rangle
+    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}\langle F,m_F|(-1)^qA_{q}d_{-q}|F'',m_F''\rangle(\langle F',m_F'|(-1)^{q'}A_{q'}d_{-q'}|F'',m_F''\rangle)^*\\
+    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}(-1)^qA_{q}(-1)^{q'}A_{q'}^*\langle F,m_F|d_{-q}|F'',m_F''\rangle(\langle F',m_F'|d_{-q'}|F'',m_F''\rangle)^*\\
+    =&\frac{1}{4\Delta}\sum_{m_F'',q,q'}(-1)^qA_{q}(A^*)_{-q'}\langle F,m_F|d_{-q}|F'',m_F''\rangle(\langle F',m_F'|d_{-q'}|F'',m_F''\rangle)^*
   \end{split}
 }
 where $(A^*)_{q}$ is the spherical component of the complex conjugate of $A$ (ref Eq.~\ref{eq:spherical:conj}). Using Wigner-Echart and the spherical decomposition of rank-2 tensor.
