@@ -45,7 +45,7 @@ function f_final(k, p, F, mF, F′, mF′, F′′)
 end
 
 function f_final_cg(k, p, F, mF, F′, mF′, F′′)
-    return ((-1)^Int(F′′ - F + k + 2 * mF) * exact_sqrt((2 * k + 1) * (2 * F + 1)) *
+    return ((-1)^Int(F′′ + F + k) * exact_sqrt((2 * k + 1) * (2 * F + 1)) *
         CG(k, F, F′, p, mF, mF′) * sixJ(k, F, F′, F′′, 1, 1))
 end
 
