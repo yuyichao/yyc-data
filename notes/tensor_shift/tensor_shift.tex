@@ -443,10 +443,35 @@ we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
 
 
 \section{Vector and tensor light shift}
+In this section we'll discuss the result of second-order pertubation
+on dipole transitions. This includes Raman transitions and Stark shifts.
 
 \subsection{Generic expression}
+The effective Hamiltonian from second-order pertubation,
+\footnote{Here we've omitted the counter rotating term.
+  Including such term will not change the qualitative result of this discussion,
+  which only relies on the numerator of each pertubation terms.}
 \eqar{
-  H_{\mathrm{eff}}=&\sum_{e}\frac{}{\Delta_e}
+  H_{\mathrm{eff}}=&\sum_{e}\frac{\vec d\cdot\vec E|e\rangle\langle e|\vec d\cdot\vec E^*}{\Delta_e}\\
+  =&\paren{\vec E\vec E^*}\cdot\sum_{e}\frac{\vec d|e\rangle\langle e|\vec d}{\Delta_e}
+}
+Since $H_{\mathrm{eff}}$ is a scalar operator for all possible values of $\vec E$,
+the right half of the expression $\sum_{e}\dfrac{\vec d|e\rangle\langle e|\vec d}{\Delta_e}$ must be a rank-2 tensor operator.\\
+
+Therefore, we can always decompose the Hamiltonian into the spherical tensor components
+$H^k_q$, where $k=0,1,2$ corresponds to the scalar, vector and tensor parts.
+The whole effective Hamiltonian can be written as,
+\eqar{
+  H_{\mathrm{eff}}=&\sum_{k,p}(-1)^p T^k_{-p}H^k_p
+}
+where $T^k_p=\dsum_{q,q'}E_q(E^*)_{q'}\langle 1,1;q,q'|k,p\rangle$.
+The matrix element would be of the form,
+\eqar{
+  \begin{split}
+    &\langle F,m_F|H_{\mathrm{eff}}|F',m_F'\rangle\\
+    =&\sum_{p}(-1)^p T^k_{-p}\langle F,m_F|H^k_p|F',m_F'\rangle\\
+    =&\sum_{p}(-1)^p T^k_{-p}\langle F,m_F|H^k_p|F',m_F'\rangle
+  \end{split}
 }
 % TODO
 
