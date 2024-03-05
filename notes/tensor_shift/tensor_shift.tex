@@ -469,10 +469,17 @@ The matrix element would be of the form,
 \eqar{
   \begin{split}
     &\langle F,m_F|H_{\mathrm{eff}}|F',m_F'\rangle\\
-    =&\sum_{p}(-1)^p T^k_{-p}\langle F,m_F|H^k_p|F',m_F'\rangle\\
-    =&\sum_{p}(-1)^p T^k_{-p}\langle F,m_F|H^k_p|F',m_F'\rangle
+    =&\sum_{k,p}(-1)^p T^k_{-p}\langle F,m_F|H^k_p|F',m_F'\rangle\\
+    =&\sum_{k}\langle F||H^k||F'\rangle\sum_{p}(-1)^p T^k_{-p}
+       \langle F',k;m_F',p|F,m_F\rangle\\
+    =&\sum_{k}(-1)^{k}\sqrt{\frac{2F+1}{2F'+1}}\langle F||H^k||F'\rangle
+       \sum_{p}T^k_{p}\langle k,F;p,m_F|F',m_F'\rangle\\
+    =&\sum_{k}H(F,F',k)\sum_{p}T^k_{p}\langle k,F;p,m_F|F',m_F'\rangle
   \end{split}
 }
+where the $H(F,F',k)$ in the last expression is a generic scalar factor
+that depends only on $F$, $F'$ and $k$ but not on $p$, $m_F$, or $m_F'$.
+
 % TODO
 
 \subsection{Direct derivation}
@@ -754,6 +761,82 @@ For $F'=F$,
 % Angular momentum summation/coupling.
 
 \section{Vector light shift as effective magnetic field}
+
+Electric field, $E_{x,y,z}$. Spherical components of electric field,
+\eqar{
+  E_0=&E_z\\
+  E_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{E_x\pm\ui E_y}
+}
+Or the inverse conversion,
+\eqar{
+  E_x=&\frac{1}{\sqrt2}\paren{E_{-1}-E_{1}}\\
+  E_y=&\frac{\ui}{\sqrt2}\paren{E_{1}+E_{-1}}\\
+  E_z=&E_0
+}
+Complex conjugate of the electric field,
+\eqar{
+  (E^*)_0=&(E^*)_z\\
+  (E^*)_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{(E^*)_x\pm\ui (E^*)_y}\\
+  (E^*)_x=&\frac{1}{\sqrt2}\paren{(E^*)_{-1}-(E^*)_{1}}\\
+  (E^*)_y=&\frac{\ui}{\sqrt2}\paren{(E^*)_{1}+(E^*)_{-1}}\\
+  (E^*)_z=&(E^*)_0
+}
+Effective magnetic field
+\eqar{
+  \vec B=\alpha\vec E\times\vec E^*
+}
+where $\alpha$ is a scalar number.
+\eqar{
+  \begin{split}
+    B_x=&\alpha\paren{E_y(E^*)_z-E_z(E^*)_y}\\
+    =&\frac{\ui\alpha}{\sqrt2}\paren{\paren{E_{1}+E_{-1}}(E^*)_0-E_0\paren{(E^*)_{1}+(E^*)_{-1}}}
+  \end{split}\\
+  \begin{split}
+    B_y=&\alpha\paren{E_z(E^*)_x-E_x(E^*)_z}\\
+    =&\frac{\alpha}{\sqrt2}\paren{E_0\paren{(E^*)_{-1}-(E^*)_{1}}-\paren{E_{-1}-E_{1}}(E^*)_0}
+  \end{split}\\
+  \begin{split}
+    B_z=&\alpha\paren{E_x(E^*)_y-E_y(E^*)_x}\\
+    =&\frac{\ui\alpha}{2}\paren{\paren{E_{-1}-E_{1}}\paren{(E^*)_{1}+(E^*)_{-1}}-\paren{E_{1}+E_{-1}}\paren{(E^*)_{-1}-(E^*)_{1}}}\\
+    =&\ui\alpha\paren{E_{-1}(E^*)_{1}-E_{1}(E^*)_{-1}}
+  \end{split}
+}
+Spherical components for the effective magnetic field,
+\eqar{
+  \begin{split}
+    B_{-1}=&\frac{1}{\sqrt2}\paren{B_x-\ui B_y}\\
+    =&\ui\alpha\paren{E_{-1}(E^*)_0-E_0(E^*)_{-1}}
+  \end{split}\\
+  \begin{split}
+    B_0=&B_z\\
+    =&\ui\alpha\paren{E_{-1}(E^*)_{1}-E_{1}(E^*)_{-1}}
+  \end{split}\\
+  \begin{split}
+    B_1=&-\frac{1}{\sqrt2}\paren{B_x+\ui B_y}\\
+    =&\ui\alpha\paren{E_0(E^*)_{1}-E_{1}(E^*)_0}
+  \end{split}
+}
+Note that the spin-1 component of the tensor $\vec E\vec E^*$ is
+\eqar{
+  T^1_p=&\sum_{q,q'}\langle 1,1;q,q'|1,p\rangle E_{q}(E^*)_{q'}
+}
+Or more explicitly,
+\eqar{
+  T^1_{-1}=&\frac{1}{\sqrt{2}}\paren{E_{0}(E^*)_{-1}-E_{-1}(E^*)_{0}}\\
+  T^1_{0}=&\frac{1}{\sqrt{2}}\paren{E_{1}(E^*)_{-1}-E_{-1}(E^*)_{1}}\\
+  T^1_{1}=&\frac{1}{\sqrt{2}}\paren{E_{1}(E^*)_{0}-E_{0}(E^*)_{1}}
+}
+so we have $B_q=-\ui\sqrt2\alpha T^1_{q}$.\\
+
+The vector shift from the effective magnetic field is,
+\eqar{
+  \begin{split}
+    &\langle F,m_F|\vec\mu\cdot\vec B|F,m_F'\rangle\\
+    =&\langle F,m_F|\sum_{q}(-1)^q\mu_{-q}B_{q}|F,m_F'\rangle\\
+    =&-\ui\sqrt2\alpha g\sum_{q}(-1)^qT^1_{q}\langle F,m_F|F_{-q}|F,m_F'\rangle\\
+    =&-\ui\sqrt2\alpha g\sqrt{(F+1)F}\sum_{q}(-1)^qT^1_{q}\langle F,1;m_F',-q|F,m_F\rangle
+  \end{split}
+}
 
 \section{Mitigating the effect of transverse circular polarization in optical tweezers}
 
