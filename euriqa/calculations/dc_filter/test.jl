@@ -13,6 +13,22 @@ zr(R) = R
 zc(C, ω) = 1 / (im * ω * C)
 zl(L, ω) = im * ω * L
 
+function filter_435(ω, zload)
+    vi = (1, 0)
+    # load
+    vi = add_parallel(vi, zload)
+
+    vi = add_parallel(vi, zc(14.7e-6, ω))
+    vi = add_series(vi, zr(20))
+    vi = add_parallel(vi, zc(14.7e-6, ω))
+    vi = add_series(vi, zr(20))
+    vi = add_parallel(vi, zc(14.7e-6, ω))
+    vi = add_series(vi, zr(20))
+    vi = add_parallel(vi, zc(14.7e-6, ω))
+
+    return 1 / vi[1]
+end
+
 function filter(ω, zload)
     vi = (1, 0)
     # load
