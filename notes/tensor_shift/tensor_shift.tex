@@ -438,9 +438,70 @@ For $q=-1$
 Comparing the result from the two methods,
 we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
 \eqar{
-  \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle
+  \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle\label{eq:projection:spin1}
 }
 
+\subsubsection{Generalizing the projection theorem to spin-2 tensor}
+Following the same procesure for projection theorem,
+we can also replace the spherical tensor operators with any
+other spherical tensor operator of the same spin. For spin-2 tensor operators
+on states with the same angular momentum,
+we can use the the one constructed from the direct product of
+two angular momentum operators: $(JJ)^2_p=\dsum_{q,q'}\langle 1,1;q,q'|2,p\rangle J_q J_{q'}$.\\
+
+Inserting an identity and using equation~\ref{eq:projection:spin1},
+\eqar{
+  \begin{split}
+    &\langle j,m|(JJ)^2_p|j,m'\rangle\\
+    =&\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle \langle j,m|J_q|j,m''\rangle\langle j,m''|J_{q'}|j,m'\rangle\\
+    =&j(j+1)\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle
+       \langle j,1;m'',q|j,m\rangle
+       \langle j,1;m',q'|j,m''\rangle\\
+    =&\sqrt{5}j(j+1)(2j+1)\sum_{q,q',m''}(-1)^{-2j-m-m''-p}\\
+                                  &\begin{pmatrix}
+                                    1&2&1\\
+                                    q'&-p&-q
+                                  \end{pmatrix}
+                                    \begin{pmatrix}
+                                      1&j&j\\
+                                      q&m&-m''
+                                    \end{pmatrix}
+                                    \begin{pmatrix}
+                                      j&j&1\\
+                                      m''&-m'&-q'
+                                    \end{pmatrix}\\
+    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}\sum_{q,q',m''}(-1)^{1+1+j-q'-q-m''}\\
+                                  &\begin{pmatrix}
+                                    1&2&1\\
+                                    q'&-p&-q
+                                  \end{pmatrix}
+                                    \begin{pmatrix}
+                                      1&j&j\\
+                                      q&m&-m''
+                                    \end{pmatrix}
+                                    \begin{pmatrix}
+                                      j&j&1\\
+                                      m''&-m'&-q'
+                                    \end{pmatrix}\\
+    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}
+       \begin{pmatrix}
+         j&2&j\\
+         m'&p&-m
+       \end{pmatrix}
+       \begin{Bmatrix}
+         2&j&j\\
+         j&1&1
+       \end{Bmatrix}\\
+    =&\sqrt{5}j(j+1)\sqrt{2j+1}(-1)^{2j}
+       \begin{Bmatrix}
+         2&j&j\\
+         j&1&1
+       \end{Bmatrix}
+       \langle j,2;m',p|j,m\rangle
+  \end{split}
+}
+which is indeed consistent with the Wigner-Echart theorem
+(the only $m$ or $p$-dependent term is the Clebsch-Gordan coefficient).
 
 \section{Vector and tensor light shift}
 In this section we'll discuss the result of second-order pertubation
@@ -843,3 +904,8 @@ The vector shift from the effective magnetic field is,
 % Use effective hamiltonian to explain Raman transitions.
 
 \end{document}
+
+
+% TODO
+% Vector expression for tensor light shift (express vector using magnetic field and express tensor using EE dot FF)
+% Expressions for scalar/vector/tensor polarizability
