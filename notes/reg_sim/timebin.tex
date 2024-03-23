@@ -311,7 +311,8 @@ that can be taken into account separately,
   $|0\rangle$ representing $|0;\mathrm{early photon}\rangle$ after the first photon
   generation step, and $|1\rangle$ representing $|1;\mathrm{late photon}\rangle$
   after the second photon generation step.
-\item We'll calculate for a single motional axis.
+\item We'll calculate for a single motional axis
+  (and assume it's a harmonic oscillator).
   As long as there's no initial entanglment between the motions on different axis,
   the result of the calculation can just be applied on each axis independently.
 \end{enumerate}
@@ -322,39 +323,47 @@ With these simplifications, the initial density matrix of the system is,
     \rho_0=&\frac{\paren{|0\rangle+|1\rangle}\paren{\langle0|+\langle1|}}{2}\rho_{\mathrm{m}}
   \end{split}
 }
-where $\rho_{\mathrm{m}}$ is the motional density state.
+where $\rho_{\mathrm{m}}$ is the motional density matrix.\\
 
-After first kick
+After first photon generation, the density matrix is,
 \eqar{
   \begin{split}
     \rho_1=&\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}
   \end{split}
 }
+where $P_0$ and $P_1$ are projection operation for the $|0\rangle$
+and $|1\rangle$ states, $\mathcal{D}(\ui\eta)=\ue^{\ui kx}$ is the displacement operator
+representing the effect of the photon recoil and $\eta$ is the Lamb-Dicke parameter.\\
 
-After time evolution
+After the free-evolution between the two generation steps,
 \eqar{
   \begin{split}
     \rho_2=&\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}
   \end{split}
 }
+where $\omega$ is the trap frequency.\\
 
-After second kick
+After second photon gneeration,
 \eqar{
   \begin{split}
     \rho_3=&\paren{P_{0}+P_{1}\mathcal{D}(\ui\eta)}\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}\paren{P_{0}+P_{1}\mathcal{D}(-\ui\eta)}\\
     =&\paren{P_{0}\ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)+P_{1}\mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}+P_{1}\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)}
   \end{split}
 }
+This result is currently generic and can by applied to any initial motional state.
+For the experiment, however, we are more interested in using a thermal state
+as the initial state. It is useful to use a representation of the density matrix
+using coherent states (as will be obvious from the derivation below),
 
-For a thermal initial state
 \eqar{
-  \rho_m=&\frac{1}{\pi n_B}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/n_B}
+  \rho_m=&\frac{1}{\pi {\bar n}}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}
 }
-where $n_B\equiv\dfrac{1}{\ue^{\beta\omega}-1}$
+where ${\bar n}\equiv\dfrac{1}{\ue^{\beta\omega}-1}$ is the average $n$.
+
 \eqar{
   \begin{split}
     \rho_3=
-    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
       \paren{|0\rangle\ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)+|1\rangle\mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}}|\alpha\rangle\\
     &\langle\alpha|\paren{\langle0|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}+\langle1|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)}
   \end{split}
@@ -364,7 +373,7 @@ Tracing out the motion
 \eqar{
   \begin{split}
     \rho_{3,\mathrm{s}}=
-    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
       \begin{pmatrix}[1.5]
         |0\rangle\langle0|
         \langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
@@ -381,7 +390,7 @@ Tracing out the motion
         \langle\alpha|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)
         \mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}|\alpha\rangle
       \end{pmatrix}\\
-    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
        \begin{pmatrix}[1.5]
          |0\rangle\langle0|
          +|1\rangle\langle1|\\
@@ -425,7 +434,7 @@ Tracing out the motion
 \eqar{
   \begin{split}
     \rho_{3,\mathrm{s}}
-    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
        \begin{pmatrix}[1.5]
          |0\rangle\langle0|
          +|1\rangle\langle1|\\
@@ -439,7 +448,7 @@ Tracing out the motion
          +\eta^2\paren{\ue^{\ui\omega t}-1}}
        \end{pmatrix}\\
     =&\frac{|0\rangle\langle0|+|1\rangle\langle1|}{2}\\
-    &+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+    &+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
       \exp\paren{
       -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
       +\eta^2\paren{\ue^{-\ui\omega t}-1}}+h.c.
@@ -448,31 +457,31 @@ Tracing out the motion
 
 \eqar{
   \begin{split}
-    &\int\ud^2\alpha \ue^{-\abs{\alpha}^2/n_B}\exp\paren{
+    &\int\ud^2\alpha \ue^{-\abs{\alpha}^2/{\bar n}}\exp\paren{
       2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
       +\eta^2\paren{\ue^{-\ui\omega t}-1}
       }\\
     =&\ue^{\eta^2\paren{\ue^{-\ui\omega t}-1}}
-       \int\ud^2\alpha \ue^{-\abs{\alpha}^2/n_B}\exp\paren{
+       \int\ud^2\alpha \ue^{-\abs{\alpha}^2/{\bar n}}\exp\paren{
        2\ui\eta\mathrm{Re}\paren{\paren{\alpha_x+\ui\alpha_y}\paren{\cos\omega t-1-\ui\sin\omega t}}}\\
     =&\ue^{\eta^2\paren{\ue^{-\ui\omega t}-1}}
        \int\ud^2\alpha
        \exp\paren{
-       -\alpha_x^2/n_B
+       -\alpha_x^2/{\bar n}
        +2\ui\alpha_x\eta\paren{\cos\omega t-1}
        }
        \exp\paren{
-       -\alpha_y^2/n_B
+       -\alpha_y^2/{\bar n}
        +2\ui\alpha_y\eta\sin\omega t
        }\\
-    =&\pi n_B\exp\paren{-\eta^2\paren{1-\ue^{-\ui\omega t}+2n_B\paren{1-\cos\omega t}}}\\
-    =&\pi n_B\exp\paren{-\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2n_B+1}}
+    =&\pi {\bar n}\exp\paren{-\eta^2\paren{1-\ue^{-\ui\omega t}+2{\bar n}\paren{1-\cos\omega t}}}\\
+    =&\pi {\bar n}\exp\paren{-\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}
   \end{split}
 }
 
 \eqar{
   \begin{split}
-    \rho_{3,\mathrm{s}}=&\frac{|0\rangle\langle0|+|1\rangle\langle1|+|0\rangle\langle1|\exp\paren{\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2n_B+1}}+h.c.}{2}
+    \rho_{3,\mathrm{s}}=&\frac{|0\rangle\langle0|+|1\rangle\langle1|+|0\rangle\langle1|\exp\paren{\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}+h.c.}{2}
   \end{split}
 }
 
