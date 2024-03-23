@@ -1,0 +1,382 @@
+\documentclass[10pt,fleqn]{article}
+% \usepackage[journal=rsc]{chemstyle}
+% \usepackage{mhchem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{esint}
+\usepackage{bbm}
+\usepackage{amscd}
+\usepackage{picinpar}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{indentfirst}
+\usepackage{wrapfig}
+\usepackage{units}
+\usepackage{textcomp}
+\usepackage[utf8x]{inputenc}
+% \usepackage{feyn}
+% \usepackage{feynmp}
+\usepackage{xkeyval}
+\usepackage{xargs}
+\usepackage{verbatim}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes
+}
+
+\DeclareGraphicsRule{*}{mps}{*}{}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\ue}{\mathrm{e}}
+\newcommand{\ui}{\mathrm{i}}
+\newcommand{\res}{\mathrm{Res}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\dsum}{\displaystyle\sum}
+\newcommand{\dprod}{\displaystyle\prod}
+\newcommand{\dlim}{\displaystyle\lim}
+\newcommand{\dint}{\displaystyle\int}
+\newcommand{\fsno}[1]{{\!\not\!{#1}}}
+\newcommand{\eqar}[1]
+{
+  \begin{align}
+    #1
+  \end{align}
+}
+\newcommand{\texp}[2]{\ensuremath{{#1}\times10^{#2}}}
+\newcommand{\dexp}[2]{\ensuremath{{#1}\cdot10^{#2}}}
+\newcommand{\eval}[2]{{\left.{#1}\right|_{#2}}}
+\newcommand{\paren}[1]{{\left({#1}\right)}}
+\newcommand{\lparen}[1]{{\left({#1}\right.}}
+\newcommand{\rparen}[1]{{\left.{#1}\right)}}
+\newcommand{\abs}[1]{{\left|{#1}\right|}}
+\newcommand{\sqr}[1]{{\left[{#1}\right]}}
+\newcommand{\crly}[1]{{\left\{{#1}\right\}}}
+\newcommand{\angl}[1]{{\left\langle{#1}\right\rangle}}
+\newcommand{\tpdiff}[4][{}]{{\paren{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}_{#4}}}
+\newcommand{\tpsdiff}[4][{}]{{\paren{\frac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pdiff}[3][{}]{{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\diff}[3][{}]{{\frac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psdiff}[3][{}]{{\frac{\partial^{#1}}{\partial {#3}{}^{#1}} {#2}}}
+\newcommand{\sdiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\newcommand{\tpddiff}[4][{}]{{\left(\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}\right)_{#4}}}
+\newcommand{\tpsddiff}[4][{}]{{\paren{\dfrac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pddiff}[3][{}]{{\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\ddiff}[3][{}]{{\dfrac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psddiff}[3][{}]{{\frac{\partial^{#1}}{\partial{}^{#1} {#3}} {#2}}}
+\newcommand{\sddiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{fontenc}
+% \usepackage{tipa}
+\usepackage{ulem}
+\usepackage{color}
+\usepackage{cancel}
+\newcommand{\hcancel}[2][black]{\setbox0=\hbox{#2}%
+  \rlap{\raisebox{.45\ht0}{\textcolor{#1}{\rule{\wd0}{1pt}}}}#2}
+\pagestyle{fancy}
+\setlength{\headheight}{67pt}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+\fancyhead[R]{}
+\renewcommand{\footruleskip}{0pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand\pgfmathsinandcos[3]{%
+  \pgfmathsetmacro#1{sin(#3)}%
+  \pgfmathsetmacro#2{cos(#3)}%
+}
+\newcommand\LongitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % azimuth
+  \tikzset{#1/.estyle={cm={\cost,\sint*\sinEl,0,\cosEl,(0,0)}}}
+}
+\newcommand\LatitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % latitude
+  \pgfmathsetmacro\yshift{\cosEl*\sint}
+  \tikzset{#1/.estyle={cm={\cost,0,0,\cost*\sinEl,(0,\yshift)}}} %
+}
+\newcommand\DrawLongitudeCircle[2][1]{
+  \LongitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{atan(sin(#2)*cos(\angEl)/sin(\angEl))} %
+  \draw[current plane] (\angVis:1) arc (\angVis:\angVis+180:1);
+  \draw[current plane,dashed] (\angVis-180:1) arc (\angVis-180:\angVis:1);
+}
+\newcommand\DrawLatitudeCircleArrow[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane,decoration={markings, mark=at position 0.6 with {\arrow{<}}},postaction={decorate},line width=.6mm] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed,line width=.6mm] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\DrawLatitudeCircle[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\coil[1]{
+  {\rh * cos(\t * pi r)}, {\apart * (2 * #1 + \t) + \rv * sin(\t * pi r)}
+}
+\makeatletter
+\define@key{DrawFromCenter}{style}[{->}]{
+  \tikzset{DrawFromCenterPlane/.style={#1}}
+}
+\define@key{DrawFromCenter}{r}[1]{
+  \def\@R{#1}
+}
+\define@key{DrawFromCenter}{center}[(0, 0)]{
+  \def\@Center{#1}
+}
+\define@key{DrawFromCenter}{theta}[0]{
+  \def\@Theta{#1}
+}
+\define@key{DrawFromCenter}{phi}[0]{
+  \def\@Phi{#1}
+}
+\presetkeys{DrawFromCenter}{style, r, center, theta, phi}{}
+\newcommand*\DrawFromCenter[1][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
+  }
+}
+\newcommand*\DrawFromCenterText[2][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+  }
+}
+\makeatother
+
+\makeatletter
+\renewcommand*\env@matrix[1][\arraystretch]{%
+  \edef\arraystretch{#1}%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{*\c@MaxMatrixCols c}}
+\makeatother
+
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
+  post length=0.2cm, snake, amplitude=.4mm,
+  segment length=2mm},thick, ->]
+%% document-wide tikz options and styles
+\tikzset{%
+  >=latex, % option for nice arrows
+  inner sep=0pt,%
+  outer sep=2pt,%
+  mark coordinate/.style={inner sep=0pt,outer sep=0pt,minimum size=3pt,
+    fill=black,circle}%
+}
+\addtolength{\hoffset}{-1.3cm}
+\addtolength{\voffset}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{2.5cm}
+\renewcommand{\footskip}{10pt}
+\setlength{\headwidth}{\textwidth}
+\setlength{\headsep}{20pt}
+\setlength{\marginparwidth}{0pt}
+\parindent=0pt
+\title{Simulation of time-bin remote entanglement generation}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\maketitle
+
+Initial density matrix
+\eqar{
+  \begin{split}
+    \rho_0=&\frac{\paren{|0\rangle+|1\rangle}\paren{\langle0|+\langle1|}}{2}\rho_{\mathrm{m}}
+  \end{split}
+}
+
+After first kick
+\eqar{
+  \begin{split}
+    \rho_1=&\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}
+  \end{split}
+}
+
+After time evolution
+\eqar{
+  \begin{split}
+    \rho_2=&\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}
+  \end{split}
+}
+
+After second kick
+\eqar{
+  \begin{split}
+    \rho_3=&\paren{P_{0}+P_{1}\mathcal{D}(\ui\eta)}\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}\paren{P_{0}+P_{1}\mathcal{D}(-\ui\eta)}\\
+    =&\paren{P_{0}\ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)+P_{1}\mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}+P_{1}\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)}
+  \end{split}
+}
+
+For a thermal initial state
+\eqar{
+  \rho_m=&\frac{1}{\pi n_B}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/n_B}
+}
+where $n_B\equiv\dfrac{1}{\ue^{\beta\omega}-1}$
+\eqar{
+  \begin{split}
+    \rho_3=
+    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+      \paren{|0\rangle\ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)+|1\rangle\mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}}|\alpha\rangle\\
+    &\langle\alpha|\paren{\langle0|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}+\langle1|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)}
+  \end{split}
+}
+
+Tracing out the motion
+\eqar{
+  \begin{split}
+    \rho_{3,\mathrm{s}}=
+    &\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+      \begin{pmatrix}[1.5]
+        |0\rangle\langle0|
+        \langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
+        \ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)|\alpha\rangle\\
+        +|0\rangle\langle1|
+        \langle\alpha|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)
+        \ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)|\alpha\rangle
+        \\
+        +|1\rangle\langle0|
+        \langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
+        \mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}|\alpha\rangle
+        \\
+        +|1\rangle\langle1|
+        \langle\alpha|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)
+        \mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}|\alpha\rangle
+      \end{pmatrix}\\
+    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+       \begin{pmatrix}[1.5]
+         |0\rangle\langle0|
+         +|1\rangle\langle1|\\
+         +|0\rangle\langle1|
+         \langle\alpha|\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)
+         \ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)|\alpha\rangle
+         \\
+         +|1\rangle\langle0|
+         \langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
+         \mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}|\alpha\rangle
+       \end{pmatrix}
+  \end{split}
+}
+
+\eqar{
+  \begin{split}
+    &\langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
+      \mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}|\alpha\rangle\\
+    =&\langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
+       \mathcal{D}(\ui\eta)|\ue^{-\ui\omega t}\alpha\rangle\\
+    =&\ue^{(\ui\eta\alpha^*\ue^{\ui\omega t}+\ui\eta\alpha\ue^{-\ui\omega t})/2}
+       \ue^{(-\ui\eta\alpha^*-\ui\eta\alpha)/2}
+       \langle\alpha+\ui\eta|\alpha+\ui\eta\ue^{\ui\omega t}\rangle\\
+    =&\exp\paren{\frac12
+       \begin{pmatrix}[1.5]
+         \ui\eta\alpha^*\ue^{\ui\omega t}+\ui\eta\alpha\ue^{-\ui\omega t}
+         -\ui\eta\alpha^*-\ui\eta\alpha\\
+         -\abs{\alpha+\ui\eta}^2-\abs{\alpha+\ui\eta\ue^{\ui\omega t}}^2
+         +2\paren{\alpha^*-\ui\eta}\paren{\alpha+\ui\eta\ue^{\ui\omega t}}
+       \end{pmatrix}
+       }\\
+    =&\exp\begin{pmatrix}[1.5]
+      \ui\eta\alpha\ue^{-\ui\omega t}-\ui\eta\alpha^*-\abs{\alpha}^2-\eta^2+\paren{\alpha^*-\ui\eta}\paren{\alpha+\ui\eta\ue^{\ui\omega t}}
+    \end{pmatrix}\\
+    =&\exp\begin{pmatrix}[1.5]
+      2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+      +\eta^2\paren{\ue^{\ui\omega t}-1}
+    \end{pmatrix}\\
+  \end{split}
+}
+\eqar{
+  \begin{split}
+    \rho_{3,\mathrm{s}}
+    =&\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+       \begin{pmatrix}[1.5]
+         |0\rangle\langle0|
+         +|1\rangle\langle1|\\
+         +|0\rangle\langle1|
+         \exp\paren{
+         -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+         +\eta^2\paren{\ue^{-\ui\omega t}-1}}\\
+         +|1\rangle\langle0|
+         \exp\paren{
+         2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+         +\eta^2\paren{\ue^{\ui\omega t}-1}}
+       \end{pmatrix}\\
+    =&\frac{|0\rangle\langle0|+|1\rangle\langle1|}{2}\\
+    &+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/n_B}}{2\pi n_B}
+      \exp\paren{
+      -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+      +\eta^2\paren{\ue^{-\ui\omega t}-1}}+h.c.
+  \end{split}
+}
+
+\eqar{
+  \begin{split}
+    &\int\ud^2\alpha \ue^{-\abs{\alpha}^2/n_B}\exp\paren{
+      2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+      +\eta^2\paren{\ue^{-\ui\omega t}-1}
+      }\\
+    =&\ue^{\eta^2\paren{\ue^{-\ui\omega t}-1}}
+       \int\ud^2\alpha \ue^{-\abs{\alpha}^2/n_B}\exp\paren{
+       2\ui\eta\mathrm{Re}\paren{\paren{\alpha_x+\ui\alpha_y}\paren{\cos\omega t-1-\ui\sin\omega t}}}\\
+    =&\ue^{\eta^2\paren{\ue^{-\ui\omega t}-1}}
+       \int\ud^2\alpha
+       \exp\paren{
+       -\alpha_x^2/n_B
+       +2\ui\alpha_x\eta\paren{\cos\omega t-1}
+       }
+       \exp\paren{
+       -\alpha_y^2/n_B
+       +2\ui\alpha_y\eta\sin\omega t
+       }\\
+    =&\pi n_B\exp\paren{-\eta^2\paren{1-\ue^{-\ui\omega t}+2n_B\paren{1-\cos\omega t}}}\\
+    =&\pi n_B\exp\paren{-\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2n_B+1}}
+  \end{split}
+}
+
+\eqar{
+  \begin{split}
+    \rho_{3,\mathrm{s}}=&\frac{|0\rangle\langle0|+|1\rangle\langle1|+|0\rangle\langle1|\exp\paren{\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2n_B+1}}+h.c.}{2}
+  \end{split}
+}
+
+\end{document}
