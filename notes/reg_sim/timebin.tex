@@ -358,8 +358,9 @@ using coherent states (as will be obvious from the derivation below),
 \eqar{
   \rho_m=&\frac{1}{\pi {\bar n}}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}
 }
-where ${\bar n}\equiv\dfrac{1}{\ue^{\beta\omega}-1}$ is the average $n$.
+where ${\bar n}\equiv\dfrac{1}{\ue^{\beta\omega}-1}$ is the average $n$.\\
 
+We can now write the final density matrix as,
 \eqar{
   \begin{split}
     \rho_3=
@@ -369,7 +370,7 @@ where ${\bar n}\equiv\dfrac{1}{\ue^{\beta\omega}-1}$ is the average $n$.
   \end{split}
 }
 
-Tracing out the motion
+After tracing out the motion part, the spin reduced density matrix is,
 \eqar{
   \begin{split}
     \rho_{3,\mathrm{s}}=
@@ -405,6 +406,8 @@ Tracing out the motion
   \end{split}
 }
 
+The coefficient on the off-diagonal term can be calculated as
+(thanks to using the coherent states as the basis),
 \eqar{
   \begin{split}
     &\langle\alpha|\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}
@@ -431,6 +434,7 @@ Tracing out the motion
     \end{pmatrix}\\
   \end{split}
 }
+which gives us
 \eqar{
   \begin{split}
     \rho_{3,\mathrm{s}}
@@ -447,14 +451,13 @@ Tracing out the motion
          2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
          +\eta^2\paren{\ue^{\ui\omega t}-1}}
        \end{pmatrix}\\
-    =&\frac{|0\rangle\langle0|+|1\rangle\langle1|}{2}\\
-    &+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
+    =&\frac{|0\rangle\langle0|+|1\rangle\langle1|}{2}+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
       \exp\paren{
       -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
       +\eta^2\paren{\ue^{-\ui\omega t}-1}}+h.c.
   \end{split}
 }
-
+And we can calculate the integral,
 \eqar{
   \begin{split}
     &\int\ud^2\alpha \ue^{-\abs{\alpha}^2/{\bar n}}\exp\paren{
@@ -478,7 +481,7 @@ Tracing out the motion
     =&\pi {\bar n}\exp\paren{-\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}
   \end{split}
 }
-
+And the final reduced density matrix,
 \eqar{
   \begin{split}
     \rho_{3,\mathrm{s}}=&\frac{|0\rangle\langle0|+|1\rangle\langle1|+|0\rangle\langle1|\exp\paren{\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}+h.c.}{2}
