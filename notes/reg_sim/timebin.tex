@@ -220,6 +220,74 @@
 
 \maketitle
 
+\section{Full quantum treatment of the position/motion-dependent
+  decoherence}
+
+The interaction between an atom and the photon depends on the position of the atom.
+For excitation, the phase of the light affects the phase of the atomic excited state
+wavefunction\footnote{For a $\pi$-pulse, this is a global phase for a two-level system
+  which can be ignored. However the time-bin entanglement scheme necessitate at least
+  a three-level system. In such a system,
+  this phase isn't global anymore and can be experimentally observed
+  by comparing it to the third state}.
+For emission, the position of the atom affects the phase of the emitted photon.\\
+
+This becomes a source of decoherence for time-bin entanglement on atomic systems.
+Classically, we can understand this since the position of the atom is not necessarily
+the same during the first and the second excitation/photon emission
+causing a different and random phase on the photon which averages out
+the coherence fringes. However, this predicts that there would be no decoherence
+if the motional state of the atom is stationary
+(i.e. if the atom is in the ground motional state
+or any of the Fock states $|n\rangle$). Since the thermal state can be expressed
+as a probabilistic mixture of pure Fock states, this conclusion
+cannot possibly be correct.\\
+
+To handle this correctly, we need to construct the unitary operation that corresponds
+to the photon generation step. Without the position-dependent phase effect,
+this step maps the atomic (internal) wavefunction in the following way,
+\eqar{
+  |0\rangle\rightarrow&|0;\mathrm{ph}\rangle\\
+  |i\rangle\rightarrow&|i\rangle
+}
+where the $\mathrm{ph}$ represent a photon being generated and $i\neq0$
+are the internal states of the atom that were not excited.
+When the effect of the motion is included, we can still use the classical picture
+to write out the new wavefunction.
+Instead of a fixed phase when the photon is generated, we acquire a phase
+from the absorbed and emitted photon,
+\eqar{
+  |0,\vec r\rangle\rightarrow&\ue^{\ui\Delta\vec k\cdot\vec r}|0,\vec r;\mathrm{ph}\rangle\\
+  |i,\vec r\rangle\rightarrow&|i,\vec r\rangle
+}
+where $\Delta\vec k$ is the difference between the wavevectors of the absorbed
+and emitted photon. Note that although we've stated the position dependent phase factor
+as being on the photon, it, being just a phase, can be treated as acting on any part
+of the wavefunction, including the motional wavefunction of the atom.
+Viewing this way, it is essentially a recoil on the motion of the atom
+and it creates entanglement between spin+photon state
+and the motional state of the atom.\\
+
+Based on this understanding, the correct (or at least an equivalent way)
+to view the motion/position dependent decoherence is that,
+\begin{enumerate}
+\item During the first photon generation step, the $|0\rangle$ spin state
+  received a recoil from the absorbed/emitted photon while the $|1\rangle$ spin state
+  remains in the original motional state.
+\item During the free evolution time between the two excitations,
+  the motion of the atom evolves freely (and differently
+  due to the different initial motional state
+  between the $|0\rangle$ and $|1\rangle$ spin states).
+\item During the second photon generation step, the $|1\rangle$ spin state
+  received a recoil from the absorbed/emitted photon while the motion for the
+  $|0\rangle$ spin state remains unchanged.
+\item At this state, the $|0\rangle$ motional state underwent recoil-free evolution
+  whereas the $|1\rangle$ motional state underwent free evolution-recoil.
+  If these two motional states are not exactly the same,
+  we've created a unwanted entanglement between the spin and the atom motion
+  which reduces the fidelity of the spin+photon state that we would like to create\footnote{Much the same way motional closure error reduces the fidelity of a M{\o}lmer-S{\o}rensen gate}.
+\end{enumerate}
+
 Initial density matrix
 \eqar{
   \begin{split}
