@@ -270,22 +270,23 @@ Viewing this way, it is essentially the recoil on the motion of the atom
 and it creates entanglement between spin+photon state
 and the motional state of the atom.\\
 
-Based on this understanding, the correct (or at least an equivalent way)
+Based on this understanding, the correct (or at least an equivalent) way
 to view the motion/position dependent decoherence is that,
 \begin{enumerate}
 \item During the first photon generation step, the $|0\rangle$ spin state
-  received a recoil from the absorbed/emitted photon while the $|1\rangle$ spin state
+  receives a recoil from the absorbed/emitted photon while the $|1\rangle$ spin state
   remains in the original motional state.
-\item During the free evolution time between the two excitations,
+\item During the time between the two excitations,
   the motion of the atom evolves freely (and differently
   due to the different initial motional state
   between the $|0\rangle$ and $|1\rangle$ spin states).
 \item During the second photon generation step, the $|1\rangle$ spin state
-  received a recoil from the absorbed/emitted photon while the motion for the
+  receives a recoil from the absorbed/emitted photon while the motion for the
   $|0\rangle$ spin state remains unchanged.
-\item At this state, the $|0\rangle$ motional state underwent recoil-free evolution
-  whereas the $|1\rangle$ motional state underwent free evolution-recoil.
-  If these two motional states are not exactly the same,
+\item At this stage, the $|0\rangle$ motional state underwent
+  recoil and then free evolution
+  whereas the $|1\rangle$ motional state underwent free evolution and then recoil.
+  If these two resulting motional states are not exactly the same,
   we've created a unwanted entanglement between the spin and the atom motion
   which reduces the fidelity of the spin+photon state that we would like to create\footnote{Much the same way motional closure error reduces the fidelity of a M{\o}lmer-S{\o}rensen gate}.
 \end{enumerate}
@@ -294,22 +295,22 @@ to view the motion/position dependent decoherence is that,
 
 To calculate the fidelity caused by this entanglement, we need to calculate
 the reduced density matrix of the spin and photon after the two photon generation steps.
-Here we'll make a few simplifications and ignore some independently error sources
+Here we'll make a few simplifications and ignore some independent error sources
 that can be taken into account separately,
 \begin{enumerate}
-\item We'll assume the excitation is complete\\
-  and also ignore any branching into other states.
-\item We'll assume the two qubit state are excited directly.
+\item We'll assume the excitation is complete
+  and also ignore any branching into other spin states.
+\item We'll assume the two qubit states are excited directly.
   In a real experiment the two photon excitation is more likely to be done
   on the same transition after swapping the two qubit state between the two excitations.
 \item We'll only calculate up to the photon generated from the atom.
-  After we've obtained the density matrix of an ion and the photon(s) it generated,
+  After we've obtained the density matrix of an ion and the photon(s) it has generated,
   the effect of the photon collection/interference/detection etc.,
   can be considered separately.
 \item For simplicity, since full excitation is assumed,
   we'll omit the photon state in the notation below. It should be understood as
-  $|0\rangle$ representing $|0;\mathrm{early photon}\rangle$ after the first photon
-  generation step, and $|1\rangle$ representing $|1;\mathrm{late photon}\rangle$
+  $|0\rangle$ representing $|0;\mathrm{early\ photon}\rangle$ after the first photon
+  generation step, and $|1\rangle$ representing $|1;\mathrm{late\ photon}\rangle$
   after the second photon generation step.
 \item We'll calculate for a single motional axis
   (and assume it's a harmonic oscillator).
@@ -331,14 +332,15 @@ After first photon generation, the density matrix is,
     \rho_1=&\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}
   \end{split}
 }
-where $P_0$ and $P_1$ are projection operation for the $|0\rangle$
-and $|1\rangle$ states, $\mathcal{D}(\ui\eta)=\ue^{\ui kx}$ is the displacement operator
+where $P_0$ and $P_1$ are the projection operators for the $|0\rangle$ and $|1\rangle$
+states respectively, $\mathcal{D}(\ui\eta)=\ue^{\ui kx}$ is the displacement operator
 representing the effect of the photon recoil and $\eta$ is the Lamb-Dicke parameter.\\
 
 After the free-evolution between the two generation steps,
 \eqar{
   \begin{split}
-    \rho_2=&\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}
+    \rho_2=&\ue^{-\ui n\omega t}\rho_1\ue^{\ui n\omega t}\\
+    =&\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}
   \end{split}
 }
 where $\omega$ is the trap frequency.\\
@@ -346,17 +348,18 @@ where $\omega$ is the trap frequency.\\
 After second photon gneeration,
 \eqar{
   \begin{split}
-    \rho_3=&\paren{P_{0}+P_{1}\mathcal{D}(\ui\eta)}\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}\paren{P_{0}+P_{1}\mathcal{D}(-\ui\eta)}\\
+    \rho_3=&\paren{P_{0}+P_{1}\mathcal{D}(\ui\eta)}\rho_2\paren{P_{0}+P_{1}\mathcal{D}(-\ui\eta)}\\
+    =&\paren{P_{0}+P_{1}\mathcal{D}(\ui\eta)}\ue^{-\ui n\omega t}\paren{P_{0}\mathcal{D}(\ui\eta)+P_{1}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)+P_{1}}\ue^{\ui n\omega t}\paren{P_{0}+P_{1}\mathcal{D}(-\ui\eta)}\\
     =&\paren{P_{0}\ue^{-\ui n\omega t}\mathcal{D}(\ui\eta)+P_{1}\mathcal{D}(\ui\eta)\ue^{-\ui n\omega t}}\rho_0\paren{P_{0}\mathcal{D}(-\ui\eta)\ue^{\ui n\omega t}+P_{1}\ue^{\ui n\omega t}\mathcal{D}(-\ui\eta)}
   \end{split}
 }
-This result is currently generic and can by applied to any initial motional state.
+This result is currently generic and can be applied to any initial motional state.
 For the experiment, however, we are more interested in using a thermal state
 as the initial state. It is useful to use a representation of the density matrix
 using coherent states (as will be obvious from the derivation below),
 
 \eqar{
-  \rho_m=&\frac{1}{\pi {\bar n}}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}
+  \rho_{\mathrm{m}}=&\frac{1}{\pi {\bar n}}\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}
 }
 where ${\bar n}\equiv\dfrac{1}{\ue^{\beta\omega}-1}$ is the average $n$.\\
 
@@ -487,13 +490,17 @@ And the final reduced density matrix,
     \rho_{3,\mathrm{s}}=&\frac{|0\rangle\langle0|+|1\rangle\langle1|+|0\rangle\langle1|\exp\paren{\ui\eta^2\sin\omega t}\exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}+h.c.}{2}
   \end{split}
 }
-The amplitude of the off-diagonal element quatifies the purity of the spin state
-which is
+The off-diagonal element of the reduced density matrix is the important part
+that specifies the final spin (+ photon) state. This is the number that can
+directly be multiplied when multiple motional axis is considered.\\
+
+Its amplitude quatifies the purity of the spin state (i.e. parity scan contrast) which is
 \eqar{
   \exp\paren{-\eta^2\paren{1-\cos\omega t}\paren{2{\bar n}+1}}
 }
+
 It's also worth noting that the is a small (and temperature independent)
-spin phase factor as well\footnote{Basically the parity scan phase} that is
+spin phase factor as well (i.e. parity scan phase) that is
 \eqar{
   \exp\paren{\ui\eta^2\sin\omega t}
 }
