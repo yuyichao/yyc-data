@@ -223,6 +223,8 @@
 \section{Full quantum treatment of the position/motion-dependent
   decoherence}
 
+\subsection{From position-dependent phase to recoil}
+
 The interaction between an atom and the photon depends on the position of the atom.
 For excitation, the phase of the light affects the phase of the atomic excited state
 wavefunction\footnote{For a $\pi$-pulse, this is a global phase for a two-level system
@@ -264,7 +266,7 @@ where $\Delta\vec k$ is the difference between the wavevectors of the absorbed
 and emitted photon. Note that although we've stated the position dependent phase factor
 as being on the photon, it, being just a phase, can be treated as acting on any part
 of the wavefunction, including the motional wavefunction of the atom.
-Viewing this way, it is essentially a recoil on the motion of the atom
+Viewing this way, it is essentially the recoil on the motion of the atom
 and it creates entanglement between spin+photon state
 and the motional state of the atom.\\
 
@@ -288,12 +290,39 @@ to view the motion/position dependent decoherence is that,
   which reduces the fidelity of the spin+photon state that we would like to create\footnote{Much the same way motional closure error reduces the fidelity of a M{\o}lmer-S{\o}rensen gate}.
 \end{enumerate}
 
-Initial density matrix
+\subsection{Calculation}
+
+To calculate the fidelity caused by this entanglement, we need to calculate
+the reduced density matrix of the spin and photon after the two photon generation steps.
+Here we'll make a few simplifications and ignore some independently error sources
+that can be taken into account separately,
+\begin{enumerate}
+\item We'll assume the excitation is complete\\
+  and also ignore any branching into other states.
+\item We'll assume the two qubit state are excited directly.
+  In a real experiment the two photon excitation is more likely to be done
+  on the same transition after swapping the two qubit state between the two excitations.
+\item We'll only calculate up to the photon generated from the atom.
+  After we've obtained the density matrix of an ion and the photon(s) it generated,
+  the effect of the photon collection/interference/detection etc.,
+  can be considered separately.
+\item For simplicity, since full excitation is assumed,
+  we'll omit the photon state in the notation below. It should be understood as
+  $|0\rangle$ representing $|0;\mathrm{early photon}\rangle$ after the first photon
+  generation step, and $|1\rangle$ representing $|1;\mathrm{late photon}\rangle$
+  after the second photon generation step.
+\item We'll calculate for a single motional axis.
+  As long as there's no initial entanglment between the motions on different axis,
+  the result of the calculation can just be applied on each axis independently.
+\end{enumerate}
+
+With these simplifications, the initial density matrix of the system is,
 \eqar{
   \begin{split}
     \rho_0=&\frac{\paren{|0\rangle+|1\rangle}\paren{\langle0|+\langle1|}}{2}\rho_{\mathrm{m}}
   \end{split}
 }
+where $\rho_{\mathrm{m}}$ is the motional density state.
 
 After first kick
 \eqar{
