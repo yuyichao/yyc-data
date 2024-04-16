@@ -98,20 +98,21 @@ function get_fidelity(calc::MotionCalculator, t)
 end
 
 
-# function get_fidelity_n(n, t, iH, ikx)
-#     N = size(iH, 1)
-#     ψ0 = zeros(N)
-#     ψ0[n + 1] = 1
+struct AnalyticMotionCalculator
+    nbar::Float64
+    ω::Float64
+    η::Float64
+    function AnalyticMotionCalculator(nbar, ω, η)
+        return new(nbar, ω, η)
+    end
+end
 
-#     ψ1 = expv(t, iH, expv(1.0, ikx, ψ0))
-#     ψ2 = expv(1.0, ikx, expv(t, iH, ψ0))
-#     return abs2(dot(ψ1, ψ2))
-# end
-
-# function get_fidelity_nbar(nbar, t, iH, ikx)
-#     N = size(iH, 1)
-#     nmax = min(ceil(Int, (nbar + 2) * 7), N - 1)
-
-#     return sum(get_fidelity_n(n, t, iH, ikx) * (nbar / (nbar + 1))^n / (nbar + 1)
-#                for n in 0:nmax)
-# end
+function get_fidelity(calc::AnalyticMotionCalculator, t)
+    η = calc.η
+    ω = calc.ω
+    nbar = calc.nbar
+    η² = η^2
+    s, c = sincos(ω * t)
+    nd = cis(-η² * s) * exp(-η² * (1 - c) * (2 * nbar + 1))
+    return (1 + real(nd)) / 2
+end
