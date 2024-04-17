@@ -287,5 +287,66 @@ Integrals,
   \end{split}
 }
 
+For Pauli,
+\eqar{
+  \begin{split}
+    H_0=&\vec h_0\cdot\vec\sigma\\
+  \end{split}\\
+  \begin{split}
+  H_1=&\vec h_1\cdot\vec\sigma\\
+  \end{split}
+}
+
+Commutators,
+\eqar{
+  \begin{split}
+    \sqr{H_0,H_1}=&\sqr{\vec h_0\cdot\vec\sigma,\vec h_1\cdot\vec\sigma}\\
+    =&2\ui\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{H_0,H_1},H_0}=&-4\paren{\paren{\vec h_0\times\vec h_1}\times\vec h_0}\cdot\sigma\\
+    =&-4\paren{\vec h_1\abs{\vec h_0}^2-\vec h_0\paren{\vec h_0\cdot\vec h_1}}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{H_0,H_1},H_1}=&-4\paren{\paren{\vec h_0\times\vec h_1}\times\vec h_1}\cdot\sigma\\
+    =&-4\paren{\vec h_1\paren{\vec h_0\cdot\vec h_1}-\vec h_0\abs{\vec h_1}^2}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{\sqr{H_0,H_1},H_0},H_0}=&-8\ui\paren{\paren{\vec h_1\abs{\vec h_0}^2-\vec h_0\paren{\vec h_0\cdot\vec h_1}}\times\vec h_0}\cdot\sigma\\
+    =&8\ui\abs{\vec h_0}^2\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{\sqr{H_0,H_1},H_0},H_1}=&-8\ui\paren{\paren{\vec h_1\abs{\vec h_0}^2-\vec h_0\paren{\vec h_0\cdot\vec h_1}}\times\vec h_1}\cdot\sigma\\
+    =&8\ui\paren{\vec h_0\cdot\vec h_1}\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{\sqr{H_0,H_1},H_1},H_0}=&8\ui\paren{\vec h_0\cdot\vec h_1}\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \sqr{\sqr{\sqr{H_0,H_1},H_1},H_1}=&8\ui\abs{\vec h_1}^2\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}
+}
+
+Integrals,
+\eqar{
+  \begin{split}
+    \Omega_1=&\paren{\tau_2-\tau_1}\paren{\vec h_0+\frac{\tau_2+\tau_1}{2}\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \Omega_2=&-\ui\frac{\paren{\tau_2-\tau_1}^3}{6}\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \Omega_3=&-\frac{\paren{\tau_2-\tau_1}^5}{60}\paren{\paren{\vec h_0\cdot\vec h_1}\vec h_1-\abs{\vec h_1}^2\vec h_0}\cdot\sigma\\
+  \end{split}\\
+  \begin{split}
+    \Omega_4=&\ui\frac{\paren{\tau_2-\tau_1}^5}{90}
+               \paren{
+               \abs{\vec h_0}^2
+               +\paren{\tau_1+\tau_2}\paren{\vec h_0\cdot\vec h_1}
+               +\frac{\tau_1^2+5\tau_1\tau_2+\tau_2^2}{7}
+               \abs{\vec h_1}^2}\paren{\vec h_0\times\vec h_1}\cdot\sigma\\
+  \end{split}
+}
+
 
 \end{document}
