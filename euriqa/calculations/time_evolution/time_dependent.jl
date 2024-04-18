@@ -202,3 +202,107 @@ function evolve(calc::MagnusCalc, npoints=1001)
     end
     return ts, data
 end
+
+tcross(v1, v2) = (v1[2] * v2[3] - v1[3] * v2[2],
+                  v1[3] * v2[1] - v1[1] * v2[3],
+                  v1[1] * v2[2] - v1[2] * v2[1])
+@inline function expmi_pauli!(res, v)
+    len2 = abs2(v[1]) + abs2(v[2]) + abs2(v[3])
+    @inbounds if len2 == 0
+        res[1, 1] = res[2, 2] = 1
+        res[1, 2] = res[2, 1] = 0
+        return res
+    end
+    len = sqrt(len2)
+    v = .-v ./ len
+    s, c = sincos(len)
+    @inbounds begin
+        res[1, 1] = complex(c, v[3] * s)
+        res[2, 2] = complex(c, -(v[3] * s))
+        res[1, 2] = complex(s * v[2], s * v[1])
+        res[2, 1] = complex(-(s * v[2]), s * v[1])
+    end
+    return res
+end
+
+struct MagnusAnalyticCalc
+    h0::NTuple{3,Float64}
+    h1::NTuple{3,Float64}
+
+    h0ch1::NTuple{3,Float64}
+    h0dh0::Float64
+    h0dh1::Float64
+    h1dh1::Float64
+
+    Abuff::Matrix{ComplexF64}
+    ψbuff1::Vector{ComplexF64}
+    ψbuff2::Vector{ComplexF64}
+    ψ0::Vector{ComplexF64}
+
+    δ0_2::Float64
+    dδ_4::Float64
+    tlen::Float64
+
+    function MagnusAnalyticCalc(Ω0, Ω1, δ0, δ1, tlen)
+        h0 = (Ω0 / 2, 0.0, δ0 / 2)
+        h1 = ((Ω1 - Ω0) / 2, 0.0, (δ1 - δ0) / 2) ./ tlen
+        h0ch1 = tcross(h0, h1)
+
+        h0dh0 = dot(h0, h0)
+        h0dh1 = dot(h0, h1)
+        h1dh1 = dot(h1, h1)
+
+        ψ0 = [0, 1]
+
+        return new(h0, h1, h0ch1, h0dh0, h0dh1, h1dh1,
+                   zeros(ComplexF64, 2, 2), zeros(ComplexF64, 2), zeros(ComplexF64, 2),
+                   ψ0, δ0 / 2, (δ1 - δ0) / tlen / 4, tlen)
+    end
+end
+
+function evolve(calc::MagnusAnalyticCalc, npoints=1001; order=4)
+    tlen = calc.tlen
+
+    ts = [range(0, tlen, npoints);]
+    data = Matrix{ComplexF64}(undef, 2, npoints)
+
+    h0 = calc.h0
+    h1 = calc.h1
+    h0ch1 = calc.h0ch1
+    h0dh0 = calc.h0dh0
+    h0dh1 = calc.h0dh1
+    h1dh1 = calc.h1dh1
+
+    Abuff = calc.Abuff
+    ψbuff1 = calc.ψbuff1
+    ψbuff2 = calc.ψbuff2
+
+    data[:, 1] .= calc.ψ0
+    ψbuff1 .= calc.ψ0
+    δ0_2 = calc.δ0_2
+    dδ_4 = calc.dδ_4
+
+    @inbounds for i in 2:npoints
+        t1 = ts[i - 1]
+        t2 = ts[i]
+        dt = t2 - t1
+        dt2 = dt^2
+
+        t1at2 = t1 + t2
+
+        h = dt .* (h0 .+ t1at2 / 2 .* h1)
+        h = h .- dt^3 / 6 .* h0ch1
+        h = h .+ dt^5 / 60 .* (h0dh1 .* h1 .- h1dh1 .* h0)
+        h = h .- dt^5 / 90 * (h0dh0 + t1at2 * h0dh1 +
+            (t1^2 + 5 * t1 * t2 + t2^2) / 7 * h1dh1) .* h0ch1
+        LinearAlgebra.mul!(ψbuff2, expmi_pauli!(Abuff, h), ψbuff1)
+
+        φ_2 = t2 * muladd(dδ_4, t2, δ0_2)
+        p = cis(φ_2)
+        data[1, i] = ψbuff2[1] * p
+        data[2, i] = ψbuff2[2] * conj(p)
+
+        ψbuff1, ψbuff2 = ψbuff2, ψbuff1
+    end
+    return ts, data
+end
