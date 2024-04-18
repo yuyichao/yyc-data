@@ -287,9 +287,12 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001)
         B = muladd(t1, t1, muladd(5 * t1, t2, t2^2))
         C = muladd(B, h1dh1 / 7, muladd(A, h0dh1, h0dh0))
 
+        # 4th order
         h = -dt .* (muladd.(dt4 / 60, muladd.(h0dh1, h1, .-h1dh1 .* h0),
                             muladd.(A * 0.5, h1, h0))
                     .- muladd(dt4 / 90, C, dt2 / 6) .* h0ch1)
+        # 2nd order
+        # h = -dt .* muladd.(dt2 * (-1 / 6), h0ch1, muladd.((t1 + t2) * 0.5, h1, h0))
         ψ = expiv_pauli(ψ, h)
 
         φ_2 = t2 * muladd(dδ_4, t2, δ0_2)
