@@ -46,10 +46,10 @@ struct LabBasisCalc{LD}
     end
 end
 
-function evolve(calc::LabBasisCalc, npoints=1001)
+function evolve(calc::LabBasisCalc, npoints=1001; kws...)
     calc_data = calc.data
     ts, ψs = timeevolution.schroedinger_dynamic(range(0, calc_data.tlen, npoints),
-                                                 calc_data.ψ0, calc_data)
+                                                 calc_data.ψ0, calc_data; kws...)
     return ts, [ψ.data[i] for i in 1:2, ψ in ψs]
 end
 
@@ -94,10 +94,10 @@ struct RotBasisCalc{LD}
     end
 end
 
-function evolve(calc::RotBasisCalc, npoints=1001)
+function evolve(calc::RotBasisCalc, npoints=1001; kws...)
     calc_data = calc.data
     ts, ψs = timeevolution.schroedinger_dynamic(range(0, calc_data.tlen, npoints),
-                                                 calc_data.ψ0, calc_data)
+                                                 calc_data.ψ0, calc_data; kws...)
     data = [ψ.data[i] for i in 1:2, ψ in ψs]
     δ0_2 = calc_data.δ0_2
     dδ_4 = calc_data.dδ_2 / 2
