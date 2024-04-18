@@ -203,10 +203,10 @@ function evolve(calc::MagnusCalc, npoints=1001)
     return ts, data
 end
 
-tcross(v1, v2) = (v1[2] * v2[3] - v1[3] * v2[2],
-                  v1[3] * v2[1] - v1[1] * v2[3],
-                  v1[1] * v2[2] - v1[2] * v2[1])
-@inline function expmi_pauli!(res, v)
+@inline tcross(v1, v2) = (muladd(v1[2], v2[3], -v1[3] * v2[2]),
+                          muladd(v1[3], v2[1], -v1[1] * v2[3]),
+                          muladd(v1[1], v2[2], - v1[2] * v2[1]))
+@inline function expi_pauli!(res, v)
     len2 = abs2(v[1]) + abs2(v[2]) + abs2(v[3])
     @inbounds if len2 == 0
         res[1, 1] = res[2, 2] = 1
@@ -214,7 +214,7 @@ tcross(v1, v2) = (v1[2] * v2[3] - v1[3] * v2[2],
         return res
     end
     len = sqrt(len2)
-    v = .-v ./ len
+    v = v ./ len
     s, c = sincos(len)
     @inbounds begin
         res[1, 1] = complex(c, v[3] * s)
@@ -287,15 +287,16 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001; order=4)
         t2 = ts[i]
         dt = t2 - t1
         dt2 = dt^2
+        dt4 = dt2^2
 
-        t1at2 = t1 + t2
+        A = t1 + t2
+        B = muladd(t1, t1, muladd(5 * t1, t2, t2^2))
+        C = muladd(B, h1dh1 / 7, muladd(A, h0dh1, h0dh0))
 
-        h = dt .* (h0 .+ t1at2 / 2 .* h1)
-        h = h .- dt^3 / 6 .* h0ch1
-        h = h .+ dt^5 / 60 .* (h0dh1 .* h1 .- h1dh1 .* h0)
-        h = h .- dt^5 / 90 * (h0dh0 + t1at2 * h0dh1 +
-            (t1^2 + 5 * t1 * t2 + t2^2) / 7 * h1dh1) .* h0ch1
-        LinearAlgebra.mul!(ψbuff2, expmi_pauli!(Abuff, h), ψbuff1)
+        h = -dt .* (muladd.(dt4 / 60, muladd.(h0dh1, h1, .-h1dh1 .* h0),
+                            muladd.(A / 2, h1, h0))
+                    .- muladd(dt4 / 90, C, dt2 / 6) .* h0ch1)
+        LinearAlgebra.mul!(ψbuff2, expi_pauli!(Abuff, h), ψbuff1)
 
         φ_2 = t2 * muladd(dδ_4, t2, δ0_2)
         p = cis(φ_2)
