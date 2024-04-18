@@ -235,7 +235,7 @@ See the linked sections for the quantitative results.
 
 \section{Some useful formulas}
 
-\subsection{Spherical component of vector}
+\subsection{Spherical components of vector}
 
 Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
 every 3D vector (operator) can be equivalently expressed
@@ -289,6 +289,15 @@ Dot product of two vector
     =&\sum_{q=-1,0,1}(-1)^qA_{q}B_{-q}\\
     =&\sum_{q=-1,0,1}\sqrt{3}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
   \end{split}
+}
+
+\subsection{Spherical components of rank-$2$ tensor}
+
+A rank-$2$ tensor is in the direct product space of two vectors.
+Since each vector is equivalent to a rank-$1$ sperical tensor,
+their product can be decomposed into the sum of a rank-$0$, $1$ and $2$ tensor.
+
+\eqar{
 }
 
 \subsection{Wigner-Eckart theorem}
@@ -441,10 +450,10 @@ we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
   \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle\label{eq:projection:spin1}
 }
 
-\subsubsection{Generalizing the projection theorem to spin-2 tensor}
+\subsubsection{Generalizing the projection theorem to rank-2 tensor}
 Following the same procesure for projection theorem,
 we can also replace the spherical tensor operators with any
-other spherical tensor operator of the same spin. For spin-2 tensor operators
+other spherical tensor operator of the same rank. For rank-2 tensor operators
 on states with the same angular momentum,
 we can use the the one constructed from the direct product of
 two angular momentum operators: $(JJ)^2_p=\dsum_{q,q'}\langle 1,1;q,q'|2,p\rangle J_q J_{q'}$.\\
@@ -877,7 +886,7 @@ Spherical components for the effective magnetic field,
     =&\ui\alpha\paren{E_0(E^*)_{1}-E_{1}(E^*)_0}
   \end{split}
 }
-Note that the spin-1 component of the tensor $\vec E\vec E^*$ is
+Note that the rank-1 component of the tensor $\vec E\vec E^*$ is
 \eqar{
   T^1_p=&\sum_{q,q'}\langle 1,1;q,q'|1,p\rangle E_{q}(E^*)_{q'}
 }
