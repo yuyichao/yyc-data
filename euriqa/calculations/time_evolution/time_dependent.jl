@@ -212,17 +212,13 @@ end
         return b
     end
     len = sqrt(len2)
-    v = v ./ len
     s, c = @inline sincos(len)
+    v = v .* (s / len)
     @inbounds begin
-        X = s * v[1]
-        Y = s * v[2]
-        Z = s * v[3]
-
-        U11 = complex(c, Z)
-        U22 = complex(c, -Z)
-        U12 = complex(Y, X)
-        U21 = complex(-Y, X)
+        U11 = complex(c, v[3])
+        U22 = complex(c, -v[3])
+        U12 = complex(v[2], v[1])
+        U21 = complex(-v[2], v[1])
 
         return (muladd(U11, b[1], U12 * b[2]), muladd(U21, b[1], U22 * b[2]))
     end
@@ -237,10 +233,7 @@ struct MagnusAnalyticCalc
     h0dh1::Float64
     h1dh1::Float64
 
-    Abuff::Matrix{ComplexF64}
-    ψbuff1::Vector{ComplexF64}
-    ψbuff2::Vector{ComplexF64}
-    ψ0::Vector{ComplexF64}
+    ψ0::NTuple{2,ComplexF64}
 
     δ0_2::Float64
     dδ_4::Float64
@@ -255,10 +248,9 @@ struct MagnusAnalyticCalc
         h0dh1 = dot(h0, h1)
         h1dh1 = dot(h1, h1)
 
-        ψ0 = ComplexF64[0, 1]
+        ψ0 = (ComplexF64(0), ComplexF64(1))
 
         return new(h0, h1, h0ch1, h0dh0, h0dh1, h1dh1,
-                   zeros(ComplexF64, 2, 2), zeros(ComplexF64, 2), zeros(ComplexF64, 2),
                    ψ0, δ0 / 2, (δ1 - δ0) / tlen / 4, tlen)
     end
 end
@@ -276,14 +268,11 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001)
     h0dh1 = calc.h0dh1
     h1dh1 = calc.h1dh1
 
-    Abuff = calc.Abuff
-    ψbuff1 = calc.ψbuff1
-    ψbuff2 = calc.ψbuff2
-
     @inbounds begin
-        data[:, 1] .= calc.ψ0
-        ψ = (calc.ψ0[1], calc.ψ0[2])
+        data[1, 1] = calc.ψ0[1]
+        data[2, 1] = calc.ψ0[2]
     end
+    ψ = calc.ψ0
     δ0_2 = calc.δ0_2
     dδ_4 = calc.dδ_4
 
@@ -299,7 +288,7 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001)
         C = muladd(B, h1dh1 / 7, muladd(A, h0dh1, h0dh0))
 
         h = -dt .* (muladd.(dt4 / 60, muladd.(h0dh1, h1, .-h1dh1 .* h0),
-                            muladd.(A / 2, h1, h0))
+                            muladd.(A * 0.5, h1, h0))
                     .- muladd(dt4 / 90, C, dt2 / 6) .* h0ch1)
         ψ = expiv_pauli(ψ, h)
 
