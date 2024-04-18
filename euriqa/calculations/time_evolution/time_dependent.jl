@@ -206,23 +206,26 @@ end
 @inline tcross(v1, v2) = (muladd(v1[2], v2[3], -v1[3] * v2[2]),
                           muladd(v1[3], v2[1], -v1[1] * v2[3]),
                           muladd(v1[1], v2[2], - v1[2] * v2[1]))
-@inline function expi_pauli!(res, v)
-    len2 = abs2(v[1]) + abs2(v[2]) + abs2(v[3])
-    @inbounds if len2 == 0
-        res[1, 1] = res[2, 2] = 1
-        res[1, 2] = res[2, 1] = 0
-        return res
+@inline function expiv_pauli(b, v)
+    len2 = muladd(v[1], v[1], muladd(v[2], v[2], abs2(v[3])))
+    if len2 == 0
+        return b
     end
     len = sqrt(len2)
     v = v ./ len
-    s, c = sincos(len)
+    s, c = @inline sincos(len)
     @inbounds begin
-        res[1, 1] = complex(c, v[3] * s)
-        res[2, 2] = complex(c, -(v[3] * s))
-        res[1, 2] = complex(s * v[2], s * v[1])
-        res[2, 1] = complex(-(s * v[2]), s * v[1])
+        X = s * v[1]
+        Y = s * v[2]
+        Z = s * v[3]
+
+        U11 = complex(c, Z)
+        U22 = complex(c, -Z)
+        U12 = complex(Y, X)
+        U21 = complex(-Y, X)
+
+        return (muladd(U11, b[1], U12 * b[2]), muladd(U21, b[1], U22 * b[2]))
     end
-    return res
 end
 
 struct MagnusAnalyticCalc
@@ -252,7 +255,7 @@ struct MagnusAnalyticCalc
         h0dh1 = dot(h0, h1)
         h1dh1 = dot(h1, h1)
 
-        ψ0 = [0, 1]
+        ψ0 = ComplexF64[0, 1]
 
         return new(h0, h1, h0ch1, h0dh0, h0dh1, h1dh1,
                    zeros(ComplexF64, 2, 2), zeros(ComplexF64, 2), zeros(ComplexF64, 2),
@@ -260,7 +263,7 @@ struct MagnusAnalyticCalc
     end
 end
 
-function evolve(calc::MagnusAnalyticCalc, npoints=1001; order=4)
+function evolve(calc::MagnusAnalyticCalc, npoints=1001)
     tlen = calc.tlen
 
     ts = [range(0, tlen, npoints);]
@@ -277,8 +280,10 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001; order=4)
     ψbuff1 = calc.ψbuff1
     ψbuff2 = calc.ψbuff2
 
-    data[:, 1] .= calc.ψ0
-    ψbuff1 .= calc.ψ0
+    @inbounds begin
+        data[:, 1] .= calc.ψ0
+        ψ = (calc.ψ0[1], calc.ψ0[2])
+    end
     δ0_2 = calc.δ0_2
     dδ_4 = calc.dδ_4
 
@@ -296,14 +301,12 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001; order=4)
         h = -dt .* (muladd.(dt4 / 60, muladd.(h0dh1, h1, .-h1dh1 .* h0),
                             muladd.(A / 2, h1, h0))
                     .- muladd(dt4 / 90, C, dt2 / 6) .* h0ch1)
-        LinearAlgebra.mul!(ψbuff2, expi_pauli!(Abuff, h), ψbuff1)
+        ψ = expiv_pauli(ψ, h)
 
         φ_2 = t2 * muladd(dδ_4, t2, δ0_2)
-        p = cis(φ_2)
-        data[1, i] = ψbuff2[1] * p
-        data[2, i] = ψbuff2[2] * conj(p)
-
-        ψbuff1, ψbuff2 = ψbuff2, ψbuff1
+        p = @inline cis(φ_2)
+        data[1, i] = ψ[1] * p
+        data[2, i] = ψ[2] * conj(p)
     end
     return ts, data
 end
