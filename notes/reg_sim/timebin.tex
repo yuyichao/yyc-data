@@ -34,6 +34,38 @@
   shapes
 }
 
+\pgfdeclareradialshading{glow2}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(2mm)=(white);
+  color(8mm)=(black);
+  color(10mm)=(black)
+}
+\pgfdeclareradialshading{glow}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(5mm)=(white);
+  color(9mm)=(black);
+  color(10mm)=(black)
+}
+
+\begin{tikzfadingfrompicture}[name=glow fading]
+  \shade [shading=glow] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\begin{tikzfadingfrompicture}[name=glow2 fading]
+  \shade [shading=glow2] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\definecolor{pyplotc0}{rgb}{0.122,0.467,0.706}
+\definecolor{pyplotc1}{rgb}{1.000,0.498,0.055}
+\definecolor{pyplotc2}{rgb}{0.173,0.627,0.173}
+\definecolor{pyplotc3}{rgb}{0.839,0.153,0.157}
+\definecolor{pyplotc4}{rgb}{0.580,0.404,0.741}
+\definecolor{pyplotc5}{rgb}{0.549,0.337,0.294}
+\definecolor{pyplotc6}{rgb}{0.890,0.467,0.761}
+\definecolor{pyplotc7}{rgb}{0.498,0.498,0.498}
+\definecolor{pyplotc8}{rgb}{0.737,0.741,0.133}
+\definecolor{pyplotc9}{rgb}{0.090,0.745,0.812}
+
 \DeclareGraphicsRule{*}{mps}{*}{}
 \newcommand{\ud}{\mathrm{d}}
 \newcommand{\ue}{\mathrm{e}}
@@ -271,7 +303,7 @@ and it creates entanglement between spin+photon state
 and the motional state of the atom.\\
 
 Based on this understanding, the correct (or at least an equivalent) way
-to view the motion/position dependent decoherence is that,
+to view the motion/position dependent decoherence is that (Fig.~\ref{fig:recoil-trajectory}),
 \begin{enumerate}
 \item During the first photon generation step, the $|0\rangle$ spin state
   receives a recoil from the absorbed/emitted photon while the $|1\rangle$ spin state
@@ -290,6 +322,161 @@ to view the motion/position dependent decoherence is that,
   we've created a unwanted entanglement between the spin and the atom motion
   which reduces the fidelity of the spin+photon state that we would like to create\footnote{Much the same way motional closure error reduces the fidelity of a M{\o}lmer-S{\o}rensen gate}.
 \end{enumerate}
+
+\def\initX{0.5}
+\def\initY{0.6}
+\def\kickDY{0.45}
+\def\cloudR{0.25}
+\def\frameLen{2.0}
+
+\def\kickY{(\initY+\kickDY)}
+\def\initR{((\initX^2+\initY^2)^0.5)}
+\def\kickR{((\initX^2+\kickY^2)^0.5)}
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \draw[->,>=stealth,line width=1] (-\frameLen, 0) -- (\frameLen, 0) node[below] {$x$};
+    \draw[->,>=stealth,line width=1] (0, -\frameLen) -- (0, \frameLen) node[right] {$p$};
+
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.66]
+    (\initX,\initY) circle (\cloudR);
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.66]
+    (\initX,{\kickY}) circle (\cloudR);
+
+    \draw[->,>=stealth,line width=1,pyplotc0] (\initX, \initY) -- (\initX, {\kickY});
+  \end{tikzpicture}
+  \begin{tikzpicture}
+    \draw[->,>=stealth,line width=1] (-\frameLen, 0) -- (\frameLen, 0) node[below] {$x$};
+    \draw[->,>=stealth,line width=1] (0, -\frameLen) -- (0, \frameLen) node[right] {$p$};
+
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.66]
+    (\initX,\initY) circle (\cloudR);
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.66]
+    (\initX,{\kickY}) circle (\cloudR);
+
+    \draw[->,>=stealth,line width=1,pyplotc0] (\initX, {\kickY}) arc
+    [start angle={atan(\kickY/\initX)},
+    end angle={atan(\kickY/\initX)-360},
+    x radius=\kickR,
+    y radius=\kickR
+    ];
+
+    \draw[->,>=stealth,line width=1,pyplotc3] (\initX, \initY) arc
+    [start angle={atan(\initY/\initX)},
+    end angle={atan(\initY/\initX)-360},
+    x radius=\initR,
+    y radius=\initR
+    ];
+  \end{tikzpicture}
+  \begin{tikzpicture}
+    \draw[->,>=stealth,line width=1] (-\frameLen, 0) -- (\frameLen, 0) node[below] {$x$};
+    \draw[->,>=stealth,line width=1] (0, -\frameLen) -- (0, \frameLen) node[right] {$p$};
+
+    \fill[pyplotc3!50!pyplotc0,path fading=glow2 fading,opacity=0.66]
+    (\initX,{\kickY}) circle (\cloudR);
+    \draw[->,>=stealth,line width=1,pyplotc3] (\initX, \initY) -- (\initX, {\kickY});
+  \end{tikzpicture}
+  \caption{\label{fig:recoil-trajectory}}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}
+    \def\initX{1.1}
+    \def\initY{1.2}
+    \def\kickDY{1.4}
+    \def\cloudR{0.25}
+    \def\frameLen{3.5}
+
+    \def\kickY{(\initY+\kickDY)}
+    \def\initR{((\initX^2+\initY^2)^0.5)}
+    \def\kickR{((\initX^2+\kickY^2)^0.5)}
+    \draw[->,>=stealth,line width=1] (-\frameLen, 0) -- (\frameLen, 0) node[below] {$x$};
+    \draw[->,>=stealth,line width=1] (0, -\frameLen) -- (0, \frameLen) node[right] {$p$};
+
+    \fill[pyplotc3!50!pyplotc0,path fading=glow2 fading,opacity=0.8]
+    (\initX,\initY) circle (\cloudR);
+
+    \draw[->,>=stealth,line width=1,pyplotc0] (\initX, \initY) -- +(0, \kickDY)
+    coordinate (P01);
+    \draw[->,>=stealth,line width=1,pyplotc0] (P01) arc
+    [start angle={atan(\kickY/\initX)},
+    end angle={atan(\kickY/\initX)-90},
+    x radius=\kickR,
+    y radius=\kickR
+    ]
+    coordinate (P0m1)
+    arc
+    [start angle={atan(\kickY/\initX)-90},
+    end angle={atan(\kickY/\initX)-180},
+    x radius=\kickR,
+    y radius=\kickR
+    ]
+    coordinate (P0m2)
+    arc
+    [start angle={atan(\kickY/\initX)-180},
+    end angle={atan(\kickY/\initX)-270},
+    x radius=\kickR,
+    y radius=\kickR
+    ]
+    coordinate (P0m3)
+    arc
+    [start angle={atan(\kickY/\initX)-270},
+    end angle={atan(\kickY/\initX)-350},
+    x radius=\kickR,
+    y radius=\kickR
+    ] coordinate (P02);
+
+    \draw[->,>=stealth,line width=1,pyplotc3] (\initX, \initY) arc
+    [start angle={atan(\initY/\initX)},
+    end angle={atan(\initY/\initX)-90},
+    x radius=\initR,
+    y radius=\initR
+    ]
+    coordinate (P1m1)
+    arc
+    [start angle={atan(\initY/\initX)-90},
+    end angle={atan(\initY/\initX)-180},
+    x radius=\initR,
+    y radius=\initR
+    ]
+    coordinate (P1m2)
+    arc
+    [start angle={atan(\initY/\initX)-180},
+    end angle={atan(\initY/\initX)-270},
+    x radius=\initR,
+    y radius=\initR
+    ]
+    coordinate (P1m3)
+    arc
+    [start angle={atan(\initY/\initX)-270},
+    end angle={atan(\initY/\initX)-350},
+    x radius=\initR,
+    y radius=\initR
+    ] coordinate (P11);
+    \draw[->,>=stealth,line width=1,pyplotc3] (P11) -- +(0, \kickDY)
+    coordinate (P12);
+
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.35]
+    (P0m1) circle (\cloudR);
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.35]
+    (P1m1) circle (\cloudR);
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.35]
+    (P0m2) circle (\cloudR);
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.35]
+    (P1m2) circle (\cloudR);
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.35]
+    (P0m3) circle (\cloudR);
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.35]
+    (P1m3) circle (\cloudR);
+
+    \fill[pyplotc0,path fading=glow2 fading,opacity=0.8]
+    (P02) circle (\cloudR);
+    \fill[pyplotc3,path fading=glow2 fading,opacity=0.8]
+    (P12) circle (\cloudR);
+  \end{tikzpicture}
+  \caption{\label{fig:recoil-trajectory}}
+\end{figure}
 
 \subsection{Calculation}
 
@@ -455,9 +642,9 @@ which gives us
          +\eta^2\paren{\ue^{\ui\omega t}-1}}
        \end{pmatrix}\\
     =&\frac{|0\rangle\langle0|+|1\rangle\langle1|}{2}+|0\rangle\langle1|\int\ud^2\alpha \frac{\ue^{-\abs{\alpha}^2/{\bar n}}}{2\pi {\bar n}}
-      \exp\paren{
-      -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
-      +\eta^2\paren{\ue^{-\ui\omega t}-1}}+h.c.
+       \exp\paren{
+       -2\ui\eta\mathrm{Re}\paren{\alpha\paren{\ue^{-\ui\omega t}-1}}
+       +\eta^2\paren{\ue^{-\ui\omega t}-1}}+h.c.
   \end{split}
 }
 And we can calculate the integral,
