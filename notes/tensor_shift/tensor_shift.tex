@@ -233,318 +233,6 @@ See the linked sections for the quantitative results.
   where $k=0,1,2$ denotes scalar, vector and tensor coupling.
 \end{enumerate}
 
-\section{Some useful formulas}
-
-\subsection{Spherical components of vector}
-
-Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
-every 3D vector (operator) can be equivalently expressed
-as a rank-$1$ spherical tensor,
-\eqar{
-  \begin{split}
-    V_0=&V_z\\
-    V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
-  \end{split}
-}
-
-In particular, when applied to the angular momentum operator,
-\eqar{
-  \begin{split}
-    J_0=&J_z\\
-    J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
-    =&\mp\frac{J_{\pm}}{\sqrt2}
-  \end{split}
-}
-where $J_{\pm}$ are the angular momentum raising and lowering operators.\\
-
-For the complex conjugate of the vector $V^*$, defined as
-\eqar{
-  (V^*)_{x,y,z}=&V^*_{x,y,z}
-}
-The spherical components are
-\eqar{
-  \begin{split}
-    (V^*)_0=&V^*_z\\
-    (V^*)_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\pm\ui V^*_y}
-  \end{split}\label{eq:spherical:conj}
-}
-Note that in general $(V^*)_{\pm1}\neq V^*_{\pm1}$. In fact,
-\eqar{
-  \begin{split}
-    V^*_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\mp\ui V^*_y}\\
-    =&-(V^*)_{\mp1}
-  \end{split}\\
-  \begin{split}
-    V^*_q=&(-1)^q(V^*)_{-q}
-  \end{split}
-}
-i.e. the $+1$ component of $V^*$ is related to the $-1$ component of $V$,
-and the $-1$ component of $V^*$ is related to the $+1$ component of $V$.\\
-
-Dot product of two vector
-\eqar{
-  \begin{split}
-    \vec A\cdot\vec B=&\sum_{i=x,y,z}A_iB_i\\
-    =&-A_{-1}B_{+1}-A_{+1}B_{-1}+A_0B_0\\
-    =&\sum_{q=-1,0,1}(-1)^qA_{q}B_{-q}\\
-    =&\sum_{q=-1,0,1}\sqrt{3}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
-  \end{split}
-}
-
-\subsection{Spherical components of rank-$2$ tensor}
-
-A rank-$2$ tensor is in the direct product space of two vectors.
-So to understand how a rank-$2$ tensor is related to it's spherical components,
-we can simply study the direct product of two vectors.\\
-
-Based on the discussion of the spherical components of vectors above,
-a rank-$2$ tensor (or the direct product of two vectors) would be
-equivalent to the product of two rank-$1$ spherical tensors.
-Based on group representation theory, or equivalently, angular momentum summation rule,
-the rank-$2$ tensor can be written as the direct sum of a rank-$0$, $1$ and $2$
-spherical tensor.\\
-
-Without detailed derivation, we can identify the form of the three components based on,
-\begin{enumerate}
-\item Each element of the pherical tensors is a linear combination
-  of the tensor elements.
-\item Each one of the tensors (rank-$0$, $1$ and $2$) need to satisfy
-  the correct transformation rules.
-  In particular, the rank-$0$ component is a scalar
-  and the rank-$1$ compoment should be equivalent to a vector.
-\item Each tensor should be linearly independent.
-\end{enumerate}
-Based on these rules, up to a constant factor,
-the rank-$0$ spherical tensor must be the dot product of the two vectors
-and the rank-$1$ spherical tensor must be equivalent to the cross product
-of the two vectors.\\
-
-Although there isn't a direct analogy for the rank-$2$ spherical tensor part,
-it must correspond to the remaining elements in the original
-rank-$2$ (cartesian) tensor.
-Since the dot product is the trace of the tensor and the cross product
-is the anti-symmetric part of the tensor, the remaining part of the original tensor
-is the zero-trace symmetric part of the tensor. This part has $5$ degrees of freedoms,
-which agrees with the number of elements in the rank-$2$ spherical tensor that we need.
-
-\eqar{
-  \begin{split}
-    T^k_q=&\sum_{q_1,q_2}\langle k,q|1,1;q_1,q_2\rangle
-  \end{split}
-}
-
-\subsection{Wigner-Eckart theorem}
-This describes the relation between matrix elements of a vector/tensor operator
-in the angular momentum basis.
-The matrix element for different angular momentum states are related to each other
-with Clebsch-Gordan coefficients.
-\eqar{
-  \langle j,m|T_q^{(k)}|j',m' \rangle=&\langle j',k;m',q|j,m\rangle\langle j||T^{(k)}||j'\rangle
-}
-where $T_q^{(k)}$ is the $q$-th component of
-the spherical tensor operator $T^{(k)}$ of rank $k$.
-This is the result of rotation symmetry between all the matrix elements.\\
-
-Equivalently, this also means that no matter what the tensor operator is,
-it's matrix elements in this (between these) subspace
-differs from that of a different tensor operator only by a constant factor.
-(Note that this factor could depend on the $j$ and $j'$ (just not $m$ and $m'$)
-and it can of course be $0$ as well), i.e.
-\eqar{
-  \langle j,m|{T_1}_q^{(k)}|j',m'\rangle\propto&\langle j,m|{T_2}_q^{(k)}|j',m'\rangle
-}
-
-\subsection{When $j=j'$}
-A special case for the Wigner-Echart theorem is when $j=j'$.
-In this case we can plug in the angular momentum operator $J$
-(this would otherwise result in vanishing matrix elements if $j\neq j'$
-since $J$ conserves, well, $j$).
-\eqar{
-  \begin{split}
-    \langle j,m|J_q|j,m' \rangle=&\langle j,1;m',q|j,m\rangle\langle j||J||j\rangle\\
-    \propto&\langle j,1;m',q|j,m\rangle
-  \end{split}
-}
-This allow us to replace the CG coefficents with the angular momentum operator, i.e.,
-\eqar{
-  \label{eq:jj:prop1}
-  \langle j,m|V_q|j,m'\rangle\propto&\langle j,m|J_q|j,m'\rangle
-}
-which could make some calculation/expression significantly simpler.\\
-
-This relation basically states that within the subspace of a single $j$,
-we can treat any vector operator as proportional to the angular momentum.
-The proportionality factor can then be obtained from the dot product
-with angular momentum, i.e. the projection of the vector onto angular momentum.
-
-\subsubsection{$m=0$ selection rule}
-The selection rule for $m=m'=0$ transition directly follows from this relation
-since,
-\eqar{
-  \begin{split}
-    \langle j,m|V_0|j,m\rangle\propto&\langle j,m|J_0|j,m\rangle\\
-    =&\langle j,m|J_z|j,m\rangle\\
-    =&m
-  \end{split}
-}
-which is $0$ when $m=0$.
-
-\subsubsection{Projection theorem}
-We can use this to derive the projection theorem.
-Explicitly writing down the proportionality factor in Eq. \ref{eq:jj:prop1}, we have,
-\eqar{
-  \langle j,m|V_q|j,m'\rangle=&c\langle j,m|J_q|j,m'\rangle
-}
-Multiply both sides with the angular momentum matrix element
-and sum over all $m'$ and $q$
-\eqar{
-  \sum_{m',q}\langle j,m|V_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle=&c\sum_{m',q}\langle j,m|J_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle\\
-  \sum_q\langle j,m|V_qV_q^\dagger|j,m''\rangle=&c\sum_q\langle j,m|J_qJ_q^\dagger|j,m''\rangle\\
-  \begin{split}
-    \langle j,m|(\vec V\cdot \vec J)|j,m''\rangle=&c\langle j,m|J^2|j,m''\rangle\\
-    =&c j(j+1)
-  \end{split}
-}
-Therefore we have
-\eqar{
-  c=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\\
-  \langle j,m|V_q|j,m'\rangle=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\langle j,m|J_q|j,m'\rangle
-}
-
-\subsubsection{Explicit calculation}
-Just for completeness, we can verify this relation between angular momentum
-and CG coefficients explicitly.
-This part can be ignored without affecting the understanding of the rest.
-
-First the expression using angular momentum operators,
-\eqar{
-  \begin{split}
-    \langle j,m|J_0|j,m'\rangle=&\langle j,m|m'|j,m'\rangle\\
-    =&m'\delta_{mm'}
-  \end{split}\\
-  \begin{split}
-    \langle j,m|J_{\pm1}|j,m'\rangle=&\mp\frac{1}{\sqrt2}\langle j,m|J_{\pm}|j,m'\rangle\\
-    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\langle j,m|j,m'\pm1\rangle\\
-    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\delta_{m,m'\pm1}
-  \end{split}
-}
-
-Using the explicit formula for the CG coefficients,
-\eqar{
-  \begin{split}
-    \langle j,1;m',q|j,m\rangle=&\delta_{m,m'+q}\sqrt{\frac{(2j+1)(j+j-1)!(j-j+1)!(j+1-j)!}{(j+1+j+1)!}}\\
-                                &\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}\\
-                                &\sum_k\frac{(-1)^k}{k!(j+1-j-k)!(j-m'-k)!(1+q-k)!(j-1+m+k)!(j-j-q+k)!}\\
-    =&\delta_{m,m'+q}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}}{2\sqrt{(j+1)j}}\\
-                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+q-k)!(j-1+m'+k)!(-q+k)!}
-  \end{split}
-}
-For $q=0$
-\eqar{
-  \begin{split}
-    \langle j,1;m',0|j,m\rangle=&\delta_{mm'}
-                                  \frac{\sqrt{(j+m)!(j-m)!(j-m)!(j+m)!}}{2\sqrt{(j+1)j}}\\
-                                &\sum_{k=0,1}\frac{(-1)^k}{k!(1-k)!(j-m-k)!(1-k)!(j-1+m+k)!k!}\\
-    =&\delta_{mm'}\frac{(j-m)!(j+m)!}{2\sqrt{(j+1)j}}
-       \paren{\frac{1}{(j-m)!(j-1+m)!}-\frac{1}{(j-m-1)!(j+m)!}}\\
-    =&m\frac{\delta_{mm'}}{\sqrt{j(j+1)}}
-  \end{split}
-}
-For $q=\pm1$
-\eqar{
-  \begin{split}
-    \langle j,1;m',\pm1|j,m\rangle=&\delta_{m,m'\pm1}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1\mp1)!(1\pm1)!}}{2\sqrt{(j+1)j}}\\
-                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m+k)!(\mp1+k)!}\\
-    =&\frac{\delta_{m,m'\pm1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'\pm1)!(j-m'\mp1)!(j-m')!(j+m')!}{2}}\\
-                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m'+k)!(\mp1+k)!}
-  \end{split}
-}
-For $q=1$
-\eqar{
-  \begin{split}
-    \langle j,1;m',1|j,m\rangle=&\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2}}\\
-                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+1-k)!(j-1+m'+k)!(-1+k)!}\\
-    =&-\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2(j-m'-1)!(j-m'-1)!(j+m')!(j+m')!}}\\
-    =&-\sqrt{\frac{(j+m'+1)(j-m')}{2}}\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\\
-  \end{split}
-}
-For $q=-1$
-\eqar{
-  \begin{split}
-    \langle j,1;m',-1|j,m\rangle=&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2}}\\
-                                 &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(-k)!(j-1+m'+k)!(1+k)!}\\
-    =&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2(j-m')!(j-m')!(j+m'-1)!(j+m'-1)!}}\\
-    =&\sqrt{\frac{(j-m'+1)(j+m')}{2}}\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}
-  \end{split}
-}
-Comparing the result from the two methods,
-we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
-\eqar{
-  \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle\label{eq:projection:spin1}
-}
-
-\subsubsection{Generalizing the projection theorem to rank-2 tensor}
-Following the same procesure for projection theorem,
-we can also replace the spherical tensor operators with any
-other spherical tensor operator of the same rank. For rank-2 tensor operators
-on states with the same angular momentum,
-we can use the the one constructed from the direct product of
-two angular momentum operators: $(JJ)^2_p=\dsum_{q,q'}\langle 1,1;q,q'|2,p\rangle J_q J_{q'}$.\\
-
-Inserting an identity and using equation~\ref{eq:projection:spin1},
-\eqar{
-  \begin{split}
-    &\langle j,m|(JJ)^2_p|j,m'\rangle\\
-    =&\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle \langle j,m|J_q|j,m''\rangle\langle j,m''|J_{q'}|j,m'\rangle\\
-    =&j(j+1)\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle
-       \langle j,1;m'',q|j,m\rangle
-       \langle j,1;m',q'|j,m''\rangle\\
-    =&\sqrt{5}j(j+1)(2j+1)\sum_{q,q',m''}(-1)^{-2j-m-m''-p}\\
-                                  &\begin{pmatrix}
-                                    1&2&1\\
-                                    q'&-p&-q
-                                  \end{pmatrix}
-                                    \begin{pmatrix}
-                                      1&j&j\\
-                                      q&m&-m''
-                                    \end{pmatrix}
-                                    \begin{pmatrix}
-                                      j&j&1\\
-                                      m''&-m'&-q'
-                                    \end{pmatrix}\\
-    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}\sum_{q,q',m''}(-1)^{1+1+j-q'-q-m''}\\
-                                  &\begin{pmatrix}
-                                    1&2&1\\
-                                    q'&-p&-q
-                                  \end{pmatrix}
-                                    \begin{pmatrix}
-                                      1&j&j\\
-                                      q&m&-m''
-                                    \end{pmatrix}
-                                    \begin{pmatrix}
-                                      j&j&1\\
-                                      m''&-m'&-q'
-                                    \end{pmatrix}\\
-    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}
-       \begin{pmatrix}
-         j&2&j\\
-         m'&p&-m
-       \end{pmatrix}
-       \begin{Bmatrix}
-         2&j&j\\
-         j&1&1
-       \end{Bmatrix}\\
-    =&\sqrt{5}j(j+1)\sqrt{2j+1}(-1)^{2j}
-       \begin{Bmatrix}
-         2&j&j\\
-         j&1&1
-       \end{Bmatrix}
-       \langle j,2;m',p|j,m\rangle
-  \end{split}
-}
-which is indeed consistent with the Wigner-Echart theorem
-(the only $m$ or $p$-dependent term is the Clebsch-Gordan coefficient).
-
 \section{Vector and tensor light shift}
 In this section we'll discuss the result of second-order pertubation
 on dipole transitions. This includes Raman transitions and Stark shifts.
@@ -944,6 +632,343 @@ The vector shift from the effective magnetic field is,
 \section{Mitigating the effect of transverse circular polarization in optical tweezers}
 
 % Use effective hamiltonian to explain Raman transitions.
+
+\appendix
+
+\section{Some useful formulas}
+
+\subsection{Spherical components of vector}
+
+Similar to the decomposition of light polarization into $\sigma^\pm$ and $\pi$,
+every 3D vector (operator) can be equivalently expressed
+as a rank-$1$ spherical tensor,
+\eqar{
+  \begin{split}
+    V_0=&V_z\\
+    V_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V_x\pm\ui V_y}
+  \end{split}
+}
+
+In particular, when applied to the angular momentum operator,
+\eqar{
+  \begin{split}
+    J_0=&J_z\\
+    J_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{J_x\pm\ui J_y}\\
+    =&\mp\frac{J_{\pm}}{\sqrt2}
+  \end{split}
+}
+where $J_{\pm}$ are the angular momentum raising and lowering operators.\\
+
+For the complex conjugate of the vector $V^*$, defined as
+\eqar{
+  (V^*)_{x,y,z}=&V^*_{x,y,z}
+}
+The spherical components are
+\eqar{
+  \begin{split}
+    (V^*)_0=&V^*_z\\
+    (V^*)_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\pm\ui V^*_y}
+  \end{split}\label{eq:spherical:conj}
+}
+Note that in general $(V^*)_{\pm1}\neq V^*_{\pm1}$. In fact,
+\eqar{
+  \begin{split}
+    V^*_{\pm1}=&\mp\frac{1}{\sqrt2}\paren{V^*_x\mp\ui V^*_y}\\
+    =&-(V^*)_{\mp1}
+  \end{split}\\
+  \begin{split}
+    V^*_q=&(-1)^q(V^*)_{-q}
+  \end{split}
+}
+i.e. the $+1$ component of $V^*$ is related to the $-1$ component of $V$,
+and the $-1$ component of $V^*$ is related to the $+1$ component of $V$.\\
+
+Dot product of two vector
+\eqar{
+  \begin{split}
+    \vec A\cdot\vec B=&\sum_{i=x,y,z}A_iB_i\\
+    =&-A_{-1}B_{+1}-A_{+1}B_{-1}+A_0B_0\\
+    =&\sum_{q=-1,0,1}(-1)^qA_{q}B_{-q}\\
+    =&\sum_{q=-1,0,1}\sqrt{3}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
+  \end{split}
+}
+
+\subsection{Spherical components of rank-$2$ tensor}
+
+A rank-$2$ tensor is a direct product of two vectors (or at least in the linear space).
+So to understand how a rank-$2$ tensor is related to it's spherical components,
+we can simply study the direct product of two vectors.\\
+
+Based on the discussion of the spherical components of vectors above,
+a rank-$2$ tensor (or the direct product of two vectors) would be
+equivalent to the product of two rank-$1$ spherical tensors.
+Based on group representation theory, or equivalently,
+angular momentum summation rules, the rank-$2$ tensor can be written
+as the direct sum of a rank-$0$, $1$ and $2$ spherical tensor.\\
+
+Without detailed derivation, we can identify the form of the three components based on
+the following rules,
+\begin{enumerate}
+\item Each element of the pherical tensors is a linear combination
+  of the tensor elements.
+\item Each one of the tensors (rank-$0$, $1$ and $2$) need to satisfy
+  the correct transformation rules.
+  In particular, the rank-$0$ component is a scalar
+  and the rank-$1$ compoment should be equivalent to a vector.
+\item Each element should be linearly independent.
+\end{enumerate}
+Based on these rules, up to a constant factor,
+the rank-$0$ spherical tensor must be the dot product of the two vectors
+and the rank-$1$ spherical tensor must be equivalent to the cross product
+of the two vectors.\\
+
+Although there isn't a direct analogy for the rank-$2$ spherical tensor part,
+it must correspond to the remaining elements in the original
+rank-$2$ (cartesian) tensor.
+Since the dot product is the trace of the tensor and the cross product
+is the anti-symmetric part of the tensor, the remaining part of the original tensor
+is the zero-trace symmetric part of the tensor. This part has $5$ degrees of freedoms,
+which agrees with the number of elements
+in the rank-$2$ spherical tensor that we need.
+Up to a constant factor, we can write out these elements for
+a rank-$2$ cartesian tensor $T_{ij}$ as,\\
+
+Rank-$0$ spherical / scalar,
+\eqar{
+  \begin{split}
+    E=&\sum_{i}T_{ii}
+  \end{split}
+}
+Rank-$1$ spherical / vector,
+\eqar{
+  \begin{split}
+    A_{ij}=&\paren{T_{ij}-T_{ji}}\ \ \ (i\neq j)
+  \end{split}
+}
+Rank-$2$ spherical / tensor,
+\eqar{
+  \begin{split}
+    S_{ij}=&\frac12\paren{T_{ij}+T_{ji}}-\frac13\delta_{ij}\sum_{k}T_{kk}
+  \end{split}
+}
+
+\eqar{
+  \begin{split}
+    T^k_q=&\sum_{q_1,q_2}\langle k,q|1,1;q_1,q_2\rangle
+  \end{split}
+}
+
+\subsection{Wigner-Eckart theorem}
+This describes the relation between matrix elements of a vector/tensor operator
+in the angular momentum basis.
+The matrix element for different angular momentum states are related to each other
+with Clebsch-Gordan coefficients.
+\eqar{
+  \langle j,m|T_q^{(k)}|j',m' \rangle=&\langle j',k;m',q|j,m\rangle\langle j||T^{(k)}||j'\rangle
+}
+where $T_q^{(k)}$ is the $q$-th component of
+the spherical tensor operator $T^{(k)}$ of rank $k$.
+This is the result of rotation symmetry between all the matrix elements.\\
+
+Equivalently, this also means that no matter what the tensor operator is,
+it's matrix elements in this (between these) subspace
+differs from that of a different tensor operator only by a constant factor.
+(Note that this factor could depend on the $j$ and $j'$ (just not $m$ and $m'$)
+and it can of course be $0$ as well), i.e.
+\eqar{
+  \langle j,m|{T_1}_q^{(k)}|j',m'\rangle\propto&\langle j,m|{T_2}_q^{(k)}|j',m'\rangle
+}
+
+\subsection{When $j=j'$}
+A special case for the Wigner-Echart theorem is when $j=j'$.
+In this case we can plug in the angular momentum operator $J$
+(this would otherwise result in vanishing matrix elements if $j\neq j'$
+since $J$ conserves, well, $j$).
+\eqar{
+  \begin{split}
+    \langle j,m|J_q|j,m' \rangle=&\langle j,1;m',q|j,m\rangle\langle j||J||j\rangle\\
+    \propto&\langle j,1;m',q|j,m\rangle
+  \end{split}
+}
+This allow us to replace the CG coefficents with the angular momentum operator, i.e.,
+\eqar{
+  \label{eq:jj:prop1}
+  \langle j,m|V_q|j,m'\rangle\propto&\langle j,m|J_q|j,m'\rangle
+}
+which could make some calculation/expression significantly simpler.\\
+
+This relation basically states that within the subspace of a single $j$,
+we can treat any vector operator as proportional to the angular momentum.
+The proportionality factor can then be obtained from the dot product
+with angular momentum, i.e. the projection of the vector onto angular momentum.
+
+\subsubsection{$m=0$ selection rule}
+The selection rule for $m=m'=0$ transition directly follows from this relation
+since,
+\eqar{
+  \begin{split}
+    \langle j,m|V_0|j,m\rangle\propto&\langle j,m|J_0|j,m\rangle\\
+    =&\langle j,m|J_z|j,m\rangle\\
+    =&m
+  \end{split}
+}
+which is $0$ when $m=0$.
+
+\subsubsection{Projection theorem}
+We can use this to derive the projection theorem.
+Explicitly writing down the proportionality factor in Eq. \ref{eq:jj:prop1}, we have,
+\eqar{
+  \langle j,m|V_q|j,m'\rangle=&c\langle j,m|J_q|j,m'\rangle
+}
+Multiply both sides with the angular momentum matrix element
+and sum over all $m'$ and $q$
+\eqar{
+  \sum_{m',q}\langle j,m|V_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle=&c\sum_{m',q}\langle j,m|J_q|j,m'\rangle\langle j,m'|J_q^\dagger|j,m''\rangle\\
+  \sum_q\langle j,m|V_qV_q^\dagger|j,m''\rangle=&c\sum_q\langle j,m|J_qJ_q^\dagger|j,m''\rangle\\
+  \begin{split}
+    \langle j,m|(\vec V\cdot \vec J)|j,m''\rangle=&c\langle j,m|J^2|j,m''\rangle\\
+    =&c j(j+1)
+  \end{split}
+}
+Therefore we have
+\eqar{
+  c=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\\
+  \langle j,m|V_q|j,m'\rangle=&\frac{\langle j,m|(\vec V\cdot \vec J)|j,m''\rangle}{j(j+1)}\langle j,m|J_q|j,m'\rangle
+}
+
+\subsubsection{Explicit calculation}
+Just for completeness, we can verify this relation between angular momentum
+and CG coefficients explicitly.
+This part can be ignored without affecting the understanding of the rest.
+
+First the expression using angular momentum operators,
+\eqar{
+  \begin{split}
+    \langle j,m|J_0|j,m'\rangle=&\langle j,m|m'|j,m'\rangle\\
+    =&m'\delta_{mm'}
+  \end{split}\\
+  \begin{split}
+    \langle j,m|J_{\pm1}|j,m'\rangle=&\mp\frac{1}{\sqrt2}\langle j,m|J_{\pm}|j,m'\rangle\\
+    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\langle j,m|j,m'\pm1\rangle\\
+    =&\mp\sqrt{\frac{(j\mp m')(j\pm m' + 1)}{2}}\delta_{m,m'\pm1}
+  \end{split}
+}
+
+Using the explicit formula for the CG coefficients,
+\eqar{
+  \begin{split}
+    \langle j,1;m',q|j,m\rangle=&\delta_{m,m'+q}\sqrt{\frac{(2j+1)(j+j-1)!(j-j+1)!(j+1-j)!}{(j+1+j+1)!}}\\
+                                &\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}\\
+                                &\sum_k\frac{(-1)^k}{k!(j+1-j-k)!(j-m'-k)!(1+q-k)!(j-1+m+k)!(j-j-q+k)!}\\
+    =&\delta_{m,m'+q}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1-q)!(1+q)!}}{2\sqrt{(j+1)j}}\\
+                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+q-k)!(j-1+m'+k)!(-q+k)!}
+  \end{split}
+}
+For $q=0$
+\eqar{
+  \begin{split}
+    \langle j,1;m',0|j,m\rangle=&\delta_{mm'}
+                                  \frac{\sqrt{(j+m)!(j-m)!(j-m)!(j+m)!}}{2\sqrt{(j+1)j}}\\
+                                &\sum_{k=0,1}\frac{(-1)^k}{k!(1-k)!(j-m-k)!(1-k)!(j-1+m+k)!k!}\\
+    =&\delta_{mm'}\frac{(j-m)!(j+m)!}{2\sqrt{(j+1)j}}
+       \paren{\frac{1}{(j-m)!(j-1+m)!}-\frac{1}{(j-m-1)!(j+m)!}}\\
+    =&m\frac{\delta_{mm'}}{\sqrt{j(j+1)}}
+  \end{split}
+}
+For $q=\pm1$
+\eqar{
+  \begin{split}
+    \langle j,1;m',\pm1|j,m\rangle=&\delta_{m,m'\pm1}\frac{\sqrt{(j+m)!(j-m)!(j-m')!(j+m')!(1\mp1)!(1\pm1)!}}{2\sqrt{(j+1)j}}\\
+                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m+k)!(\mp1+k)!}\\
+    =&\frac{\delta_{m,m'\pm1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'\pm1)!(j-m'\mp1)!(j-m')!(j+m')!}{2}}\\
+                                   &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1\pm1-k)!(j-1+m'+k)!(\mp1+k)!}
+  \end{split}
+}
+For $q=1$
+\eqar{
+  \begin{split}
+    \langle j,1;m',1|j,m\rangle=&\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2}}\\
+                                &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(1+1-k)!(j-1+m'+k)!(-1+k)!}\\
+    =&-\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'+1)!(j-m'-1)!(j-m')!(j+m')!}{2(j-m'-1)!(j-m'-1)!(j+m')!(j+m')!}}\\
+    =&-\sqrt{\frac{(j+m'+1)(j-m')}{2}}\frac{\delta_{m,m'+1}}{\sqrt{(j+1)j}}\\
+  \end{split}
+}
+For $q=-1$
+\eqar{
+  \begin{split}
+    \langle j,1;m',-1|j,m\rangle=&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2}}\\
+                                 &\sum_k\frac{(-1)^k}{k!(1-k)!(j-m'-k)!(-k)!(j-1+m'+k)!(1+k)!}\\
+    =&\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}\sqrt{\frac{(j+m'-1)!(j-m'+1)!(j-m')!(j+m')!}{2(j-m')!(j-m')!(j+m'-1)!(j+m'-1)!}}\\
+    =&\sqrt{\frac{(j-m'+1)(j+m')}{2}}\frac{\delta_{m,m'-1}}{\sqrt{(j+1)j}}
+  \end{split}
+}
+Comparing the result from the two methods,
+we can see that the proportionality factor is $\sqrt{(j+1)j}$, or
+\eqar{
+  \langle j,m|J_q|j,m'\rangle=&\sqrt{(j+1)j}\langle j,1;m',q|j,m\rangle\label{eq:projection:spin1}
+}
+
+\subsubsection{Generalizing the projection theorem to rank-2 tensor}
+Following the same procesure for projection theorem,
+we can also replace the spherical tensor operators with any
+other spherical tensor operator of the same rank. For rank-2 tensor operators
+on states with the same angular momentum,
+we can use the the one constructed from the direct product of
+two angular momentum operators: $(JJ)^2_p=\dsum_{q,q'}\langle 1,1;q,q'|2,p\rangle J_q J_{q'}$.\\
+
+Inserting an identity and using equation~\ref{eq:projection:spin1},
+\eqar{
+  \begin{split}
+    &\langle j,m|(JJ)^2_p|j,m'\rangle\\
+    =&\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle \langle j,m|J_q|j,m''\rangle\langle j,m''|J_{q'}|j,m'\rangle\\
+    =&j(j+1)\sum_{q,q',m''}\langle 1,1;q,q'|2,p\rangle
+       \langle j,1;m'',q|j,m\rangle
+       \langle j,1;m',q'|j,m''\rangle\\
+    =&\sqrt{5}j(j+1)(2j+1)\sum_{q,q',m''}(-1)^{-2j-m-m''-p}\\
+                                  &\begin{pmatrix}
+                                    1&2&1\\
+                                    q'&-p&-q
+                                  \end{pmatrix}
+                                    \begin{pmatrix}
+                                      1&j&j\\
+                                      q&m&-m''
+                                    \end{pmatrix}
+                                    \begin{pmatrix}
+                                      j&j&1\\
+                                      m''&-m'&-q'
+                                    \end{pmatrix}\\
+    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}\sum_{q,q',m''}(-1)^{1+1+j-q'-q-m''}\\
+                                  &\begin{pmatrix}
+                                    1&2&1\\
+                                    q'&-p&-q
+                                  \end{pmatrix}
+                                    \begin{pmatrix}
+                                      1&j&j\\
+                                      q&m&-m''
+                                    \end{pmatrix}
+                                    \begin{pmatrix}
+                                      j&j&1\\
+                                      m''&-m'&-q'
+                                    \end{pmatrix}\\
+    =&\sqrt{5}j(j+1)(2j+1)(-1)^{j-m}
+       \begin{pmatrix}
+         j&2&j\\
+         m'&p&-m
+       \end{pmatrix}
+       \begin{Bmatrix}
+         2&j&j\\
+         j&1&1
+       \end{Bmatrix}\\
+    =&\sqrt{5}j(j+1)\sqrt{2j+1}(-1)^{2j}
+       \begin{Bmatrix}
+         2&j&j\\
+         j&1&1
+       \end{Bmatrix}
+       \langle j,2;m',p|j,m\rangle
+  \end{split}
+}
+which is indeed consistent with the Wigner-Echart theorem
+(the only $m$ or $p$-dependent term is the Clebsch-Gordan coefficient).
 
 \end{document}
 
