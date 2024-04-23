@@ -294,10 +294,43 @@ Dot product of two vector
 \subsection{Spherical components of rank-$2$ tensor}
 
 A rank-$2$ tensor is in the direct product space of two vectors.
-Since each vector is equivalent to a rank-$1$ sperical tensor,
-their product can be decomposed into the sum of a rank-$0$, $1$ and $2$ tensor.
+So to understand how a rank-$2$ tensor is related to it's spherical components,
+we can simply study the direct product of two vectors.\\
+
+Based on the discussion of the spherical components of vectors above,
+a rank-$2$ tensor (or the direct product of two vectors) would be
+equivalent to the product of two rank-$1$ spherical tensors.
+Based on group representation theory, or equivalently, angular momentum summation rule,
+the rank-$2$ tensor can be written as the direct sum of a rank-$0$, $1$ and $2$
+spherical tensor.\\
+
+Without detailed derivation, we can identify the form of the three components based on,
+\begin{enumerate}
+\item Each element of the pherical tensors is a linear combination
+  of the tensor elements.
+\item Each one of the tensors (rank-$0$, $1$ and $2$) need to satisfy
+  the correct transformation rules.
+  In particular, the rank-$0$ component is a scalar
+  and the rank-$1$ compoment should be equivalent to a vector.
+\item Each tensor should be linearly independent.
+\end{enumerate}
+Based on these rules, up to a constant factor,
+the rank-$0$ spherical tensor must be the dot product of the two vectors
+and the rank-$1$ spherical tensor must be equivalent to the cross product
+of the two vectors.\\
+
+Although there isn't a direct analogy for the rank-$2$ spherical tensor part,
+it must correspond to the remaining elements in the original
+rank-$2$ (cartesian) tensor.
+Since the dot product is the trace of the tensor and the cross product
+is the anti-symmetric part of the tensor, the remaining part of the original tensor
+is the zero-trace symmetric part of the tensor. This part has $5$ degrees of freedoms,
+which agrees with the number of elements in the rank-$2$ spherical tensor that we need.
 
 \eqar{
+  \begin{split}
+    T^k_q=&\sum_{q_1,q_2}\langle k,q|1,1;q_1,q_2\rangle
+  \end{split}
 }
 
 \subsection{Wigner-Eckart theorem}
