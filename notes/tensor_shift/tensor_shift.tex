@@ -750,13 +750,13 @@ Rank-$0$ spherical / scalar,
 \eqar{
   \begin{split}
     E=&\sum_{i}T_{ii}
-  \end{split}
+  \end{split}\label{eq:scalar-compoments}
 }
 Rank-$1$ spherical / vector,
 \eqar{
   \begin{split}
     A_i=&\sum_{jk}\varepsilon_{ijk}T_{jk}
-  \end{split}
+  \end{split}\label{eq:vector-compoments}
 }
 where $\varepsilon_{ijk}$ is the Levi-Civita symbol.
 Note that for tensor that's the direct product of two vectors,
@@ -870,7 +870,7 @@ The expressions we'll derive will involve inner product of tensors
 for inner product using the spherical harmonic components.
 \eqar{
   \begin{split}
-    &\sum_{ij}T_{ij}U_{ij}\\
+    \overline{\overline{T}}:\overline{\overline{U}}=&\sum_{ij}T_{ij}U_{ij}\\
     =&\begin{pmatrix}[1.5]
       \paren{-\frac{1}{\sqrt{3}}T^0_0-\frac1{\sqrt6}T^2_0+\frac{T^2_{-2}+T^2_{2}}2}
       \paren{-\frac{1}{\sqrt{3}}U^0_0-\frac1{\sqrt6}U^2_0+\frac{U^2_{-2}+U^2_{2}}2}\\
@@ -906,7 +906,37 @@ that of the same rank and the result is also consistent with the
 For calculation/understanding/visualization, it is sometimes still useful to write
 the inner product in the cartesian form after decomposing it to
 scalar/vector/tensor components.\\
-% TODO
+
+Using the scalar, vector and tensor components from above~(Eq.~\ref{eq:scalar-compoments},\ref{eq:vector-compoments},\ref{eq:symm-tensor-compoments}),
+the corresponding dot products for the three components are,
+\eqar{
+  \begin{split}
+    E^{T}E^{U}=&\sum_{ij}T_{ii}U_{jj}\\
+    =&T_{xx}U_{xx}+T_{yy}U_{yy}+T_{zz}U_{zz}
+       +T_{xx}U_{yy}+T_{xx}U_{zz}+T_{yy}U_{xx}+T_{yy}U_{zz}+T_{zz}U_{xx}+T_{zz}U_{yy}
+  \end{split}\\
+  \begin{split}
+    \vec A^{T}\cdot\vec A^{U}=&\sum_{ijkmm}\varepsilon_{ijk}\varepsilon_{imm}T_{jk}U_{mn}\\
+    =&\sum_{ijklm}\paren{\delta_{jm}\delta_{kn}-\delta_{jn}\delta_{km}}T_{jk}U_{mn}\\
+    =&\sum_{jk}\paren{T_{jk}U_{jk}-T_{jk}U_{kj}}\\
+    =&T_{xy}U_{xy}+T_{yx}U_{yx}+T_{yz}U_{yz}+T_{zy}U_{zy}+T_{xz}U_{xz}+T_{zx}U_{zx}\\&
+    -T_{xy}U_{yx}-T_{yx}U_{xy}-T_{yz}U_{zy}-T_{zy}U_{yz}-T_{xz}U_{zx}-T_{zx}U_{xz}
+  \end{split}\\
+  \begin{split}
+    \overline{\overline{S}}^{T}:\overline{\overline{S}}^{U}=&\sum_{ij}\paren{\frac12\paren{T_{ij}+T_{ji}}-\frac13\delta_{ij}\sum_{k}T_{kk}}
+       \paren{\frac12\paren{U_{ij}+U_{ji}}-\frac13\delta_{ij}\sum_{k}U_{kk}}\\
+    =&\frac23\paren{T_{xx}U_{xx}+T_{yy}U_{yy}+T_{zz}U_{zz}}\\&
+    -\frac13\paren{T_{xx}U_{yy}+T_{xx}U_{zz}+T_{yy}U_{xx}+T_{yy}U_{zz}+T_{zz}U_{xx}+T_{zz}U_{yy}}\\&
+    +\frac12\paren{T_{xy}U_{xy}+T_{yx}U_{yx}+T_{yz}U_{yz}+T_{zy}U_{zy}+T_{xz}U_{xz}+T_{zx}U_{zx}}\\&
+    +\frac12\paren{T_{xy}U_{yx}+T_{yx}U_{xy}+T_{yz}U_{zy}+T_{zy}U_{yz}+T_{xz}U_{zx}+T_{zx}U_{xz}}
+  \end{split}
+}
+Combining the three,
+\eqar{
+  \begin{split}
+    \overline{\overline{T}}:\overline{\overline{U}}=&\frac13E^{T}E^{U}+\frac12\vec A^{T}\cdot\vec A^{U}+\overline{\overline{S}}^{T}:\overline{\overline{S}}^{U}
+  \end{split}
+}
 
 \subsection{Wigner-Eckart theorem}
 This describes the relation between matrix elements of a vector/tensor operator
