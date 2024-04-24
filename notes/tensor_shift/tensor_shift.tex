@@ -174,6 +174,15 @@
   }
 }
 \makeatother
+
+\makeatletter
+\renewcommand*\env@matrix[1][\arraystretch]{%
+  \edef\arraystretch{#1}%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{*\c@MaxMatrixCols c}}
+\makeatother
+
 \tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
   post length=0.2cm, snake, amplitude=.4mm,
   segment length=2mm},thick, ->]
@@ -206,6 +215,8 @@
     pdfproducer={}
   }
 \fi
+
+\allowdisplaybreaks
 
 \begin{document}
 
@@ -689,11 +700,13 @@ Dot product of two vector
     \vec A\cdot\vec B=&\sum_{i=x,y,z}A_iB_i\\
     =&-A_{-1}B_{+1}-A_{+1}B_{-1}+A_0B_0\\
     =&\sum_{q=-1,0,1}(-1)^qA_{q}B_{-q}\\
-    =&\sum_{q=-1,0,1}\sqrt{3}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
+    =&-\sqrt{3}\sum_{q=-1,0,1}\langle 0,0|1,1;q,-q\rangle A_{q}B_{-q}
   \end{split}
 }
 
 \subsection{Spherical components of rank-$2$ tensor}
+
+\subsubsection{Semi-quantitative discussion}
 
 A rank-$2$ tensor is a direct product of two vectors (or at least in the linear space).
 So to understand how a rank-$2$ tensor is related to it's spherical components,
@@ -749,14 +762,142 @@ Rank-$2$ spherical / tensor,
 \eqar{
   \begin{split}
     S_{ij}=&\frac12\paren{T_{ij}+T_{ji}}-\frac13\delta_{ij}\sum_{k}T_{kk}
+  \end{split}\label{eq:symm-tensor-compoments}
+}
+
+\subsubsection{Exact tensor component}
+The decomposition of the rank-$2$ tensor into a linear combination of spherical tensors
+isn't unique, each spherical tensor can always be scaled by
+an arbitrary non-zero factor. However, for convinience, we would like to pick one
+that's consistent with how two rank-$1$ spherical tensors are multiplied together,
+i.e.
+\eqar{
+  \begin{split}
+    T^k_q=&\sum_{q_1,q_2}\langle k,q|1,1;q_1,q_2\rangle X^1_{q_1}Y^1_{q_2}
   \end{split}
 }
 
+First we take the direct product of two vectors $X$ and $Y$,
 \eqar{
   \begin{split}
-    T^k_q=&\sum_{q_1,q_2}\langle k,q|1,1;q_1,q_2\rangle
+    T_{ij}=&X_iY_j
   \end{split}
 }
+
+For the rank-$0$ spherical component,
+\eqar{
+  \begin{split}
+    T^0_0=&\sum_{q_1,q_2}\langle 0,0|1,1;q_1,q_2\rangle X^1_{q_1}Y^1_{q_2}\\
+    =&\frac{1}{\sqrt3}\paren{X^1_{-1}Y^1_{1}-X^1_{0}Y^1_{0}+X^1_{1}Y^1_{-1}}\\
+    =&-\frac{1}{\sqrt3}\sum_{ii}T_{ii}\\
+    =&-\frac{\vec X\cdot\vec Y}{\sqrt3}
+  \end{split}
+}
+Rank-$1$ spherical components,
+\eqar{
+  \begin{split}
+    T^1_q=&\sum_{q_1,q_2}\langle 1,q|1,1;q_1,q_2\rangle X^1_{q_1}Y^1_{q_2}\\
+    =&\begin{cases}
+      \dfrac{X^1_{0}Y^1_{-1}-X^1_{-1}Y^1_{0}}{\sqrt2}&(q=-1)\\
+      \dfrac{X^1_{1}Y^1_{-1}-X^1_{-1}Y^1_{1}}{\sqrt2}&(q=0)\\
+      \dfrac{X^1_{1}Y^1_{0}-X^1_{0}Y^1_{1}}{\sqrt2}&(q=1)\\
+    \end{cases}\\
+    =&\begin{cases}
+      \dfrac{\paren{T_{zx}-T_{xz}}+\ui\paren{T_{yz}-T_{zy}}}{2}&(q=-1)\\
+      \dfrac{\ui}{\sqrt2}\paren{T_{xy}-T_{yx}}&(q=0)\\
+      \dfrac{\paren{T_{zx}-T_{xz}}-\ui\paren{T_{yz}-T_{zy}}}{2}&(q=1)\\
+    \end{cases}\\
+    =&\dfrac{\ui}{\sqrt2}\begin{cases}
+      \dfrac{\paren{\vec X\times\vec Y}_x-\ui\paren{\vec X\times\vec Y}_y}{\sqrt2}&(q=-1)\\
+      \paren{\vec X\times\vec Y}_z&(q=0)\\
+      -\dfrac{\paren{\vec X\times\vec Y}_x+\ui\paren{\vec X\times\vec Y}_y}{\sqrt2}&(q=1)\\
+    \end{cases}\\
+    =&\dfrac{\ui}{\sqrt2}\paren{\vec X\times\vec Y}^1_q\\
+  \end{split}
+}
+where $\paren{\vec X\times\vec Y}^1_q$ represents the spherical tensor components
+of the $\vec X\times\vec Y$ vector.\\
+
+Rank-$2$ spherical components,
+\eqar{
+  \begin{split}
+    T^2_q=&\sum_{q_1,q_2}\langle 2,q|1,1;q_1,q_2\rangle X^1_{q_1}Y^1_{q_2}\\
+    =&\begin{cases}
+      X^1_{-1}Y^1_{-1}&(q=-2)\\
+      \dfrac{X^1_{0}Y^1_{-1}+X^1_{-1}Y^1_{0}}{\sqrt2}&(q=-1)\\
+      \dfrac{X^1_{1}Y^1_{-1}+2X^1_0Y^1_0+X^1_{-1}Y^1_{1}}{\sqrt6}&(q=0)\\
+      \dfrac{X^1_{1}Y^1_{0}+X^1_{0}Y^1_{1}}{\sqrt2}&(q=1)\\
+      X^1_{1}Y^1_{1}&(q=2)\\
+    \end{cases}\\
+    =&\begin{cases}
+      \dfrac{\paren{T_{xx}-T_{yy}}-\ui\paren{T_{xy}+T_{yx}}}{2}&(q=-2)\\
+      \dfrac{\paren{T_{zx}+T_{xz}}-\ui\paren{T_{zy}+T_{yz}}}{2}&(q=-1)\\
+      \dfrac{2T_{zz}-T_{xx}-T_{yy}}{\sqrt6}&(q=0)\\
+      -\dfrac{\paren{T_{zx}+T_{xz}}+\ui\paren{T_{zy}+T_{yz}}}{2}&(q=1)\\
+      \dfrac{\paren{T_{xx}-T_{yy}}+\ui\paren{T_{xy}+T_{yx}}}{2}&(q=2)\\
+    \end{cases}\\
+    =&\begin{cases}
+      \dfrac{S_{xx}-S_{yy}}{2}-\ui S_{xy}&(q=-2)\\
+      S_{zx}-\ui S_{yz}&(q=-1)\\
+      \sqrt{\dfrac{3}{2}}S_{zz}&(q=0)\\
+      -S_{zx}-\ui S_{yz}&(q=1)\\
+      \dfrac{S_{xx}-S_{yy}}{2}+\ui S_{xy}&(q=2)\\
+    \end{cases}
+  \end{split}
+}
+where the zero-trace symmetric $S_{ij}$ is defined above~(Eq.~\ref{eq:symm-tensor-compoments}).\\
+
+The inverse transformation,
+\eqar{
+  T_{xx}=&-\frac{1}{\sqrt{3}}T^0_0-\frac1{\sqrt6}T^2_0+\frac{T^2_{-2}+T^2_{2}}2\\
+  T_{xy}=&-\frac{\ui}{\sqrt2}T^1_0+\frac\ui2\paren{T^2_{-2}-T^2_{2}}\\
+  T_{xz}=&\frac{T^2_{-1}-T^2_{1}}2-\frac{T^1_{-1}+T^1_{1}}2\\
+  T_{yx}=&\frac{\ui}{\sqrt2}T^1_0+\frac\ui2\paren{T^2_{-2}-T^2_{2}}\\
+  T_{yy}=&-\frac{1}{\sqrt{3}}T^0_0-\frac1{\sqrt6}T^2_0-\frac12\paren{T^2_{-2}+T^2_{2}}\\
+  T_{yz}=&\frac\ui2\paren{T^2_{-1}+T^2_{1}}-\frac{\ui}{2}\paren{T^1_{-1}-T^1_{1}}\\
+  T_{zx}=&\frac{T^2_{-1}-T^2_{1}}2+\frac{T^1_{-1}+T^1_{1}}2\\
+  T_{zy}=&\frac\ui2\paren{T^2_{-1}+T^2_{1}}+\frac{\ui}{2}\paren{T^1_{-1}-T^1_{1}}\\
+  T_{zz}=&-\frac{1}{\sqrt{3}}T^0_0+\sqrt{\frac{2}{3}}T^2_0
+}
+
+\subsubsection{Inner product of tensors}
+The expressions we'll derive will involve inner product of tensors
+(since the final energy is a scalar). Here we'll figure out what's the expression
+for inner product using the spherical harmonic components.
+\eqar{
+  \begin{split}
+    &\sum_{ij}T_{ij}U_{ij}\\
+    =&\begin{pmatrix}[1.5]
+      \paren{-\frac{1}{\sqrt{3}}T^0_0-\frac1{\sqrt6}T^2_0+\frac{T^2_{-2}+T^2_{2}}2}
+      \paren{-\frac{1}{\sqrt{3}}U^0_0-\frac1{\sqrt6}U^2_0+\frac{U^2_{-2}+U^2_{2}}2}\\
+      +\paren{-\frac{\ui}{\sqrt2}T^1_0+\frac\ui2\paren{T^2_{-2}-T^2_{2}}}
+      \paren{-\frac{\ui}{\sqrt2}U^1_0+\frac\ui2\paren{U^2_{-2}-U^2_{2}}}\\
+      +\paren{\frac{T^2_{-1}-T^2_{1}}2-\frac{T^1_{-1}+T^1_{1}}2}
+      \paren{\frac{U^2_{-1}-U^2_{1}}2-\frac{U^1_{-1}+U^1_{1}}2}\\
+      +\paren{\frac{\ui}{\sqrt2}T^1_0+\frac\ui2\paren{T^2_{-2}-T^2_{2}}}
+      \paren{\frac{\ui}{\sqrt2}U^1_0+\frac\ui2\paren{U^2_{-2}-U^2_{2}}}\\
+      +\paren{-\frac{1}{\sqrt{3}}T^0_0-\frac1{\sqrt6}T^2_0-\frac12\paren{T^2_{-2}+T^2_{2}}}
+      \paren{-\frac{1}{\sqrt{3}}U^0_0-\frac1{\sqrt6}U^2_0-\frac12\paren{U^2_{-2}+U^2_{2}}}\\
+      +\paren{\frac\ui2\paren{T^2_{-1}+T^2_{1}}-\frac{\ui}{2}\paren{T^1_{-1}-T^1_{1}}}
+      \paren{\frac\ui2\paren{U^2_{-1}+U^2_{1}}-\frac{\ui}{2}\paren{U^1_{-1}-U^1_{1}}}\\
+      +\paren{\frac{T^2_{-1}-T^2_{1}}2+\frac{T^1_{-1}+T^1_{1}}2}
+      \paren{\frac{U^2_{-1}-U^2_{1}}2+\frac{U^1_{-1}+U^1_{1}}2}\\
+      +\paren{\frac\ui2\paren{T^2_{-1}+T^2_{1}}+\frac{\ui}{2}\paren{T^1_{-1}-T^1_{1}}}
+      \paren{\frac\ui2\paren{U^2_{-1}+U^2_{1}}+\frac{\ui}{2}\paren{U^1_{-1}-U^1_{1}}}\\
+      +\paren{-\frac{1}{\sqrt{3}}T^0_0+\sqrt{\frac{2}{3}}T^2_0}
+      \paren{-\frac{1}{\sqrt{3}}U^0_0+\sqrt{\frac{2}{3}}U^2_0}
+    \end{pmatrix}\\
+    =&\begin{pmatrix}[1.5]
+      T^0_0U^0_0+T^1_{-1}U^1_{1}-T^1_0U^1_0+T^1_{1}U^1_{-1}\\
+      +T^2_{-2}U^2_{2}-T^2_{-1}U^2_{1}+T^2_0U^2_0-T^2_{1}U^2_{-1}+T^2_{2}U^2_{-2}
+    \end{pmatrix}\\
+    =&\sum_{k,q}(-1)^{k+q}T^k_qU^k_{-q}\\
+    =&\sum_{k}\sqrt{2k+1}\sum_{q}\langle 0,0|k,k;q,-q\rangle T^k_qU^k_{-q}\\
+  \end{split}
+}
+
+\subsubsection{Cartesian form}
+% TODO
 
 \subsection{Wigner-Eckart theorem}
 This describes the relation between matrix elements of a vector/tensor operator
