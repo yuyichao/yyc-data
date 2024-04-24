@@ -755,9 +755,13 @@ Rank-$0$ spherical / scalar,
 Rank-$1$ spherical / vector,
 \eqar{
   \begin{split}
-    A_{ij}=&\paren{T_{ij}-T_{ji}}\ \ \ (i\neq j)
+    A_i=&\sum_{jk}\varepsilon_{ijk}T_{jk}
   \end{split}
 }
+where $\varepsilon_{ijk}$ is the Levi-Civita symbol.
+Note that for tensor that's the direct product of two vectors,
+this is just the cross product of the two vectors.\\
+
 Rank-$2$ spherical / tensor,
 \eqar{
   \begin{split}
@@ -895,8 +899,13 @@ for inner product using the spherical harmonic components.
     =&\sum_{k}\sqrt{2k+1}\sum_{q}\langle 0,0|k,k;q,-q\rangle T^k_qU^k_{-q}\\
   \end{split}
 }
+we can see that each rank of spherical tensor component is only multiplied with
+that of the same rank and the result is also consistent with the
 
 \subsubsection{Cartesian form}
+For calculation/understanding/visualization, it is sometimes still useful to write
+the inner product in the cartesian form after decomposing it to
+scalar/vector/tensor components.\\
 % TODO
 
 \subsection{Wigner-Eckart theorem}
