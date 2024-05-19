@@ -693,4 +693,140 @@ spin phase factor as well (i.e. parity scan phase) that is
 }
 The maximum phase is $\eta^2$ which can be completely ignored if $\eta$ is small enough.
 
+\section{Motion of the atom during emission}
+
+The discussion in the previous section assumes the emission of the photon to be
+instantaneous. However, in reality, this happens over the lifetime of the excited state.
+For photon that's emitted at different time, the recoil on the atom would also happen
+at a different time, resulting in a different final atom motional wavefunction.
+This resulting entanglement between the photon wavefunction and the motion wavefunction
+could affect the fidelity of the final spin-entanglement.\\
+
+For this discussion, we will ignore the effect of imperfect timing mismatch between
+the two excitations since it's already covered above. We can then simply assume
+that the two excitations happened at exactly the same time and label the two photon
+states $|A\rangle$ and $|B\rangle$ instead. (This two photon states can be
+early vs late for time-bin qubit, horizontal/vertical for polarization qubit
+or different frequencies for frequency qubit.)\\
+
+For an initial state of
+\eqar{
+  \begin{split}
+    \rho_0=&\frac{\paren{|0\rangle+|1\rangle}\paren{\langle0|+\langle1|}}{2}\rho_{\mathrm{m}}
+  \end{split}
+}
+After excitation the state is
+\eqar{
+  \begin{split}
+    \rho_1=&\frac{\paren{|e_0\rangle+|e_1\rangle}\paren{\langle e_0|+\langle e_1|}}{2}\mathcal{D}(\ui\eta_{\mathrm{d}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
+  \end{split}
+}
+where $e_0$ and $e_1$ are the two excited states and,
+$\eta_{\mathrm{d}}$ is the Lamb-Dicke parameter for the drive (excitation) photon.\\
+
+Since the decay happen over a variable length of time,
+it's difficult to put a bound on when the decay ``finished''.
+Therefore, the post-decay wavefunction we'll use is the one that is
+back-time-propagated to the start of the decay using the free-evolution Hamiltonian.
+This is of course not physical, but it allows us to treat the time evolution
+after the excitation to be simply the free evolution.
+\eqar{
+  \begin{split}
+    \rho_2=&\Gamma^2\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
+    &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
+      \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_2}\\
+  \end{split}
+}
+where $\tau_1$ and $\tau_2$ are ``emission time'' for the photons.
+Substitude in the thermal motional density matrix.
+\eqar{
+  \begin{split}
+    \rho_2=&\frac{\Gamma^2}{\pi {\bar n}}\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
+    &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
+      \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_2}\\
+  \end{split}
+}
+\eqar{
+  \begin{split}
+    &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})|\alpha\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)}
+       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}
+       |\alpha+\ui\eta_{\mathrm{d}}\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)}
+       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})
+       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{d}})\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
+       \ue^{-\ui H\tau_1}
+       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{d}})+\ui\eta_{\mathrm{e}}\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
+       |\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_1}\rangle\\
+  \end{split}
+}
+\eqar{
+  \begin{split}
+    \rho_2=&\frac{\Gamma^2}{\pi {\bar n}}\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
+    &\int\ud^2\alpha
+      \exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
+      \exp\paren{-\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_2}(\alpha^*-\ui\eta_{\mathrm{d}}))}\\
+    &\ue^{-\abs{\alpha}^2/{\bar n}}|\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_1}\rangle
+      \langle\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_2}|\\
+  \end{split}
+}
+Note that unlike the previous case, the unwanted entanglement create is entirely
+between two degrees of freedoms outside the qubit space
+and does not affect the fidelity of an atom-photon entanglement fidelity.
+To see the effect of this, we need to look at the state of the two atoms combined.
+\eqar{
+  \begin{split}
+    \rho\prime_2=
+    &\frac{\Gamma^4}{\pi^2 {\bar n_{a}}{\bar n_{b}}}
+      \int_0^\infty\ud\tau_{a1}\ue^{-\Gamma\tau_{a1}/2}\int_0^\infty\ud\tau_{a2}\ue^{-\Gamma\tau_{a2}/2}\int_0^\infty\ud\tau_{b1}\ue^{-\Gamma\tau_{b1}/2}\int_0^\infty\ud\tau_{b2}\ue^{-\Gamma\tau_{b2}/2}\\
+    &\frac{\paren{|0_a,A_a(\tau_{a1})\rangle+|1_a,B_a(\tau_{a1})\rangle}\paren{\langle 0_a,A_a(\tau_{a2})|+\langle 1_a,B_a(\tau_{a2})|}}{2}\\
+    &\frac{\paren{|0_b,A_b(\tau_{b1})\rangle+|1_b,B_b(\tau_{b1})\rangle}\paren{\langle 0_b,A_b(\tau_{b2})|+\langle 1_b,B_b(\tau_{b2})|}}{2}\\
+    &\int\ud^2\alpha_a
+      \exp\paren{\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}
+      \exp\paren{-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}\\
+    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}|\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a1}}\rangle
+      \langle\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a2}}|\\
+    &\int\ud^2\alpha_b
+      \exp\paren{\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}
+      \exp\paren{-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}\\
+    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}|\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b1}}\rangle
+      \langle\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b2}}|\\
+  \end{split}
+}
+
+After the beam splitter we have
+\eqar{
+  A_a(\tau)\rightarrow\frac{1}{\sqrt2}\paren{A^1(\tau)+A^2(\tau)}\\
+  B_a(\tau)\rightarrow\frac{1}{\sqrt2}\paren{B^1(\tau)+B^2(\tau)}\\
+  A_b(\tau)\rightarrow\frac{1}{\sqrt2}\paren{A^1(\tau)-A^2(\tau)}\\
+  B_b(\tau)\rightarrow\frac{1}{\sqrt2}\paren{B^1(\tau)-B^2(\tau)}
+}
+where $A^1$, $B^1$, $A^2$, $B^2$ are the four potential detections
+at the output of the beam splitter.
+For simplicity, we'll only consider one detection possiblity $A^1(\tau_A)B^1(\tau_B)$.
+We now just need to compute the conditional density matrix when this event happens.
+The unnormalized density matrix,
+\eqar{
+  \begin{split}
+    \rho\prime_3=
+    &\int_0^\infty\ud\tau_{a1}\ue^{-\Gamma\tau_{a1}/2}\int_0^\infty\ud\tau_{a2}\ue^{-\Gamma\tau_{a2}/2}\int_0^\infty\ud\tau_{b1}\ue^{-\Gamma\tau_{b1}/2}\int_0^\infty\ud\tau_{b2}\ue^{-\Gamma\tau_{b2}/2}\\
+    &\paren{\delta(\tau_{a1}-\tau_A)|0_a\rangle+\delta(\tau_{a1}-\tau_B)|1_a\rangle}\paren{\langle 0_a|\delta(\tau_{a2}-\tau_A)+\langle 1_a|\delta(\tau_{a2}-\tau_B)}\\
+    &\paren{\delta(\tau_{b1}-\tau_A)|0_b\rangle+\delta(\tau_{b1}-\tau_B)|1_b\rangle}\paren{\langle 0_b|\delta(\tau_{b2}-\tau_A)+\langle 1_b|\delta(\tau_{b2}-\tau_B)}\\
+    &\int\ud^2\alpha_a
+      \exp\paren{\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}
+      \exp\paren{-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}\\
+    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}|\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a1}}\rangle
+      \langle\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a2}}|\\
+    &\int\ud^2\alpha_b
+      \exp\paren{\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}
+      \exp\paren{-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}\\
+    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}|\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b1}}\rangle
+      \langle\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b2}}|\\
+  \end{split}
+}
+
+
+
 \end{document}
