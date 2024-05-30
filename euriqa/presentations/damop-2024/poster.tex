@@ -140,9 +140,8 @@
         \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
         {
           \begin{tikzpicture}
-            \node at (0, 0) {\includegraphics[width=15cm]{imgs/logos/Duke}};
-
-            \node at (11.5, 0) {\includegraphics[width=4cm]{imgs/logos/ARL}};
+            \node at (0, 0) {\includegraphics[width=20cm]{imgs/logos/Duke}};
+            \node at (-4, -4) {\includegraphics[width=6.5cm]{imgs/logos/Sandia}};
           \end{tikzpicture}
         }% Left logo
       }\hfill
@@ -151,9 +150,14 @@
         \raisebox{\dimexpr-\height+0.5\baselineskip}[0pt][0pt]
         {
           \begin{tikzpicture}
-            \node at (0, 0) {\includegraphics[width=6.5cm]{imgs/logos/NIST}};
-            \node at (7.5, 0) {\includegraphics[width=6.5cm]{imgs/logos/Sandia}};
-            \node at (2.25, -5) {\includegraphics[width=8cm]{imgs/logos/ColdQuanta2}};
+            \node at (0, 0) {\includegraphics[width=16cm]{imgs/logos/QSA}};
+            \node at (11, 0) {\includegraphics[width=4cm]{imgs/logos/DoE}};
+            % DARPA
+            % IARPA
+            \node at (11, -4.3) {\includegraphics[width=4cm]{imgs/logos/ARL}};
+            \node at (-6, -4.3) {\includegraphics[width=4cm]{imgs/logos/NSF}};
+            \node at (0, -4.3) {\includegraphics[width=6cm]{imgs/logos/DARPA}};
+            \node at (6, -4) {\includegraphics[width=4.5cm]{imgs/logos/IARPA}};
           \end{tikzpicture}
         }% Right logo
       }%
@@ -390,7 +394,10 @@
                 and F$_{7/2}$ states
               \end{itemize}
               \column{17.5cm}
-              \includegraphics[width=17.5cm]{imgs/LabPicture}
+              \begin{tikzpicture}
+                \node at (0, 0) {\includegraphics[width=17.5cm]{imgs/LabPicture}};
+                \node at (-6.7, 6) {\includegraphics[width=4cm]{imgs/logos/L3Harris}};
+              \end{tikzpicture}
             \end{columns}
           \end{subblock}
           \vspace{2cm}
