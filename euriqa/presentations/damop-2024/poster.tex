@@ -75,6 +75,58 @@
 }
 \usepgfmodule{oo}
 
+\pgfdeclareradialshading{glow2}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(2mm)=(white);
+  color(8mm)=(black);
+  color(10mm)=(black)
+}
+\pgfdeclareradialshading{glow}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(5mm)=(white);
+  color(9mm)=(black);
+  color(10mm)=(black)
+}
+
+\begin{tikzfadingfrompicture}[name=glow fading]
+  \shade [shading=glow] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\begin{tikzfadingfrompicture}[name=glow2 fading]
+  \shade [shading=glow2] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\definecolor{atomorange}{rgb}{1.0,0.483,0.0}
+\definecolor{pyplotc0}{rgb}{0.122,0.467,0.706}
+\definecolor{pyplotc1}{rgb}{1.000,0.498,0.055}
+\definecolor{pyplotc2}{rgb}{0.173,0.627,0.173}
+\definecolor{pyplotc3}{rgb}{0.839,0.153,0.157}
+\definecolor{pyplotc4}{rgb}{0.580,0.404,0.741}
+\definecolor{pyplotc5}{rgb}{0.549,0.337,0.294}
+\definecolor{pyplotc6}{rgb}{0.890,0.467,0.761}
+\definecolor{pyplotc7}{rgb}{0.498,0.498,0.498}
+\definecolor{pyplotc8}{rgb}{0.737,0.741,0.133}
+\definecolor{pyplotc9}{rgb}{0.090,0.745,0.812}
+
+\pgfdeclarelayer{tweezer}
+\pgfsetlayers{tweezer,main}
+\pgfooclass{tweezer}{
+  \method tweezer() {
+  }
+  \method drawAtom(#1,#2,#3,#4) {
+    \fill [#4,path fading=glow2 fading] (#1,#2) circle (#3);
+  }
+  \method drawDownAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc0);
+  }
+  \method drawUpAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc1);
+  }
+}
+\pgfoonew \mytweezer=new tweezer()
+
+
+
 % --------------------------------------------------------------------------------
 %	TITLE SECTION
 % --------------------------------------------------------------------------------
@@ -369,37 +421,211 @@
       \begin{block}{Selective shelving with Raman dressing}
         \begin{center}
           \begin{tikzpicture}
-            \node[text width=20cm,align=center] at (10, 0) {
+            \node[text width=20cm,align=center] at (10, -1) {
               \begin{itemize}
               \item Repurpose individual qubit control beam
               \item Avoids individual shelving beam
               \item Fast Stark shift with phase control
               \end{itemize}
             };
-            \begin{scope}[shift={(-7, -1.7)}]
+            \begin{scope}[shift={(-9, -1)}]
               \begin{scope}[shift={(-5, 0)}]
                 \node[above] at (1.5, 2.5) {Data};
                 \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
                 \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
                 \draw[line width=2] (1, 1.5) -- (2, 1.5) node[right] {$|D\rangle$};
+
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(0, -2.5, 0.5)
               \end{scope}
               \draw[line width=5,opacity=0.45] (0, 3) -- (0, -3.5);
               \begin{scope}[shift={(3.5, 0)}]
                 \node[above] at (-0.5, 2.5) {Aux};
                 \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
                 \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(0, -2.5, 0.5)
               \end{scope}
+              \draw[rounded corners=0.5cm, line width=3, opacity=0.3]
+              (-8, -3.8) rectangle (5, 4);
             \end{scope}
-            \node[right] at (0, -20) {\includegraphics[width=16cm]{imgs/data_20240524_spec_dressed.pdf}};
+
+            \draw[-{Stealth[length=6mm,width=3.5mm]},line width=3]
+            (-10.5, -4.8) -- (-10.5, -5.65) -| (-12.5, -6.5);
+
+            \fill[color=pyplotc0] (-6.8, -9.5) rectangle (4.8, -7)
+            node[white,pos=.5] {$R_{435}\left(\pi\right)$ (Shelving)};
+            \fill[color=pyplotc2] (11, -9.5) rectangle (16, -7)
+            node[white,pos=.5] {$R_{x}\left(\pi\right)$};
+            \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, -9.5) node[left] {Data} -- (20, -9.5);
+
+            \fill[color=pyplotc2] (-12, -13) rectangle (-8, -10.5)
+            node[white,pos=.5] {$R_x\left(\dfrac{\pi}{2}\right)$};
+            \fill[color=pyplotc4] (-7, -13) rectangle (5, -10.5)
+            node[white,pos=.5] {$R_y\left(\theta\right)$ (Raman dressing)};
+            \fill[color=pyplotc2] (6, -13) rectangle (10, -10.5)
+            node[white,pos=.5] {$R_{-x}\left(\dfrac{\pi}{2}\right)$};
+            \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, -13) node[left] {Aux} -- (20, -13);
+
+            \draw[loosely dashed, line width=4.5, opacity=0.5] (-12.5, -14) -- (-12.5, -6.5);
+            \draw[loosely dashed, line width=4.5, opacity=0.5] (-6.5, -14) -- (-6.5, -6.5);
+            \draw[loosely dashed, line width=4.5, opacity=0.5] (10.5, -14) -- (10.5, -6.5);
+            \draw[loosely dashed, line width=4.5, opacity=0.5] (15.5, -14) -- (15.5, -6.5);
+
+            \begin{scope}[shift={(-9, -19.5)}]
+              \begin{scope}[shift={(-5, 0)}]
+                \node[above] at (1.5, 2.5) {Data};
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \draw[line width=2] (1, 1.5) -- (2, 1.5) node[right] {$|D\rangle$};
+
+                \draw[pyplotc0,-{Stealth[length=7mm,width=4mm]},line width=3] (0, -2.5) -- (1.5, 1.5);
+
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(1.5, 1.5, 0.5)
+              \end{scope}
+              \draw[line width=5,opacity=0.45] (0, 3) -- (0, -3.5);
+              \begin{scope}[shift={(3.5, 0)}]
+                \node[above] at (-0.5, 2.5) {Aux};
+                \draw[dashed,line width=2] (-0.7, 0) -- (0.7, 0);
+                \draw[dashed,line width=2] (-0.7, -2.5) -- (0.7, -2.5);
+                \draw[line width=2] (-0.5, -1.7) node[left] {$|\!+\!i\rangle$} -- (0.5, -1.7);
+                \draw[line width=2] (-0.5, -3.3) node[left] {$|\!-\!i\rangle$} -- (0.5, -3.3);
+                \mytweezer.drawUpAtom(0, -1.7, 0.5)
+                \mytweezer.drawDownAtom(0, -3.3, 0.5)
+              \end{scope}
+              \draw[rounded corners=0.5cm, line width=3, opacity=0.3]
+              (-8, -4.2) rectangle (5, 4);
+            \end{scope}
+
+            \draw[-{Stealth[length=6mm,width=3.5mm]},line width=3]
+            (-10.5, -15.5) -- (-10.5, -14.75) -| (-6.5, -14);
+
+            \begin{scope}[shift={(7, -19.5)}]
+              \begin{scope}[shift={(-5, 0)}]
+                \node[above] at (1.5, 2.5) {Data};
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \draw[line width=2] (1, 1.5) -- (2, 1.5) node[right] {$|D\rangle$};
+
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(1.5, 1.5, 0.5)
+              \end{scope}
+              \draw[line width=5,opacity=0.45] (0, 3) -- (0, -3.5);
+              \begin{scope}[shift={(3.5, 0)}]
+                \node[above] at (-0.5, 2.5) {Aux};
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(0, -2.5, 0.5)
+              \end{scope}
+              \draw[rounded corners=0.5cm, line width=3, opacity=0.3]
+              (-8, -3.8) rectangle (5, 4);
+            \end{scope}
+
+            \draw[-{Stealth[length=6mm,width=3.5mm]},line width=3]
+            (5.5, -15.5) -- (5.5, -14.75) -| (10.5, -14);
+
+            \begin{scope}[shift={(12, -30)}]
+              \begin{scope}[shift={(-5, 0)}]
+                \node[above] at (1.5, 2.5) {Data};
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \draw[line width=2] (1, 1.5) -- (2, 1.5) node[right] {$|D\rangle$};
+
+                \draw[pyplotc2,-{Stealth[length=7mm,width=4mm]},line width=3]
+                (0, 0) -- (0, -2.5);
+
+                \mytweezer.drawUpAtom(0, -2.5, 0.5)
+                \mytweezer.drawDownAtom(1.5, 1.5, 0.5)
+              \end{scope}
+              \draw[line width=5,opacity=0.45] (0, 3) -- (0, -3.5);
+              \begin{scope}[shift={(3.5, 0)}]
+                \node[above] at (-0.5, 2.5) {Aux};
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(0, -2.5, 0.5)
+              \end{scope}
+              \draw[rounded corners=0.5cm, line width=3, opacity=0.3]
+              (-8, -3.8) rectangle (5, 4);
+            \end{scope}
+
+            \draw[-{Stealth[length=6mm,width=3.5mm]},line width=3]
+            (10.5, -26) -- (10.5, -24.7) -| (15.5, -14);
+
+            \node[above] at (-7, -25.9) {435 nm spectrum};
+            \node[below] at (-8, -25) {\includegraphics[width=18cm]{imgs/data_20240524_spec_dressed.pdf}};
           \end{tikzpicture}
         \end{center}
       \end{block}
-      % \vspace{-1.8cm}
-      \begin{block}{Miniaturized 369/399/780/935nm Beam Path}
-      \end{block}
-      \vspace{-1cm}
-      \begin{block}{}
-        \vspace{-1cm}
+      \begin{block}{Mid circuit measurement with selective shelving}
+        \begin{center}
+          \begin{tikzpicture}
+            \fill[color=pyplotc0] (-12, -9.5) rectangle (-8, -7)
+            node[white,pos=.5,align=center]
+            {\small Selective\\\small Shelving};
+            \fill[color=pyplotc0] (0, -9.5) rectangle (4, -7)
+            node[white,pos=.5] {$R_{435}\left(\pi\right)$};
+            \fill[color=pyplotc0] (12, -9.5) rectangle (16, -7)
+            node[white,pos=.5,align=center]
+            {\small Selective\\\small Unshelving};
+            \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, -9.5) node[left] {Data} -- (20, -9.5);
+
+            \fill[color=pyplotc4] (-12, -13) rectangle (-8, -10.5)
+            node[white,pos=.5,align=center] {\small Raman\\\small Dressing};
+            \fill[color=cyan] (-7, -13) rectangle (11, -10.5)
+            node[white,pos=.5] {Detection};
+            \fill[color=pyplotc4] (12, -13) rectangle (16, -10.5)
+            node[white,pos=.5,align=center] {\small Raman\\\small Dressing};
+            \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, -13) node[left] {Aux} -- (20, -13);
+
+            \draw[loosely dashed, line width=4.5, opacity=0.5] (-3.5, -14) -- (-3.5, -6.5);
+
+            \node[text width=16cm,align=center] at (11, -21) {
+              \begin{itemize}
+              \item Detect auxiliary qubit without affecting shelved data qubit
+              \item Use spin-echo on $435$~nm to improve coherence.
+              \item Unshelve after detection to measure coherence/
+                recover circuit operation.
+              \end{itemize}
+            };
+
+            \begin{scope}[shift={(-9, -25)}]
+              \begin{scope}[shift={(-5, 0)}]
+                \node[above] at (1.5, 6.5) {Data};
+
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+                \draw[line width=2] (1, 1.5) -- (2, 1.5) node[right] {$|D\rangle$};
+
+                \mytweezer.drawUpAtom(0, -2.5, 0.5)
+                \mytweezer.drawDownAtom(1.5, 1.5, 0.5)
+              \end{scope}
+              \draw[line width=5,opacity=0.45] (0, 6) -- (0, -3.5);
+              \begin{scope}[shift={(3.5, 0)}]
+                \node[above] at (-0.5, 6.5) {Aux};
+                \draw[line width=2] (-0.5, 5.5) node[left] {$|P\rangle$} -- (0.5, 5.5);
+
+                \draw[line width=2] (-0.5, 0) node[left] {$|1\rangle$} -- (0.5, 0);
+                \draw[line width=2] (-0.5, -2.5) node[left] {$|0\rangle$} -- (0.5, -2.5);
+
+                \draw[cyan,-{Stealth[length=7mm,width=4mm]},line width=3] (-0.32, 0) -- (-0.32, 5.5);
+                \draw[cyan,-{Stealth[length=7mm,width=4mm]},line width=3,
+                decorate, decoration={pre length=0cm,
+                  post length=4mm, snake, amplitude=1mm,
+                  segment length=4mm}] (0.32, 5.5) -- (0.32, 0);
+
+                \mytweezer.drawUpAtom(0, 0, 0.5)
+                \mytweezer.drawDownAtom(0, -2.5, 0.5)
+              \end{scope}
+              \draw[rounded corners=0.5cm, line width=3, opacity=0.3] (-8, -4.2) rectangle (5, 8);
+            \end{scope}
+
+            \draw[-{Stealth[length=6mm,width=3.5mm]},line width=3]
+            (-10.5, -17) -- (-10.5, -15.5) -| (-3.5, -14);
+          \end{tikzpicture}
+        \end{center}
       \end{block}
     \end{column} % End of the second column
 
@@ -410,6 +636,10 @@
     \end{column} % Empty spacer column
 
     \begin{column}{\colthreewid} % The third column
+      \begin{block}{Preliminary results}
+      \end{block}
+      \begin{block}{Future works}
+      \end{block}
     \end{column} % End of the third column
   \end{columns} % End of all the columns in the poster
 \end{frame} % End of the enclosing frame
