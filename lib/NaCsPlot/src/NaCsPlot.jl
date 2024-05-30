@@ -48,7 +48,7 @@ function plot_data(data, columns, scale=1; yoffset=0, xscale=1, kws...)
     params = params[perm] .* xscale
     for col in columns
         errorbar(params, ratios[perm, col] .* scale .+ yoffset,
-                 uncs[perm, col] .* scale; kws...)
+                 uncs[perm, col] .* abs(scale); kws...)
     end
 end
 
