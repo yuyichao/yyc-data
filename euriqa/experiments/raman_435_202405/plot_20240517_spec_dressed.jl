@@ -46,16 +46,22 @@ const fit_center = fit_loading(gen_model(10e-6), data_center,
 @show fit_left.uncs
 @show fit_center.uncs
 
+const fcenter = fit_center.param[3]
+
+const data_left_shift = NaCsData.map_params((i, v)->v - fcenter, data_left)
+const data_right_shift = NaCsData.map_params((i, v)->v - fcenter, data_right)
+const data_center_shift = NaCsData.map_params((i, v)->v - fcenter, data_center)
+
 figure()
-NaCsPlot.plot_loading_data(data_left, -1, yoffset=1, xscale=1e-3, fmt="C0o",
+NaCsPlot.plot_loading_data(data_left_shift, -1, yoffset=1, xscale=1e-3, fmt="C0o",
                            label="Dress \$+y\$")
-plot(fit_left.plotx ./ 1000, 1 .- fit_left.ploty, color="C0")
-NaCsPlot.plot_loading_data(data_center, -1, yoffset=1, xscale=1e-3, fmt="C1o",
+plot((fit_left.plotx .- fcenter) ./ 1000, 1 .- fit_left.ploty, color="C0")
+NaCsPlot.plot_loading_data(data_center_shift, -1, yoffset=1, xscale=1e-3, fmt="C1o",
                            label="No dressing")
-plot(fit_center.plotx ./ 1000, 1 .- fit_center.ploty, color="C1")
-NaCsPlot.plot_loading_data(data_right, -1, yoffset=1, xscale=1e-3, fmt="C2o",
+plot((fit_center.plotx .- fcenter) ./ 1000, 1 .- fit_center.ploty, color="C1")
+NaCsPlot.plot_loading_data(data_right_shift, -1, yoffset=1, xscale=1e-3, fmt="C2o",
                            label="Dress \$-y\$")
-plot(fit_right.plotx ./ 1000, 1 .- fit_right.ploty, color="C2")
+plot((fit_right.plotx .- fcenter) ./ 1000, 1 .- fit_right.ploty, color="C2")
 grid()
 ylim([0, 1.06])
 xlim([-350, 350])
