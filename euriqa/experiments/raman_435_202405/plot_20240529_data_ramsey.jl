@@ -185,10 +185,13 @@ const fit_hi_aux = fit_data(model_exp, hi_aux_t, hi_aux_v,
 @show fit_hi_aux.uncs
 
 figure()
-NaCsPlot.plot_loading_data(data_lo130, xscale=360, fmt="C0o")
+NaCsPlot.plot_loading_data(data_lo130, xscale=360, fmt="C0o",
+         label="\$|0\\rangle_{\\mathrm{aux}}\$")
 plot(fit_lo130.plotx .* 360, fit_lo130.ploty, color="C0")
-NaCsPlot.plot_loading_data(data_hi130, xscale=360, fmt="C1o")
+NaCsPlot.plot_loading_data(data_hi130, xscale=360, fmt="C1o",
+         label="\$|1\\rangle_{\\mathrm{aux}}\$")
 plot(fit_hi130.plotx .* 360, fit_hi130.ploty, color="C1")
+legend(fontsize=15, loc="upper center")
 grid()
 ylim([0, 1])
 xlim([0, 360])
