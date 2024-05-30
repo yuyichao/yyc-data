@@ -637,6 +637,55 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Preliminary results}
+        \vspace{0.5cm}
+        \begin{center}
+          \begin{subblock}{Mid circuit measurement}
+            \vspace{0.5cm}
+            \begin{tikzpicture}
+              \node at (-8, 7.1) {Auxiliary qubit detection fidelity};
+              \node[left] at (0, 0) {\includegraphics[width=18cm]{imgs/data_20240524_spec_dressed.pdf}};
+              \node[right,text width=18cm,align=center] at (0, 1) {
+                \begin{itemize}
+                \item Detection time $130\ \mathrm{\mu m}$
+                \item Detection fidelity \textcolor{red}{100\%}
+                \item Limited by background and normal SPAM fidelity
+                \end{itemize}
+              };
+            \end{tikzpicture}
+          \end{subblock}
+          \begin{subblock}{Data qubit coherence}
+            \vspace{1cm}
+            \begin{tikzpicture}
+              \fill[color=pyplotc2] (-12, 0.5) rectangle (-8, 3)
+              node[white,pos=.5,align=center]
+              {$R_{x}\left(\dfrac{\pi}{2}\right)$};
+              \fill[color=pyplotc0] (-7, 0.5) rectangle (11, 3)
+              node[white,pos=.5] {Shelved};
+              \fill[color=pyplotc2] (12, 0.5) rectangle (16, 3)
+              node[white,pos=.5,align=center]
+              {$R_{\phi}\left(\dfrac{\pi}{2}\right)$};
+              \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, 0.5) node[left] {Data} -- (19, 0.5);
+
+              \fill[color=pyplotc2] (-12, -3) rectangle (-8, -0.5)
+              node[white,pos=.5,align=center] {$R_{x}\left(\theta\right)$};
+              \fill[color=cyan] (-7, -3) rectangle (11, -0.5)
+              node[white,pos=.5] {Partion detection};
+              \draw[-{Stealth[length=15mm,width=7mm]},line width=5] (-14, -3) node[left] {Aux} -- (19, -3);
+              \node at (-7.3, -5.4) {Data qubit Ramsey};
+              \node[left] at (0.7, -12.5) {\includegraphics[width=18cm]{imgs/data_20240524_spec_dressed.pdf}};
+              \node at (10.3, -5.4) {Data qubit fidelity};
+              \node[right] at (0.3, -12.5) {\includegraphics[width=18cm]{imgs/data_20240524_spec_dressed.pdf}};
+              \node[below,text width=35cm,align=center] at (0, -20) {
+                \begin{itemize}
+                \item Data qubit coherence \textcolor{red}{100\%}
+                \item Limited by single qubit control
+                \item Optical qubit coherence time
+                \item Effect of re-scattering
+                \end{itemize}
+              };
+            \end{tikzpicture}
+          \end{subblock}
+        \end{center}
       \end{block}
       \begin{block}{Future works}
         \begin{itemize}
@@ -644,7 +693,8 @@
         \item Shelve to longer lived F$_{7/2}$ state for better protection
           {\scriptsize (Nature Physics vol. 18, 1058-1061 (2022))}
         \end{itemize}
-        \begin{tikzpicture}[scale=1]
+        \vspace{1cm}
+        \begin{tikzpicture}
           % S1/2
           % F=1
           \draw[line width=2] (-1.8, 2) -- (-0.8, 2);
