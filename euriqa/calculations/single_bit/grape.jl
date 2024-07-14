@@ -2,6 +2,9 @@
 
 using StaticArrays
 
+@inline _op_norm(op) = sum(abs2(v) for v in op)
+@inline _op_grad(op, grad) = 2 * sum(real(v * conj(g)) for (v, g) in zip(op, grad))
+
 abstract type AbstractOP end
 
 function get_nparams end
@@ -99,17 +102,27 @@ mutable struct SingleBitOptimizer{NXY,OP,U,S,NParam}
     end
 end
 
+function get_operators(opt::SingleBitOptimizer{NXY}, params) where NXY
+    nparams = length(params)
+    return [begin
+                params_s = ntuple(i->(i % 2 == 0 && i <= NXY * 2 ? params[i] * s :
+                    params[i]), Val(nparams))
+                op, grads... = get_op_grads(opt.op, params_s)
+                op
+            end for (s, w) in opt.scales]
+end
+
 function _update_params!(opt::SingleBitOptimizer{NXY}, params) where NXY
     nparams = length(params)
     diff_total = 0.0
     diff_total_grad = ntuple(i->0.0, Val(nparams))
     for (s, w) in opt.scales
-        params_s = ntuple(i->(i % 2 == 0 && 2 * i <= NXY ? params[i] * s : params[i]),
+        params_s = ntuple(i->(i % 2 == 0 && i <= NXY * 2 ? params[i] * s : params[i]),
                           Val(nparams))
         op, grads... = get_op_grads(opt.op, params_s)
         diff_u = op .- opt.tgt
-        diff = sum(abs2.(diff_u))
-        diff_grad = ntuple(i->(2 * sum(real.(diff_u .* conj.(grads[i])))), Val(nparams))
+        diff = _op_norm(diff_u)
+        diff_grad = ntuple(i->_op_grad(diff_u, grads[i]), Val(nparams))
 
         diff_total += diff * w
         diff_total_grad = diff_total_grad .+ diff_grad .* w
@@ -127,11 +140,11 @@ function update_params!(opt::SingleBitOptimizer, params)
     return
 end
 
-function objective_function(opt::SingleBitOptimizer, params)
+function obj_function(opt::SingleBitOptimizer, params)
     update_params!(opt, params)
     return opt.diff
 end
-function gradient_function(g, opt::SingleBitOptimizer, params)
+function grad_function(g, opt::SingleBitOptimizer, params)
     update_params!(opt, params)
     g .= opt.diff_grad
     return
@@ -139,7 +152,7 @@ end
 
 using JuMP
 
-function prep_model(opt::SingleBitOptimizer{NXY,OP,U,S,NParam}, model::Model)
+function prep_model(opt::SingleBitOptimizer{NXY,OP,U,S,NParam}, model::Model) where {NXY,OP,U,S,NParam}
     @variable(model, params[i=1:NParam])
     for i in 1:NXY
         set_lower_bound(params[i * 2 - 1], -2π)
@@ -151,21 +164,20 @@ function prep_model(opt::SingleBitOptimizer{NXY,OP,U,S,NParam}, model::Model)
     set_upper_bound(params[NParam - 1], 2π)
     set_lower_bound(params[NParam], -2π)
     set_upper_bound(params[NParam], 2π)
-    register(model, :f, NParam, (params...)->objective_function(opt, params),
-             (g, params...)->gradient_function(g, opt, params), autodiff=false)
+    register(model, :f, NParam, (params...)->obj_function(opt, params),
+             (g, params...)->grad_function(g, opt, params), autodiff=false)
     @NLobjective(model, Min, f(params...))
     return params
 end
 
 function optimize!(opt::SingleBitOptimizer{NXY,OP,U,S,NParam},
-                   model::Model, init_params) where {NXY,OP,U,S,NParam}
-    params = prep_model(opt, model)
+                   model::Model, params, init_params) where {NXY,OP,U,S,NParam}
     for i in 1:length(init_params)
         set_start_value(params[i], init_params[i])
     end
     JuMP.optimize!(model)
     paramsv = value.(params)
-    objv = objective_function(opt, (paramsv...,))
+    objv = obj_function(opt, (paramsv...,))
     return paramsv, objv
 end
 
