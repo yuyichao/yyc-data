@@ -45,7 +45,7 @@ function get_op_grads(op::GlobalRotation, (θ,)::NTuple{1})
     U = SA[cosθ + im * sinθ 0
            0 cosθ + im * sinθ]
     gθ = SA[-sinθ + im * cosθ 0
-             0 -sinθ - im * cosθ]
+             0 -sinθ + im * cosθ]
     return U, gθ
 end
 
