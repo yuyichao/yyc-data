@@ -1,0 +1,58 @@
+%%% This is the template for abstract submission to NACTI 24
+%%% Adapted from NACTI 2017 template, with permission.
+%%% Based on the ECTI 16 template, with permission.
+%%% 
+%%% IMPORTANT INFORMATION
+%%% Please read the instructions for each field carefully.
+%%% 
+%%% Please adjust the length of your abstract to fit the frame
+%%% displayed when it is compiled to pdf.
+%%% 
+
+\documentclass{nacti2024}
+
+\begin{document}
+
+%% Enter name and e-mail address of the corresponding author here:
+\CorrespondingAuthorGivenName{Yichao}
+\CorrespondingAuthorSurname{Yu}
+\CorrespondingAuthorEmail{yichao.yu@duke.edu}
+
+%%% Select type of presentation: "poster", or "invited"
+%%% If you applied to give a hot topics talk, please use "poster" type nonetheless
+%%% NB invited talks have bigger boxes
+
+\PresentationType{poster}
+% \PresentationType{invited}
+
+%% Enter title of contribution:
+
+\Title{Mid-circuit partial measurement on Yb171 using the OMG architecture}
+
+%% Enter the list of the authors and their affiliations. Please underline the name of the corresponding author.
+
+\AuthorsList{\underline{Yichao Yu}$^1$, Keqin Yan$^1$, Debopriyo Biswas$^1$,
+  Vivian Zhang$^1$, Bahaa Harraz$^1$, Marko Cetina$^1$, Crystal Noel$^1$,
+  Alexander Kozhanov$^1$, Christopher R Monroe$^1$}
+
+\Affiliations{
+  $^1$Duke Quantum Center, Durham, NC 27701\\
+}
+
+\Abstract{
+  Error correction is an important ingredient for achieving scalable and fault-tolerant
+  quantum computing in the long term. Despite the recent experimental advances
+  in error correction, however, mid-circuit partial measurement and reset of the
+  physical qubit remains one of the main technical challenges on atomic platforms.
+
+  The existing approaches for achieving mid-circuit partial measurement and reset on
+  trapped ion platforms mainly relies on the shuttling of the ions to avoid
+  destroying the quantum information during the dissipative process, which are slow
+  and could take up a significant portional of the runtime and causes the ion to heat up
+  during shuttling. Here we present our recent progress on the implementation
+  of mid-circuit measurement methods based on the optical-metastable-ground (OMG)
+  architecture using the metastable states in Yb-171 ions.
+}
+
+\createabstract
+\end{document}
