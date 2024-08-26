@@ -16,8 +16,6 @@
 \usepackage{units}
 \usepackage{textcomp}
 \usepackage[utf8x]{inputenc}
-% \usepackage{feyn}
-\usepackage{feynmp}
 \usepackage{xkeyval}
 \usepackage{xargs}
 \usepackage{verbatim}
@@ -340,97 +338,28 @@ Arbitrary single qubit rotation,
 \eqar{
   U=&a_0 + x_0 \sigma_x + y_0 \sigma_y + z_0 \sigma_z
 }
-$xy$ rotation followed by $z$ rotation
+$xy$ rotation followed by $z$ rotation with global phase
 \eqar{
-  U=&U_{xy} U_z\\
-  =&\paren{a_1 + x_1 \sigma_x + y_1 \sigma_y}\paren{\cos\theta + \ui\sin\theta\sigma_z}\\
-  =&a_1\cos\theta + \ui a_1\sin\theta \sigma_z + \cos\theta x_1 \sigma_x + \ui\sin\theta x_1 \sigma_x\sigma_z + \cos\theta y_1 \sigma_y + \ui\sin\theta y_1 \sigma_y\sigma_z\\
-  =&a_1\cos\theta + \paren{\cos\theta x_1 - \sin\theta y_1} \sigma_x + \paren{\cos\theta y_1 + \sin\theta x_1} \sigma_y + \ui a_1\sin\theta \sigma_z
+  U=&U_{xy} U_z\ue^{\ui\phi}\\\
+  =&\paren{a_1 + x_1 \sigma_x + y_1 \sigma_y}\paren{\cos\theta + \ui\sin\theta\sigma_z}\ue^{\ui\phi}\\
+  =&\paren{a_1\cos\theta + \ui a_1\sin\theta \sigma_z + \cos\theta x_1 \sigma_x + \ui\sin\theta x_1 \sigma_x\sigma_z + \cos\theta y_1 \sigma_y + \ui\sin\theta y_1 \sigma_y\sigma_z}\ue^{\ui\phi}\\
+  =&\paren{a_1\cos\theta + \paren{\cos\theta x_1 - \sin\theta y_1} \sigma_x + \paren{\cos\theta y_1 + \sin\theta x_1} \sigma_y + \ui a_1\sin\theta \sigma_z}\ue^{\ui\phi}
 }
+where $a_1$, $x_1$, $y_1$ are all real numbers.
 \eqar{
-  a_0=&a_1\cos\theta\\
-  x_0=&x_1\cos\theta - y_1\sin\theta\\
-  y_0=&y_1\cos\theta + x_1\sin\theta\\
-  z_0=&\ui a_1\sin\theta
+  a_0\ue^{-\ui\phi}=&a_1\cos\theta\\
+  x_0\ue^{-\ui\phi}=&x_1\cos\theta - y_1\sin\theta\\
+  y_0\ue^{-\ui\phi}=&y_1\cos\theta + x_1\sin\theta\\
+  z_0\ue^{-\ui\phi}=&\ui a_1\sin\theta
 }
+
 so we have
 \eqar{
-  a_1=&\sqrt{a_0^2-z_0^2}\\
-  \cos\theta=&\frac{a_0}{\sqrt{a_0^2-z_0^2}}\\
-  \sin\theta=&-\frac{\ui z_0}{\sqrt{a_0^2-z_0^2}}\\
-  x_1=&\frac{a_0x_0-\ui z_0y_0}{\sqrt{a_0^2-z_0^2}}\\
-  y_1=&\frac{a_0y_0+\ui z_0x_0}{\sqrt{a_0^2-z_0^2}}
+  a_1=&\sqrt{\abs{a_0}^2+\abs{z_0}^2}\\
+  \cos\theta=&\frac{\abs{a_0}}{\sqrt{\abs{a_0}^2+\abs{z_0}^2}}\\
+  \sin\theta=&\frac{\abs{z_0}}{\sqrt{\abs{a_0}^2+\abs{z_0}^2}}\\
+  x_1=&\frac{a_0^*x_0-\ui z_0y_0^*}{\sqrt{\abs{a_0}^2+\abs{z_0}^2}}\\
+  y_1=&\frac{a_0^*y_0+\ui z_0x_0^*}{\sqrt{\abs{a_0}^2+\abs{z_0}^2}}
 }
-
-For the special case of $a_1=0$ (i.e. $a_0^2=z_0^2$),
-we can prove that in this case we must have $a_0=z_0=0$ for $U$ to remain
-unitary~(Appendix~\ref{ap:prove-a0z0})
-\footnote{A non-unitary $U$ may have a similar decomposition
-  though the $z$ part may also not be unitary anymore.}.
-In this case, $U$ already contains no $\sigma_z$ term so we can simply
-return $U$ and $I$ as the decomposition.
-
-\section{Direct prove that $a_0=z_0=0$ if $a_0^2=z_0^2$}
-\label{ap:prove-a0z0}
-For $U$ to be unitary, we must have $UU^\dagger=1$
-\eqar{
-  UU^\dagger=&\paren{a_0 + x_0 \sigma_x + y_0 \sigma_y + z_0 \sigma_z}\paren{a_0^* + x_0^* \sigma_x + y_0^* \sigma_y + z_0^* \sigma_z}\\
-  =&a_0a_0^* + a_0x_0^* \sigma_x + a_0y_0^* \sigma_y + a_0z_0^* \sigma_z + a_0^*x_0 \sigma_x + x_0^*x_0 \sigma_x \sigma_x + y_0^*x_0 \sigma_x \sigma_y + z_0^*x_0 \sigma_x \sigma_z +\\
-  &a_0^*y_0 \sigma_y + x_0^* y_0 \sigma_y\sigma_x + y_0^* y_0 \sigma_y\sigma_y + z_0^* y_0 \sigma_y\sigma_z + a_0^*z_0 \sigma_z + x_0^* z_0 \sigma_z\sigma_x + y_0^* z_0 \sigma_z\sigma_y + z_0^* z_0 \sigma_z\sigma_z\\
-  =&\abs{a_0}^2 + \abs{x_0}^2 + \abs{y_0}^2 + \abs{z_0}^2\\
-  &+\paren{a_0 x_0^* + a_0^* x_0 + \ui z_0^* y_0 - \ui y_0^* z_0}\sigma_x\\
-  &+\paren{a_0 y_0^* + a_0^* y_0 + \ui x_0^* z_0 - \ui z_0^* x_0}\sigma_y\\
-  &+\paren{a_0 z_0^* + a_0^* z_0 + \ui y_0^* x_0 - \ui x_0^* y_0}\sigma_z\\
-  =&\abs{a_0}^2 + \abs{x_0}^2 + \abs{y_0}^2 + \abs{z_0}^2\\
-  &+2\paren{\mathrm{Re}\paren{a_0 x_0^* + \ui y_0 z_0^*}}\sigma_x\\
-  &+2\paren{\mathrm{Re}\paren{a_0 y_0^* + \ui z_0 x_0^*}}\sigma_y\\
-  &+2\paren{\mathrm{Re}\paren{a_0 z_0^* + \ui x_0 y_0^*}}\sigma_z
-}
-So we have
-\eqar{
-  \abs{a_0}^2 + \abs{x_0}^2 + \abs{y_0}^2 + \abs{z_0}^2=&1\\
-  \mathrm{Re}\paren{a_0 x_0^* + \ui y_0 z_0^*}=&0\\
-  \mathrm{Re}\paren{a_0 y_0^* + \ui z_0 x_0^*}=&0\\
-  \mathrm{Re}\paren{a_0 z_0^* + \ui x_0 y_0^*}=&0
-}
-For $a_0^2=z_0^2$, we have either $a_0=z_0$ or $a_0=-z_0$.
-If $a_0=z_0$, the second and the third constaints turns into,
-\eqar{
-  \mathrm{Re}\paren{a_0 x_0^* - \ui a_0 y_0^*}=&0\\
-  \mathrm{Im}\paren{a_0 x_0^* - \ui a_0 y_0^*}=&0
-}
-or
-\eqar{
-  a_0 \paren{x_0^* - \ui y_0^*}=&0
-}
-the last constraint turns into,
-\eqar{
-  \mathrm{Re}\paren{\abs{a_0}^2 + \ui x_0 y_0^*}=&0
-}
-If $a_0\neq0$, we have $x_0^* = \ui y_0^*$,
-\eqar{
-  \mathrm{Re}\paren{\abs{a_0}^2 + \abs{x_0}^2}=&0
-}
-which requires $a_0=0$ and $x_0=0$ contradicting with $a_0\neq0$.
-
-If $a_0=z_0$, the second and the third constaints turns into,
-\eqar{
-  \mathrm{Re}\paren{a_0 x_0^* + \ui a_0 y_0^*}=&0\\
-  \mathrm{Im}\paren{a_0 x_0^* + \ui a_0 y_0^*}=&0
-}
-or
-\eqar{
-  a_0 \paren{x_0^* + \ui y_0^*}=&0
-}
-the last constraint turns into,
-\eqar{
-  \mathrm{Re}\paren{-\abs{a_0}^2 + \ui x_0 y_0^*}=&0
-}
-If $a_0\neq0$, we have $x_0^* = -\ui y_0^*$,
-\eqar{
-  \mathrm{Re}\paren{-\abs{a_0}^2 - \abs{x_0}^2}=&0
-}
-which requires $a_0=0$ and $x_0=0$ contradicting with $a_0\neq0$.
-So in both cases we must have $a_0=z_0=0$.
 
 \end{document}
