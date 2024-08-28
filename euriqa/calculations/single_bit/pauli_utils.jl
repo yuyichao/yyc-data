@@ -35,7 +35,7 @@ function compose_xy_rot(ψ, θ)
               sinψ_2 * (im * cosθ - sinθ) cosψ_2]
 end
 
-function decompose_xy_rot((a0, x0, y0, z0)::NTuple{4})
+function decompose_xy_rot((a0, x0, y0, z0)::NTuple{4,Any})
     abs_a0 = abs(a0)
     g = abs_a0 / a0
     x0 = x0 * g
@@ -55,26 +55,35 @@ function compose_z_rot(ψ)
     return compose_sigmas(cosψ_2, 0, 0, im * sinψ_2)
 end
 
-function decompose_z_rot((a0, x0, y0, z0)::NTuple{4})
+function decompose_z_rot((a0, x0, y0, z0)::NTuple{4,Any})
     return atan(imag(z0 / a0)) * 2
 end
 @inline decompose_z_rot(M::AbstractMatrix) = decompose_z_rot(decompose_sigmas(M))
 
-function decompose_xy_z((a0, x0, y0, z0)::NTuple{4})
-    a1 = sqrt(a0^2 - z0^2)
+function decompose_xy_z((a0, x0, y0, z0)::NTuple{4,Any})
+    a1 = sqrt(abs2(a0) + abs2(z0))
     one_v = one(typeof(a1))
     zero_v = zero(typeof(a1))
 
     if a1 == 0
         # This has to be the case if the decomposition is possible.
-        return ((a0, x0, y0, z0),
+        return ((zero_v, x0, y0, zero_v),
                 (one_v, zero_v, zero_v, zero_v))
     end
-    cosθ = a0 / a1
-    isinθ = z0 / a1
-    x1 = (a0 * x0 - im * z0 * y0) / a1
-    y1 = (a0 * y0 + im * z0 * x0) / a1
+    cosθ = abs(a0) / a1
+    isinθ = im * abs(z0) / a1
+    x1 = (a0' * x0 - im * z0 * y0') / a1
+    y1 = (a0' * y0 + im * z0 * x0') / a1
 
     return (a1, x1, y1, zero_v), (cosθ, zero_v, zero_v, isinθ)
 end
 @inline decompose_xy_z(M::AbstractMatrix) = decompose_xy_z(decompose_sigmas(M))
+
+@inline function multiply_pauli((a0, x0, y0, z0)::NTuple{4,Any},
+                                (a1, x1, y1, z1)::NTuple{4,Any})
+    a = a0 * a1 + x0 * x1 + y0 * y1 + z0 * z1
+    x = a0 * x1 + x0 * a1 + im * y0 * z1 - im * z0 * y1
+    y = a0 * y1 + y0 * a1 + im * z0 * x1 - im * x0 * z1
+    z = a0 * z1 + z0 * a1 + im * x0 * y1 - im * y0 * x1
+    return (a, x, y, z)
+end
