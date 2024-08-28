@@ -86,19 +86,19 @@ function opt_δs(opt_func, c2, δs)
 end
 
 const δs = range(0, π, 1001)
-const rs_π = opt_δs(opt_angle_π, π, δs)
-const rs_2π = opt_δs(opt_angle_2π, 2π, δs)
+const rs_π = opt_δs(opt_angle_π, Float64(π), δs)
+const rs_2π = opt_δs(opt_angle_2π, Float64(2π), δs)
 
 const prefix = joinpath(@__DIR__, "imgs", "three_pulses")
 
 figure()
-plot(rs_π[2], π .+ δs, "C0-", label="\$\\pi\$")
-plot(δs, π .+ δs, "C0--")
-plot(rs_2π[2], 2π .+ δs, "C1-", label="\$2\\pi\$")
-plot(δs, 2π .+ δs, "C1--")
+plot(rs_π[2] ./ 2π, 0.5 .+ δs ./ 2π, "C0-", label="\$\\pi\$")
+plot(δs ./ 2π, 0.5 .+ δs ./ 2π, "C0--")
+plot(rs_2π[2] ./ 2π, 1 .+ δs ./ 2π, "C1-", label="\$2\\pi\$")
+plot(δs ./ 2π, 1 .+ δs ./ 2π, "C1--")
 grid()
-xlabel("Desired rotation angle (rad)")
-ylabel("Total rotation angle (rad)")
+xlabel("Desired rotation angle (turns)")
+ylabel("Total rotation angle (turns)")
 legend(ncol=2)
 NaCsPlot.maybe_save(prefix)
 
