@@ -38,7 +38,7 @@ end
 
 function objective_function(α, Ω, δ, params...)
     x, y = multi_rotation_xy(α, params...)
-    return abs2(x) + abs2(abs(y) - target_y(α * Ω, δ))
+    return abs2(x) + abs2(imag(y) - target_y(α * Ω, δ))
 end
 
 function repack_param3(params::Vararg{Any,N}) where N
@@ -47,15 +47,8 @@ function repack_param3(params::Vararg{Any,N}) where N
     end
 end
 
-function opt_n(model, n, Ω, δ, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
-               minimize_angle=false, do_opt=true)
-    @variable(model, 0 <= X[1:n] <= 2π)
-    set_start_value.(X, Xinit)
-    @variable(model, -4π <= Z[1:n] <= 4π)
-    set_start_value.(Z, Zinit)
-    @variable(model, 0 <= ϕ[1:n] <= 3π)
-    set_start_value.(ϕ, ϕinit)
-
+function opt_n(model, ::Val{n}, Ω, δ, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
+               minimize_angle=false) where n
     function obj_func(p1...)
         params = repack_param3(p1...)
         return (objective_function(0.005, Ω, δ, params...) * 10 +
@@ -69,26 +62,36 @@ function opt_n(model, n, Ω, δ, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
             objective_function(1.05, Ω, δ, params...) * 1)
     end
 
-    P = tuple(X..., Z..., ϕ...)
+    Xv = Vector{Float64}(undef, n)
+    Zv = Vector{Float64}(undef, n)
+    ϕv = Vector{Float64}(undef, n)
+    if model !== nothing
+        empty!(model)
+        X = ntuple(_->@variable(model, lower_bound=0, upper_bound=2π), n)
+        set_start_value.(X, Xinit)
+        Z = ntuple(_->@variable(model, lower_bound=-4π, upper_bound=4π), n)
+        set_start_value.(Z, Zinit)
+        ϕ = ntuple(_->@variable(model, lower_bound=0, upper_bound=3π), n)
+        set_start_value.(ϕ, ϕinit)
+        P = tuple(X..., Z..., ϕ...)
 
-    # @operator(model, obj_f, 3 * n, obj_func)
-    # @objective(model, Min, obj_f(P...))
+        # @operator(model, obj_f, 3 * n, obj_func)
+        # @objective(model, Min, obj_f(P...))
 
-    register(model, :obj_f, 3 * n, obj_func, autodiff=true)
-    if minimize_angle
-        @NLobjective(model, Min, obj_f(P...) * (+(X...) + 1))
-    else
-        @NLobjective(model, Min, obj_f(P...))
-    end
-    if do_opt
+        register(model, :obj_f, 3 * n, obj_func, autodiff=true)
+        if minimize_angle
+            @NLobjective(model, Min, obj_f(P...) * (+(X...) + 1))
+        else
+            @NLobjective(model, Min, obj_f(P...))
+        end
         JuMP.optimize!(model)
-        Xv = value.(X)
-        Zv = value.(Z)
-        ϕv = value.(ϕ)
+        Xv .= value.(X)
+        Zv .= value.(Z)
+        ϕv .= value.(ϕ)
     else
-        Xv = start_value.(X)
-        Zv = start_value.(Z)
-        ϕv = start_value.(ϕ)
+        Xv .= Xinit
+        Zv .= Zinit
+        ϕv .= ϕinit
     end
     return Xv, Zv, ϕv, obj_func(Xv..., Zv..., ϕv...)
 end
@@ -112,13 +115,32 @@ end
 # [1.6380494351314936, -0.34877001533828, 0.0852699937152111, -1.327486449705353],
 # [4.820205472294657, 1.6974691988479882, 1.6303756977163717, 0.9212896440280046]
 
+# sum(Xv) = 8.473077303595474
+# objective = 1.6110420903155428e-6
+# [3.0511873609811815, 1.6863317648627598, 3.735558177751533]
+# [0.20177893195957936, 2.931257488639002, -1.1391876473354867]
+# [4.69721890717192, 1.9193738094854447e-6, 2.106245748078913]
+
+# sum(Xv) = 8.471741326340982
+# objective = 1.6111512584032458e-6
+# [3.0506445592948133, 1.6861668598475104, 3.734929907198659]
+# [0.20148282157496725, 2.93121133991079, -1.1390151354518243]
+# [0.7475697026895737, 0, 0.3352218813583657] .* 2pi
+
 function plot_xy(αs, Xs, Zs, ϕs)
     xs = similar(αs, Float64)
     ys = similar(αs, Float64)
     for (i, α) in enumerate(αs)
         x, y = multi_rotation_xy(α, zip(Xs, Zs, ϕs)...)
-        xs[i] = abs(x)
-        ys[i] = abs(y)
+        xs[i] = imag(x)
+        ys[i] = imag(y)
     end
     return xs, ys
 end
+
+
+# X[3.0506445592948133, 1.6861668598475104, 3.734929907198659]
+# Z[0.20148282157496725, 2.93121133991079, -1.1390151354518243]
+# axis: [0.7475697026895737, 0, 0.3352218813583657]
+# δ/Ω: [0.0660459839416828, 1.7383874690645242, -0.3049629213272517]
+# angle: [0.9710503224563323, 0.5367235812449408, 1.1888651136648412]
