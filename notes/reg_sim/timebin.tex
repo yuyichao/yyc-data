@@ -992,13 +992,76 @@ information from the motional state of the atoms.
 
 \section{Combined effect}
 
+In the rotation frame (interaction picture) of the harmonic oscillator.\\
+
 Initial state for the $i$-th atom ($i=a,b$),
 \eqar{
-  |\psi_i\rangle=&\frac{1}{\sqrt2}\paren{|0_i\rangle+|1_i\rangle}|\psi_{i\mathrm{m}}\rangle
+  |\psi_i\rangle_0=&\frac{1}{\sqrt2}\paren{|0_i\rangle+|1_i\rangle}|\psi_{i\mathrm{m}}\rangle
 }
-First state excitation at $t_{i1}$, decayed at $t_{i2}$
+First state excitation at $t_{i\mathrm{d}1}$, decayed at $t_{i\mathrm{e}1}$,
+the second excitation at $t_{i\mathrm{d}2}$, decayed at $t_{i\mathrm{e}2}$,
 \eqar{
-  |\psi_i\rangle=&\frac{1}{\sqrt2}\paren{|e0_i\rangle|\psi_{i\mathrm{m}}\rangle+|1_i\rangle|\psi_{i\mathrm{m}}\rangle}
+  |\psi_i(t_{i\mathrm{e}1},t_{i\mathrm{e}2})\rangle_1=&\frac{1}{\sqrt2}\paren{\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}1}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}1}})|0_i,A_i(t_{i\mathrm{e}1})\rangle+\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}2}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}2}})|1_i,B_i(t_{i\mathrm{e}2})\rangle}|\psi_{i\mathrm{m}}\rangle
+}
+
+The displacement operator for the $j$-th excitation ($j=1,2$),
+\eqar{
+  \begin{split}
+    &\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+    =&
+       \exp\paren{
+       \dfrac{-\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}
+       \ui\eta_{i\mathrm{d}}\ue^{-\ui\omega_it_{i\mathrm{d}j}}
+       +\ui\eta_{i\mathrm{e}}\ue^{-\ui\omega_it_{i\mathrm{e}j}}
+       \ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}}}{2}
+       }
+       \mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}+\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+    =&\exp\paren{
+       \ui\eta_{i\mathrm{e}}\eta_{i\mathrm{d}}
+       \sin\paren{\omega_it_{i\mathrm{e}j}-\omega_it_{i\mathrm{d}j}}
+       }
+       \mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}+\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+    \equiv&\exp\paren{\ui\varphi_{ij}}\mathcal{D}_i(\beta_{ij})
+  \end{split}
+}
+\eqar{
+  |\psi_i(t_{i\mathrm{e}1},t_{i\mathrm{e}2})\rangle_1=&\frac{1}{\sqrt2}\paren{\exp\paren{\ui\varphi_{i1}}\mathcal{D}_i(\beta_{i1})|0_i,A_i(t_{i\mathrm{e}1})\rangle+\exp\paren{\ui\varphi_{i2}}\mathcal{D}_i(\beta_{i2})|1_i,B_i(t_{i\mathrm{e}2})\rangle}|\psi_{i\mathrm{m}}\rangle
+}
+
+Full wavefunction is,
+\eqar{
+  |\psi\rangle_1=&\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{e}j} \ue^{-\Gamma t_{i\mathrm{e}j}/2}}|\psi_a(t_{a\mathrm{e}1},t_{a\mathrm{e}2}),\psi_b(t_{b\mathrm{e}1},t_{b\mathrm{e}2})\rangle
+}
+
+After the beam splitter we have
+\eqar{
+  A_a(\tau)\rightarrow\frac{1}{\sqrt2}\paren{A^1(\tau)+A^2(\tau)}\\
+  B_a(\tau)\rightarrow\frac{1}{\sqrt2}\paren{B^1(\tau)+B^2(\tau)}\\
+  A_b(\tau)\rightarrow\frac{1}{\sqrt2}\paren{A^1(\tau)-A^2(\tau)}\\
+  B_b(\tau)\rightarrow\frac{1}{\sqrt2}\paren{B^1(\tau)-B^2(\tau)}
+}
+
+Conditioned on $A^1(\tau_A)B^1(\tau_B)$,
+
+\eqar{
+  \begin{split}
+    &\langle A^1(\tau_A),B^1(\tau_B)|\psi\rangle_2\\
+    =&\frac{1}{2}\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{e}j} \ue^{-\Gamma t_{i\mathrm{e}j}/2}}\\
+    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)|0_a,1_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
+    &+\exp\paren{\ui\varphi_{a2}+\ui\varphi_{b1}}\mathcal{D}_a(\beta_{a2})\mathcal{D}_b(\beta_{b1})\delta(t_{b\mathrm{e}1}-\tau_A)\delta(t_{a\mathrm{e}2}-\tau_B)|1_a,0_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle
+  \end{split}
+}
+
+\eqar{
+  \begin{split}
+    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)\\
+    =&\exp\paren{
+       \ui\eta_{a\mathrm{e}}\eta_{a\mathrm{d}}
+       \sin\paren{\omega_a\tau_A-\omega_at_{a\mathrm{d}1}}
+       +\ui\eta_{b\mathrm{e}}\eta_{b\mathrm{d}}
+       \sin\paren{\omega_b\tau_B-\omega_bt_{b\mathrm{d}2}}}
+       \mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)
+  \end{split}
 }
 
 
