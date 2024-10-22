@@ -78,9 +78,11 @@ Base.:\(v::Unc, u::Unc) = Unc(u.a / v.a, sqrt((u.s / v.a)^2 + (v.s * u.a / v.a^2
 Base.:^(u::Unc, p) = Unc(u.a^p, p * u.a^(p - 1) * u.s)
 Base.:^(u::Unc, p::Integer) = Unc(u.a^p, p * u.a^(p - 1) * u.s)
 
+Base.abs(u::Unc) = Unc(abs(u.a), u.s, u.exp_type)
+
 function Base.sqrt(u::Unc)
     r = sqrt(u.a)
-    return Unc(r, (u.s / r) / 2)
+    return Unc(r, (u.s / r) / 2, u.exp_type)
 end
 
 function Base.show(io::IO, v::Unc)
