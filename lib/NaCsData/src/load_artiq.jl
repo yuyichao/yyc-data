@@ -29,7 +29,7 @@ function _conert_count_to_logical(params, pmt_counts, thresh)
         pmt_count = pmt_counts[i]
         nrep = size(pmt_count, 2)
         seq_params[seq_offset .+ (1:nrep)] .= params[i]
-        logicals[1, :, seq_offset .+ (1:nrep)] .= pmt_count[:, 1:nrep] .>= thresh
+        logicals[1, :, seq_offset .+ (1:nrep)] .= pmt_count[:, 1:nrep] .> thresh
         seq_offset += nrep
     end
     return seq_params, logicals
