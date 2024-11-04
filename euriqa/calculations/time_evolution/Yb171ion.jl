@@ -3,7 +3,7 @@
 using QuantumOptics
 using LinearAlgebra
 using CGcoefficient
-using SparseArrays: sparse
+using SparseArrays: sparse, SparseMatrixCSC
 
 function g_sum(J, J1, g1, J2, g2)
     return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
@@ -44,11 +44,20 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
     bh = SpinBasis(Fh)
     b = bl ⊕ bh
 
-    op_data = zeros(ComplexF64, nFl + nFh, nFl + nFh)
+    Idx = Int[]
+    Idx′ = Int[]
+    V = ComplexF64[]
+
+    function add_element!(i, j, v)
+        push!(Idx, i)
+        push!(Idx′, j)
+        push!(V, v)
+        return v
+    end
 
     # stretched states
-    op_data[nFl + 1, nFl + 1] = -J * gJ + hfh
-    op_data[nFl + nFh, nFl + nFh] = J * gJ + hfh
+    add_element!(nFl + 1, nFl + 1, -J * gJ + hfh)
+    add_element!(nFl + nFh, nFl + nFh, J * gJ + hfh)
 
     for mF in -Fl:Fl
         il = mF + Fl + 1
@@ -63,18 +72,51 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
         cg1h = fCG(dJ, dI, Fh * 2, dmj1, 1, mF * 2)
         cg2h = fCG(dJ, dI, Fh * 2, dmj2, -1, mF * 2)
 
-        op_data[il, il] = gJ * (mj1 * cg1l^2 + mj2 * cg2l^2) + hfl
-        op_data[il, ih] = op_data[ih, il] = gJ * (mj1 * cg1l * cg1h + mj2 * cg2l * cg2h)
-        op_data[ih, ih] = gJ * (mj1 * cg1h^2 + mj2 * cg2h^2) + hfh
+        add_element!(il, il, gJ * (mj1 * cg1l^2 + mj2 * cg2l^2) + hfl)
+        add_element!(ih, il,
+                     add_element!(il, ih, gJ * (mj1 * cg1l * cg1h + mj2 * cg2l * cg2h)))
+        add_element!(ih, ih, gJ * (mj1 * cg1h^2 + mj2 * cg2h^2) + hfh)
     end
 
-    return Operator(b, sparse(op_data))
+    return Operator(b, sparse(Idx, Idx′, V, nFl + nFh, nFl + nFh))
 end
 
 function dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
     return ((-1)^(dF′ + (dmF + dJ + dI) ÷ 2) *
         sqrt((dJ′ + 1) * (dF + 1) * (dF′ + 1)) *
-        f6j(dJ, dJ′, 2, dF′, dF, dI) * f3j(dF′, 2, dF, dmF′, 2 * q, dmF))
+        f6j(dJ, dJ′, 2, dF′, dF, dI) * f3j(dF′, 2, dF, dmF′, 2 * q, -dmF))
+end
+
+function add_J!(Js, basis, offsets, Γ, dJ, dJ′, dI, idxFl, idxFl′)
+    sqrtΓ = sqrt(Γ)
+    dFs = abs(dJ - dI):2:(dJ + dI)
+    dF′s = abs(dJ′ - dI):2:(dJ′ + dI)
+    I = Int[]
+    J = Int[]
+    V = Float64[]
+    dim = length(basis)
+    for q in -1:1
+        for (i, dF) in enumerate(dFs)
+            idx_offset = offsets[idxFl + i - 1]
+            for (i′, dF′) in enumerate(dF′s)
+                idx_offset′ = offsets[idxFl′ + i′ - 1]
+                for (di, dmF) in enumerate(-dF:2:dF), (di′, dmF′) in enumerate(-dF′:2:dF′)
+                    m = dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
+                    if m == 0
+                        continue
+                    end
+                    push!(I, di + idx_offset)
+                    push!(J, di′ + idx_offset′)
+                    push!(V, sqrtΓ * m)
+                end
+            end
+            push!(Js, Operator(basis, sparse(I, J, V, dim, dim)))
+            empty!(I)
+            empty!(J)
+            empty!(V)
+        end
+    end
+    return
 end
 
 function fill_J!(op, Γ, q, dJ, dJ′, dI, idxFl, idxFl′)
@@ -166,19 +208,16 @@ struct Yb171Sys{Basis,O}
         h0 = h_S1 ⊕ h_P1 ⊕ h_D3 ⊕ h_B
 
         basis = h0.basis_l
+        B = typeof(basis)
 
-        J = [fill_J!(zero(h0), ΓP_S, 1, 1, 1, 1, 1, 3),
-             fill_J!(zero(h0), ΓP_S, -1, 1, 1, 1, 1, 3),
-             fill_J!(zero(h0), ΓP_S, 0, 1, 1, 1, 1, 3),
-             fill_J!(zero(h0), ΓP_D, 1, 3, 1, 1, 5, 3),
-             fill_J!(zero(h0), ΓP_D, -1, 3, 1, 1, 5, 3),
-             fill_J!(zero(h0), ΓP_D, 0, 3, 1, 1, 5, 3),
-             fill_J!(zero(h0), ΓB_S, 1, 1, 1, 1, 1, 7),
-             fill_J!(zero(h0), ΓB_S, -1, 1, 1, 1, 1, 7),
-             fill_J!(zero(h0), ΓB_S, 0, 1, 1, 1, 1, 7),
-             fill_J!(zero(h0), ΓB_D, 1, 3, 1, 1, 5, 7),
-             fill_J!(zero(h0), ΓB_D, -1, 3, 1, 1, 5, 7),
-             fill_J!(zero(h0), ΓB_D, 0, 3, 1, 1, 5, 7)]
+        offsets = cumsum(length(b) for b in basis.bases)
+        insert!(offsets, 1, 0)
+
+        J = Operator{B,B,SparseMatrixCSC{Float64,Int}}[]
+        add_J!(J, basis, offsets, ΓP_S, 1, 1, 1, 1, 3)
+        add_J!(J, basis, offsets, ΓP_D, 3, 1, 1, 5, 3)
+        add_J!(J, basis, offsets, ΓB_S, 1, 1, 1, 1, 7)
+        add_J!(J, basis, offsets, ΓB_D, 3, 1, 1, 5, 7)
         Jdagger = dagger.(J)
 
         nh0 = h0
@@ -206,7 +245,7 @@ struct Yb171Sys{Basis,O}
         dB_Dσ⁻⁺, dB_Dσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 3, 1, 1, 5, 7)
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
-        return new{typeof(basis),typeof(h0)}(
+        return new{B,typeof(h0)}(
             basis, zero(h0), zero(h0), nh0, nh0_dagger, J, Jdagger,
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
