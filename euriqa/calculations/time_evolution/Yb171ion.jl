@@ -3,6 +3,7 @@
 using QuantumOptics
 using LinearAlgebra
 using CGcoefficient
+using SparseArrays: sparse
 
 function g_sum(J, J1, g1, J2, g2)
     return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
@@ -43,7 +44,7 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
     bh = SpinBasis(Fh)
     b = bl ⊕ bh
 
-    op_data = zeros(Float64, nFl + nFh, nFl + nFh)
+    op_data = zeros(ComplexF64, nFl + nFh, nFl + nFh)
 
     # stretched states
     op_data[nFl + 1, nFl + 1] = -J * gJ + hfh
@@ -67,7 +68,7 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
         op_data[ih, ih] = gJ * (mj1 * cg1h^2 + mj2 * cg2h^2) + hfh
     end
 
-    return Operator(b, op_data)
+    return Operator(b, sparse(op_data))
 end
 
 function dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
@@ -87,8 +88,9 @@ function fill_J!(op, Γ, q, dJ, dJ′, dI, idxFl, idxFl′)
             idxF′ = idxFl′ + i′ - 1
             basisF′ = SpinBasis(dF′//2)
             subop = Operator(basisF, basisF′,
-                             [sqrtΓ * dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
-                              for dmF in -dF:2:dF, dmF′ in -dF′:2:dF′])
+                             sparse([sqrtΓ * dipole_branch(q, dJ, dJ′, dI, dF, dF′,
+                                                            dmF, dmF′)
+                                     for dmF in -dF:2:dF, dmF′ in -dF′:2:dF′]))
             setblock!(op, subop, idxF, idxF′)
         end
     end
@@ -105,8 +107,8 @@ function fill_dipole!(op⁺, op⁻, q, dJ, dJ′, dI, idxFl, idxFl′)
             idxF′ = idxFl′ + i′ - 1
             basisF′ = SpinBasis(dF′//2)
             subop = Operator(basisF, basisF′,
-                             [dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
-                              for dmF in -dF:2:dF, dmF′ in -dF′:2:dF′])
+                             sparse([dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
+                                     for dmF in -dF:2:dF, dmF′ in -dF′:2:dF′]))
             setblock!(op⁻, subop, idxF, idxF′)
             setblock!(op⁺, subop', idxF′, idxF)
         end
@@ -121,7 +123,9 @@ end
 struct Yb171Sys{Basis,O}
     basis::Basis
     op::O
-    h0::O
+    op_dagger::O
+    nh0::O
+    nh0_dagger::O
 
     J::Vector{O}
     Jdagger::Vector{O}
@@ -177,6 +181,15 @@ struct Yb171Sys{Basis,O}
              fill_J!(zero(h0), ΓB_D, 0, 3, 1, 1, 5, 7)]
         Jdagger = dagger.(J)
 
+        nh0 = h0
+        nh0_dagger = copy(h0)
+
+        for (j, jd) in zip(J, Jdagger)
+            nhj = jd * j
+            nh0 .-= (0.5im) .* nhj
+            nh0_dagger .+= (0.5im) .* nhj
+        end
+
         dP_Sσ⁺⁺, dP_Sσ⁺⁻ = fill_dipole!(zero(h0), zero(h0), 1, 1, 1, 1, 1, 3)
         dP_Sσ⁻⁺, dP_Sσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 1, 1, 1, 1, 3)
         dP_Sπ⁺, dP_Sπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 1, 1, 1, 1, 3)
@@ -194,7 +207,7 @@ struct Yb171Sys{Basis,O}
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
         return new{typeof(basis),typeof(h0)}(
-            basis, zero(h0), h0, J, Jdagger,
+            basis, zero(h0), zero(h0), nh0, nh0_dagger, J, Jdagger,
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -230,15 +243,19 @@ function get_ρ(sys::Yb171Sys, name::Symbol, F, mF)
 end
 
 function evolve(update!, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
+    update!(sys, 0.0)
     cb = let update! = update!, sys = sys
         function (t, rho)
             update!(sys, t)
-            return (sys.op, sys.J, sys.Jdagger)
+            return (sys.op, sys.op_dagger, sys.J, sys.Jdagger)
         end
     end
-    return timeevolution.master_dynamic(range(0, tlen, npoints), ρ0, cb; kws...)
+    return timeevolution.master_nh_dynamic(range(0, tlen, npoints), ρ0, cb; kws...)
 end
 
 function no_drive!(sys::Yb171Sys, t)
-    sys.op .= sys.h0
+    if t == 0
+        sys.op .= sys.nh0
+        sys.op_dagger .= sys.nh0_dagger
+    end
 end
