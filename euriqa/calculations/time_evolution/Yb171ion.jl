@@ -3,7 +3,7 @@
 using QuantumOptics
 using LinearAlgebra
 using CGcoefficient
-using SparseArrays: sparse, spzeros, SparseMatrixCSC
+using SparseArrays
 
 function g_sum(J, J1, g1, J2, g2)
     return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
@@ -290,57 +290,182 @@ end
 struct Drives
     d370::Vector{SingleDrive}
     d935::Vector{SingleDrive}
-    buff::SparseMatrixCSC{ComplexF64,Int}
+
+    nh0::Vector{ComplexF64}
+    nh0_dagger::Vector{ComplexF64}
+
+    dP_Sσ⁺⁺::Vector{Float64}
+    dP_Sσ⁺⁻::Vector{Float64}
+    dP_Sσ⁻⁺::Vector{Float64}
+    dP_Sσ⁻⁻::Vector{Float64}
+    dP_Sπ⁺::Vector{Float64}
+    dP_Sπ⁻::Vector{Float64}
+
+    dB_Dσ⁺⁺::Vector{Float64}
+    dB_Dσ⁺⁻::Vector{Float64}
+    dB_Dσ⁻⁺::Vector{Float64}
+    dB_Dσ⁻⁻::Vector{Float64}
+    dB_Dπ⁺::Vector{Float64}
+    dB_Dπ⁻::Vector{Float64}
+
     Drives(d370=SingleDrive[], d935=SingleDrive[]) =
-        new(d370, d935, spzeros(ComplexF64, 20, 20))
+        new(d370, d935, ComplexF64[], ComplexF64[],
+            Float64[], Float64[], Float64[], Float64[], Float64[], Float64[],
+            Float64[], Float64[], Float64[], Float64[], Float64[], Float64[])
 end
 
-function copy_scaled!(tgt::SparseMatrixCSC, src::SparseMatrixCSC, scale)
-    resize!(tgt.colptr, length(src.colptr))
-    tgt.colptr .= src.colptr
-    resize!(tgt.rowval, length(src.rowval))
-    tgt.rowval .= src.rowval
-    resize!(tgt.nzval, length(src.nzval))
-    tgt.nzval .= src.nzval .* scale
-    return tgt
-end
-
-function add_drive!(sys::Yb171Sys, drives::Drives, dOP, scale)
-    if scale == 0
-        return
-    end
-    copy_scaled!(drives.buff, dOP.data, scale)
-    sys.op.data .+= drives.buff
-    sys.op_dagger.data .+= drives.buff
+function set_vector!(tgt, src)
+    resize!(tgt, length(src))
+    tgt .= src
     return
 end
 
+@inline function add_drive!(op_nzval, op_dagger_nzval, dop_nzval⁺, dop_nzval⁻, Ω)
+    if Ω == 0
+        return
+    end
+    @inbounds for i in 1:length(op_nzval)
+        v = dop_nzval⁺[i] * Ω + dop_nzval⁻[i] * Ω'
+        op_nzval[i] += v
+        op_dagger_nzval[i] += v
+    end
+end
+
 function init!(drives::Drives, sys::Yb171Sys)
+    idx = Ref(1)
+    idx_map = Dict{Pair{Int,Int},Int}()
+    function add_op(m)
+        for col in 1:size(m, 2)
+            for r in nzrange(m, col)
+                row = rowvals(m)[r]
+                if haskey(idx_map, row=>col)
+                    continue
+                end
+                idx_map[row=>col] = idx[]
+                idx[] += 1
+            end
+        end
+    end
+    add_op(sys.nh0.data)
+    add_op(sys.nh0_dagger.data)
+    has370 = (false, false, false)
+    for d370 in drives.d370
+        has370 = has370 .| (d370.pol .!= 0)
+    end
+    if has370[1]
+        add_op(sys.dP_Sσ⁻⁺.data)
+        add_op(sys.dP_Sσ⁻⁻.data)
+    end
+    if has370[2]
+        add_op(sys.dP_Sπ⁺.data)
+        add_op(sys.dP_Sπ⁻.data)
+    end
+    if has370[3]
+        add_op(sys.dP_Sσ⁺⁺.data)
+        add_op(sys.dP_Sσ⁺⁻.data)
+    end
+
+    has935 = (false, false, false)
+    for d935 in drives.d935
+        has935 = has935 .| (d935.pol .!= 0)
+    end
+    if has935[1]
+        add_op(sys.dB_Dσ⁻⁺.data)
+        add_op(sys.dB_Dσ⁻⁻.data)
+    end
+    if has935[2]
+        add_op(sys.dB_Dπ⁺.data)
+        add_op(sys.dB_Dπ⁻.data)
+    end
+    if has935[3]
+        add_op(sys.dB_Dσ⁺⁺.data)
+        add_op(sys.dB_Dσ⁺⁻.data)
+    end
+
+    I = Int[]
+    J = Int[]
+    V = Int[]
+    for ((i, j), v) in idx_map
+        push!(I, i)
+        push!(J, j)
+        push!(V, v)
+    end
+
+    dummy = sparse(I, J, V, 20, 20)
+    # Since V is an array of 1:n, sortperm inverse it so that V[order[i]] == i
+    order = sortperm(V)
+
+    set_vector!(sys.op.data.colptr, dummy.colptr)
+    set_vector!(sys.op.data.rowval, dummy.rowval)
+    resize!(sys.op.data.nzval, length(dummy.nzval))
+    set_vector!(sys.op_dagger.data.colptr, dummy.colptr)
+    set_vector!(sys.op_dagger.data.rowval, dummy.rowval)
+    resize!(sys.op_dagger.data.nzval, length(dummy.nzval))
+
+    function remap_values!(m, op, cond=true)
+        v = op.data
+        resize!(m, length(dummy.nzval))
+        if cond
+            for i in 1:length(dummy.nzval)
+                nzidx = order[dummy.nzval[i]]
+                m[i] = v[I[nzidx], J[nzidx]]
+            end
+        else
+            m .= 0
+        end
+        return
+    end
+
+    remap_values!(drives.nh0, sys.nh0)
+    remap_values!(drives.nh0_dagger, sys.nh0_dagger)
+
+    remap_values!(drives.dP_Sσ⁻⁺, sys.dP_Sσ⁻⁺, has370[1])
+    remap_values!(drives.dP_Sσ⁻⁻, sys.dP_Sσ⁻⁻, has370[1])
+    remap_values!(drives.dP_Sπ⁺, sys.dP_Sπ⁺, has370[2])
+    remap_values!(drives.dP_Sπ⁻, sys.dP_Sπ⁻, has370[2])
+    remap_values!(drives.dP_Sσ⁺⁺, sys.dP_Sσ⁺⁺, has370[3])
+    remap_values!(drives.dP_Sσ⁺⁻, sys.dP_Sσ⁺⁻, has370[3])
+
+    remap_values!(drives.dB_Dσ⁻⁺, sys.dB_Dσ⁻⁺, has935[1])
+    remap_values!(drives.dB_Dσ⁻⁻, sys.dB_Dσ⁻⁻, has935[1])
+    remap_values!(drives.dB_Dπ⁺, sys.dB_Dπ⁺, has935[2])
+    remap_values!(drives.dB_Dπ⁻, sys.dB_Dπ⁻, has935[2])
+    remap_values!(drives.dB_Dσ⁺⁺, sys.dB_Dσ⁺⁺, has935[3])
+    remap_values!(drives.dB_Dσ⁺⁻, sys.dB_Dσ⁺⁻, has935[3])
 end
 function update!(drives::Drives, sys::Yb171Sys, t)
-    sys.op .= sys.nh0
-    sys.op_dagger .= sys.nh0_dagger
+    op_nzval = sys.op.data.nzval
+    op_dagger_nzval = sys.op_dagger.data.nzval
+
+    op_nzval .= drives.nh0
+    op_dagger_nzval .= drives.nh0_dagger
 
     Ω370 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d370 in drives.d370
         Ω370 = Ω370 .+ d370.pol .* cis(d370.freq * t)
     end
-    add_drive!(sys, drives, sys.dP_Sσ⁻⁺, Ω370[1])
-    add_drive!(sys, drives, sys.dP_Sσ⁻⁻, Ω370[1]')
-    add_drive!(sys, drives, sys.dP_Sπ⁺, Ω370[1])
-    add_drive!(sys, drives, sys.dP_Sπ⁻, Ω370[1]')
-    add_drive!(sys, drives, sys.dP_Sσ⁺⁺, Ω370[3])
-    add_drive!(sys, drives, sys.dP_Sσ⁺⁻, Ω370[3]')
+    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sσ⁻⁺, drives.dP_Sσ⁻⁻, Ω370[1])
+    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sπ⁺, drives.dP_Sπ⁻, Ω370[2])
+    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sσ⁺⁺, drives.dP_Sσ⁺⁻, Ω370[3])
 
     Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d935 in drives.d935
         Ω935 = Ω935 .+ d935.pol .* cis(d935.freq * t)
     end
-    add_drive!(sys, drives, sys.dB_Dσ⁻⁺, Ω935[1])
-    add_drive!(sys, drives, sys.dB_Dσ⁻⁻, Ω935[1]')
-    add_drive!(sys, drives, sys.dB_Dπ⁺, Ω935[1])
-    add_drive!(sys, drives, sys.dB_Dπ⁻, Ω935[1]')
-    add_drive!(sys, drives, sys.dB_Dσ⁺⁺, Ω935[3])
-    add_drive!(sys, drives, sys.dB_Dσ⁺⁻, Ω935[3]')
+    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dσ⁻⁺, drives.dB_Dσ⁻⁻, Ω935[1])
+    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dπ⁺, drives.dB_Dπ⁻, Ω935[2])
+    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dσ⁺⁺, drives.dB_Dσ⁺⁻, Ω935[3])
     return
+end
+
+function print_prob(ρ)
+    get_p(i) = round(real(ρ[i, i]) * 100, digits=2)
+    println("S0:  0: $(get_p(1))")
+    println("S1: -1: $(get_p(2)),  0: $(get_p(3)),  1: $(get_p(4))")
+    println("P0:  0: $(get_p(5))")
+    println("P1: -1: $(get_p(6)),  0: $(get_p(7)),  1: $(get_p(8))")
+    println("D1: -1: $(get_p(9)),  0: $(get_p(10)),  1: $(get_p(11))")
+    println("D2: -2: $(get_p(12)), -1: $(get_p(13)),  0: $(get_p(14)),  1: $(get_p(15)),  2: $(get_p(16))")
+    println("B0:  0: $(get_p(17))")
+    println("B1: -1: $(get_p(18)),  0: $(get_p(19)),  1: $(get_p(20))")
 end
