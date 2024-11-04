@@ -46,7 +46,7 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
 
     Idx = Int[]
     Idx′ = Int[]
-    V = ComplexF64[]
+    V = Float64[]
 
     function add_element!(i, j, v)
         push!(Idx, i)
@@ -142,12 +142,12 @@ end
 # S1/2 (F=0, F=1), P1/2 (F=0, F=1), D3/2 (F=1, F=2), [3/2]1/2 (F=0, F=1)
 #         1,   2,          3,   4,          5,   6,              7,   8
 
-struct Yb171Sys{Basis,O}
+struct Yb171Sys{Basis,O,CO}
     basis::Basis
-    op::O
-    op_dagger::O
-    nh0::O
-    nh0_dagger::O
+    op::CO
+    op_dagger::CO
+    nh0::CO
+    nh0_dagger::CO
 
     J::Vector{O}
     Jdagger::Vector{O}
@@ -200,8 +200,8 @@ struct Yb171Sys{Basis,O}
         add_J!(J, basis, offsets, ΓB_D, 3, 1, 1, 5, 7)
         Jdagger = dagger.(J)
 
-        nh0 = h0
-        nh0_dagger = copy(h0)
+        nh0 = Operator(basis, complex(h0.data))
+        nh0_dagger = copy(nh0)
 
         for (j, jd) in zip(J, Jdagger)
             nhj = jd * j
@@ -225,8 +225,8 @@ struct Yb171Sys{Basis,O}
         dB_Dσ⁻⁺, dB_Dσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 3, 1, 1, 5, 7)
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
-        return new{B,typeof(h0)}(
-            basis, zero(h0), zero(h0), nh0, nh0_dagger, J, Jdagger,
+        return new{B,typeof(h0),typeof(nh0)}(
+            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger,
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -261,22 +261,25 @@ function get_ρ(sys::Yb171Sys, name::Symbol, F, mF)
     return ψ ⊗ ψ'
 end
 
-function evolve(update!, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
-    update!(sys, 0.0)
-    cb = let update! = update!, sys = sys
+function init! end
+function update! end
+
+function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
+    init!(drive, sys)
+    cb = let drive = drive, sys = sys
         function (t, rho)
-            update!(sys, t)
+            update!(drive, sys, t)
             return (sys.op, sys.op_dagger, sys.J, sys.Jdagger)
         end
     end
     return timeevolution.master_nh_dynamic(range(0, tlen, npoints), ρ0, cb; kws...)
 end
 
-function no_drive!(sys::Yb171Sys, t)
-    if t == 0
-        sys.op .= sys.nh0
-        sys.op_dagger .= sys.nh0_dagger
-    end
+function init!(::Nothing, sys::Yb171Sys)
+    sys.op .= sys.nh0
+    sys.op_dagger .= sys.nh0_dagger
+end
+function update!(::Nothing, sys::Yb171Sys, t)
 end
 
 struct SingleDrive
@@ -312,7 +315,9 @@ function add_drive!(sys::Yb171Sys, drives::Drives, dOP, scale)
     return
 end
 
-function (drives::Drives)(sys::Yb171Sys, t)
+function init!(drives::Drives, sys::Yb171Sys)
+end
+function update!(drives::Drives, sys::Yb171Sys, t)
     sys.op .= sys.nh0
     sys.op_dagger .= sys.nh0_dagger
 
