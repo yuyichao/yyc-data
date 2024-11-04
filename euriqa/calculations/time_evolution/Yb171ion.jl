@@ -3,7 +3,7 @@
 using QuantumOptics
 using LinearAlgebra
 using CGcoefficient
-using SparseArrays: sparse, SparseMatrixCSC
+using SparseArrays: sparse, spzeros, SparseMatrixCSC
 
 function g_sum(J, J1, g1, J2, g2)
     return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
@@ -277,4 +277,65 @@ function no_drive!(sys::Yb171Sys, t)
         sys.op .= sys.nh0
         sys.op_dagger .= sys.nh0_dagger
     end
+end
+
+struct SingleDrive
+    freq::Float64
+    pol::NTuple{3,ComplexF64}
+end
+
+struct Drives
+    d370::Vector{SingleDrive}
+    d935::Vector{SingleDrive}
+    buff::SparseMatrixCSC{ComplexF64,Int}
+    Drives(d370=SingleDrive[], d935=SingleDrive[]) =
+        new(d370, d935, spzeros(ComplexF64, 20, 20))
+end
+
+function copy_scaled!(tgt::SparseMatrixCSC, src::SparseMatrixCSC, scale)
+    resize!(tgt.colptr, length(src.colptr))
+    tgt.colptr .= src.colptr
+    resize!(tgt.rowval, length(src.rowval))
+    tgt.rowval .= src.rowval
+    resize!(tgt.nzval, length(src.nzval))
+    tgt.nzval .= src.nzval .* scale
+    return tgt
+end
+
+function add_drive!(sys::Yb171Sys, drives::Drives, dOP, scale)
+    if scale == 0
+        return
+    end
+    copy_scaled!(drives.buff, dOP.data, scale)
+    sys.op.data .+= drives.buff
+    sys.op_dagger.data .+= drives.buff
+    return
+end
+
+function (drives::Drives)(sys::Yb171Sys, t)
+    sys.op .= sys.nh0
+    sys.op_dagger .= sys.nh0_dagger
+
+    Ω370 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
+    for d370 in drives.d370
+        Ω370 = Ω370 .+ d370.pol .* cis(d370.freq * t)
+    end
+    add_drive!(sys, drives, sys.dP_Sσ⁻⁺, Ω370[1])
+    add_drive!(sys, drives, sys.dP_Sσ⁻⁻, Ω370[1]')
+    add_drive!(sys, drives, sys.dP_Sπ⁺, Ω370[1])
+    add_drive!(sys, drives, sys.dP_Sπ⁻, Ω370[1]')
+    add_drive!(sys, drives, sys.dP_Sσ⁺⁺, Ω370[3])
+    add_drive!(sys, drives, sys.dP_Sσ⁺⁻, Ω370[3]')
+
+    Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
+    for d935 in drives.d935
+        Ω935 = Ω935 .+ d935.pol .* cis(d935.freq * t)
+    end
+    add_drive!(sys, drives, sys.dB_Dσ⁻⁺, Ω935[1])
+    add_drive!(sys, drives, sys.dB_Dσ⁻⁻, Ω935[1]')
+    add_drive!(sys, drives, sys.dB_Dπ⁺, Ω935[1])
+    add_drive!(sys, drives, sys.dB_Dπ⁻, Ω935[1]')
+    add_drive!(sys, drives, sys.dB_Dσ⁺⁺, Ω935[3])
+    add_drive!(sys, drives, sys.dB_Dσ⁺⁻, Ω935[3]')
+    return
 end
