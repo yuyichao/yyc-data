@@ -119,26 +119,6 @@ function add_J!(Js, basis, offsets, Γ, dJ, dJ′, dI, idxFl, idxFl′)
     return
 end
 
-function fill_J!(op, Γ, q, dJ, dJ′, dI, idxFl, idxFl′)
-    sqrtΓ = sqrt(Γ)
-    dFs = abs(dJ - dI):2:(dJ + dI)
-    dF′s = abs(dJ′ - dI):2:(dJ′ + dI)
-    for (i, dF) in enumerate(dFs)
-        idxF = idxFl + i - 1
-        basisF = SpinBasis(dF//2)
-        for (i′, dF′) in enumerate(dF′s)
-            idxF′ = idxFl′ + i′ - 1
-            basisF′ = SpinBasis(dF′//2)
-            subop = Operator(basisF, basisF′,
-                             sparse([sqrtΓ * dipole_branch(q, dJ, dJ′, dI, dF, dF′,
-                                                            dmF, dmF′)
-                                     for dmF in -dF:2:dF, dmF′ in -dF′:2:dF′]))
-            setblock!(op, subop, idxF, idxF′)
-        end
-    end
-    return op
-end
-
 function fill_dipole!(op⁺, op⁻, q, dJ, dJ′, dI, idxFl, idxFl′)
     dFs = abs(dJ - dI):2:(dJ + dI)
     dF′s = abs(dJ′ - dI):2:(dJ′ + dI)
