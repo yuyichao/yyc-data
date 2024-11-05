@@ -1,7 +1,6 @@
 #!/usr/bin/julia
 
 using QuantumOptics
-using QuantumOpticsBase
 using LinearAlgebra
 using CGcoefficient
 using SparseArrays
@@ -153,7 +152,16 @@ end
 # S1/2 (F=0, F=1), P1/2 (F=0, F=1), D3/2 (F=1, F=2), [3/2]1/2 (F=0, F=1)
 #         1,   2,          3,   4,          5,   6,              7,   8
 
-struct Yb171Sys{Basis,O,CO}
+struct LinearOP{Map}
+end
+
+@inline function map_op!(::LinearOP{Map}, tgt, src) where Map
+    @inbounds for (yi, yo, xi, xo, v) in Map
+        tgt[xo, yo] += src[xi, yi] * v
+    end
+end
+
+struct Yb171Sys{Basis,O,CO,JMap}
     basis::Basis
     op::CO
     op_dagger::CO
@@ -162,7 +170,7 @@ struct Yb171Sys{Basis,O,CO}
 
     J::Vector{O}
     Jdagger::Vector{O}
-    Jop::Vector{Tuple{Int,Int,Int,Int,Float64}}
+    Jop::LinearOP{JMap}
 
     dP_Sσ⁺⁺::O
     dP_Sσ⁺⁻::O
@@ -234,6 +242,7 @@ struct Yb171Sys{Basis,O,CO}
             push!(jop, (yi, yo, xi, xo, v))
         end
         sort!(jop)
+        jop = tuple(jop...)
 
         nh0 = Operator(basis, complex(h0.data))
         nh0_dagger = copy(nh0)
@@ -260,8 +269,8 @@ struct Yb171Sys{Basis,O,CO}
         dB_Dσ⁻⁺, dB_Dσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 3, 1, 1, 5, 7)
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
-        return new{B,typeof(h0),typeof(nh0)}(
-            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger, jop,
+        return new{B,typeof(h0),typeof(nh0),jop}(
+            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger, LinearOP{jop}(),
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -301,23 +310,15 @@ function update! end
 
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
     init!(drive, sys)
-    dmaster_ = let drive = drive, sys = sys
-        function(t, rho, drho)
-            update!(drive, sys, t)
-            QuantumOpticsBase.mul!(drho, sys.op, rho,
-                                   -ComplexF64(im), false)
-            QuantumOpticsBase.mul!(drho, rho, sys.op_dagger,
-                                   ComplexF64(im), true)
-            rho_data = rho.data
-            drho_data = drho.data
-            @inbounds for (yi, yo, xi, xo, v) in sys.Jop
-                drho_data[xo, yo] += rho_data[xi, yi] * v
-            end
-            return drho
-        end
+    function dmaster_(t, rho, drho)
+        update!(drive, sys, t)
+        mul!(drho, sys.op, rho, -ComplexF64(im), false)
+        mul!(drho, rho, sys.op_dagger, ComplexF64(im), true)
+        map_op!(sys.Jop, drho.data, rho.data)
+        return drho
     end
-    return @skiptimechecks timeevolution.integrate_master(
-        range(0, tlen, npoints), dmaster_, ρ0, nothing; kws...)
+    return timeevolution.integrate_master(range(0, tlen, npoints), dmaster_,
+                                          ρ0, nothing; kws...)
 end
 
 function init!(::Nothing, sys::Yb171Sys)
@@ -369,7 +370,7 @@ end
     if Ω == 0
         return
     end
-    @inbounds for i in 1:length(op_nzval)
+    @inbounds @simd ivdep for i in 1:length(op_nzval)
         v = dop_nzval⁺[i] * Ω + dop_nzval⁻[i] * Ω'
         op_nzval[i] += v
         op_dagger_nzval[i] += v
