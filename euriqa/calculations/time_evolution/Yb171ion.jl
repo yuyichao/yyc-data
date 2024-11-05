@@ -1,6 +1,7 @@
 #!/usr/bin/julia
 
 using QuantumOptics
+using QuantumOpticsBase
 using LinearAlgebra
 using CGcoefficient
 using SparseArrays
@@ -138,6 +139,16 @@ function fill_dipole!(op⁺, op⁻, q, dJ, dJ′, dI, idxFl, idxFl′)
     return op⁺, op⁻
 end
 
+function foreach_nz(cb, m)
+    for col in 1:size(m, 2)
+        for r in nzrange(m, col)
+            row = rowvals(m)[r]
+            v = nonzeros(m)[r]
+            cb(row, col, v)
+        end
+    end
+end
+
 # State order,
 # S1/2 (F=0, F=1), P1/2 (F=0, F=1), D3/2 (F=1, F=2), [3/2]1/2 (F=0, F=1)
 #         1,   2,          3,   4,          5,   6,              7,   8
@@ -151,6 +162,7 @@ struct Yb171Sys{Basis,O,CO}
 
     J::Vector{O}
     Jdagger::Vector{O}
+    Jop::Vector{Tuple{Int,Int,Int,Int,Float64}}
 
     dP_Sσ⁺⁺::O
     dP_Sσ⁺⁻::O
@@ -200,6 +212,29 @@ struct Yb171Sys{Basis,O,CO}
         add_J!(J, basis, offsets, ΓB_D, 3, 1, 1, 5, 7)
         Jdagger = dagger.(J)
 
+        jmap = Dict{NTuple{4,Int},Float64}()
+        function add_jterm(xi, yi, xo, yo, v)
+            key = yi, yo, xi, xo
+            if haskey(jmap, key)
+                jmap[key] += v
+            else
+                jmap[key] = v
+            end
+            return
+        end
+        for j in J
+            foreach_nz(j.data) do x1, y1, v1
+                foreach_nz(j.data) do x2, y2, v2
+                    add_jterm(y1, y2, x1, x2, v1 * v2)
+                end
+            end
+        end
+        jop = Tuple{Int,Int,Int,Int,Float64}[]
+        for ((yi, yo, xi, xo), v) in jmap
+            push!(jop, (yi, yo, xi, xo, v))
+        end
+        sort!(jop)
+
         nh0 = Operator(basis, complex(h0.data))
         nh0_dagger = copy(nh0)
 
@@ -226,7 +261,7 @@ struct Yb171Sys{Basis,O,CO}
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
         return new{B,typeof(h0),typeof(nh0)}(
-            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger,
+            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger, jop,
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -266,14 +301,23 @@ function update! end
 
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
     init!(drive, sys)
-    cb = let drive = drive, sys = sys
-        function (t, rho)
+    dmaster_ = let drive = drive, sys = sys
+        function(t, rho, drho)
             update!(drive, sys, t)
-            return (sys.op, sys.op_dagger, sys.J, sys.Jdagger)
+            QuantumOpticsBase.mul!(drho, sys.op, rho,
+                                   -ComplexF64(im), false)
+            QuantumOpticsBase.mul!(drho, rho, sys.op_dagger,
+                                   ComplexF64(im), true)
+            rho_data = rho.data
+            drho_data = drho.data
+            @inbounds for (yi, yo, xi, xo, v) in sys.Jop
+                drho_data[xo, yo] += rho_data[xi, yi] * v
+            end
+            return drho
         end
     end
-    return @skiptimechecks timeevolution.master_nh_dynamic(range(0, tlen, npoints),
-                                                           ρ0, cb; kws...)
+    return @skiptimechecks timeevolution.integrate_master(
+        range(0, tlen, npoints), dmaster_, ρ0, nothing; kws...)
 end
 
 function init!(::Nothing, sys::Yb171Sys)
@@ -336,12 +380,8 @@ function init!(drives::Drives, sys::Yb171Sys)
     idx = Ref(1)
     idx_map = Dict{Pair{Int,Int},Int}()
     function add_op(m)
-        for col in 1:size(m, 2)
-            for r in nzrange(m, col)
-                row = rowvals(m)[r]
-                if haskey(idx_map, row=>col)
-                    continue
-                end
+        foreach_nz(m) do row, col, _
+            if !haskey(idx_map, row=>col)
                 idx_map[row=>col] = idx[]
                 idx[] += 1
             end
