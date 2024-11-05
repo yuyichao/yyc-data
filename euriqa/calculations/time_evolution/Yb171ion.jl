@@ -442,7 +442,7 @@ function update!(drives::Drives, sys::Yb171Sys, t)
 
     Ω370 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d370 in drives.d370
-        Ω370 = Ω370 .+ d370.pol .* cis(d370.freq * t)
+        Ω370 = Ω370 .+ d370.pol .* cis(-d370.freq * t)
     end
     add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sσ⁻⁺, drives.dP_Sσ⁻⁻, Ω370[1])
     add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sπ⁺, drives.dP_Sπ⁻, Ω370[2])
@@ -450,7 +450,7 @@ function update!(drives::Drives, sys::Yb171Sys, t)
 
     Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d935 in drives.d935
-        Ω935 = Ω935 .+ d935.pol .* cis(d935.freq * t)
+        Ω935 = Ω935 .+ d935.pol .* cis(-d935.freq * t)
     end
     add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dσ⁻⁺, drives.dB_Dσ⁻⁻, Ω935[1])
     add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dπ⁺, drives.dB_Dπ⁻, Ω935[2])
