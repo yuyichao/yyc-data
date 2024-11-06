@@ -308,13 +308,33 @@ end
 function init! end
 function update! end
 
+const state_dim = 20
+
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
+    @assert size(ρ0.data) == (state_dim, state_dim)
     init!(drive, sys)
     function dmaster_(t, rho, drho)
+        rho_data = rho.data
+        drho_data = drho.data
+
         update!(drive, sys, t)
-        mul!(drho, sys.op, rho, -ComplexF64(im), false)
-        mul!(drho, rho, sys.op_dagger, ComplexF64(im), true)
-        map_op!(sys.Jop, drho.data, rho.data)
+        QuantumOpticsBase.gemm!(true, sys.op.data, rho_data, false, drho_data)
+
+        # compute (-i * drho) + (-i * drho)^dagger
+        @inbounds for i in 1:state_dim
+            for j in i:state_dim
+                v1 = drho_data[i, j]
+                v2 = drho_data[j, i]
+
+                re_o = imag(v1) + imag(v2)
+                im_o = real(v2) - real(v1)
+
+                drho_data[i, j] = complex(re_o, im_o)
+                drho_data[j, i] = complex(re_o, -im_o)
+            end
+        end
+
+        map_op!(sys.Jop, drho_data, rho_data)
         return drho
     end
     return timeevolution.integrate_master(range(0, tlen, npoints), dmaster_,
@@ -479,8 +499,12 @@ function update!(drives::Drives, sys::Yb171Sys, t)
     op_nzval = sys.op.data.nzval
     op_dagger_nzval = sys.op_dagger.data.nzval
 
-    op_nzval .= drives.nh0
-    op_dagger_nzval .= drives.nh0_dagger
+    nh0 = drives.nh0
+    nh0_dagger = drives.nh0_dagger
+    @inbounds @simd ivdep for i in 1:length(op_nzval)
+        op_nzval[i] = nh0[i]
+        op_dagger_nzval[i] = nh0_dagger[i]
+    end
 
     Ω370 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d370 in drives.d370
