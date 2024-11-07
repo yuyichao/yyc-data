@@ -156,8 +156,8 @@ struct LinearOP{Map}
 end
 
 @inline function map_op!(::LinearOP{Map}, tgt, src) where Map
-    @inbounds for (yi, yo, xi, xo, v) in Map
-        tgt[xo, yo] = muladd(src[xi, yi], v, tgt[xo, yo])
+    @inbounds for (iin, iout, v) in Map
+        tgt[iout] = muladd(src[iin], v, tgt[iout])
     end
 end
 
@@ -219,9 +219,10 @@ struct Yb171Sys{Basis,O,CO,JMap}
         add_J!(J, basis, offsets, ΓB_D, 3, 1, 1, 5, 7)
         Jdagger = dagger.(J)
 
-        jmap = Dict{NTuple{4,Int},Float64}()
+        linidx = LinearIndices((20, 20))
+        jmap = Dict{NTuple{2,Int},Float64}()
         function add_jterm(xi, yi, xo, yo, v)
-            key = yi, yo, xi, xo
+            key = linidx[xi, yi], linidx[xo, yo]
             if haskey(jmap, key)
                 jmap[key] += v
             else
@@ -236,10 +237,7 @@ struct Yb171Sys{Basis,O,CO,JMap}
                 end
             end
         end
-        jop = Tuple{Int,Int,Int,Int,Float64}[]
-        for ((yi, yo, xi, xo), v) in jmap
-            push!(jop, (yi, yo, xi, xo, v))
-        end
+        jop = [(iin, iout, v) for ((iin, iout), v) in jmap]
         sort!(jop)
         jop = tuple(jop...)
 
