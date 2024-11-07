@@ -164,7 +164,6 @@ end
 struct Yb171Sys{Basis,O,CO,JMap}
     basis::Basis
     op_dagger::CO
-    nh0::CO
     nh0_dagger::CO
 
     J::Vector{O}
@@ -241,12 +240,10 @@ struct Yb171Sys{Basis,O,CO,JMap}
         sort!(jop)
         jop = tuple(jop...)
 
-        nh0 = Operator(basis, complex(h0.data))
-        nh0_dagger = copy(nh0)
+        nh0_dagger = Operator(basis, complex(h0.data))
 
         for (j, jd) in zip(J, Jdagger)
             nhj = jd * j
-            nh0 .-= (0.5im) .* nhj
             nh0_dagger .+= (0.5im) .* nhj
         end
 
@@ -266,8 +263,8 @@ struct Yb171Sys{Basis,O,CO,JMap}
         dB_Dσ⁻⁺, dB_Dσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 3, 1, 1, 5, 7)
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
-        return new{B,typeof(h0),typeof(nh0),jop}(
-            basis, zero(nh0), nh0, nh0_dagger, J, Jdagger, LinearOP{jop}(),
+        return new{B,typeof(h0),typeof(nh0_dagger),jop}(
+            basis, zero(nh0_dagger), nh0_dagger, J, Jdagger, LinearOP{jop}(),
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
