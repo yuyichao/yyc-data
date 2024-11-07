@@ -163,7 +163,6 @@ end
 
 struct Yb171Sys{Basis,O,CO,JMap}
     basis::Basis
-    op::CO
     op_dagger::CO
     nh0::CO
     nh0_dagger::CO
@@ -270,7 +269,7 @@ struct Yb171Sys{Basis,O,CO,JMap}
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
         return new{B,typeof(h0),typeof(nh0),jop}(
-            basis, zero(nh0), zero(nh0), nh0, nh0_dagger, J, Jdagger, LinearOP{jop}(),
+            basis, zero(nh0), nh0, nh0_dagger, J, Jdagger, LinearOP{jop}(),
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -310,6 +309,35 @@ function update! end
 
 const state_dim = 20
 
+@inline function do_mul!(result, B, M::SparseMatrixCSC)
+    nrow = size(result, 1)
+    @inbounds prev_colptr = M.colptr[1]
+    @inbounds for col in 1:M.n
+        filled = false
+        colptr = M.colptr[col + 1]
+        for i in prev_colptr:colptr - 1
+            val = M.nzval[i]
+            row = M.rowval[i]
+            if filled
+                @simd ivdep for j in 1:nrow
+                    result[j, col] += val * B[j, row]
+                end
+            else
+                @simd ivdep for j in 1:nrow
+                    result[j, col] = val * B[j, row]
+                end
+            end
+            filled = true
+        end
+        prev_colptr = colptr
+        if !filled
+            @simd ivdep for j in 1:nrow
+                result[j, col] = 0
+            end
+        end
+    end
+end
+
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
     @assert size(ρ0.data) == (state_dim, state_dim)
     init!(drive, sys)
@@ -318,15 +346,15 @@ function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
         drho_data = drho.data
 
         update!(drive, sys, t)
-        QuantumOpticsBase.gemm!(true, sys.op.data, rho_data, false, drho_data)
+        do_mul!(drho_data, rho_data, sys.op_dagger.data)
 
-        # compute (-i * drho) + (-i * drho)^dagger
+        # compute -i * drho^dagger + i * drho
         @inbounds for i in 1:state_dim
             for j in i:state_dim
-                v1 = drho_data[i, j]
-                v2 = drho_data[j, i]
+                v1 = drho_data[j, i]
+                v2 = drho_data[i, j]
 
-                re_o = imag(v1) + imag(v2)
+                re_o = -imag(v1) - imag(v2)
                 im_o = real(v2) - real(v1)
 
                 drho_data[i, j] = complex(re_o, im_o)
@@ -342,7 +370,6 @@ function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
 end
 
 function init!(::Nothing, sys::Yb171Sys)
-    sys.op .= sys.nh0
     sys.op_dagger .= sys.nh0_dagger
 end
 function update!(::Nothing, sys::Yb171Sys, t)
@@ -357,7 +384,6 @@ struct Drives
     d370::Vector{SingleDrive}
     d935::Vector{SingleDrive}
 
-    nh0::Vector{ComplexF64}
     nh0_dagger::Vector{ComplexF64}
 
     dP_Sσ⁺⁺::Vector{Float64}
@@ -375,7 +401,7 @@ struct Drives
     dB_Dπ⁻::Vector{Float64}
 
     Drives(d370=SingleDrive[], d935=SingleDrive[]) =
-        new(d370, d935, ComplexF64[], ComplexF64[],
+        new(d370, d935, ComplexF64[],
             Float64[], Float64[], Float64[], Float64[], Float64[], Float64[],
             Float64[], Float64[], Float64[], Float64[], Float64[], Float64[])
 end
@@ -386,14 +412,12 @@ function set_vector!(tgt, src)
     return
 end
 
-@inline function add_drive!(op_nzval, op_dagger_nzval, dop_nzval⁺, dop_nzval⁻, Ω)
+@inline function add_drive!(op_dagger_nzval, dop_nzval⁺, dop_nzval⁻, Ω)
     if Ω == 0
         return
     end
-    @inbounds @simd ivdep for i in 1:length(op_nzval)
-        v = dop_nzval⁺[i] * Ω + dop_nzval⁻[i] * Ω'
-        op_nzval[i] += v
-        op_dagger_nzval[i] += v
+    @inbounds @simd ivdep for i in 1:length(op_dagger_nzval)
+        op_dagger_nzval[i] += dop_nzval⁺[i] * Ω + dop_nzval⁻[i] * Ω'
     end
 end
 
@@ -408,7 +432,6 @@ function init!(drives::Drives, sys::Yb171Sys)
             end
         end
     end
-    add_op(sys.nh0.data)
     add_op(sys.nh0_dagger.data)
     has370 = (false, false, false)
     for d370 in drives.d370
@@ -457,9 +480,6 @@ function init!(drives::Drives, sys::Yb171Sys)
     # Since V is an array of 1:n, sortperm inverse it so that V[order[i]] == i
     order = sortperm(V)
 
-    set_vector!(sys.op.data.colptr, dummy.colptr)
-    set_vector!(sys.op.data.rowval, dummy.rowval)
-    resize!(sys.op.data.nzval, length(dummy.nzval))
     set_vector!(sys.op_dagger.data.colptr, dummy.colptr)
     set_vector!(sys.op_dagger.data.rowval, dummy.rowval)
     resize!(sys.op_dagger.data.nzval, length(dummy.nzval))
@@ -478,7 +498,6 @@ function init!(drives::Drives, sys::Yb171Sys)
         return
     end
 
-    remap_values!(drives.nh0, sys.nh0)
     remap_values!(drives.nh0_dagger, sys.nh0_dagger)
 
     remap_values!(drives.dP_Sσ⁻⁺, sys.dP_Sσ⁻⁺, has370[1])
@@ -496,13 +515,10 @@ function init!(drives::Drives, sys::Yb171Sys)
     remap_values!(drives.dB_Dσ⁺⁻, sys.dB_Dσ⁺⁻, has935[3])
 end
 function update!(drives::Drives, sys::Yb171Sys, t)
-    op_nzval = sys.op.data.nzval
     op_dagger_nzval = sys.op_dagger.data.nzval
 
-    nh0 = drives.nh0
     nh0_dagger = drives.nh0_dagger
-    @inbounds @simd ivdep for i in 1:length(op_nzval)
-        op_nzval[i] = nh0[i]
+    @inbounds @simd ivdep for i in 1:length(op_dagger_nzval)
         op_dagger_nzval[i] = nh0_dagger[i]
     end
 
@@ -510,17 +526,17 @@ function update!(drives::Drives, sys::Yb171Sys, t)
     for d370 in drives.d370
         Ω370 = Ω370 .+ d370.pol .* cis(-d370.freq * t)
     end
-    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sσ⁻⁺, drives.dP_Sσ⁻⁻, Ω370[1])
-    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sπ⁺, drives.dP_Sπ⁻, Ω370[2])
-    add_drive!(op_nzval, op_dagger_nzval, drives.dP_Sσ⁺⁺, drives.dP_Sσ⁺⁻, Ω370[3])
+    add_drive!(op_dagger_nzval, drives.dP_Sσ⁻⁺, drives.dP_Sσ⁻⁻, Ω370[1])
+    add_drive!(op_dagger_nzval, drives.dP_Sπ⁺, drives.dP_Sπ⁻, Ω370[2])
+    add_drive!(op_dagger_nzval, drives.dP_Sσ⁺⁺, drives.dP_Sσ⁺⁻, Ω370[3])
 
     Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d935 in drives.d935
         Ω935 = Ω935 .+ d935.pol .* cis(-d935.freq * t)
     end
-    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dσ⁻⁺, drives.dB_Dσ⁻⁻, Ω935[1])
-    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dπ⁺, drives.dB_Dπ⁻, Ω935[2])
-    add_drive!(op_nzval, op_dagger_nzval, drives.dB_Dσ⁺⁺, drives.dB_Dσ⁺⁻, Ω935[3])
+    add_drive!(op_dagger_nzval, drives.dB_Dσ⁻⁺, drives.dB_Dσ⁻⁻, Ω935[1])
+    add_drive!(op_dagger_nzval, drives.dB_Dπ⁺, drives.dB_Dπ⁻, Ω935[2])
+    add_drive!(op_dagger_nzval, drives.dB_Dσ⁺⁺, drives.dB_Dσ⁺⁻, Ω935[3])
     return
 end
 
