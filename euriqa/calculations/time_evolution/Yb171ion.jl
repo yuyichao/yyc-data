@@ -157,7 +157,7 @@ end
 
 @inline function map_op!(::LinearOP{Map}, tgt, src) where Map
     @inbounds for (yi, yo, xi, xo, v) in Map
-        tgt[xo, yo] += src[xi, yi] * v
+        tgt[xo, yo] = muladd(src[xi, yi], v, tgt[xo, yo])
     end
 end
 
@@ -318,7 +318,7 @@ function update! end
             row = M.rowval[i]
             if filled
                 @simd ivdep for j in 1:nrow
-                    result[j, col] += val * B[j, row]
+                    result[j, col] = muladd(val, B[j, row], result[j, col])
                 end
             else
                 @simd ivdep for j in 1:nrow
@@ -416,8 +416,9 @@ end
         return
     end
     @inbounds @simd ivdep for i in 1:length(op_dagger_nzval)
-        op_dagger_nzval[i] += complex(dop_nzvalx[i] * real(Ω),
-                                      dop_nzvaly[i] * imag(Ω))
+        v = op_dagger_nzval[i]
+        op_dagger_nzval[i] = complex(muladd(dop_nzvalx[i], real(Ω), real(v)),
+                                     muladd(dop_nzvaly[i], imag(Ω), imag(v)))
     end
 end
 
@@ -536,7 +537,7 @@ function update!(drives::Drives, sys::Yb171Sys, t)
 
     Ω370 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d370 in drives.d370
-        Ω370 = Ω370 .+ d370.pol .* cis(-d370.freq * t)
+        Ω370 = muladd.(d370.pol, cis(-d370.freq * t), Ω370)
     end
     add_drive!(op_dagger_nzval, drives.dP_Sσ⁻x, drives.dP_Sσ⁻y, Ω370[1])
     add_drive!(op_dagger_nzval, drives.dP_Sπx, drives.dP_Sπy, Ω370[2])
@@ -544,7 +545,7 @@ function update!(drives::Drives, sys::Yb171Sys, t)
 
     Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d935 in drives.d935
-        Ω935 = Ω935 .+ d935.pol .* cis(-d935.freq * t)
+        Ω935 = muladd.(d935.pol, cis(-d935.freq * t), Ω935)
     end
     add_drive!(op_dagger_nzval, drives.dB_Dσ⁻x, drives.dB_Dσ⁻y, Ω935[1])
     add_drive!(op_dagger_nzval, drives.dB_Dπx, drives.dB_Dπy, Ω935[2])
