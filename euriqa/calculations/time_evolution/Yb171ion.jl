@@ -308,16 +308,22 @@ function update! end
     @inbounds for col in 1:M.n
         filled = false
         colptr = M.colptr[col + 1]
+        # Manually compute the linear index.
+        # Somehow the invariance of the matrix size doesn't work anymore
+        # and the dimension of the matrix is being loaded in every loop iterations
+        col_offset = (col - 1) * nrow
         for i in prev_colptr:colptr - 1
             val = M.nzval[i]
             row = M.rowval[i]
+            row_offset = (row - 1) * nrow
             if filled
                 @simd ivdep for j in 1:nrow
-                    result[j, col] = muladd(val, B[j, row], result[j, col])
+                    result[j + col_offset] =
+                        muladd(val, B[j + row_offset], result[j + col_offset])
                 end
             else
                 @simd ivdep for j in 1:nrow
-                    result[j, col] = val * B[j, row]
+                    result[j + col_offset] = val * B[j + row_offset]
                 end
             end
             filled = true
@@ -325,38 +331,40 @@ function update! end
         prev_colptr = colptr
         if !filled
             @simd ivdep for j in 1:nrow
-                result[j, col] = 0
+                result[j + col_offset] = 0
             end
         end
     end
 end
 
+@inline function dmaster(t, rho_data, drho_data, sys::Yb171Sys, drive)
+    @inline update!(drive, sys, t)
+    nrow = size(drho_data, 1)
+    do_mul!(drho_data, rho_data, sys.op_dagger.data)
+    # compute -i * drho^dagger + i * drho
+    @inbounds for i in 1:nrow
+        drho_data[i + (i - 1) * nrow] = -2 * imag(drho_data[i + (i - 1) * nrow])
+        for j in (i + 1):nrow
+            idx1 = j + (i - 1) * nrow
+            idx2 = i + (j - 1) * nrow
+            v1 = drho_data[idx1]
+            v2 = drho_data[idx2]
+
+            re_o = -imag(v1) - imag(v2)
+            im_o = real(v2) - real(v1)
+
+            drho_data[idx1] = complex(re_o, -im_o)
+            drho_data[idx2] = complex(re_o, im_o)
+        end
+    end
+    map_op!(sys.Jop, drho_data, rho_data)
+    return
+end
+
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
     init!(drive, sys)
-    function dmaster_(t, rho, drho)
-        rho_data = rho.data
-        drho_data = drho.data
-
-        update!(drive, sys, t)
-        nrow = size(drho_data, 1)
-        do_mul!(drho_data, rho_data, sys.op_dagger.data)
-
-        # compute -i * drho^dagger + i * drho
-        @inbounds for i in 1:nrow
-            drho_data[i, i] = -2 * imag(drho_data[i, i])
-            for j in (i + 1):nrow
-                v1 = drho_data[j, i]
-                v2 = drho_data[i, j]
-
-                re_o = -imag(v1) - imag(v2)
-                im_o = real(v2) - real(v1)
-
-                drho_data[i, j] = complex(re_o, im_o)
-                drho_data[j, i] = complex(re_o, -im_o)
-            end
-        end
-
-        map_op!(sys.Jop, drho_data, rho_data)
+    @inline function dmaster_(t, rho, drho)
+        dmaster(t, rho.data, drho.data, sys, drive)
         return drho
     end
     return timeevolution.integrate_master(range(0, tlen, npoints), dmaster_,
