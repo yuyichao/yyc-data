@@ -343,7 +343,7 @@ function init! end
 function update! end
 
 @inline function do_mul!(result, B, M::SparseMatrixCSC)
-    nrow = size(result, 1)
+    nrow = 20 # size(result, 1)
     @inbounds prev_colptr = M.colptr[1]
     @inbounds for col in 1:M.n
         filled = false
@@ -379,7 +379,7 @@ end
 
 @inline function dmaster(t, rho_data, drho_data, sys::Yb171Sys, drive)
     @inline update!(drive, sys, t)
-    nrow = size(drho_data, 1)
+    nrow = 20 # size(drho_data, 1)
     do_mul!(drho_data, rho_data, sys.op_dagger.data)
     # compute -i * drho^dagger + i * drho
     @inbounds for i in 1:nrow
