@@ -155,10 +155,49 @@ end
 struct LinearOP{Map}
 end
 
-@inline function map_op!(::LinearOP{Map}, tgt, src) where Map
-    @inbounds for (iin, iout, v) in Map
-        tgt[iout] = muladd(src[iin], v, tgt[iout])
+@generated function map_op!(::LinearOP{Map}, tgt, src) where Map
+    ex = quote
     end
+
+    max_iin = 0
+    max_iout = 0
+    for (iout, iin, v) in Map
+        max_iin = max(max_iin, iin)
+        max_iout = max(max_iout, iout)
+    end
+
+    num_map = length(Map)
+    minpos_in = fill(num_map, max_iin)
+    minpos_out = fill(num_map, max_iout)
+    maxpos_out = fill(1, max_iout)
+
+    for i in 1:num_map
+        iout, iin, v = Map[i]
+        minpos_in[iin] = min(minpos_in[iin], i)
+        minpos_out[iout] = min(minpos_out[iout], i)
+        maxpos_out[iout] = max(maxpos_out[iout], i)
+    end
+
+    invars = [gensym() for i in 1:max_iin]
+    outvars = [gensym() for i in 1:max_iout]
+
+    for i in 1:num_map
+        iout, iin, v = Map[i]
+        invar = invars[iin]
+        outvar = outvars[iout]
+        if i == minpos_in[iin]
+            push!(ex.args, :($invar = @inbounds src[$iin]))
+        end
+        if i == minpos_out[iout]
+            push!(ex.args, :($outvar = @inbounds tgt[$iout]))
+        end
+        push!(ex.args, :($outvar = muladd($invar, $v, $outvar)))
+        if i == maxpos_out[iout]
+            push!(ex.args, :(@inbounds tgt[$iout] = $outvar))
+        end
+    end
+    push!(ex.args, :(return))
+    return ex
 end
 
 struct Yb171Sys{Basis,O,CO,JMap}
@@ -236,7 +275,8 @@ struct Yb171Sys{Basis,O,CO,JMap}
                 end
             end
         end
-        jop = [(iin, iout, v) for ((iin, iout), v) in jmap]
+        jop = [(iout, iin, v) for ((iin, iout), v) in jmap]
+        # Group the ones with the same output together
         sort!(jop)
         jop = tuple(jop...)
 
@@ -357,7 +397,7 @@ end
             drho_data[idx2] = complex(re_o, im_o)
         end
     end
-    map_op!(sys.Jop, drho_data, rho_data)
+    @inline map_op!(sys.Jop, drho_data, rho_data)
     return
 end
 
