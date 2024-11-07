@@ -307,8 +307,6 @@ end
 function init! end
 function update! end
 
-const state_dim = 20
-
 @inline function do_mul!(result, B, M::SparseMatrixCSC)
     nrow = size(result, 1)
     @inbounds prev_colptr = M.colptr[1]
@@ -339,18 +337,19 @@ const state_dim = 20
 end
 
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
-    @assert size(ρ0.data) == (state_dim, state_dim)
     init!(drive, sys)
     function dmaster_(t, rho, drho)
         rho_data = rho.data
         drho_data = drho.data
 
         update!(drive, sys, t)
+        nrow = size(drho_data, 1)
         do_mul!(drho_data, rho_data, sys.op_dagger.data)
 
         # compute -i * drho^dagger + i * drho
-        @inbounds for i in 1:state_dim
-            for j in i:state_dim
+        @inbounds for i in 1:nrow
+            drho_data[i, i] = -2 * imag(drho_data[i, i])
+            for j in (i + 1):nrow
                 v1 = drho_data[j, i]
                 v2 = drho_data[i, j]
 
