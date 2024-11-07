@@ -386,19 +386,19 @@ struct Drives
 
     nh0_dagger::Vector{ComplexF64}
 
-    dP_Sσ⁺⁺::Vector{Float64}
-    dP_Sσ⁺⁻::Vector{Float64}
-    dP_Sσ⁻⁺::Vector{Float64}
-    dP_Sσ⁻⁻::Vector{Float64}
-    dP_Sπ⁺::Vector{Float64}
-    dP_Sπ⁻::Vector{Float64}
+    dP_Sσ⁺x::Vector{Float64}
+    dP_Sσ⁺y::Vector{Float64}
+    dP_Sσ⁻x::Vector{Float64}
+    dP_Sσ⁻y::Vector{Float64}
+    dP_Sπx::Vector{Float64}
+    dP_Sπy::Vector{Float64}
 
-    dB_Dσ⁺⁺::Vector{Float64}
-    dB_Dσ⁺⁻::Vector{Float64}
-    dB_Dσ⁻⁺::Vector{Float64}
-    dB_Dσ⁻⁻::Vector{Float64}
-    dB_Dπ⁺::Vector{Float64}
-    dB_Dπ⁻::Vector{Float64}
+    dB_Dσ⁺x::Vector{Float64}
+    dB_Dσ⁺y::Vector{Float64}
+    dB_Dσ⁻x::Vector{Float64}
+    dB_Dσ⁻y::Vector{Float64}
+    dB_Dπx::Vector{Float64}
+    dB_Dπy::Vector{Float64}
 
     Drives(d370=SingleDrive[], d935=SingleDrive[]) =
         new(d370, d935, ComplexF64[],
@@ -412,12 +412,13 @@ function set_vector!(tgt, src)
     return
 end
 
-@inline function add_drive!(op_dagger_nzval, dop_nzval⁺, dop_nzval⁻, Ω)
+@inline function add_drive!(op_dagger_nzval, dop_nzvalx, dop_nzvaly, Ω)
     if Ω == 0
         return
     end
     @inbounds @simd ivdep for i in 1:length(op_dagger_nzval)
-        op_dagger_nzval[i] += dop_nzval⁺[i] * Ω + dop_nzval⁻[i] * Ω'
+        op_dagger_nzval[i] += complex(dop_nzvalx[i] * real(Ω),
+                                      dop_nzvaly[i] * imag(Ω))
     end
 end
 
@@ -500,19 +501,31 @@ function init!(drives::Drives, sys::Yb171Sys)
 
     remap_values!(drives.nh0_dagger, sys.nh0_dagger)
 
-    remap_values!(drives.dP_Sσ⁻⁺, sys.dP_Sσ⁻⁺, has370[1])
-    remap_values!(drives.dP_Sσ⁻⁻, sys.dP_Sσ⁻⁻, has370[1])
-    remap_values!(drives.dP_Sπ⁺, sys.dP_Sπ⁺, has370[2])
-    remap_values!(drives.dP_Sπ⁻, sys.dP_Sπ⁻, has370[2])
-    remap_values!(drives.dP_Sσ⁺⁺, sys.dP_Sσ⁺⁺, has370[3])
-    remap_values!(drives.dP_Sσ⁺⁻, sys.dP_Sσ⁺⁻, has370[3])
+    function remap_offdiag_xy!(σx, σy, op⁺, op⁻, cond)
+        remap_values!(σx, op⁺, cond)
+        remap_values!(σy, op⁻, cond)
+        for i in 1:length(σx)
+            v⁺ = σx[i]
+            v⁻ = σy[i]
 
-    remap_values!(drives.dB_Dσ⁻⁺, sys.dB_Dσ⁻⁺, has935[1])
-    remap_values!(drives.dB_Dσ⁻⁻, sys.dB_Dσ⁻⁻, has935[1])
-    remap_values!(drives.dB_Dπ⁺, sys.dB_Dπ⁺, has935[2])
-    remap_values!(drives.dB_Dπ⁻, sys.dB_Dπ⁻, has935[2])
-    remap_values!(drives.dB_Dσ⁺⁺, sys.dB_Dσ⁺⁺, has935[3])
-    remap_values!(drives.dB_Dσ⁺⁻, sys.dB_Dσ⁺⁻, has935[3])
+            σx[i] = v⁺ + v⁻
+            σy[i] = v⁺ - v⁻
+        end
+    end
+
+    remap_offdiag_xy!(drives.dP_Sσ⁻x, drives.dP_Sσ⁻y,
+                      sys.dP_Sσ⁻⁺, sys.dP_Sσ⁻⁻, has370[1])
+    remap_offdiag_xy!(drives.dP_Sπx, drives.dP_Sπy,
+                      sys.dP_Sπ⁺, sys.dP_Sπ⁻, has370[2])
+    remap_offdiag_xy!(drives.dP_Sσ⁺x, drives.dP_Sσ⁺y,
+                      sys.dP_Sσ⁺⁺, sys.dP_Sσ⁺⁻, has370[3])
+
+    remap_offdiag_xy!(drives.dB_Dσ⁻x, drives.dB_Dσ⁻y,
+                      sys.dB_Dσ⁻⁺, sys.dB_Dσ⁻⁻, has935[1])
+    remap_offdiag_xy!(drives.dB_Dπx, drives.dB_Dπy,
+                      sys.dB_Dπ⁺, sys.dB_Dπ⁻, has935[2])
+    remap_offdiag_xy!(drives.dB_Dσ⁺x, drives.dB_Dσ⁺y,
+                      sys.dB_Dσ⁺⁺, sys.dB_Dσ⁺⁻, has935[3])
 end
 function update!(drives::Drives, sys::Yb171Sys, t)
     op_dagger_nzval = sys.op_dagger.data.nzval
@@ -526,17 +539,17 @@ function update!(drives::Drives, sys::Yb171Sys, t)
     for d370 in drives.d370
         Ω370 = Ω370 .+ d370.pol .* cis(-d370.freq * t)
     end
-    add_drive!(op_dagger_nzval, drives.dP_Sσ⁻⁺, drives.dP_Sσ⁻⁻, Ω370[1])
-    add_drive!(op_dagger_nzval, drives.dP_Sπ⁺, drives.dP_Sπ⁻, Ω370[2])
-    add_drive!(op_dagger_nzval, drives.dP_Sσ⁺⁺, drives.dP_Sσ⁺⁻, Ω370[3])
+    add_drive!(op_dagger_nzval, drives.dP_Sσ⁻x, drives.dP_Sσ⁻y, Ω370[1])
+    add_drive!(op_dagger_nzval, drives.dP_Sπx, drives.dP_Sπy, Ω370[2])
+    add_drive!(op_dagger_nzval, drives.dP_Sσ⁺x, drives.dP_Sσ⁺y, Ω370[3])
 
     Ω935 = (zero(ComplexF64), zero(ComplexF64), zero(ComplexF64))
     for d935 in drives.d935
         Ω935 = Ω935 .+ d935.pol .* cis(-d935.freq * t)
     end
-    add_drive!(op_dagger_nzval, drives.dB_Dσ⁻⁺, drives.dB_Dσ⁻⁻, Ω935[1])
-    add_drive!(op_dagger_nzval, drives.dB_Dπ⁺, drives.dB_Dπ⁻, Ω935[2])
-    add_drive!(op_dagger_nzval, drives.dB_Dσ⁺⁺, drives.dB_Dσ⁺⁻, Ω935[3])
+    add_drive!(op_dagger_nzval, drives.dB_Dσ⁻x, drives.dB_Dσ⁻y, Ω935[1])
+    add_drive!(op_dagger_nzval, drives.dB_Dπx, drives.dB_Dπy, Ω935[2])
+    add_drive!(op_dagger_nzval, drives.dB_Dσ⁺x, drives.dB_Dσ⁺y, Ω935[3])
     return
 end
 
