@@ -6,13 +6,7 @@ using CGcoefficient
 using SparseArrays
 
 using NaCsSim.Master
-
-function g_sum(J, J1, g1, J2, g2)
-    return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
-end
-
-const g_s = 2.0023
-const g_l = 1.0
+using NaCsCalc.Atomic: g_sum, g_s, g_l
 
 const g_S1_2 = g_s
 const g_P1_2 = g_sum(1/2, 1, g_l, 1/2, g_s)
@@ -20,7 +14,7 @@ const g_D3_2 = g_sum(3/2, 2, g_l, 1/2, g_s)
 const g_F7_2 = g_sum(7/2, 3, g_l, 1/2, g_s)
 const g_B1_2 = g_sum(1/2, 3/2, g_sum(3/2, 7/2, g_F7_2, 2, g_l), 1, g_s)
 
-const μB = 2π * 1.4e6
+const μB = 2π * 1.3996244917e6 # Hz/G
 
 const ΓP_S = 1.23e8
 const ΓP_D = 6.19e5
