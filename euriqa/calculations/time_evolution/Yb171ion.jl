@@ -5,6 +5,8 @@ using LinearAlgebra
 using CGcoefficient
 using SparseArrays
 
+using NaCsSim.Master
+
 function g_sum(J, J1, g1, J2, g2)
     return (g1 * (J * (J + 1) + J1 * (J1 + 1) - J2 * (J2 + 1)) + g2 * (J * (J + 1) + J2 * (J2 + 1) - J1 * (J1 + 1))) / (2 * J * (J + 1))
 end
@@ -138,76 +140,15 @@ function fill_dipole!(op⁺, op⁻, q, dJ, dJ′, dI, idxFl, idxFl′)
     return op⁺, op⁻
 end
 
-function foreach_nz(cb, m)
-    for col in 1:size(m, 2)
-        for r in nzrange(m, col)
-            row = rowvals(m)[r]
-            v = nonzeros(m)[r]
-            cb(row, col, v)
-        end
-    end
-end
-
 # State order,
 # S1/2 (F=0, F=1), P1/2 (F=0, F=1), D3/2 (F=1, F=2), [3/2]1/2 (F=0, F=1)
 #         1,   2,          3,   4,          5,   6,              7,   8
 
-struct LinearOP{Map}
-end
-
-@generated function map_op!(::LinearOP{Map}, tgt, src) where Map
-    ex = quote
-    end
-
-    max_iin = 0
-    max_iout = 0
-    for (iout, iin, v) in Map
-        max_iin = max(max_iin, iin)
-        max_iout = max(max_iout, iout)
-    end
-
-    num_map = length(Map)
-    minpos_in = fill(num_map, max_iin)
-    minpos_out = fill(num_map, max_iout)
-    maxpos_out = fill(1, max_iout)
-
-    for i in 1:num_map
-        iout, iin, v = Map[i]
-        minpos_in[iin] = min(minpos_in[iin], i)
-        minpos_out[iout] = min(minpos_out[iout], i)
-        maxpos_out[iout] = max(maxpos_out[iout], i)
-    end
-
-    invars = [gensym() for i in 1:max_iin]
-    outvars = [gensym() for i in 1:max_iout]
-
-    for i in 1:num_map
-        iout, iin, v = Map[i]
-        invar = invars[iin]
-        outvar = outvars[iout]
-        if i == minpos_in[iin]
-            push!(ex.args, :($invar = @inbounds src[$iin]))
-        end
-        if i == minpos_out[iout]
-            push!(ex.args, :($outvar = @inbounds tgt[$iout]))
-        end
-        push!(ex.args, :($outvar = muladd($invar, $v, $outvar)))
-        if i == maxpos_out[iout]
-            push!(ex.args, :(@inbounds tgt[$iout] = $outvar))
-        end
-    end
-    push!(ex.args, :(return))
-    return ex
-end
-
-struct Yb171Sys{Basis,O,CO,JMap}
+struct Yb171Data{Basis,O,CO}
     basis::Basis
-    op_dagger::CO
     nh0_dagger::CO
 
     J::Vector{O}
-    Jdagger::Vector{O}
-    Jop::LinearOP{JMap}
 
     dP_Sσ⁺⁺::O
     dP_Sσ⁺⁻::O
@@ -236,7 +177,7 @@ struct Yb171Sys{Basis,O,CO,JMap}
     dB_Dσ⁻⁻::O
     dB_Dπ⁺::O
     dB_Dπ⁻::O
-    function Yb171Sys(B)
+    function Yb171Data(B)
         h_S1 = get_hf_hamiltonian(g_S1_2 * μB * B, 0, -HF_S1_2, 0)
         h_P1 = get_hf_hamiltonian(g_P1_2 * μB * B, 0, 0, HF_P1_2)
         h_D3 = get_hf_hamiltonian(g_D3_2 * μB * B, 1, 0, HF_D3_2)
@@ -256,29 +197,6 @@ struct Yb171Sys{Basis,O,CO,JMap}
         add_J!(J, basis, offsets, ΓB_S, 1, 1, 1, 1, 7)
         add_J!(J, basis, offsets, ΓB_D, 3, 1, 1, 5, 7)
         Jdagger = dagger.(J)
-
-        linidx = LinearIndices((20, 20))
-        jmap = Dict{NTuple{2,Int},Float64}()
-        function add_jterm(xi, yi, xo, yo, v)
-            key = linidx[xi, yi], linidx[xo, yo]
-            if haskey(jmap, key)
-                jmap[key] += v
-            else
-                jmap[key] = v
-            end
-            return
-        end
-        for j in J
-            foreach_nz(j.data) do x1, y1, v1
-                foreach_nz(j.data) do x2, y2, v2
-                    add_jterm(y1, y2, x1, x2, v1 * v2)
-                end
-            end
-        end
-        jop = [(iout, iin, v) for ((iin, iout), v) in jmap]
-        # Group the ones with the same output together
-        sort!(jop)
-        jop = tuple(jop...)
 
         nh0_dagger = Operator(basis, complex(h0.data))
 
@@ -303,8 +221,8 @@ struct Yb171Sys{Basis,O,CO,JMap}
         dB_Dσ⁻⁺, dB_Dσ⁻⁻ = fill_dipole!(zero(h0), zero(h0), -1, 3, 1, 1, 5, 7)
         dB_Dπ⁺, dB_Dπ⁻ = fill_dipole!(zero(h0), zero(h0), 0, 3, 1, 1, 5, 7)
 
-        return new{B,typeof(h0),typeof(nh0_dagger),jop}(
-            basis, zero(nh0_dagger), nh0_dagger, J, Jdagger, LinearOP{jop}(),
+        return new{B,typeof(h0),typeof(nh0_dagger)}(
+            basis, nh0_dagger, J,
             dP_Sσ⁺⁺, dP_Sσ⁺⁻, dP_Sσ⁻⁺, dP_Sσ⁻⁻, dP_Sπ⁺, dP_Sπ⁻,
             dP_Dσ⁺⁺, dP_Dσ⁺⁻, dP_Dσ⁻⁺, dP_Dσ⁻⁻, dP_Dπ⁺, dP_Dπ⁻,
             dB_Sσ⁺⁺, dB_Sσ⁺⁻, dB_Sσ⁻⁺, dB_Sσ⁻⁻, dB_Sπ⁺, dB_Sπ⁻,
@@ -313,8 +231,15 @@ struct Yb171Sys{Basis,O,CO,JMap}
     end
 end
 
+const Yb171Sys{Basis,O,CO} = Master.System{Float64,20,Yb171Data{Basis,O,CO}}
+
+function Yb171Sys(B)
+    data = Yb171Data(B)
+    return Master.System{Float64,20}([j.data for j in data.J], data)
+end
+
 function get_ψ(sys::Yb171Sys, name::Symbol, F, mF)
-    ψ = Ket(sys.basis)
+    ψ = Ket(sys.data.basis)
     @assert -F <= mF <= F
     if name === :S
         @assert 0 <= F <= 1
@@ -339,82 +264,15 @@ function get_ρ(sys::Yb171Sys, name::Symbol, F, mF)
     return ψ ⊗ ψ'
 end
 
-function init! end
-function update! end
-
-@inline function do_mul!(result, B, M::SparseMatrixCSC)
-    nrow = 20 # size(result, 1)
-    @inbounds prev_colptr = M.colptr[1]
-    @inbounds for col in 1:M.n
-        filled = false
-        colptr = M.colptr[col + 1]
-        # Manually compute the linear index.
-        # Somehow the invariance of the matrix size doesn't work anymore
-        # and the dimension of the matrix is being loaded in every loop iterations
-        col_offset = (col - 1) * nrow
-        for i in prev_colptr:colptr - 1
-            val = M.nzval[i]
-            row = M.rowval[i]
-            row_offset = (row - 1) * nrow
-            if filled
-                @simd ivdep for j in 1:nrow
-                    result[j + col_offset] =
-                        muladd(val, B[j + row_offset], result[j + col_offset])
-                end
-            else
-                @simd ivdep for j in 1:nrow
-                    result[j + col_offset] = val * B[j + row_offset]
-                end
-            end
-            filled = true
-        end
-        prev_colptr = colptr
-        if !filled
-            @simd ivdep for j in 1:nrow
-                result[j + col_offset] = 0
-            end
-        end
-    end
-end
-
-@inline function dmaster(t, rho_data, drho_data, sys::Yb171Sys, drive)
-    @inline update!(drive, sys, t)
-    nrow = 20 # size(drho_data, 1)
-    do_mul!(drho_data, rho_data, sys.op_dagger.data)
-    # compute -i * drho^dagger + i * drho
-    @inbounds for i in 1:nrow
-        drho_data[i + (i - 1) * nrow] = -2 * imag(drho_data[i + (i - 1) * nrow])
-        for j in (i + 1):nrow
-            idx1 = j + (i - 1) * nrow
-            idx2 = i + (j - 1) * nrow
-            v1 = drho_data[idx1]
-            v2 = drho_data[idx2]
-
-            re_o = -imag(v1) - imag(v2)
-            im_o = real(v2) - real(v1)
-
-            drho_data[idx1] = complex(re_o, -im_o)
-            drho_data[idx2] = complex(re_o, im_o)
-        end
-    end
-    @inline map_op!(sys.Jop, drho_data, rho_data)
-    return
-end
-
 function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
-    init!(drive, sys)
-    @inline function dmaster_(t, rho, drho)
-        dmaster(t, rho.data, drho.data, sys, drive)
-        return drho
-    end
-    return timeevolution.integrate_master(range(0, tlen, npoints), dmaster_,
-                                          ρ0, nothing; kws...)
+    fout(t, x) = Operator(ρ0.basis_l, ρ0.basis_r, copy(x))
+    return Master.evolve(drive, sys, ρ0.data, tlen, npoints; fout=fout, kws...)
 end
 
-function init!(::Nothing, sys::Yb171Sys)
-    sys.op_dagger .= sys.nh0_dagger
+function Master.init!(::Nothing, sys::Yb171Sys)
+    sys.op_dagger .= sys.data.nh0_dagger.data
 end
-function update!(::Nothing, sys::Yb171Sys, t)
+function Master.update!(::Nothing, sys::Yb171Sys, t)
 end
 
 struct SingleDrive
@@ -465,33 +323,34 @@ end
     end
 end
 
-function init!(drives::Drives, sys::Yb171Sys)
+function Master.init!(drives::Drives, sys::Yb171Sys)
+    data = sys.data
     idx = Ref(1)
     idx_map = Dict{Pair{Int,Int},Int}()
     function add_op(m)
-        foreach_nz(m) do row, col, _
+        Master.foreach_nz(m) do row, col, _
             if !haskey(idx_map, row=>col)
                 idx_map[row=>col] = idx[]
                 idx[] += 1
             end
         end
     end
-    add_op(sys.nh0_dagger.data)
+    add_op(data.nh0_dagger.data)
     has370 = (false, false, false)
     for d370 in drives.d370
         has370 = has370 .| (d370.pol .!= 0)
     end
     if has370[1]
-        add_op(sys.dP_Sσ⁻⁺.data)
-        add_op(sys.dP_Sσ⁻⁻.data)
+        add_op(data.dP_Sσ⁻⁺.data)
+        add_op(data.dP_Sσ⁻⁻.data)
     end
     if has370[2]
-        add_op(sys.dP_Sπ⁺.data)
-        add_op(sys.dP_Sπ⁻.data)
+        add_op(data.dP_Sπ⁺.data)
+        add_op(data.dP_Sπ⁻.data)
     end
     if has370[3]
-        add_op(sys.dP_Sσ⁺⁺.data)
-        add_op(sys.dP_Sσ⁺⁻.data)
+        add_op(data.dP_Sσ⁺⁺.data)
+        add_op(data.dP_Sσ⁺⁻.data)
     end
 
     has935 = (false, false, false)
@@ -499,16 +358,16 @@ function init!(drives::Drives, sys::Yb171Sys)
         has935 = has935 .| (d935.pol .!= 0)
     end
     if has935[1]
-        add_op(sys.dB_Dσ⁻⁺.data)
-        add_op(sys.dB_Dσ⁻⁻.data)
+        add_op(data.dB_Dσ⁻⁺.data)
+        add_op(data.dB_Dσ⁻⁻.data)
     end
     if has935[2]
-        add_op(sys.dB_Dπ⁺.data)
-        add_op(sys.dB_Dπ⁻.data)
+        add_op(data.dB_Dπ⁺.data)
+        add_op(data.dB_Dπ⁻.data)
     end
     if has935[3]
-        add_op(sys.dB_Dσ⁺⁺.data)
-        add_op(sys.dB_Dσ⁺⁻.data)
+        add_op(data.dB_Dσ⁺⁺.data)
+        add_op(data.dB_Dσ⁺⁻.data)
     end
 
     I = Int[]
@@ -524,9 +383,9 @@ function init!(drives::Drives, sys::Yb171Sys)
     # Since V is an array of 1:n, sortperm inverse it so that V[order[i]] == i
     order = sortperm(V)
 
-    set_vector!(sys.op_dagger.data.colptr, dummy.colptr)
-    set_vector!(sys.op_dagger.data.rowval, dummy.rowval)
-    resize!(sys.op_dagger.data.nzval, length(dummy.nzval))
+    set_vector!(sys.op_dagger.colptr, dummy.colptr)
+    set_vector!(sys.op_dagger.rowval, dummy.rowval)
+    resize!(sys.op_dagger.nzval, length(dummy.nzval))
 
     function remap_values!(m, op, cond=true)
         v = op.data
@@ -542,7 +401,7 @@ function init!(drives::Drives, sys::Yb171Sys)
         return
     end
 
-    remap_values!(drives.nh0_dagger, sys.nh0_dagger)
+    remap_values!(drives.nh0_dagger, data.nh0_dagger)
 
     function remap_offdiag_xy!(σx, σy, op⁺, op⁻, cond)
         remap_values!(σx, op⁺, cond)
@@ -557,21 +416,21 @@ function init!(drives::Drives, sys::Yb171Sys)
     end
 
     remap_offdiag_xy!(drives.dP_Sσ⁻x, drives.dP_Sσ⁻y,
-                      sys.dP_Sσ⁻⁺, sys.dP_Sσ⁻⁻, has370[1])
+                      data.dP_Sσ⁻⁺, data.dP_Sσ⁻⁻, has370[1])
     remap_offdiag_xy!(drives.dP_Sπx, drives.dP_Sπy,
-                      sys.dP_Sπ⁺, sys.dP_Sπ⁻, has370[2])
+                      data.dP_Sπ⁺, data.dP_Sπ⁻, has370[2])
     remap_offdiag_xy!(drives.dP_Sσ⁺x, drives.dP_Sσ⁺y,
-                      sys.dP_Sσ⁺⁺, sys.dP_Sσ⁺⁻, has370[3])
+                      data.dP_Sσ⁺⁺, data.dP_Sσ⁺⁻, has370[3])
 
     remap_offdiag_xy!(drives.dB_Dσ⁻x, drives.dB_Dσ⁻y,
-                      sys.dB_Dσ⁻⁺, sys.dB_Dσ⁻⁻, has935[1])
+                      data.dB_Dσ⁻⁺, data.dB_Dσ⁻⁻, has935[1])
     remap_offdiag_xy!(drives.dB_Dπx, drives.dB_Dπy,
-                      sys.dB_Dπ⁺, sys.dB_Dπ⁻, has935[2])
+                      data.dB_Dπ⁺, data.dB_Dπ⁻, has935[2])
     remap_offdiag_xy!(drives.dB_Dσ⁺x, drives.dB_Dσ⁺y,
-                      sys.dB_Dσ⁺⁺, sys.dB_Dσ⁺⁻, has935[3])
+                      data.dB_Dσ⁺⁺, data.dB_Dσ⁺⁻, has935[3])
 end
-function update!(drives::Drives, sys::Yb171Sys, t)
-    op_dagger_nzval = sys.op_dagger.data.nzval
+function Master.update!(drives::Drives, sys::Yb171Sys, t)
+    op_dagger_nzval = sys.op_dagger.nzval
 
     nh0_dagger = drives.nh0_dagger
     @inbounds @simd ivdep for i in 1:length(op_dagger_nzval)
