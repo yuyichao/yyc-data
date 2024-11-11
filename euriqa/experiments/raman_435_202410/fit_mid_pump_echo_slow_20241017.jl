@@ -173,13 +173,13 @@ NaCsPlot.plot_loading_data(data_z_err0_aux0, fmt="C2o",
 plot(fit_data_z_err0_aux1.plotx, fit_data_z_err0_aux1.ploty, color="C3")
 NaCsPlot.plot_loading_data(data_z_err0_aux1, fmt="C3o",
          label="\$0\\rightarrow1,|1\\rangle\$")
-text(10, 0.036, "\$E_{1\\rightarrow0,|0\\rangle}=$(fit_data_z_err1_aux0.uncs[2] * 100) \\%\$",
+text(10, 0.036, "\$E_{1\\rightarrow0,|0\\rangle}=$(fit_data_z_err1_aux0.uncs[2] * 100) \\%/cycle\$",
      color="C0", fontsize=15)
-text(10, 0.0318, "\$E_{1\\rightarrow0,|1\\rangle}=$(fit_data_z_err1_aux1.uncs[2] * 100) \\%\$",
+text(10, 0.0318, "\$E_{1\\rightarrow0,|1\\rangle}=$(fit_data_z_err1_aux1.uncs[2] * 100) \\%/cycle\$",
      color="C1", fontsize=15)
-text(10, 0.0276, "\$E_{0\\rightarrow1,|0\\rangle}=$(fit_data_z_err0_aux0.uncs[2] * 100) \\%\$",
+text(10, 0.0276, "\$E_{0\\rightarrow1,|0\\rangle}=$(fit_data_z_err0_aux0.uncs[2] * 100) \\%/cycle\$",
      color="C2", fontsize=15)
-text(10, 0.0234, "\$E_{0\\rightarrow1,|1\\rangle}=$(fit_data_z_err0_aux1.uncs[2] * 100) \\%\$",
+text(10, 0.0234, "\$E_{0\\rightarrow1,|1\\rangle}=$(fit_data_z_err0_aux1.uncs[2] * 100) \\%/cycle\$",
      color="C3", fontsize=15)
 xlim([0, 25])
 ylim([0, 0.039])
@@ -194,9 +194,9 @@ errorbar(pump_cycles, data_x_err_aux0, data_x_err_unc_aux0, fmt="C0o",
 plot(fit_data_x_err_aux1.plotx, fit_data_x_err_aux1.ploty, color="C1")
 errorbar(pump_cycles, data_x_err_aux1, data_x_err_unc_aux1, fmt="C1o",
          label="\$|1\\rangle\$")
-text(10, 0.002, "\$E_{|0\\rangle}=$(fit_data_x_err_aux0.uncs[2] * 100) \\%\$",
+text(10, 0.002, "\$E_{|0\\rangle}=$(fit_data_x_err_aux0.uncs[2] * 100) \\%/cycle\$",
      color="C0", fontsize=16)
-text(10, 0.012, "\$E_{|1\\rangle}=$(fit_data_x_err_aux1.uncs[2] * 100) \\%\$",
+text(10, 0.012, "\$E_{|1\\rangle}=$(fit_data_x_err_aux1.uncs[2] * 100) \\%/cycle\$",
      color="C1", fontsize=16)
 xlim([0, 25])
 ylim([0, 0.08])
