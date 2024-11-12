@@ -173,13 +173,13 @@ NaCsPlot.plot_loading_data(data_z_err0_aux0, fmt="C2o",
 plot(fit_data_z_err0_aux1.plotx, fit_data_z_err0_aux1.ploty, color="C3")
 NaCsPlot.plot_loading_data(data_z_err0_aux1, fmt="C3o",
          label="\$0\\rightarrow1,|1\\rangle\$")
-text(10, 0.036, "\$E_{1\\rightarrow0,|0\\rangle}=$(fit_data_z_err1_aux0.uncs[2] * 100) \\%/cycle\$",
+text(10, 0.036, "\$E_{1\\rightarrow0,|0\\rangle}=$(fit_data_z_err1_aux0.uncs[2] * 100) \\%\$/cycle",
      color="C0", fontsize=15)
-text(10, 0.0318, "\$E_{1\\rightarrow0,|1\\rangle}=$(fit_data_z_err1_aux1.uncs[2] * 100) \\%/cycle\$",
+text(10, 0.0318, "\$E_{1\\rightarrow0,|1\\rangle}=$(fit_data_z_err1_aux1.uncs[2] * 100) \\%\$/cycle",
      color="C1", fontsize=15)
-text(10, 0.0276, "\$E_{0\\rightarrow1,|0\\rangle}=$(fit_data_z_err0_aux0.uncs[2] * 100) \\%/cycle\$",
+text(10, 0.0276, "\$E_{0\\rightarrow1,|0\\rangle}=$(fit_data_z_err0_aux0.uncs[2] * 100) \\%\$/cycle",
      color="C2", fontsize=15)
-text(10, 0.0234, "\$E_{0\\rightarrow1,|1\\rangle}=$(fit_data_z_err0_aux1.uncs[2] * 100) \\%/cycle\$",
+text(10, 0.0234, "\$E_{0\\rightarrow1,|1\\rangle}=$(fit_data_z_err0_aux1.uncs[2] * 100) \\%\$/cycle",
      color="C3", fontsize=15)
 xlim([0, 25])
 ylim([0, 0.039])
@@ -188,29 +188,33 @@ grid()
 NaCsPlot.maybe_save("$(prefix)_data_z_error")
 
 figure()
-plot(fit_data_x_err_aux0.plotx, fit_data_x_err_aux0.ploty, color="C0")
-errorbar(pump_cycles, data_x_err_aux0, data_x_err_unc_aux0, fmt="C0o",
+plot(fit_data_x_err_aux0.plotx, fit_data_x_err_aux0.ploty .* 100, color="C0")
+errorbar(pump_cycles, data_x_err_aux0 .* 100, data_x_err_unc_aux0 .* 100, fmt="C0o",
          label="\$|0\\rangle\$")
-plot(fit_data_x_err_aux1.plotx, fit_data_x_err_aux1.ploty, color="C1")
-errorbar(pump_cycles, data_x_err_aux1, data_x_err_unc_aux1, fmt="C1o",
+plot(fit_data_x_err_aux1.plotx, fit_data_x_err_aux1.ploty .* 100, color="C1")
+errorbar(pump_cycles, data_x_err_aux1 .* 100, data_x_err_unc_aux1 .* 100, fmt="C1o",
          label="\$|1\\rangle\$")
-text(10, 0.002, "\$E_{|0\\rangle}=$(fit_data_x_err_aux0.uncs[2] * 100) \\%/cycle\$",
+text(10, 0.2, "\$E_{|0\\rangle}=$(fit_data_x_err_aux0.uncs[2] * 100) \\%\$/cycle",
      color="C0", fontsize=16)
-text(10, 0.012, "\$E_{|1\\rangle}=$(fit_data_x_err_aux1.uncs[2] * 100) \\%/cycle\$",
+text(10, 1.2, "\$E_{|1\\rangle}=$(fit_data_x_err_aux1.uncs[2] * 100) \\%\$/cycle",
      color="C1", fontsize=16)
 xlim([0, 25])
-ylim([0, 0.08])
+ylim([0, 8])
+xlabel("Pumping cycles")
+ylabel("Error (%)")
 legend(fontsize=15)
 grid()
 NaCsPlot.maybe_save("$(prefix)_data_x_error")
 
 figure()
-errorbar(pump_cycles, aux_rabi_err_0, aux_rabi_err_unc_0, fmt="C0o-",
+errorbar(pump_cycles, aux_rabi_err_0 .* 100, aux_rabi_err_unc_0 .* 100, fmt="C0o-",
          label="\$|0\\rangle\$")
-errorbar(pump_cycles, aux_rabi_err_1, aux_rabi_err_unc_1, fmt="C1o-",
+errorbar(pump_cycles, aux_rabi_err_1 .* 100, aux_rabi_err_unc_1 .* 100, fmt="C1o-",
          label="\$|1\\rangle\$")
 xlim([0, 25])
-ylim([0, 0.06])
+ylim([0, 6])
+xlabel("Pumping cycles")
+ylabel("Error (%)")
 grid()
 NaCsPlot.maybe_save("$(prefix)_aux_error")
 
