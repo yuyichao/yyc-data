@@ -2,8 +2,8 @@
 
 using HDF5
 
-function load_dax_scan_logicals1(fname::AbstractString; thresh=nothing)
-    h5open(fh->load_dax_scan_logicals1(fh, thresh=thresh), fname)
+function load_dax_scan_logicals1(fname::AbstractString; kws...)
+    h5open(fh->load_dax_scan_logicals1(fh; kws...), fname)
 end
 
 # Return nshots * nsites * nseqs
@@ -36,7 +36,7 @@ function _conert_count_to_logical(params, pmt_counts, thresh)
 end
 
 # 1D scan, single parameter, single measurement
-function load_dax_scan_logicals1(fd; thresh=nothing)
+function load_dax_scan_logicals1(fd; thresh=nothing, index_param=false)
     if thresh === nothing
         thresh = read(fd, "archive/system.pmt.state_detection_threshold")
     end
@@ -45,6 +45,9 @@ function load_dax_scan_logicals1(fd; thresh=nothing)
     param_name = first(keys(scan))
     params = first(values(scan))
     nparams = length(params)
+    if index_param
+        params = collect(1:nparams)
+    end
     pmt_counts = read(fd, "datasets/histogram_context/histogram/raw")
     actual_nparams = length(pmt_counts)
     pmt_counts_ary = Vector{Matrix{Int}}(undef, actual_nparams)
@@ -86,7 +89,7 @@ function _convert_count(pmt_counts, thresh, si=1)
 end
 
 # 1D scan, single parameter, single measurement
-function load_dax_scan1(fd; thresh=nothing, count_processor=nothing)
+function load_dax_scan1(fd; thresh=nothing, count_processor=nothing, index_param=false)
     if thresh === nothing
         thresh = read(fd, "archive/system.pmt.state_detection_threshold")
     end
@@ -95,6 +98,9 @@ function load_dax_scan1(fd; thresh=nothing, count_processor=nothing)
     param_name = first(keys(scan))
     params = first(values(scan))
     nparams = length(params)
+    if index_param
+        params = collect(1:nparams)
+    end
     pmt_counts = read(fd, "datasets/histogram_context/histogram/raw")
     actual_nparams = length(pmt_counts)
     pmt_counts_ary = Vector{Matrix{Float64}}(undef, actual_nparams)
