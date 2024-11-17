@@ -78,7 +78,7 @@
     \pgfoothis.drawAtom(#1,#2,#3,pyplotc1);
   }
   \method drawState(#1,#2) {
-    \draw[line width=1.5,shift={(#1,#2)}] (-0.2, 0) -- (0.2, 0);
+    \draw[line width=1,shift={(#1,#2)}] (-0.2, 0) -- (0.2, 0);
   }
 }
 \pgfoonew \mytweezer=new tweezer()
@@ -133,7 +133,7 @@
   \mytweezer.drawState(\Sx-\Zx, \Sy+\Sh-\Zy)
   \mytweezer.drawState(\Sx+\Zx, \Sy+\Sh+\Zy)
   \draw[pyplotc0, ->, >=stealth, line width=1]
-  (\Sx, \Sy) -- (\Dx+\Zx*2, \Dy+\Zy*2);
+  (\Sx, \Sy) -- node[sloped,below=-0.05,pos=0.55] {\scalebox{0.5}{$435\ \mathrm{nm}$}} (\Dx+\Zx*2, \Dy+\Zy*2);
   \mytweezer.drawState(\Sx, \Sy)
   \draw[pyplotc4, <->, >=stealth, line width=0.8]
   (\Sx, \Sy) -- node[sloped,above=-0.05] {\scalebox{0.5}{Dressing}} (\Sx, \Sy+\Sdh);
