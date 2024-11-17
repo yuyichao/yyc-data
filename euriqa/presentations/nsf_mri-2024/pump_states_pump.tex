@@ -115,14 +115,14 @@
   \def\By{5}
 
   % Bracket
-  \node[right] at (\Bx+0.8, \By+0.1) {$[3/2]_{1/2}$};
+  \node[right] at (\Bx+\Zx+0.2, \By+\Zy) {$[3/2]_{1/2}$};
   \node[above] at (\Bx, \By+0.1) {\scalebox{0.7}{$F=1$}};
   \mytweezer.drawState(\Bx-\Zx, \By-\Zy)
   \mytweezer.drawState(\Bx, \By)
   \mytweezer.drawState(\Bx+\Zx, \By+\Zy)
 
   % D
-  \node[right] at (\Dx+\Zx*2 + 0.2, \Dy+0.1) {$\mathrm{D}_{3/2}$};
+  \node[right] at (\Dx+\Zx*2 + 0.2, \Dy+\Zy*2-0.05) {$\mathrm{D}_{3/2}$};
   \node[above] at (\Dx+\Zx, \Dy+0.2) {\scalebox{0.7}{$F=2$}};
   \mytweezer.drawState(\Dx-\Zx*2, \Dy-\Zy*2)
   \mytweezer.drawState(\Dx-\Zx, \Dy-\Zy)
@@ -140,7 +140,7 @@
   (\Bx - 0.02, \By - 0.2) -- (\Sx + \Zx, \Sy + 1.2);
 
   % S
-  \node[left] at (\Sx-\Zx-0.3, \Sy+\Sh) {$\mathrm{S}_{1/2}$};
+  \node[left] at (\Sx-\Zx-0.2, \Sy+\Sh-\Zy) {$\mathrm{S}_{1/2}$};
   \mytweezer.drawState(\Sx, \Sy+\Sdh)
   \mytweezer.drawState(\Sx-\Zx, \Sy+\Sh-\Zy)
   \mytweezer.drawState(\Sx+\Zx, \Sy+\Sh+\Zy)
