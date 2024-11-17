@@ -13,3 +13,6 @@
 [submodule "bec5/presentations/undergrad-thesis"]
 	path = bec5/presentations/undergrad-thesis
 	url = git@github.com:yuyichao/undergrad-thesis
+[submodule "euriqa/presentations/dstate_shelving_paper"]
+	path = euriqa/presentations/dstate_shelving_paper
+	url = git@github.com:yuyichao/dstate_shelving_paper
