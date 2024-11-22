@@ -16,3 +16,6 @@
 [submodule "euriqa/presentations/dstate_shelving_paper"]
 	path = euriqa/presentations/dstate_shelving_paper
 	url = git@github.com:yuyichao/dstate_shelving_paper
+[submodule "euriqa/presentations/timebin_theory_paper"]
+	path = euriqa/presentations/timebin_theory_paper
+	url = git@github.com:yuyichao/timebin_theory_paper
