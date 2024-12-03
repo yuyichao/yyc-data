@@ -30,20 +30,19 @@ function multi_rotation(α, param0, params...)
     return v
 end
 
-function multi_rotation_xy(α, params...)
+function multi_rotation_xyz(α, params...)
     v = multi_rotation(α, params...)
     vxy, vz = decompose_xy_z(v)
-    return vxy[2], vxy[3]
+    return vxy[2], vxy[3], vz[4]
 end
 
 function objective_function(α, Ω, cutoff, params...)
-    x, y = multi_rotation_xy(α, params...)
-    ytgt = target_y(α * Ω, cutoff)
-    ydiff = imag(y) - target_y(α * Ω, cutoff)
-    if abs(ydiff) > 1
-        ydiff = 2 - abs(ydiff)
+    x, y, z = multi_rotation_xyz(α, params...)
+    if α * Ω > cutoff
+        return abs2(x) + abs2(y) + abs2(z)
+    else
+        return abs2(x) + abs2(abs(y) - 1)
     end
-    return abs2(x) + abs2(ydiff)
 end
 
 function repack_param3(params::Vararg{Any,N}) where N
@@ -115,15 +114,19 @@ function opt_n(model, ::Val{n}, Ω, cutoff, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
     return Xv, Zv, ϕv, obj_func(Xv..., Zv..., ϕv...)
 end
 
-function plot_xy(αs, Xs, Zs, ϕs)
+function plot_xyz(αs, Xs, Zs, ϕs)
     xs = similar(αs, Float64)
     ys = similar(αs, Float64)
+    zs = similar(αs, Float64)
     for (i, α) in enumerate(αs)
-        x, y = multi_rotation_xy(α, zip(Xs, Zs, ϕs)...)
+        x, y, z = multi_rotation_xyz(α, zip(Xs, Zs, ϕs)...)
         xs[i] = imag(x)
         ys[i] = imag(y)
+        zs[i] = imag(z)
     end
-    return xs, ys
+    return xs, ys, zs
 end
 
 # [1.573808755032251, 4.720886497147208, 1.5734306439589152], [0.0, 0.0, 0.0], [3.4330944508917947, 5.114712612318794, 0.5106233267300696], 0.0001138493952966524
+# [2.2256258753645315, 2.2238315316814696, 4.4452007353124365], [0.0, 0.0, 0.0], [4.0718830352918784, 6.499580993261763, 7.954649435204307]
+# [4.150729797709635, 3.7895211205522674, 4.338291742705923], [-1.807628358753955, 3.07132682114769, 0.036334424920617926], [2.686170721467204, 0.9383493612406526, 5.123962927102851], 0.0006416825788214378
