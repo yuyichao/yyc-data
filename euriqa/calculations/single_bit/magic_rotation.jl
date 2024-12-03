@@ -10,9 +10,9 @@ using Ipopt
 
 include("pauli_utils.jl")
 
-function target_y(Ω, cutoff)
-    return Ω > cutoff ? 0 : 1
-end
+# function target_y(Ω, cutoff)
+#     return Ω > cutoff ? 0 : 1
+# end
 
 function single_rotation(α, X, Z, ϕ)
     X = α * X
@@ -36,9 +36,9 @@ function multi_rotation_xyz(α, params...)
     return vxy[2], vxy[3], vz[4]
 end
 
-function objective_function(α, Ω, cutoff, params...)
+function objective_function(α, Ω, cutoff, inverse, params...)
     x, y, z = multi_rotation_xyz(α, params...)
-    if α * Ω > cutoff
+    if (α * Ω > cutoff) ⊻ inverse
         return abs2(x) + abs2(y) + abs2(z)
     else
         return abs2(x) + abs2(abs(y) - 1)
@@ -52,19 +52,20 @@ function repack_param3(params::Vararg{Any,N}) where N
 end
 
 function opt_n(model, ::Val{n}, Ω, cutoff, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
-               minimize_angle=false, allow_z=false, robust=false) where n
+               minimize_angle=false, allow_z=false, robust=false,
+               inverse=false) where n
     function obj_func(p1...)
         params = repack_param3(p1...)
         if robust
-            return (objective_function(0.98, Ω, cutoff, params...) * 1 +
-                objective_function(1.0, Ω, cutoff, params...) * 5 +
-                objective_function(1.02, Ω, cutoff, params...) * 1 +
-                objective_function(√(2) - 0.02, Ω, cutoff, params...) * 1 +
-                objective_function(√(2), Ω, cutoff, params...) * 5 +
-                objective_function(√(2) + 0.02, Ω, cutoff, params...) * 1)
+            return (objective_function(0.98, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(1.0, Ω, cutoff, inverse, params...) * 5 +
+                objective_function(1.02, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(√(2) - 0.02, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(√(2), Ω, cutoff, inverse, params...) * 5 +
+                objective_function(√(2) + 0.02, Ω, cutoff, inverse, params...) * 1)
         else
-            return (objective_function(1.0, Ω, cutoff, params...) * 5 +
-                objective_function(√(2), Ω, cutoff, params...) * 5)
+            return (objective_function(1.0, Ω, cutoff, inverse, params...) * 5 +
+                objective_function(√(2), Ω, cutoff, inverse, params...) * 5)
         end
     end
 
