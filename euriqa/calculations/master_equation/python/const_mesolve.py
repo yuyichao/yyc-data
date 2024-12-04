@@ -135,7 +135,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
             Mt = M * (t - tlast)
             tlast = t
             rhof = expm_multiply(Mt, rhof)
-            rho = Qobj(rhof.reshape(N, N))
+            rho = Qobj(rhof.reshape(N, N), dims=rho0.dims)
             output.states.append(rho)
 
             if expt_callback:
@@ -145,7 +145,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
             for m in range(n_expt_op):
                 op = e_ops[m]
                 if not isinstance(op, Qobj) and callable(op):
-                    output.expect[m][t_idx] = op(t, rho_t)
+                    output.expect[m][t_idx] = op(t, rho)
                     continue
                 output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
                                                          op.isherm and rho0.isherm)
@@ -155,7 +155,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
             progress_bar.update(t_idx)
             U = expm((t / 1j) * M)
             _rho = U @ _rho0 @ U.conj().T
-            rho = Qobj(_rho)
+            rho = Qobj(_rho, dims=rho0.dims)
             output.states.append(rho)
             rhof = np.ndarray.flatten(_rho)
 
@@ -166,7 +166,7 @@ def const_mesolve(H, rho0, tlist, c_ops=None, e_ops=None, progress_bar=None,
             for m in range(n_expt_op):
                 op = e_ops[m]
                 if not isinstance(op, Qobj) and callable(op):
-                    output.expect[m][t_idx] = op(t, rho_t)
+                    output.expect[m][t_idx] = op(t, rho)
                     continue
                 output.expect[m][t_idx] = expect_rho_vec(e_ops_data[m], rhof,
                                                          op.isherm and rho0.isherm)
