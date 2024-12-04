@@ -1,12 +1,5 @@
 #!/usr/bin/julia
 
-function get_idx(M, args...)
-    if !checkbounds(Bool, M, args...)
-        return zero(eltype(M))
-    end
-    return M[args...]
-end
-
 function count_x(file)
     lines = readlines(file)
     nrow = length(lines)
@@ -15,13 +8,6 @@ function count_x(file)
     for i in 1:nrow
         M[i, :] .= (c for c in lines[i])
     end
-
-    # target = Int8.(('M', 'A', 'S'))
-    # function get_didx(i, j, di, dj)
-    #     return (get_idx(M, i + di, j + dj),
-    #             get_idx(M, i + di * 2, j + dj * 2),
-    #             get_idx(M, i + di * 3, j + dj * 3))
-    # end
 
     targets = (Int8('M'), Int8('S')), (Int8('S'), Int8('M'))
 
