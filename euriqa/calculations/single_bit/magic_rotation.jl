@@ -10,10 +10,6 @@ using Ipopt
 
 include("pauli_utils.jl")
 
-# function target_y(Ω, cutoff)
-#     return Ω > cutoff ? 0 : 1
-# end
-
 function single_rotation(α, X, Z, ϕ)
     X = α * X
     A = sqrt(X^2 + Z^2)
@@ -56,16 +52,18 @@ function opt_n(model, ::Val{n}, Ω, cutoff, Xinit=pi/8, Zinit=0.1, ϕinit=pi/2;
                inverse=false) where n
     function obj_func(p1...)
         params = repack_param3(p1...)
+        v0 = 1.0
+        v1 = cutoff * 2 - 1
         if robust
-            return (objective_function(0.98, Ω, cutoff, inverse, params...) * 1 +
-                objective_function(1.0, Ω, cutoff, inverse, params...) * 5 +
-                objective_function(1.02, Ω, cutoff, inverse, params...) * 1 +
-                objective_function(√(2) - 0.02, Ω, cutoff, inverse, params...) * 1 +
-                objective_function(√(2), Ω, cutoff, inverse, params...) * 5 +
-                objective_function(√(2) + 0.02, Ω, cutoff, inverse, params...) * 1)
+            return (objective_function(v0 - 0.02, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(v0, Ω, cutoff, inverse, params...) * 5 +
+                objective_function(v0 + 0.02, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(v1 - 0.02, Ω, cutoff, inverse, params...) * 1 +
+                objective_function(v1, Ω, cutoff, inverse, params...) * 5 +
+                objective_function(v1 + 0.02, Ω, cutoff, inverse, params...) * 1)
         else
-            return (objective_function(1.0, Ω, cutoff, inverse, params...) * 5 +
-                objective_function(√(2), Ω, cutoff, inverse, params...) * 5)
+            return (objective_function(v0, Ω, cutoff, inverse, params...) * 5 +
+                objective_function(v1, Ω, cutoff, inverse, params...) * 5)
         end
     end
 
