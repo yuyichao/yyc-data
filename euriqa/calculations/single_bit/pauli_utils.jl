@@ -68,14 +68,14 @@ function decompose_xy_z((a0, x0, y0, z0)::NTuple{4,Any})
     if a1 == 0
         # This has to be the case if the decomposition is possible.
         return ((zero_v, x0, y0, zero_v),
-                (one_v, zero_v, zero_v, zero_v))
+                (one_v, zero_v, zero_v, zero_v)), one_v
     end
     cosθ = abs(a0) / a1
     isinθ = im * abs(z0) / a1
     x1 = (a0' * x0 - im * z0 * y0') / a1
     y1 = (a0' * y0 + im * z0 * x0') / a1
 
-    return (a1, x1, y1, zero_v), (cosθ, zero_v, zero_v, isinθ)
+    return (a1, x1, y1, zero_v), (cosθ, zero_v, zero_v, isinθ), a0 == 0 ? (z0 / abs(z0) / im) : (a0 / abs(a0))
 end
 @inline decompose_xy_z(M::AbstractMatrix) = decompose_xy_z(decompose_sigmas(M))
 
