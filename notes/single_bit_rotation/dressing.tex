@@ -1,0 +1,376 @@
+\documentclass[10pt,fleqn]{article}
+% \usepackage[journal=rsc]{chemstyle}
+% \usepackage{mhchem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{esint}
+\usepackage{bbm}
+\usepackage{amscd}
+\usepackage{picinpar}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{tikz-3dplot}
+\usepackage{indentfirst}
+\usepackage{wrapfig}
+\usepackage{units}
+\usepackage{textcomp}
+\usepackage[utf8x]{inputenc}
+% \usepackage{feyn}
+\usepackage{xkeyval}
+\usepackage{xargs}
+\usepackage{verbatim}
+\usepackage{pgfplots}
+\usepackage{hyperref}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes
+}
+
+\DeclareGraphicsRule{*}{mps}{*}{}
+\newcommand{\ud}{\mathrm{d}}
+\newcommand{\ue}{\mathrm{e}}
+\newcommand{\ui}{\mathrm{i}}
+\newcommand{\res}{\mathrm{Res}}
+\newcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\dsum}{\displaystyle\sum}
+\newcommand{\dprod}{\displaystyle\prod}
+\newcommand{\dlim}{\displaystyle\lim}
+\newcommand{\dint}{\displaystyle\int}
+\newcommand{\fsno}[1]{{\!\not\!{#1}}}
+\newcommand{\eqar}[1]
+{
+  \begin{align*}
+    #1
+  \end{align*}
+}
+\newcommand{\texp}[2]{\ensuremath{{#1}\times10^{#2}}}
+\newcommand{\dexp}[2]{\ensuremath{{#1}\cdot10^{#2}}}
+\newcommand{\eval}[2]{{\left.{#1}\right|_{#2}}}
+\newcommand{\paren}[1]{{\left({#1}\right)}}
+\newcommand{\lparen}[1]{{\left({#1}\right.}}
+\newcommand{\rparen}[1]{{\left.{#1}\right)}}
+\newcommand{\abs}[1]{{\left|{#1}\right|}}
+\newcommand{\sqr}[1]{{\left[{#1}\right]}}
+\newcommand{\crly}[1]{{\left\{{#1}\right\}}}
+\newcommand{\angl}[1]{{\left\langle{#1}\right\rangle}}
+\newcommand{\tpdiff}[4][{}]{{\paren{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}_{#4}}}
+\newcommand{\tpsdiff}[4][{}]{{\paren{\frac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pdiff}[3][{}]{{\frac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\diff}[3][{}]{{\frac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psdiff}[3][{}]{{\frac{\partial^{#1}}{\partial {#3}{}^{#1}} {#2}}}
+\newcommand{\sdiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\newcommand{\tpddiff}[4][{}]{{\left(\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}\right)_{#4}}}
+\newcommand{\tpsddiff}[4][{}]{{\paren{\dfrac{\partial^{#1}}{\partial {#3}{}^{#1}}{#2}}_{#4}}}
+\newcommand{\pddiff}[3][{}]{{\dfrac{\partial^{#1} {#2}}{\partial {#3}{}^{#1}}}}
+\newcommand{\ddiff}[3][{}]{{\dfrac{\ud^{#1} {#2}}{\ud {#3}{}^{#1}}}}
+\newcommand{\psddiff}[3][{}]{{\frac{\partial^{#1}}{\partial{}^{#1} {#3}} {#2}}}
+\newcommand{\sddiff}[3][{}]{{\frac{\ud^{#1}}{\ud {#3}{}^{#1}} {#2}}}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{fontenc}
+% \usepackage{tipa}
+\usepackage{ulem}
+\usepackage{color}
+\usepackage{cancel}
+\newcommand{\hcancel}[2][black]{\setbox0=\hbox{#2}%
+  \rlap{\raisebox{.45\ht0}{\textcolor{#1}{\rule{\wd0}{1pt}}}}#2}
+\pagestyle{fancy}
+\setlength{\headheight}{67pt}
+\fancyhead{}
+\fancyfoot{}
+\fancyfoot[C]{\thepage}
+\fancyhead[R]{}
+\renewcommand{\footruleskip}{0pt}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand\pgfmathsinandcos[3]{%
+  \pgfmathsetmacro#1{sin(#3)}%
+  \pgfmathsetmacro#2{cos(#3)}%
+}
+\newcommand\LongitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % azimuth
+  \tikzset{#1/.estyle={cm={\cost,\sint*\sinEl,0,\cosEl,(0,0)}}}
+}
+\newcommand\LatitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % latitude
+  \pgfmathsetmacro\yshift{\cosEl*\sint}
+  \tikzset{#1/.estyle={cm={\cost,0,0,\cost*\sinEl,(0,\yshift)}}} %
+}
+\newcommand\DrawLongitudeCircle[2][1]{
+  \LongitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{atan(sin(#2)*cos(\angEl)/sin(\angEl))} %
+  \draw[current plane] (\angVis:1) arc (\angVis:\angVis+180:1);
+  \draw[current plane,dashed] (\angVis-180:1) arc (\angVis-180:\angVis:1);
+}
+\newcommand\DrawLatitudeCircleArrow[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane,decoration={markings, mark=at position 0.6 with {\arrow{<}}},postaction={decorate},line width=.6mm] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed,line width=.6mm] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\DrawLatitudeCircle[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\coil[1]{
+  {\rh * cos(\t * pi r)}, {\apart * (2 * #1 + \t) + \rv * sin(\t * pi r)}
+}
+\makeatletter
+\define@key{DrawFromCenter}{style}[{->}]{
+  \tikzset{DrawFromCenterPlane/.style={#1}}
+}
+\define@key{DrawFromCenter}{r}[1]{
+  \def\@R{#1}
+}
+\define@key{DrawFromCenter}{center}[(0, 0)]{
+  \def\@Center{#1}
+}
+\define@key{DrawFromCenter}{theta}[0]{
+  \def\@Theta{#1}
+}
+\define@key{DrawFromCenter}{phi}[0]{
+  \def\@Phi{#1}
+}
+\presetkeys{DrawFromCenter}{style, r, center, theta, phi}{}
+\newcommand*\DrawFromCenter[1][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
+  }
+}
+\newcommand*\DrawFromCenterText[2][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+  }
+}
+\makeatother
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
+  post length=0.2cm, snake, amplitude=.4mm,
+  segment length=2mm},thick, ->]
+%% document-wide tikz options and styles
+\tikzset{%
+  >=latex, % option for nice arrows
+  inner sep=0pt,%
+  outer sep=2pt,%
+  mark coordinate/.style={inner sep=0pt,outer sep=0pt,minimum size=3pt,
+    fill=black,circle}%
+}
+\addtolength{\hoffset}{-1.3cm}
+\addtolength{\voffset}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\textheight}{2.5cm}
+\renewcommand{\footskip}{10pt}
+\setlength{\headwidth}{\textwidth}
+\setlength{\headsep}{20pt}
+\setlength{\marginparwidth}{0pt}
+\parindent=0pt
+\title{Response of dressing rotation to amplitude noise}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\maketitle
+
+Dressing Hamiltonian
+\eqar{
+  H=&\Omega\sigma_x+\delta\sigma_z
+}
+Large $\Omega$ for the target ion and small $\Omega$ for the crosstalk ion.\\
+
+The rotation should robustly turn the $|0\rangle$ and $|1\rangle$ states into
+the eigen state of the dressing Hamiltonian for both small and large $\Omega$.\\
+
+The two eigen states are
+\eqar{
+  |\psi_\pm\rangle=&\frac1{\sqrt2}\begin{pmatrix}
+    \pm\sqrt{1\pm1/\sqrt{1 + (\Omega/\delta)^2}}\\
+    \sqrt{1\mp1/\sqrt{1 + (\Omega/\delta)^2}}\\
+  \end{pmatrix}
+}
+The transformation needed is
+\eqar{
+  U=&\frac1{\sqrt2}\begin{pmatrix}
+    \sqrt{1+1/\sqrt{1 + (\Omega/\delta)^2}}&-\sqrt{1-1/\sqrt{1 + (\Omega/\delta)^2}}\\
+    \sqrt{1-1/\sqrt{1 + (\Omega/\delta)^2}}&\sqrt{1+1/\sqrt{1 + (\Omega/\delta)^2}}\\
+  \end{pmatrix}
+}
+For small $\Omega$,
+\eqar{
+  U\approx&\begin{pmatrix}
+    1&-\Omega/\delta / 2\\
+    \Omega/\delta / 2&1\\
+  \end{pmatrix}\\
+  =&1-\frac{\ui\Omega}{2\delta}\sigma_y
+}
+For large $\Omega$, if $\Omega=\Omega_0(1+\varepsilon)$
+
+\eqar{
+  &\sqrt{1\pm1/\sqrt{1 + (\Omega/\delta)^2}}\\
+  \approx&\sqrt{1\pm1/\sqrt{1 + (\Omega_0/\delta)^2}}-\frac{(\Omega_0/\delta)^2}{2\paren{1 + (\Omega_0/\delta)^2}^{3/2}\sqrt{1\pm1/\sqrt{1 + (\Omega_0/\delta)^2}}}\varepsilon\\
+  \approx&\sqrt{1\pm1/\sqrt{1 + (\Omega_0/\delta)^2}}-\frac{(\Omega_0/\delta)\sqrt{1\mp1/\sqrt{1 + (\Omega_0/\delta)^2}}}{2\paren{1 + (\Omega_0/\delta)^2}}\varepsilon
+}
+\eqar{
+  U=&\frac1{\sqrt2}\begin{pmatrix}
+    \sqrt{1+1/\sqrt{1 + (\Omega/\delta)^2}}&-\sqrt{1-1/\sqrt{1 + (\Omega/\delta)^2}}\\
+    \sqrt{1-1/\sqrt{1 + (\Omega/\delta)^2}}&\sqrt{1+1/\sqrt{1 + (\Omega/\delta)^2}}\\
+  \end{pmatrix}\\
+  \approx&\frac1{\sqrt2}\begin{pmatrix}
+    \sqrt{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}&-\sqrt{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}\\
+    \sqrt{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}&\sqrt{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}\\
+  \end{pmatrix}\\
+  &+\frac{(\Omega_0/\delta)\varepsilon}{2\sqrt2\paren{1 + (\Omega_0/\delta)^2}}\begin{pmatrix}
+    \sqrt{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}&-\sqrt{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}\\
+    \sqrt{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}&\sqrt{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}\\
+  \end{pmatrix}\\
+  =&\sqrt{\frac{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}{2}}-
+  \sqrt{\frac{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}{2}}\ui\sigma_y\\
+  &+\frac{(\Omega_0/\delta)\sqrt{1-1/\sqrt{1 + (\Omega_0/\delta)^2}}}{2\sqrt2\paren{1 + (\Omega_0/\delta)^2}}\varepsilon
+  +\frac{(\Omega_0/\delta)\sqrt{1+1/\sqrt{1 + (\Omega_0/\delta)^2}}}{2\sqrt2\paren{1 + (\Omega_0/\delta)^2}}\ui\sigma_y\varepsilon
+}
+
+The pulses should consists of rotations with the same Rabi frequency
+but may have variable detuning, phase and time. Note that only the $xy$ component
+of the unitary matters. The $z$ component and the global phase can be perfectly
+cancelled out by using the time reversal as the undress pulse sequence.
+
+\section{Single rotation}
+\eqar{
+  &\exp\paren{\ui\paren{X\paren{\cos\varphi\sigma_x+\sin\varphi\sigma_y}+Z\sigma_z}}\\
+  =&\cos\paren{\sqrt{X^2+Z^2}}+\ui\sin\paren{\sqrt{X^2+Z^2}}\frac{X\cos\varphi}{\sqrt{X^2+Z^2}}\sigma_x\\
+  &+\ui\sin\paren{\sqrt{X^2+Z^2}}\frac{X\sin\varphi}{\sqrt{X^2+Z^2}}\sigma_y+\ui\sin\paren{\sqrt{X^2+Z^2}}\frac{Z}{\sqrt{X^2+Z^2}}\sigma_z
+}
+$xy$ component
+\eqar{
+  a_1=&\sqrt{\frac{X^2\cos^2\paren{\sqrt{X^2+Z^2}}+Z^2}{X^2+Z^2}}\\
+  x_1=&-\ui\frac{\sin\paren{\sqrt{X^2+Z^2}}X}{\sqrt{X^2\cos^2\paren{\sqrt{X^2+Z^2}}+Z^2}}\paren{\cos\paren{\sqrt{X^2+Z^2}}\cos\varphi+\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\sin\varphi}{\sqrt{X^2+Z^2}}}\\
+  y_1=&\ui\frac{\sin\paren{\sqrt{X^2+Z^2}}X}{\sqrt{X^2\cos^2\paren{\sqrt{X^2+Z^2}}+Z^2}}\paren{
+    \cos\paren{\sqrt{X^2+Z^2}}\sin\varphi
+    +\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\cos\varphi}{\sqrt{X^2+Z^2}}
+  }
+}
+\eqar{
+  &\cos\paren{\sqrt{X^2+Z^2}}\cos\varphi+\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\sin\varphi}{\sqrt{X^2+Z^2}}=0\\
+  &-\sin\paren{\sqrt{X^2+Z^2}}\cos\varphi+\frac{Z\cos\paren{\sqrt{X^2+Z^2}}\sin\varphi}{\sqrt{X^2+Z^2}}-\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\sin\varphi}{X^2+Z^2}=0\\
+  &\cos\paren{\sqrt{X^2+Z^2}}\cos\varphi=-\frac{Z\sin\paren{\sqrt{X^2+Z^2}}}{\sqrt{X^2+Z^2}}\sin\varphi\\
+  &\sin\paren{\sqrt{X^2+Z^2}}\cos\varphi=\frac{Z\cos\paren{\sqrt{X^2+Z^2}}\sin\varphi}{\sqrt{X^2+Z^2}}-\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\sin\varphi}{X^2+Z^2}\\
+  &-\frac{Z\sin^2\paren{\sqrt{X^2+Z^2}}}{\sqrt{X^2+Z^2}}=\frac{Z\cos^2\paren{\sqrt{X^2+Z^2}}}{\sqrt{X^2+Z^2}}-\frac{Z\sin\paren{\sqrt{X^2+Z^2}}\cos\paren{\sqrt{X^2+Z^2}}}{X^2+Z^2}\\
+  &\sin\paren{\sqrt{X^2+Z^2}}\cos\paren{\sqrt{X^2+Z^2}}=\sqrt{X^2+Z^2}
+}
+Can't satisfy.
+
+\subsection{Small power limit}
+\eqar{
+  &\exp\paren{\ui\paren{X\paren{\cos\varphi\sigma_x+\sin\varphi\sigma_y}+Z\sigma_z}}\\
+  \approx&\cos Z+\ui\sin Z\sigma_z+\ui X\frac{\sin Z}{Z}\paren{\cos\varphi\sigma_x+\sin\varphi\sigma_y}
+}
+
+\section{Two rotations}
+\eqar{
+  &\exp\paren{\ui\paren{X_1\paren{\cos\varphi_1\sigma_x+\sin\varphi_1\sigma_y}+Z_1\sigma_z}}\exp\paren{\ui\paren{X_2\paren{\cos\varphi_2\sigma_x+\sin\varphi_2\sigma_y}+Z_2\sigma_z}}\\
+  =&\lparen{\cos\paren{\sqrt{X_1^2+Z_1^2}}+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\cos\varphi_1}{\sqrt{X_1^2+Z_1^2}}\sigma_x}\\
+  &+\rparen{\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\sin\varphi_1}{\sqrt{X_1^2+Z_1^2}}\sigma_y+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{Z_1}{\sqrt{X_1^2+Z_1^2}}\sigma_z}\\
+  &\lparen{\cos\paren{\sqrt{X_2^2+Z_2^2}}+\ui\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\cos\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_x}\\
+  &+\rparen{\ui\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\sin\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_y+\ui\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{Z_2}{\sqrt{X_2^2+Z_2^2}}\sigma_z}\\
+  =&\cos\paren{\sqrt{X_1^2+Z_1^2}}\cos\paren{\sqrt{X_2^2+Z_2^2}}
+  -\frac{\sin\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}Z_1Z_2}{\sqrt{X_1^2+Z_1^2}\sqrt{X_2^2+Z_2^2}}\\
+  &
+  -\sin\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_1X_2\cos\paren{\varphi_1-\varphi_2}}{\sqrt{X_1^2+Z_1^2}\sqrt{X_2^2+Z_2^2}}
+  \\
+  &+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\cos\varphi_1}{\sqrt{X_1^2+Z_1^2}}\cos\paren{\sqrt{X_2^2+Z_2^2}}\sigma_x+\ui\cos\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\cos\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_x\\
+  &+\ui\frac{\sin\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\paren{Z_1X_2\sin\varphi_2-X_1Z_2\sin\varphi_1}}{\sqrt{X_1^2+Z_1^2}\sqrt{X_2^2+Z_2^2}}\sigma_x\\
+  &+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\sin\varphi_1}{\sqrt{X_1^2+Z_1^2}}\cos\paren{\sqrt{X_2^2+Z_2^2}}\sigma_y-\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{Z_1}{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\cos\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_y\\
+  &+\ui\cos\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\sin\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_y+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\cos\varphi_1}{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{Z_2}{\sqrt{X_2^2+Z_2^2}}\sigma_y\\
+  &+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{Z_1}{\sqrt{X_1^2+Z_1^2}}\cos\paren{\sqrt{X_2^2+Z_2^2}}\sigma_z+\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\sin\varphi_1}{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\cos\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_z\\
+  &-\ui\sin\paren{\sqrt{X_1^2+Z_1^2}}\frac{X_1\cos\varphi_1}{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{X_2\sin\varphi_2}{\sqrt{X_2^2+Z_2^2}}\sigma_z+\ui\cos\paren{\sqrt{X_1^2+Z_1^2}}\sin\paren{\sqrt{X_2^2+Z_2^2}}\frac{Z_2}{\sqrt{X_2^2+Z_2^2}}\sigma_z
+  \\
+}
+
+\subsection{Small power limit}
+\eqar{
+  &\exp\paren{\ui\paren{X_1\paren{\cos\varphi_1\sigma_x+\sin\varphi_1\sigma_y}+Z_1\sigma_z}}\exp\paren{\ui\paren{X_2\paren{\cos\varphi_2\sigma_x+\sin\varphi_2\sigma_y}+Z_2\sigma_z}}\\
+  \approx&\paren{\cos Z_1+\ui\sin Z_1\sigma_z+\ui X_1\frac{\sin Z_1}{Z_1}\paren{\cos\varphi_1\sigma_x+\sin\varphi_1\sigma_y}}\\
+  &\paren{\cos Z_2+\ui\sin Z_2\sigma_z+\ui X_2\frac{\sin Z_2}{Z_2}\paren{\cos\varphi_2\sigma_x+\sin\varphi_2\sigma_y}}\\
+  \approx&
+  \cos\paren{Z_1+Z_2}+\ui\sin\paren{Z_1+Z_2}\sigma_z
+  \\
+  &
+  +\ui X_2\frac{\sin Z_2}{Z_2}\paren{
+    \cos\paren{\varphi_2-Z_1}\sigma_x
+    +\sin\paren{\varphi_2-Z_1}\sigma_y
+  }
+  \\
+  &+\ui X_1\frac{\sin Z_1}{Z_1}
+  \paren{\cos\paren{\varphi_1+Z_2}\sigma_x+\sin\paren{\varphi_1+Z_2}\sigma_y}
+  \\
+}
+\eqar{
+  &\exp\paren{\ui\paren{X_1\paren{\cos\varphi_1\sigma_x+\sin\varphi_1\sigma_y}+Z_1\sigma_z}}\exp\paren{\ui\paren{X_2\paren{\cos\varphi_2\sigma_x+\sin\varphi_2\sigma_y}+Z_2\sigma_z}}\\
+  &\exp\paren{\ui\paren{X_3\paren{\cos\varphi_3\sigma_x+\sin\varphi_3\sigma_y}+Z_3\sigma_z}}\\
+  \approx&\paren{\cos Z_1+\ui\sin Z_1\sigma_z+\ui X_1\frac{\sin Z_1}{Z_1}\paren{\cos\varphi_1\sigma_x+\sin\varphi_1\sigma_y}}\\
+  &\paren{\cos Z_2+\ui\sin Z_2\sigma_z+\ui X_2\frac{\sin Z_2}{Z_2}\paren{\cos\varphi_2\sigma_x+\sin\varphi_2\sigma_y}}\\
+  &\paren{\cos Z_3+\ui\sin Z_3\sigma_z+\ui X_3\frac{\sin Z_3}{Z_3}\paren{\cos\varphi_3\sigma_x+\sin\varphi_3\sigma_y}}\\
+  \approx&
+  \paren{\cos\paren{Z_1+Z_2}+\ui\sin\paren{Z_1+Z_2}\sigma_z}\paren{\cos Z_3+\ui\sin Z_3\sigma_z}\\
+  &+\ui X_3\frac{\sin Z_3}{Z_3}\paren{\cos\paren{Z_1+Z_2}+\ui\sin\paren{Z_1+Z_2}\sigma_z}\paren{\cos\varphi_3\sigma_x+\sin\varphi_3\sigma_y}\\
+  &
+  +\ui X_2\frac{\sin Z_2}{Z_2}\paren{
+    \cos\paren{\varphi_2-Z_1}\sigma_x
+    +\sin\paren{\varphi_2-Z_1}\sigma_y
+  }\paren{\cos Z_3+\ui\sin Z_3\sigma_z}
+  \\
+  &+\ui X_1\frac{\sin Z_1}{Z_1}
+  \paren{\cos\paren{\varphi_1+Z_2}\sigma_x+\sin\paren{\varphi_1+Z_2}\sigma_y}\paren{\cos Z_3+\ui\sin Z_3\sigma_z}
+  \\
+  \approx&\cos\paren{Z_1+Z_2+Z_3}+\ui\sin\paren{Z_1+Z_2+Z_3}\sigma_z\\
+  &+\ui X_3\frac{\sin Z_3}{Z_3}\paren{\cos\paren{Z_1+Z_2}+\ui\sin\paren{Z_1+Z_2}\sigma_z}\paren{\cos\varphi_3\sigma_x+\sin\varphi_3\sigma_y}\\
+  &
+  +\ui X_2\frac{\sin Z_2}{Z_2}\paren{
+    \cos\paren{\varphi_2-Z_1}\sigma_x
+    +\sin\paren{\varphi_2-Z_1}\sigma_y
+  }\paren{\cos Z_3+\ui\sin Z_3\sigma_z}
+  \\
+  &+\ui X_1\frac{\sin Z_1}{Z_1}
+  \paren{\cos\paren{\varphi_1+Z_2}\sigma_x+\sin\paren{\varphi_1+Z_2}\sigma_y}\paren{\cos Z_3+\ui\sin Z_3\sigma_z}
+  \\
+}
+
+\end{document}
