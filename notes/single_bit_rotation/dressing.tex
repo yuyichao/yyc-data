@@ -373,4 +373,28 @@ Can't satisfy.
   \\
 }
 
+\section{Derivation of eigenstates/values}
+Hamiltonian
+\eqar{
+  H=&\frac{\delta}{2}\paren{|0\rangle\langle0|-|1\rangle\langle1|}+\frac{\Omega}{2}\paren{|0\rangle\langle1|+|1\rangle\langle0|}
+}
+Eigenvalues
+\eqar{
+  E_\pm=&\pm\frac{\sqrt{\Omega^2+\delta^2}}{2}
+}
+Eigenstate equations ($d\equiv\dfrac{\delta}{\Omega}$)
+\eqar{
+  0=&\paren{d\paren{|0\rangle\langle0|-|1\rangle\langle1|}+\paren{|0\rangle\langle1|+|1\rangle\langle0|}\mp\sqrt{1+d^2}}|\psi_\pm\rangle
+}
+With $|\psi_\pm\rangle\equiv b^\pm|0\rangle+c^\pm|1\rangle$
+\eqar{
+  0=&\paren{d\paren{|0\rangle\langle0|-|1\rangle\langle1|}+\paren{|0\rangle\langle1|+|1\rangle\langle0|}\mp\sqrt{1+d^2}}\paren{b^\pm|0\rangle+c^\pm|1\rangle}\\
+  0=&\paren{d\mp\sqrt{1+d^2}}b^\pm|0\rangle+c^\pm|0\rangle-\paren{d\pm\sqrt{1+d^2}}c^\pm|1\rangle+b^\pm|1\rangle\\
+  c^\pm=&\pm\paren{\sqrt{1+d^2}\mp d}b^\pm\\
+  b^\pm=&\pm\paren{\sqrt{1+d^2}\pm d}c^\pm\\
+  c^\pm=&\sqrt{\frac{1\mp d/\sqrt{1+d^2}}{2}}\\
+  b^\pm=&\pm\sqrt{\frac{1\pm d/\sqrt{1+d^2}}{2}}\\
+  |\psi_\pm\rangle=&\frac{\pm\sqrt{1\pm d/\sqrt{1+d^2}}|0\rangle+\sqrt{1\mp d/\sqrt{1+d^2}}|1\rangle}{\sqrt2}
+}
+
 \end{document}
