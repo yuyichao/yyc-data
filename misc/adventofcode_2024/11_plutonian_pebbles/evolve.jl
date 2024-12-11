@@ -7,12 +7,26 @@ function evolve!(tgt, src)
             push!(tgt, 1)
             continue
         end
-        s = string(n)
-        l = length(s)
-        if l % 2 == 0
-            push!(tgt, parse(BigInt, s[1:l ÷ 2]))
-            push!(tgt, parse(BigInt, s[l ÷ 2 + 1:l]))
+        if 10 <= n < 100
+            push!(tgt, n ÷ 10)
+            push!(tgt, n % 10)
+        elseif 1000 <= n < 10000
+            push!(tgt, n ÷ 100)
+            push!(tgt, n % 100)
+        elseif 100000 <= n < 1000000
+            push!(tgt, n ÷ 1000)
+            push!(tgt, n % 1000)
+        elseif 10000000 <= n < 100000000
+            push!(tgt, n ÷ 10000)
+            push!(tgt, n % 10000)
+        elseif 1000000000 <= n < 10000000000
+            push!(tgt, n ÷ 100000)
+            push!(tgt, n % 100000)
+        elseif 100000000000 <= n < 1000000000000
+            push!(tgt, n ÷ 1000000)
+            push!(tgt, n % 1000000)
         else
+            @assert n < 1000000000000
             push!(tgt, n * 2024)
         end
     end
@@ -26,4 +40,4 @@ function evolve_n!(tgt, src, n)
     return src
 end
 
-@show length(evolve_n!(BigInt[], BigInt[5, 62914, 65, 972, 0, 805922, 6521, 1639064], 25))
+@show length(evolve_n!(Int[], Int[5, 62914, 65, 972, 0, 805922, 6521, 1639064], 25))
