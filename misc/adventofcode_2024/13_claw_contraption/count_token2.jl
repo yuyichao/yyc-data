@@ -19,8 +19,7 @@ function count_token(file)
         mp = match(r"Prize: X=(\d*), Y=(\d*)", lines[i + 2])
         a = (parse(Int, ma[1]), parse(Int, ma[2]))
         b = (parse(Int, mb[1]), parse(Int, mb[2]))
-        @assert !(a[1] / b[1] ≈ a[2] / b[2])
-        # p = (parse(Int, mp[1]) + 10000000000000, parse(Int, mp[2]) + 10000000000000)
+        @assert a[1] * b[2] != a[2] * b[1]
         p = (parse(Int, mp[1]) + 10000000000000, parse(Int, mp[2]) + 10000000000000)
         s += check_game(a, b, p)
     end
