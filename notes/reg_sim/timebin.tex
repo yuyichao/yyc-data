@@ -1056,9 +1056,41 @@ Conditioned on photon being in the $A^1(\tau_A)B^1(\tau_B)$ state, the ion wavef
 \eqar{
   \begin{split}
     &\langle A^1(\tau_A),B^1(\tau_B)|\psi\rangle_2\\
-    =&\frac{\Gamma^2}{2}\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{d}j} \ue^{-\Gamma\paren{t_{i\mathrm{d}j}-t_{i\mathrm{e}j}}/2}}\\
-    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{d}1}-\tau_A)\delta(t_{b\mathrm{d}2}-\tau_B)|0_a,1_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
-    &+\exp\paren{\ui\varphi_{a2}+\ui\varphi_{b1}}\mathcal{D}_a(\beta_{a2})\mathcal{D}_b(\beta_{b1})\delta(t_{b\mathrm{d}1}-\tau_A)\delta(t_{a\mathrm{d}2}-\tau_B)|1_a,0_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
+    \propto&\lparen{\int\ud t_{a\mathrm{d}1}\ud t_{b\mathrm{d}2}\ue^{-\Gamma\Delta t_{a1}/2}\ue^{-\Gamma\Delta t_{b2}/2}
+             \exp\paren{\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+             \sin\omega_a\Delta t_{a1}}
+             \mathcal{D}_a(\ui\eta_{a\mathrm{d}}\ue^{\ui\omega_at_{a\mathrm{d}1}}+\ui\eta_{a\mathrm{e}}\ue^{\ui\omega_at_{a\mathrm{e}1}})}\\
+    &\exp\paren{\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+      \sin\omega_b\Delta t_{b2}}
+      \mathcal{D}_b(\ui\eta_{b\mathrm{d}}\ue^{\ui\omega_bt_{b\mathrm{d}2}}+\ui\eta_{b\mathrm{e}}\ue^{\ui\omega_bt_{b\mathrm{e}2}})\delta(t_{a\mathrm{d}1}-\tau_A)\delta(t_{b\mathrm{d}2}-\tau_B)|0_a,1_b\rangle
+    \\
+    &+\int\ud t_{a\mathrm{d}2}\ud t_{b\mathrm{d}1}\ue^{-\Gamma\Delta t_{a2}/2}\ue^{-\Gamma\Delta t_{b1}/2}
+      \exp\paren{\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+      \sin\omega_a\Delta t_{a2}}
+      \mathcal{D}_a(\ui\eta_{a\mathrm{d}}\ue^{\ui\omega_at_{a\mathrm{d}2}}+\ui\eta_{a\mathrm{e}}\ue^{\ui\omega_at_{a\mathrm{e}2}})\\
+    &\rparen{
+      \exp\paren{\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+      \sin\omega_b\Delta t_{b1}}
+      \mathcal{D}_b(\ui\eta_{b\mathrm{d}}\ue^{\ui\omega_bt_{b\mathrm{d}1}}+\ui\eta_{b\mathrm{e}}\ue^{\ui\omega_bt_{b\mathrm{e}1}})
+      \delta(t_{b\mathrm{d}1}-\tau_A)\delta(t_{a\mathrm{d}2}-\tau_B)
+      |1_a,0_b\rangle
+      }|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
+    \propto&\lparen{\exp\paren{\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+             \sin\omega_a\paren{\tau_A-t_{a\mathrm{e}1}}}
+             \mathcal{D}_a(\ui\eta_{a\mathrm{d}}\ue^{\ui\omega_a\tau_A}+\ui\eta_{a\mathrm{e}}\ue^{\ui\omega_at_{a\mathrm{e}1}})}\\
+    &\exp\paren{\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+      \sin\omega_b\paren{\tau_B-t_{b\mathrm{e}2}}}
+      \mathcal{D}_b(\ui\eta_{b\mathrm{d}}\ue^{\ui\omega_b\tau_B}+\ui\eta_{b\mathrm{e}}\ue^{\ui\omega_bt_{b\mathrm{e}2}})|0_a,1_b\rangle
+    \\
+    &+\exp\paren{\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+      \sin\omega_a\paren{\tau_B-t_{a\mathrm{e}2}}}
+      \mathcal{D}_a(\ui\eta_{a\mathrm{d}}\ue^{\ui\omega_a\tau_B}+\ui\eta_{a\mathrm{e}}\ue^{\ui\omega_at_{a\mathrm{e}2}})\\
+    &\rparen{
+      \exp\paren{\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+      \sin\omega_b\paren{\tau_A-t_{b\mathrm{e}1}}}
+      \mathcal{D}_b(\ui\eta_{b\mathrm{d}}\ue^{\ui\omega_b\tau_A}+\ui\eta_{b\mathrm{e}}\ue^{\ui\omega_bt_{b\mathrm{e}1}})
+      |1_a,0_b\rangle
+      }|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle
   \end{split}
 }
 
