@@ -718,11 +718,11 @@ For an initial state of
 After excitation the state is
 \eqar{
   \begin{split}
-    \rho_1=&\frac{\paren{|e_0\rangle+|e_1\rangle}\paren{\langle e_0|+\langle e_1|}}{2}\mathcal{D}(\ui\eta_{\mathrm{d}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
+    \rho_1=&\frac{\paren{|e_0\rangle+|e_1\rangle}\paren{\langle e_0|+\langle e_1|}}{2}\mathcal{D}(\ui\eta_{\mathrm{e}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{e}})
   \end{split}
 }
 where $e_0$ and $e_1$ are the two excited states and,
-$\eta_{\mathrm{d}}$ is the Lamb-Dicke parameter for the drive (excitation) photon.\\
+$\eta_{\mathrm{e}}$ is the Lamb-Dicke parameter for the excitation photon.\\
 
 Since the decay happens over a variable length of time,
 it's difficult to put a bound on when the decay ``finished''.
@@ -733,8 +733,8 @@ after the excitation to be simply the free evolution.
 \eqar{
   \begin{split}
     \rho_2=&\Gamma^2\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
-           &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
-             \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_2}\\
+           &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\rho_{\mathrm{m}}\mathcal{D}(-\ui\eta_{\mathrm{e}})
+             \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_2}\\
   \end{split}
 }
 where $\tau_1$ and $\tau_2$ are ``emission time'' for the photons.
@@ -742,34 +742,34 @@ Substitude in the thermal motional density matrix.
 \eqar{
   \begin{split}
     \rho_2=&\frac{\Gamma^2}{\pi {\bar n}}\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
-           &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}\mathcal{D}(-\ui\eta_{\mathrm{d}})
-             \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_2}\\
+           &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\int\ud^2\alpha |\alpha\rangle\langle\alpha|\ue^{-\abs{\alpha}^2/{\bar n}}\mathcal{D}(-\ui\eta_{\mathrm{e}})
+             \ue^{-\ui H\tau_2}\mathcal{D}(-\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_2}\\
   \end{split}
 }
 \eqar{
   \begin{split}
-    &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})|\alpha\rangle\\
-    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)}
-       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})\ue^{\ui H\tau_1}
-       |\alpha+\ui\eta_{\mathrm{d}}\rangle\\
-    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)}
-       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})
-       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{d}})\rangle\\
-    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
+    &\ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{e}})|\alpha\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)}
+       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})\ue^{\ui H\tau_1}
+       |\alpha+\ui\eta_{\mathrm{e}}\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)}
+       \ue^{-\ui H\tau_1}\mathcal{D}(\ui\eta_{\mathrm{d}})
+       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{e}})\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{e}}))}
        \ue^{-\ui H\tau_1}
-       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{d}})+\ui\eta_{\mathrm{e}}\rangle\\
-    =&\exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
-       |\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_1}\rangle\\
+       |\ue^{\ui\omega\tau_1}(\alpha+\ui\eta_{\mathrm{e}})+\ui\eta_{\mathrm{d}}\rangle\\
+    =&\exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{e}}))}
+       |\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_1}\rangle\\
   \end{split}
 }
 \eqar{
   \begin{split}
     \rho_2=&\frac{\Gamma^2}{\pi {\bar n}}\int_0^\infty\ud\tau_1\ue^{-\Gamma\tau_1/2}\int_0^\infty\ud\tau_2\ue^{-\Gamma\tau_2/2}\frac{\paren{|0,A(\tau_1)\rangle+|1,B(\tau_1)\rangle}\paren{\langle 0,A(\tau_2)|+\langle 1,B(\tau_2)|}}{2}\\
            &\int\ud^2\alpha
-             \exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{d}}))}
-             \exp\paren{-\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_2}(\alpha^*-\ui\eta_{\mathrm{d}}))}\\
-           &\ue^{-\abs{\alpha}^2/{\bar n}}|\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_1}\rangle
-             \langle\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_2}|\\
+             \exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_1}(\alpha^*-\ui\eta_{\mathrm{e}}))}
+             \exp\paren{-\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_2}(\alpha^*-\ui\eta_{\mathrm{e}}))}\\
+           &\ue^{-\abs{\alpha}^2/{\bar n}}|\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_1}\rangle
+             \langle\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_2}|\\
   \end{split}
 }
 Note that unlike the previous case, the unwanted entanglement create is entirely
@@ -784,15 +784,15 @@ To see the effect of this, we need to look at the state of the two atoms combine
     &\frac{\paren{|0_a,A_a(\tau_{a1})\rangle+|1_a,B_a(\tau_{a1})\rangle}\paren{\langle 0_a,A_a(\tau_{a2})|+\langle 1_a,B_a(\tau_{a2})|}}{2}\\
     &\frac{\paren{|0_b,A_b(\tau_{b1})\rangle+|1_b,B_b(\tau_{b1})\rangle}\paren{\langle 0_b,A_b(\tau_{b2})|+\langle 1_b,B_b(\tau_{b2})|}}{2}\\
     &\int\ud^2\alpha_a
-      \exp\paren{\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}
-      \exp\paren{-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}\\
-    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}|\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a1}}\rangle
-      \langle\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a2}}|\\
+      \exp\paren{\ui\eta_{a\mathrm{e}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{e}}))}
+      \exp\paren{-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{e}}))}\\
+    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}|\alpha_a+\ui\eta_{a\mathrm{e}}+\ui\eta_{a\mathrm{d}}\ue^{-\ui\omega_a\tau_{a1}}\rangle
+      \langle\alpha_a+\ui\eta_{a\mathrm{e}}+\ui\eta_{a\mathrm{d}}\ue^{-\ui\omega_a\tau_{a2}}|\\
     &\int\ud^2\alpha_b
-      \exp\paren{\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}
-      \exp\paren{-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}\\
-    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}|\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b1}}\rangle
-      \langle\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b2}}|\\
+      \exp\paren{\ui\eta_{b\mathrm{e}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{e}}))}
+      \exp\paren{-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{e}}))}\\
+    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}|\alpha_b+\ui\eta_{b\mathrm{e}}+\ui\eta_{b\mathrm{d}}\ue^{-\ui\omega_b\tau_{b1}}\rangle
+      \langle\alpha_b+\ui\eta_{b\mathrm{e}}+\ui\eta_{b\mathrm{d}}\ue^{-\ui\omega_b\tau_{b2}}|\\
   \end{split}
 }
 
@@ -815,60 +815,60 @@ The unnormalized reduced density matrix (trace out motion),
     &\paren{\delta(\tau_{b1}-\tau_A)\delta(\tau_{a1}-\tau_B)|1_a,0_b\rangle+\delta(\tau_{a1}-\tau_A)\delta(\tau_{b1}-\tau_B)|0_a,1_b\rangle}\\
     &\paren{\langle 1_a,0_b|\delta(\tau_{b2}-\tau_A)\delta(\tau_{a2}-\tau_B)+\langle 0_a,1_b|\delta(\tau_{a2}-\tau_A)\delta(\tau_{b2}-\tau_B)}\\
     &\int\ud^2\alpha_a
-      \exp\paren{\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}
-      \exp\paren{-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{d}}))}\\
-    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}\langle\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a2}}|\alpha_a+\ui\eta_{a\mathrm{d}}+\ui\eta_{a\mathrm{e}}\ue^{-\ui\omega_a\tau_{a1}}\rangle\\
+      \exp\paren{\ui\eta_{a\mathrm{e}}\mathrm{Re}(\alpha_a)+\ui\eta_{a\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a1}}(\alpha_a^*-\ui\eta_{a\mathrm{e}}))}
+      \exp\paren{-\ui\eta_{a\mathrm{e}}\mathrm{Re}(\alpha_a)-\ui\eta_{a\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_a\tau_{a2}}(\alpha_a^*-\ui\eta_{a\mathrm{e}}))}\\
+    &\ue^{-\abs{\alpha_a}^2/{\bar n_a}}\langle\alpha_a+\ui\eta_{a\mathrm{e}}+\ui\eta_{a\mathrm{d}}\ue^{-\ui\omega_a\tau_{a2}}|\alpha_a+\ui\eta_{a\mathrm{e}}+\ui\eta_{a\mathrm{d}}\ue^{-\ui\omega_a\tau_{a1}}\rangle\\
     &\int\ud^2\alpha_b
-      \exp\paren{\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}
-      \exp\paren{-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{d}}))}\\
-    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}\langle\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b2}}|\alpha_b+\ui\eta_{b\mathrm{d}}+\ui\eta_{b\mathrm{e}}\ue^{-\ui\omega_b\tau_{b1}}\rangle\\
+      \exp\paren{\ui\eta_{b\mathrm{e}}\mathrm{Re}(\alpha_b)+\ui\eta_{b\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b1}}(\alpha_b^*-\ui\eta_{b\mathrm{e}}))}
+      \exp\paren{-\ui\eta_{b\mathrm{e}}\mathrm{Re}(\alpha_b)-\ui\eta_{b\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega_b\tau_{b2}}(\alpha_b^*-\ui\eta_{b\mathrm{e}}))}\\
+    &\ue^{-\abs{\alpha_b}^2/{\bar n_b}}\langle\alpha_b+\ui\eta_{b\mathrm{e}}+\ui\eta_{b\mathrm{d}}\ue^{-\ui\omega_b\tau_{b2}}|\alpha_b+\ui\eta_{b\mathrm{e}}+\ui\eta_{b\mathrm{d}}\ue^{-\ui\omega_b\tau_{b1}}\rangle\\
   \end{split}
 }
 The motion integral,
 \eqar{
   \begin{split}
     &\int\ud^2\alpha
-      \exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{d}}))}
-      \exp\paren{-\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{d}}))}\\
-    &\ue^{-\abs{\alpha}^2/{\bar n}}\langle\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{2}}|\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{1}}\rangle\\
+      \exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{e}}))}
+      \exp\paren{-\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{e}}))}\\
+    &\ue^{-\abs{\alpha}^2/{\bar n}}\langle\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{2}}|\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{1}}\rangle\\
     =&\int\ud^2\alpha
-       \exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{d}}))}
-       \exp\paren{-\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{d}}))}\\
+       \exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{e}}))}
+       \exp\paren{-\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{e}}))}\\
     &\ue^{-\abs{\alpha}^2/{\bar n}}
-      \ue^{-\paren{\abs{\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{2}}}^2+\abs{\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{1}}}^2-2\paren{\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{2}}}^*\paren{\alpha+\ui\eta_{\mathrm{d}}+\ui\eta_{\mathrm{e}}\ue^{-\ui\omega\tau_{1}}}}/2}\\
+      \ue^{-\paren{\abs{\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{2}}}^2+\abs{\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{1}}}^2-2\paren{\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{2}}}^*\paren{\alpha+\ui\eta_{\mathrm{e}}+\ui\eta_{\mathrm{d}}\ue^{-\ui\omega\tau_{1}}}}/2}\\
     =&\int\ud^2\alpha
-       \exp\paren{\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{d}}))}
-       \exp\paren{-\ui\eta_{\mathrm{d}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{e}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{d}}))}\\
+       \exp\paren{\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)+\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{1}}(\alpha^*-\ui\eta_{\mathrm{e}}))}
+       \exp\paren{-\ui\eta_{\mathrm{e}}\mathrm{Re}(\alpha)-\ui\eta_{\mathrm{d}}\mathrm{Re}(\ue^{-\ui\omega\tau_{2}}(\alpha^*-\ui\eta_{\mathrm{e}}))}\\
     &\ue^{-\abs{\alpha}^2/{\bar n}}
       \exp\paren{
-      \ui\eta_{\mathrm{e}}\mathrm{Re}\paren{\paren{\alpha+\ui\eta_{\mathrm{d}}}
+      \ui\eta_{\mathrm{d}}\mathrm{Re}\paren{\paren{\alpha+\ui\eta_{\mathrm{e}}}
       \paren{\ue^{\ui\omega\tau_{1}}-\ue^{\ui\omega\tau_{2}}}}
-      -\eta_{\mathrm{e}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
+      -\eta_{\mathrm{d}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
       }\\
     =&\exp\paren{
-       -2\ui\eta_{\mathrm{e}}
-       \eta_{\mathrm{d}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
-       -\eta_{\mathrm{e}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
+       -2\ui\eta_{\mathrm{d}}
+       \eta_{\mathrm{e}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
+       -\eta_{\mathrm{d}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
        }\\
     &\int\ud^2\alpha
       \exp\paren{
       -\alpha_x^2/{\bar n}
-      +2\ui\eta_{\mathrm{e}}\paren{\cos\omega\tau_{1}-\cos\omega\tau_{2}}\alpha_x
+      +2\ui\eta_{\mathrm{d}}\paren{\cos\omega\tau_{1}-\cos\omega\tau_{2}}\alpha_x
       -\alpha_y^2/{\bar n}
-      -2\ui\eta_{\mathrm{e}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}\alpha_y
+      -2\ui\eta_{\mathrm{d}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}\alpha_y
       }\\
     =&\exp\paren{
-       -2\ui\eta_{\mathrm{e}}
-       \eta_{\mathrm{d}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
-       -\eta_{\mathrm{e}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
+       -2\ui\eta_{\mathrm{d}}
+       \eta_{\mathrm{e}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
+       -\eta_{\mathrm{d}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
        }\\
-    &\pi{\bar n}\exp\paren{-{\bar n}\eta_{\mathrm{e}}^2\paren{\cos\omega\tau_{1}-\cos\omega\tau_{2}}^2}
-      \exp\paren{-{\bar n}\eta_{\mathrm{e}}^2\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}^2}\\
+    &\pi{\bar n}\exp\paren{-{\bar n}\eta_{\mathrm{d}}^2\paren{\cos\omega\tau_{1}-\cos\omega\tau_{2}}^2}
+      \exp\paren{-{\bar n}\eta_{\mathrm{d}}^2\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}^2}\\
     =&\pi{\bar n}\exp\paren{
-       -2\ui\eta_{\mathrm{e}}
-       \eta_{\mathrm{d}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
-       -\eta_{\mathrm{e}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
-       -2{\bar n}\eta_{\mathrm{e}}^2\paren{1-\cos\omega\paren{\tau_1-\tau_2}}
+       -2\ui\eta_{\mathrm{d}}
+       \eta_{\mathrm{e}}\paren{\sin\omega\tau_{1}-\sin\omega\tau_{2}}
+       -\eta_{\mathrm{d}}^2\paren{1-\ue^{\ui\omega\paren{\tau_{2}-\tau_{1}}}}
+       -2{\bar n}\eta_{\mathrm{d}}^2\paren{1-\cos\omega\paren{\tau_1-\tau_2}}
        }
   \end{split}
 }
@@ -880,16 +880,16 @@ Ignoring the constant factors the unnormalized reduced density matrix,
     &\paren{\delta(\tau_{b1}-\tau_A)\delta(\tau_{a1}-\tau_B)|1_a,0_b\rangle+\delta(\tau_{a1}-\tau_A)\delta(\tau_{b1}-\tau_B)|0_a,1_b\rangle}\\
     &\paren{\langle 1_a,0_b|\delta(\tau_{b2}-\tau_A)\delta(\tau_{a2}-\tau_B)+\langle 0_a,1_b|\delta(\tau_{a2}-\tau_A)\delta(\tau_{b2}-\tau_B)}\\
     &\exp\paren{
-      -2\ui\eta_{a\mathrm{e}}
-      \eta_{a\mathrm{d}}\paren{\sin\omega_a\tau_{a1}-\sin\omega_a\tau_{a2}}
-      -\eta_{a\mathrm{e}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{a2}-\tau_{a1}}}}
-      -2{\bar n_a}\eta_{a\mathrm{e}}^2\paren{1-\cos\omega_a\paren{\tau_{a1}-\tau_{a2}}}
+      -2\ui\eta_{a\mathrm{d}}
+      \eta_{a\mathrm{e}}\paren{\sin\omega_a\tau_{a1}-\sin\omega_a\tau_{a2}}
+      -\eta_{a\mathrm{d}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{a2}-\tau_{a1}}}}
+      -2{\bar n_a}\eta_{a\mathrm{d}}^2\paren{1-\cos\omega_a\paren{\tau_{a1}-\tau_{a2}}}
       }\\
     &\exp\paren{
-      -2\ui\eta_{b\mathrm{e}}
-      \eta_{b\mathrm{d}}\paren{\sin\omega_b\tau_{b1}-\sin\omega_b\tau_{b2}}
-      -\eta_{b\mathrm{e}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{b2}-\tau_{b1}}}}
-      -2{\bar n_b}\eta_{b\mathrm{e}}^2\paren{1-\cos\omega_b\paren{\tau_{b1}-\tau_{b2}}}
+      -2\ui\eta_{b\mathrm{d}}
+      \eta_{b\mathrm{e}}\paren{\sin\omega_b\tau_{b1}-\sin\omega_b\tau_{b2}}
+      -\eta_{b\mathrm{d}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{b2}-\tau_{b1}}}}
+      -2{\bar n_b}\eta_{b\mathrm{d}}^2\paren{1-\cos\omega_b\paren{\tau_{b1}-\tau_{b2}}}
       }
   \end{split}
 }
@@ -901,16 +901,16 @@ Diagonal element of the reduced density matrix element (trace out motion),
     &\langle0_a,1_b|\rho'_3|0_a,1_b\rangle\\
     =&\ue^{-\Gamma\paren{\tau_A+\tau_B}}\\
     &\exp\paren{
-      -2\ui\eta_{a\mathrm{e}}
-      \eta_{a\mathrm{d}}\paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{A}}
-      -\eta_{a\mathrm{e}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{A}-\tau_{A}}}}
-      -2{\bar n_a}\eta_{a\mathrm{e}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{A}}}
+      -2\ui\eta_{a\mathrm{d}}
+      \eta_{a\mathrm{e}}\paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{A}}
+      -\eta_{a\mathrm{d}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{A}-\tau_{A}}}}
+      -2{\bar n_a}\eta_{a\mathrm{d}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{A}}}
       }\\
     &\exp\paren{
-      -2\ui\eta_{b\mathrm{e}}
-      \eta_{b\mathrm{d}}\paren{\sin\omega_b\tau_{B}-\sin\omega_b\tau_{B}}
-      -\eta_{b\mathrm{e}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{B}-\tau_{B}}}}
-      -2{\bar n_b}\eta_{b\mathrm{e}}^2\paren{1-\cos\omega_b\paren{\tau_{B}-\tau_{B}}}
+      -2\ui\eta_{b\mathrm{d}}
+      \eta_{b\mathrm{e}}\paren{\sin\omega_b\tau_{B}-\sin\omega_b\tau_{B}}
+      -\eta_{b\mathrm{d}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{B}-\tau_{B}}}}
+      -2{\bar n_b}\eta_{b\mathrm{d}}^2\paren{1-\cos\omega_b\paren{\tau_{B}-\tau_{B}}}
       }\\
     =&\ue^{-\Gamma\tau_A}\ue^{-\Gamma\tau_B}\\
   \end{split}\\
@@ -929,33 +929,33 @@ Now the more interesting term is the off-diagonal element.
     &\langle0_a,1_b|\rho'_3|1_a,0_b\rangle\\
     =&\ue^{-\Gamma\paren{\tau_A+\tau_B}}\\
     &\exp\paren{
-      -2\ui\eta_{a\mathrm{e}}
-      \eta_{a\mathrm{d}}\paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{B}}
-      -\eta_{a\mathrm{e}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{B}-\tau_{A}}}}
-      -2{\bar n_a}\eta_{a\mathrm{e}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
+      -2\ui\eta_{a\mathrm{d}}
+      \eta_{a\mathrm{e}}\paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{B}}
+      -\eta_{a\mathrm{d}}^2\paren{1-\ue^{\ui\omega_a\paren{\tau_{B}-\tau_{A}}}}
+      -2{\bar n_a}\eta_{a\mathrm{d}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
       }\\
     &\exp\paren{
-      -2\ui\eta_{b\mathrm{e}}
-      \eta_{b\mathrm{d}}\paren{\sin\omega_b\tau_{B}-\sin\omega_b\tau_{A}}
-      -\eta_{b\mathrm{e}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{A}-\tau_{B}}}}
-      -2{\bar n_b}\eta_{b\mathrm{e}}^2\paren{1-\cos\omega_b\paren{\tau_{B}-\tau_{A}}}
+      -2\ui\eta_{b\mathrm{d}}
+      \eta_{b\mathrm{e}}\paren{\sin\omega_b\tau_{B}-\sin\omega_b\tau_{A}}
+      -\eta_{b\mathrm{d}}^2\paren{1-\ue^{\ui\omega_b\paren{\tau_{A}-\tau_{B}}}}
+      -2{\bar n_b}\eta_{b\mathrm{d}}^2\paren{1-\cos\omega_b\paren{\tau_{B}-\tau_{A}}}
       }\\
     =&\ue^{-\Gamma\paren{\tau_A+\tau_B}}\\
     &\exp\paren{
-      -2\ui\eta_{a\mathrm{e}}\eta_{a\mathrm{d}}
+      -2\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
       \paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{B}}
-      -\ui\eta_{a\mathrm{e}}^2\sin\omega_a\paren{\tau_{A}-\tau_{B}}
+      -\ui\eta_{a\mathrm{d}}^2\sin\omega_a\paren{\tau_{A}-\tau_{B}}
       }\\
     &\exp\paren{
-      -2\ui\eta_{b\mathrm{e}}\eta_{b\mathrm{d}}
+      -2\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
       \paren{\sin\omega_b\tau_{A}-\sin\omega_b\tau_{B}}
-      +\ui\eta_{b\mathrm{e}}^2\sin\omega_b\paren{\tau_{A}-\tau_{B}}
+      +\ui\eta_{b\mathrm{d}}^2\sin\omega_b\paren{\tau_{A}-\tau_{B}}
       }\\
     &\exp\paren{
-      -\paren{2{\bar n_a}+1}\eta_{a\mathrm{e}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
+      -\paren{2{\bar n_a}+1}\eta_{a\mathrm{d}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
       }
       \exp\paren{
-      -\paren{2{\bar n_b}+1}\eta_{b\mathrm{e}}^2\paren{1-\cos\omega_b\paren{\tau_{A}-\tau_{B}}}
+      -\paren{2{\bar n_b}+1}\eta_{b\mathrm{d}}^2\paren{1-\cos\omega_b\paren{\tau_{A}-\tau_{B}}}
       }\\
   \end{split}
 }
@@ -965,14 +965,14 @@ to the square of the LD parameters
 \eqar{
   \begin{split}
     &\exp\paren{
-    -2\ui\eta_{a\mathrm{e}}\eta_{a\mathrm{d}}
+    -2\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
     \paren{\sin\omega_a\tau_{A}-\sin\omega_a\tau_{B}}
-    -\ui\eta_{a\mathrm{e}}^2\sin\omega_a\paren{\tau_{A}-\tau_{B}}
+    -\ui\eta_{a\mathrm{d}}^2\sin\omega_a\paren{\tau_{A}-\tau_{B}}
     }\\
     &\exp\paren{
-    -2\ui\eta_{b\mathrm{e}}\eta_{b\mathrm{d}}
+    -2\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
     \paren{\sin\omega_b\tau_{A}-\sin\omega_b\tau_{B}}
-    +\ui\eta_{b\mathrm{e}}^2\sin\omega_b\paren{\tau_{A}-\tau_{B}}
+    +\ui\eta_{b\mathrm{d}}^2\sin\omega_b\paren{\tau_{A}-\tau_{B}}
     }
   \end{split}
 }
@@ -981,10 +981,10 @@ This factor can be completely ignored for ion experiments.\\
 The fidelity factor is,
 \eqar{
   \exp\paren{
-    -\paren{2{\bar n_a}+1}\eta_{a\mathrm{e}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
+    -\paren{2{\bar n_a}+1}\eta_{a\mathrm{d}}^2\paren{1-\cos\omega_a\paren{\tau_{A}-\tau_{B}}}
   }
   \exp\paren{
-    -\paren{2{\bar n_b}+1}\eta_{b\mathrm{e}}^2\paren{1-\cos\omega_b\paren{\tau_{A}-\tau_{B}}}
+    -\paren{2{\bar n_b}+1}\eta_{b\mathrm{d}}^2\paren{1-\cos\omega_b\paren{\tau_{A}-\tau_{B}}}
   }
 }
 This is $1$ when $\tau_A=\tau_B$, which makes sense since there's no leakage of
@@ -998,39 +998,40 @@ Initial state for the $i$-th atom ($i=a,b$),
 \eqar{
   |\psi_i\rangle_0=&\frac{1}{\sqrt2}\paren{|0_i\rangle+|1_i\rangle}|\psi_{i\mathrm{m}}\rangle
 }
-First state excitation at $t_{i\mathrm{d}1}$, decayed at $t_{i\mathrm{e}1}$,
-the second excitation at $t_{i\mathrm{d}2}$, decayed at $t_{i\mathrm{e}2}$,
+First state excitation at $t_{i\mathrm{e}1}$, decayed at $t_{i\mathrm{d}1}$,
+the second excitation at $t_{i\mathrm{e}2}$, decayed at $t_{i\mathrm{d}2}$,
 \eqar{
-  |\psi_i(t_{i\mathrm{e}1},t_{i\mathrm{e}2})\rangle_1=&\frac{1}{\sqrt2}\paren{\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}1}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}1}})|0_i,A_i(t_{i\mathrm{e}1})\rangle+\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}2}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}2}})|1_i,B_i(t_{i\mathrm{e}2})\rangle}|\psi_{i\mathrm{m}}\rangle
+  |\psi_i(t_{i\mathrm{d}1},t_{i\mathrm{d}2})\rangle_1=&\frac{1}{\sqrt2}\lparen{\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}1}})\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}1}})|0_i,A_i(t_{i\mathrm{d}1})\rangle}+\\
+  &\rparen{\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}2}})\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}2}})|1_i,B_i(t_{i\mathrm{d}2})\rangle}|\psi_{i\mathrm{m}}\rangle
 }
 
 The displacement operator for the $j$-th excitation ($j=1,2$),
 \eqar{
   \begin{split}
-    &\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}})\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+    &\mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}})\\
     =&
        \exp\paren{
-       \dfrac{-\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}
-       \ui\eta_{i\mathrm{d}}\ue^{-\ui\omega_it_{i\mathrm{d}j}}
-       +\ui\eta_{i\mathrm{e}}\ue^{-\ui\omega_it_{i\mathrm{e}j}}
-       \ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}}}{2}
+       \dfrac{-\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}}
+       \ui\eta_{i\mathrm{e}}\ue^{-\ui\omega_it_{i\mathrm{e}j}}
+       +\ui\eta_{i\mathrm{d}}\ue^{-\ui\omega_it_{i\mathrm{d}j}}
+       \ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}}{2}
        }
-       \mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}+\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+       \mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}}+\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}})\\
     =&\exp\paren{
-       \ui\eta_{i\mathrm{e}}\eta_{i\mathrm{d}}
-       \sin\paren{\omega_it_{i\mathrm{e}j}-\omega_it_{i\mathrm{d}j}}
+       \ui\eta_{i\mathrm{d}}\eta_{i\mathrm{e}}
+       \sin\paren{\omega_it_{i\mathrm{d}j}-\omega_it_{i\mathrm{e}j}}
        }
-       \mathcal{D}_i(\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}}+\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}})\\
+       \mathcal{D}_i(\ui\eta_{i\mathrm{d}}\ue^{\ui\omega_it_{i\mathrm{d}j}}+\ui\eta_{i\mathrm{e}}\ue^{\ui\omega_it_{i\mathrm{e}j}})\\
     \equiv&\exp\paren{\ui\varphi_{ij}}\mathcal{D}_i(\beta_{ij})
   \end{split}
 }
 \eqar{
-  |\psi_i(t_{i\mathrm{e}1},t_{i\mathrm{e}2})\rangle_1=&\frac{1}{\sqrt2}\paren{\exp\paren{\ui\varphi_{i1}}\mathcal{D}_i(\beta_{i1})|0_i,A_i(t_{i\mathrm{e}1})\rangle+\exp\paren{\ui\varphi_{i2}}\mathcal{D}_i(\beta_{i2})|1_i,B_i(t_{i\mathrm{e}2})\rangle}|\psi_{i\mathrm{m}}\rangle
+  |\psi_i(t_{i\mathrm{d}1},t_{i\mathrm{d}2})\rangle_1=&\frac{1}{\sqrt2}\paren{\exp\paren{\ui\varphi_{i1}}\mathcal{D}_i(\beta_{i1})|0_i,A_i(t_{i\mathrm{d}1})\rangle+\exp\paren{\ui\varphi_{i2}}\mathcal{D}_i(\beta_{i2})|1_i,B_i(t_{i\mathrm{d}2})\rangle}|\psi_{i\mathrm{m}}\rangle
 }
 
 Full wavefunction is,
 \eqar{
-  |\psi\rangle_1=&\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{e}j} \ue^{-\Gamma t_{i\mathrm{e}j}/2}}|\psi_a(t_{a\mathrm{e}1},t_{a\mathrm{e}2}),\psi_b(t_{b\mathrm{e}1},t_{b\mathrm{e}2})\rangle
+  |\psi\rangle_1=&\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{d}j} \ue^{-\Gamma\paren{t_{i\mathrm{d}j}-t_{i\mathrm{e}j}}/2}}|\psi_a(t_{a\mathrm{d}1},t_{a\mathrm{d}2}),\psi_b(t_{b\mathrm{d}1},t_{b\mathrm{d}2})\rangle
 }
 
 After the beam splitter we have
@@ -1046,23 +1047,24 @@ Conditioned on $A^1(\tau_A)B^1(\tau_B)$,
 \eqar{
   \begin{split}
     &\langle A^1(\tau_A),B^1(\tau_B)|\psi\rangle_2\\
-    =&\frac{1}{2}\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{e}j} \ue^{-\Gamma t_{i\mathrm{e}j}/2}}\\
-    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)|0_a,1_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
-    &+\exp\paren{\ui\varphi_{a2}+\ui\varphi_{b1}}\mathcal{D}_a(\beta_{a2})\mathcal{D}_b(\beta_{b1})\delta(t_{b\mathrm{e}1}-\tau_A)\delta(t_{a\mathrm{e}2}-\tau_B)|1_a,0_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle
+    =&\frac{1}{2}\int\prod_{i=a,b}\prod_{j=1,2}\paren{\ud t_{i\mathrm{d}j} \ue^{-\Gamma\paren{t_{i\mathrm{d}j}-t_{i\mathrm{e}j}}/2}}\\
+    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{d}1}-\tau_A)\delta(t_{b\mathrm{d}2}-\tau_B)|0_a,1_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle\\
+    &+\exp\paren{\ui\varphi_{a2}+\ui\varphi_{b1}}\mathcal{D}_a(\beta_{a2})\mathcal{D}_b(\beta_{b1})\delta(t_{b\mathrm{d}1}-\tau_A)\delta(t_{a\mathrm{d}2}-\tau_B)|1_a,0_b\rangle|\psi_{a\mathrm{m}},\psi_{b\mathrm{m}}\rangle
   \end{split}
 }
 
 \eqar{
   \begin{split}
-    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)\\
+    &\exp\paren{\ui\varphi_{a1}+\ui\varphi_{b2}}\mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{d}1}-\tau_A)\delta(t_{b\mathrm{d}2}-\tau_B)\\
     =&\exp\paren{
-       \ui\eta_{a\mathrm{e}}\eta_{a\mathrm{d}}
-       \sin\paren{\omega_a\tau_A-\omega_at_{a\mathrm{d}1}}
-       +\ui\eta_{b\mathrm{e}}\eta_{b\mathrm{d}}
-       \sin\paren{\omega_b\tau_B-\omega_bt_{b\mathrm{d}2}}}
-       \mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{e}1}-\tau_A)\delta(t_{b\mathrm{e}2}-\tau_B)
+       \ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+       \sin\paren{\omega_a\tau_A-\omega_at_{a\mathrm{e}1}}
+       +\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+       \sin\paren{\omega_b\tau_B-\omega_bt_{b\mathrm{e}2}}}
+       \mathcal{D}_a(\beta_{a1})\mathcal{D}_b(\beta_{b2})\delta(t_{a\mathrm{d}1}-\tau_A)\delta(t_{b\mathrm{d}2}-\tau_B)
   \end{split}
 }
+
 
 
 \end{document}
