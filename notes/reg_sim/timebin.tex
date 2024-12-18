@@ -1196,12 +1196,12 @@ Define $\alpha_{xi}=\mathrm{Re}(\alpha_i)$, $\alpha_{yi}=\mathrm{Im}(\alpha_i)$,
        \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
        }^2\\
     &+\paren{
-       2\eta_{i\mathrm{d}}\cos\paren{\omega_i\frac{\tau_A+\tau_B}{2}}
-       \sin\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
-       +2\eta_{i\mathrm{e}}\cos\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
-       \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
-       }^2
-      \\
+      2\eta_{i\mathrm{d}}\cos\paren{\omega_i\frac{\tau_A+\tau_B}{2}}
+      \sin\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
+      +2\eta_{i\mathrm{e}}\cos\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
+      \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
+      }^2
+    \\
     =&4\eta_{i\mathrm{d}}^2\sin^2\paren{\omega_i\frac{\tau_A+\tau_B}{2}}
        \sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
        +4\eta_{i\mathrm{e}}^2\sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
@@ -1211,14 +1211,14 @@ Define $\alpha_{xi}=\mathrm{Re}(\alpha_i)$, $\alpha_{yi}=\mathrm{Im}(\alpha_i)$,
       \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
       \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}\\
     &+4\eta_{i\mathrm{d}}^2\cos^2\paren{\omega_i\frac{\tau_A+\tau_B}{2}}
-       \sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
-       +4\eta_{i\mathrm{e}}^2\cos^2\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
-       \sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}\\
+      \sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
+      +4\eta_{i\mathrm{e}}^2\cos^2\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
+      \sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}\\
     &+8\eta_{i\mathrm{d}}\eta_{i\mathrm{e}}\cos\paren{\omega_i\frac{\tau_A+\tau_B}{2}}
       \sin\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
       \cos\paren{\omega_i\frac{t_{i\mathrm{e}1}+t_{i\mathrm{e}2}}{2}}
       \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
-      \\
+    \\
     =&4\eta_{i\mathrm{d}}^2\sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
        +4\eta_{i\mathrm{e}}^2\sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}\\
     &+8\eta_{i\mathrm{d}}\eta_{i\mathrm{e}}\cos\paren{\omega_i\frac{\tau_A+\tau_B-t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
@@ -1236,5 +1236,44 @@ Define $\alpha_{xi}=\mathrm{Re}(\alpha_i)$, $\alpha_{yi}=\mathrm{Im}(\alpha_i)$,
       \cos\paren{\omega_i\frac{\tau_A+\tau_B-t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}}
   \end{split}
 }
+\eqar{
+  \begin{split}
+    \rho_{2\mathrm{s}}\propto
+    &|0_a,1_b\rangle\langle 0_a,1_b|+|1_a,0_b\rangle\langle 1_a,0_b|\\
+    &+|0_a,1_b\rangle\langle 1_a,0_b|\\
+    &\exp\paren{4\ui\eta_{a\mathrm{d}}\eta_{a\mathrm{e}}
+      \cos\paren{\omega_a\frac{\tau_A-\tau_B}{2}}
+      \sin\paren{\omega_a\frac{t_{a\mathrm{e}2}-t_{a\mathrm{e}1}}{2}}
+      \cos\paren{\omega_a\frac{\tau_A+\tau_B-t_{a\mathrm{e}1}-t_{a\mathrm{e}2}}{2}}
+      }\\
+    &\exp\paren{
+      -\ui\eta_{a\mathrm{d}}^2\sin\omega_a\paren{\tau_A-\tau_B}-\ui\eta_{a\mathrm{e}}^2\sin\omega_a\paren{t_{a\mathrm{e}1}-t_{a\mathrm{e}2}}
+      }\\
+    &\exp\paren{4\ui\eta_{b\mathrm{d}}\eta_{b\mathrm{e}}
+      \cos\paren{\omega_b\frac{\tau_A-\tau_B}{2}}
+      \sin\paren{\omega_b\frac{t_{b\mathrm{e}1}-t_{b\mathrm{e}2}}{2}}
+      \cos\paren{\omega_b\frac{\tau_B+\tau_A-t_{b\mathrm{e}2}-t_{b\mathrm{e}1}}{2}}
+      }\\
+    &\exp\paren{
+      -\ui\eta_{b\mathrm{d}}^2\sin\omega_b\paren{\tau_B-\tau_A}-\ui\eta_{b\mathrm{e}}^2\sin\omega_b\paren{t_{b\mathrm{e}2}-t_{b\mathrm{e}1}}
+      }\\
+    &\prod_{i=a,b}\exp\paren{-2\eta_{i\mathrm{d}}^2\paren{2\bar n_i+1}\sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}}\exp\paren{-2\eta_{i\mathrm{e}}^2\paren{2\bar n_i+1}\sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}}\\
+    &\exp\paren{-4\eta_{i\mathrm{d}}\eta_{i\mathrm{e}}\paren{2\bar n_i+1}
+      \sin\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
+      \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
+      \cos\paren{\omega_i\frac{\tau_A+\tau_B-t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}}+h.c.
+  \end{split}
+}
+The maximum fidelity is,
+\eqar{
+  \begin{split}
+    &\prod_{i=a,b}\exp\paren{-2\eta_{i\mathrm{d}}^2\paren{2\bar n_i+1}\sin^2\paren{\omega_i\frac{\tau_A-\tau_B}{2}}}\exp\paren{-2\eta_{i\mathrm{e}}^2\paren{2\bar n_i+1}\sin^2\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}}\\
+    &\exp\paren{-4\eta_{i\mathrm{d}}\eta_{i\mathrm{e}}\paren{2\bar n_i+1}
+      \sin\paren{\omega_i\frac{\tau_A-\tau_B}{2}}
+      \sin\paren{\omega_i\frac{t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}
+      \cos\paren{\omega_i\frac{\tau_A+\tau_B-t_{i\mathrm{e}1}-t_{i\mathrm{e}2}}{2}}}
+  \end{split}
+}
+Interestingly, there is a cross term between the effect from the excitation and emission timing.
 
 \end{document}
