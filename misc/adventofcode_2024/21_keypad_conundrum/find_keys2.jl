@@ -7,26 +7,28 @@ const num_pos = Dict('7'=>(1, 1), '8'=>(1, 2), '9'=>(1, 3),
 const dir_pos = Dict('^'=>(1, 2), 'A'=>(1, 3),
                      '<'=>(2, 1), 'v'=>(2, 2), '>'=>(2, 3))
 
-function get_keypress_options(str, pos_map, invalid_pos)
+function get_keypress_options!(res, str, pos_map, invalid_pos, weight=1)
     cur = pos_map['A']
-    options = Vector{String}[]
+    function add_str(s)
+        res[s] = get(res, s, 0) + weight
+    end
     for c in str
         next = pos_map[c]
         if cur[1] == next[1]
             if cur[2] == next[2]
-                push!(options, ["A"])
+                add_str("A")
             elseif cur[2] < next[2]
-                push!(options, [">"^(next[2] - cur[2]) * "A"])
+                add_str(">"^(next[2] - cur[2]) * "A")
             else
                 @assert cur[2] > next[2]
-                push!(options, ["<"^(cur[2] - next[2]) * "A"])
+                add_str("<"^(cur[2] - next[2]) * "A")
             end
         elseif cur[2] == next[2]
             if cur[1] < next[1]
-                push!(options, ["v"^(next[1] - cur[1]) * "A"])
+                add_str("v"^(next[1] - cur[1]) * "A")
             else
                 @assert cur[1] > next[1]
-                push!(options, ["^"^(cur[1] - next[1]) * "A"])
+                add_str("^"^(cur[1] - next[1]) * "A")
             end
         else
             if cur[1] < next[1]
@@ -42,37 +44,38 @@ function get_keypress_options(str, pos_map, invalid_pos)
                 hs = "<"^(cur[2] - next[2])
             end
             if (cur[1], next[2]) == invalid_pos
-                push!(options, [vs * hs * "A"])
+                add_str(vs * hs * "A")
             elseif (next[1], cur[2]) == invalid_pos
-                push!(options, [hs * vs * "A"])
-            elseif cur[1] < next[1]
-                push!(options, [vs * hs * "A"])
+                add_str(hs * vs * "A")
+            elseif cur[1] < next[1] && cur[2] < next[2]
+                add_str(vs * hs * "A")
+            elseif cur[1] < next[1] && cur[2] > next[2]
+                add_str(hs * vs * "A")
+            elseif cur[1] > next[1] && cur[2] < next[2]
+                add_str(vs * hs * "A")
             else
-                push!(options, [hs * vs * "A"])
+                add_str(hs * vs * "A")
             end
         end
         cur = next
     end
-    res = String[]
-    min_len = typemax(Int)
-    for strs in Iterators.product(options...)
-        s = join(strs, "")
-        min_len = min(min_len, length(s))
-        push!(res, s)
+    return res
+end
+
+function get_keypress_options2(prev)
+    res = Dict{String,Int}()
+    for (k, v) in prev
+        get_keypress_options!(res, k, dir_pos, (1, 1), v)
     end
-    return [s for s in res if length(s) == min_len]
+    return res
 end
 
 function get_options(str)
-    s = typemax(Int)
-    for num1 in get_keypress_options(str, num_pos, (4, 1))
-        for num2 in get_keypress_options(num1, dir_pos, (1, 1))
-            for num3 in get_keypress_options(num2, dir_pos, (1, 1))
-                s = min(s, length(num3))
-            end
-        end
+    num = get_keypress_options!(Dict{String,Int}(), str, num_pos, (4, 1))
+    for i in 1:25
+        num = get_keypress_options2(num)
     end
-    return s
+    return sum(length(k) * v for (k, v) in num)
 end
 
 function sum_keys(file)
