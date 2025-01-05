@@ -1,0 +1,111 @@
+\documentclass[aps,prx,10pt]{revtex4-2}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{babel}
+% \usepackage{units}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage[pdftex]{graphicx}
+\usepackage[utf8x]{inputenc}
+\usepackage{wasysym}
+\usepackage{bbold}
+\usepackage{mathtools}
+\usepackage{blkarray, bigstrut}
+\usepackage{float}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{multirow}
+\usepackage{array}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\usepackage{longtable}
+
+\ifpdf
+% Ensure reproducible output
+\pdfinfoomitdate=1
+\pdfsuppressptexinfo=-1
+\pdftrailerid{}
+\hypersetup{
+  pdfcreator={},
+  pdfproducer={}
+}
+\fi
+
+\begin{document}
+
+\title{Calcium references}
+
+\maketitle
+
+\section{Levels}
+\begin{longtable}{|r|c|c|c|c|r|c|c|}
+\hline
+State&$E$ (THz)&$\Gamma/2\pi$&$A_{HF}$ (MHz)&$B_{HF}$ (MHz)&Decay&$\lambda$ (nm)&$A_{ki}\ \mathrm{(s^{-1})}$\\
+\hline
+$4s^2\ {}^{\mathrm{1}}\!S_0$&$0$&$0$&$0$&$0$&&&\\
+\hline
+$4s4p\ {}^{\mathrm{3}}\!P_0$&$454.42244$&&$0$&$0$&$4s^2\ {}^{\mathrm{1}}\!S_0$&$659.72195$&\\
+\hline
+$4s4p\ {}^{\mathrm{3}}\!P_1$&$455.98621$&$0.33\ \mathrm{kHz}$\cite{machholmCalculationsPhys.Rev.A2001}&$-198.5(11)$\cite{klingbeilIsotopeZPhysikA1979}&$2(9)$\cite{klingbeilIsotopeZPhysikA1979}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$657.45947$&$2.1\times10^3$\cite{machholmCalculationsPhys.Rev.A2001}\\
+\hline
+$4s4p\ {}^{\mathrm{3}}\!P_2$&$459.16042$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$652.91442$&\\
+\hline
+$3d4s\ {}^{\mathrm{3}}\!D_1$&$609.63876$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.75426$&\\
+\hline
+$3d4s\ {}^{\mathrm{3}}\!D_2$&$610.05547$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\hline
+$3d4s\ {}^{\mathrm{3}}\!D_3$&$655.03555$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\hline
+$3d4s\ {}^{\mathrm{1}}\!D_2$&$610.70722$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$457.67357$&\\
+\hline
+$4s4p\ {}^{\mathrm{1}}\!P_1$&$709.2779$\cite{machholmCalculationsPhys.Rev.A2001}&$34.7\ \mathrm{MHz}$\cite{machholmCalculationsPhys.Rev.A2001}&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$422.6728$\cite{machholmCalculationsPhys.Rev.A2001}&$218\times10^{6}$\cite{machholmCalculationsPhys.Rev.A2001}\\
+\hline
+\multirow{3}{*}{$4s5s\ {}^{\mathrm{3}}\!S_1$}&\multirow{3}{*}{$945.53027$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_0$&$610.44121$&$9.855\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$612.39117$&$29.278\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$616.38783$&$47.845\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\hline
+$4s5s\ {}^{\mathrm{1}}\!S_0$&$998.82644$&&$0$&$0$&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!F_2$&$1071.1721$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!F_3$&$1073.8180$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{1}}\!D_2$&$1074.3187$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!F_4$&$1076.1617$&&&&&&\\
+\hline
+$4s5p\ {}^{\mathrm{3}}\!P_0$&$1095.6721$&&$0$&$0$&&&\\
+\hline
+$4s5p\ {}^{\mathrm{3}}\!P_1$&$1095.8838$&&&&&&\\
+\hline
+$4s5p\ {}^{\mathrm{3}}\!P_2$&$1096.4945$&&&&&&\\
+\hline
+$4s5p\ {}^{\mathrm{1}}\!P_1$&$1101.1861$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$272.24504$&$0.27\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\
+\hline
+$4s4d\ {}^{\mathrm{1}}\!D_2$&$1118.1745$&&&&&&\\
+\hline
+$4s4d\ {}^{\mathrm{3}}\!D_1$&$1131.6625$&&&&&&\\
+\hline
+$4s4d\ {}^{\mathrm{3}}\!D_2$&$1131.7725$&&&&&&\\
+\hline
+$4s4d\ {}^{\mathrm{3}}\!D_3$&$1131.9398$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!D_1$&$1144.9791$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!D_2$&$1145.7803$&&&&&&\\
+\hline
+$3d4p\ {}^{\mathrm{3}}\!D_3$&$1146.9797$&&&&&&\\
+\hline
+$4p^2\ {}^{\mathrm{3}}\!P_0$&$1151.7290$&&$0$&$0$&&&\\
+\hline
+$4p^2\ {}^{\mathrm{3}}\!P_1$&$1153.1459$&&&&&&\\
+\hline
+$4p^2\ {}^{\mathrm{3}}\!P_2$&$1155.7466$&&&&&&\\
+\hline
+\end{longtable}
+
+\bibliographystyle{apsrev4-2}
+\bibliography{calcium.bib}
+
+\end{document}
