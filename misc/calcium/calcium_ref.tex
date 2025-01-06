@@ -37,6 +37,7 @@
 \maketitle
 
 \section{Levels}
+\renewcommand*{\arraystretch}{1.4}
 \begin{longtable}{|r|c|c|c|c|r|c|c|}
 \hline
 State&$E$ (THz)&$\Gamma/2\pi$&$A_{HF}$ (MHz)&$B_{HF}$ (MHz)&Decay&$\lambda$ (nm)&$A_{ki}\ \mathrm{(s^{-1})}$\\
@@ -45,19 +46,38 @@ $4s^2\ {}^{\mathrm{1}}\!S_0$&$0$&$0$&$0$&$0$&&&\\
 \hline
 $4s4p\ {}^{\mathrm{3}}\!P_0$&$454.42244$&&$0$&$0$&$4s^2\ {}^{\mathrm{1}}\!S_0$&$659.72195$&\\
 \hline
-$4s4p\ {}^{\mathrm{3}}\!P_1$&$455.98621$&$0.33\ \mathrm{kHz}$\cite{machholmCalculationsPhys.Rev.A2001}&$-198.5(11)$\cite{klingbeilIsotopeZPhysikA1979}&$2(9)$\cite{klingbeilIsotopeZPhysikA1979}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$657.45947$&$2.1\times10^3$\cite{machholmCalculationsPhys.Rev.A2001}\\
+$4s4p\ {}^{\mathrm{3}}\!P_1$&$455.98621$&$0.33\ \mathrm{kHz}$\cite{machholmCalculationsPhys.Rev.A2001}&$-198.5(11)$\cite{klingbeilIsotopeZPhysikA1979}&$2(9)$\cite{klingbeilIsotopeZPhysikA1979}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$657.45947$&\shortstack{$2.1\times10^3$\cite{machholmCalculationsPhys.Rev.A2001}\\$2.32\times10^3$\cite{vogtCreation2009}}\\
 \hline
-$4s4p\ {}^{\mathrm{3}}\!P_2$&$459.16042$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$652.91442$&\\
+$4s4p\ {}^{\mathrm{3}}\!P_2$&$459.16042$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$652.91442$&$1.2\times10^{-4}$\cite{vogtCreation2009}\\
 \hline
-$3d4s\ {}^{\mathrm{3}}\!D_1$&$609.63876$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.75426$&\\
+\multirow{4}{*}{$3d4s\ {}^{\mathrm{3}}\!D_1$}&\multirow{4}{*}{$609.63876$}&\multirow{4}{*}{}&\multirow{4}{*}{}&\multirow{4}{*}{}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_0$&$1931.449$&$0.502\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$1951.106$&$0.365\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$1992.263$&$0.023\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$3d4s\ {}^{\mathrm{3}}\!D_2$&$610.05547$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\multirow{3}{*}{$3d4s\ {}^{\mathrm{3}}\!D_2$}&\multirow{3}{*}{$610.05547$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}
+&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$1945.829$&$0.663\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$1986.761$&$0.207\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$3d4s\ {}^{\mathrm{3}}\!D_3$&$655.03555$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.41836$&\\
+\multirow{2}{*}{$3d4s\ {}^{\mathrm{3}}\!D_3$}&\multirow{2}{*}{$610.70722$}&\multirow{2}{*}{}&\multirow{2}{*}{}&\multirow{2}{*}{}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$491.75426$&\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$1978.217$&$0.841\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$3d4s\ {}^{\mathrm{1}}\!D_2$&$610.70722$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$457.67357$&\\
+\multirow{3}{*}{$3d4s\ {}^{\mathrm{1}}\!D_2$}&\multirow{3}{*}{$655.03555$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$457.67357$&$40$\cite{vogtCreation2009}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$1506.121$&$300$\cite{vogtCreation2009}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$1530.528$&$96$\cite{vogtCreation2009}\\
 \hline
-$4s4p\ {}^{\mathrm{1}}\!P_1$&$709.2779$\cite{machholmCalculationsPhys.Rev.A2001}&$34.7\ \mathrm{MHz}$\cite{machholmCalculationsPhys.Rev.A2001}&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$422.6728$\cite{machholmCalculationsPhys.Rev.A2001}&$218\times10^{6}$\cite{machholmCalculationsPhys.Rev.A2001}\\
+\multirow{2}{*}{$4s4p\ {}^{\mathrm{1}}\!P_1$}&\multirow{2}{*}{$709.2779$\cite{machholmCalculationsPhys.Rev.A2001}}&\multirow{2}{*}{$34.7\ \mathrm{MHz}$\cite{machholmCalculationsPhys.Rev.A2001}}&\multirow{2}{*}{$-15.54(3)$\cite{nortershauserIsotopeSpectrochimicaActaPartB:AtomicSpectroscopy1998}}&\multirow{2}{*}{$-3.48(13)$\cite{nortershauserIsotopeSpectrochimicaActaPartB:AtomicSpectroscopy1998}}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$422.6728$\cite{machholmCalculationsPhys.Rev.A2001}&$218\times10^{6}$\cite{machholmCalculationsPhys.Rev.A2001}\\
+\cline{6-8}
+&&&&&$3d4s\ {}^{\mathrm{1}}\!D_2$&$5547.327$&$2.18\times10^3$\cite{vogtCreation2009}\\
 \hline
 \multirow{3}{*}{$4s5s\ {}^{\mathrm{3}}\!S_1$}&\multirow{3}{*}{$945.53027$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_0$&$610.44121$&$9.855\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \cline{6-8}
@@ -65,7 +85,7 @@ $4s4p\ {}^{\mathrm{1}}\!P_1$&$709.2779$\cite{machholmCalculationsPhys.Rev.A2001}
 \cline{6-8}
 &&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$616.38783$&$47.845\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$4s5s\ {}^{\mathrm{1}}\!S_0$&$998.82644$&&$0$&$0$&&&\\
+$4s5s\ {}^{\mathrm{1}}\!S_0$&$998.82644$&&$0$&$0$&$4s4p\ {}^{\mathrm{1}}\!P_1$&$1034.665$&\\
 \hline
 $3d4p\ {}^{\mathrm{3}}\!F_2$&$1071.1721$&&&&&&\\
 \hline
@@ -81,15 +101,27 @@ $4s5p\ {}^{\mathrm{3}}\!P_1$&$1095.8838$&&&&&&\\
 \hline
 $4s5p\ {}^{\mathrm{3}}\!P_2$&$1096.4945$&&&&&&\\
 \hline
-$4s5p\ {}^{\mathrm{1}}\!P_1$&$1101.1861$&&&&$4s^2\ {}^{\mathrm{1}}\!S_0$&$272.24504$&$0.27\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\
+\multirow{3}{*}{$4s5p\ {}^{\mathrm{1}}\!P_1$}&\multirow{3}{*}{$1101.1861$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s^2\ {}^{\mathrm{1}}\!S_0$&$272.24504$&\shortstack{$0.27\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\$60\times10^6$\cite{vogtCreation2009}}\\
+\cline{6-8}
+&&&&&$3d4s\ {}^{\mathrm{1}}\!D_2$&$671.95355$&$12\times10^6$\cite{vogtCreation2009}\\
+\cline{6-8}
+&&&&&$4s5s\ {}^{\mathrm{1}}\!S_0$&$2928.814$&\\
 \hline
-$4s4d\ {}^{\mathrm{1}}\!D_2$&$1118.1745$&&&&&&\\
+\multirow{2}{*}{$4s4d\ {}^{\mathrm{1}}\!D_2$}&\multirow{2}{*}{$1118.1745$}&\multirow{2}{*}{}&\multirow{2}{*}{$-8.33(2)$\cite{nortershauserIsotopeSpectrochimicaActaPartB:AtomicSpectroscopy1998}}&\multirow{2}{*}{$-1.0(12)$\cite{nortershauserIsotopeSpectrochimicaActaPartB:AtomicSpectroscopy1998}}&$4s4p\ {}^{\mathrm{3}}\!P_1$&$452.72993$&$30\times10^3$\cite{vogtCreation2009}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{1}}\!P_1$&$732.81639$&$14\times10^6$\cite{vogtCreation2009}\\
 \hline
-$4s4d\ {}^{\mathrm{3}}\!D_1$&$1131.6625$&&&&&&\\
+\multirow{3}{*}{$4s4d\ {}^{\mathrm{3}}\!D_1$}&\multirow{3}{*}{$1131.6625$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_0$&$442.66795$&$48.981\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$443.69245$&$36.471\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$445.78668$&$2.396\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$4s4d\ {}^{\mathrm{3}}\!D_2$&$1131.7725$&&&&&&\\
+\multirow{2}{*}{$4s4d\ {}^{\mathrm{3}}\!D_2$}&\multirow{2}{*}{$1131.7725$}&\multirow{2}{*}{}&\multirow{2}{*}{}&\multirow{2}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_1$&$443.62022$&$65.687\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$445.71376$&$21.580\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$4s4d\ {}^{\mathrm{3}}\!D_3$&$1131.9398$&&&&&&\\
+$4s4d\ {}^{\mathrm{3}}\!D_3$&$1131.9398$&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$445.60289$&$86.400\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
 $3d4p\ {}^{\mathrm{3}}\!D_1$&$1144.9791$&&&&&&\\
 \hline
@@ -97,11 +129,17 @@ $3d4p\ {}^{\mathrm{3}}\!D_2$&$1145.7803$&&&&&&\\
 \hline
 $3d4p\ {}^{\mathrm{3}}\!D_3$&$1146.9797$&&&&&&\\
 \hline
-$4p^2\ {}^{\mathrm{3}}\!P_0$&$1151.7290$&&$0$&$0$&&&\\
+$4p^2\ {}^{\mathrm{3}}\!P_0$&$1151.7290$&&$0$&$0$&$4s4p\ {}^{\mathrm{3}}\!P_1$&$430.89556$&$179.046\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$4p^2\ {}^{\mathrm{3}}\!P_1$&$1153.1459$&&&&&&\\
+\multirow{3}{*}{$4p^2\ {}^{\mathrm{3}}\!P_1$}&\multirow{3}{*}{$1153.1459$}&\multirow{3}{*}{}&\multirow{3}{*}{}&\multirow{3}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_0$&$429.05736$&$60.474\times10^6$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_1$&$430.01977$&$45.045\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$431.98662$&$74.033\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
-$4p^2\ {}^{\mathrm{3}}\!P_2$&$1155.7466$&&&&&&\\
+\multirow{2}{*}{$4p^2\ {}^{\mathrm{3}}\!P_2$}&\multirow{2}{*}{$1155.7466$}&\multirow{2}{*}{}&\multirow{2}{*}{}&\multirow{2}{*}{}&$4s4p\ {}^{\mathrm{3}}\!P_1$&$428.42157$&$45.563\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
+\cline{6-8}
+&&&&&$4s4p\ {}^{\mathrm{3}}\!P_2$&$430.37380$&$134.784\times10^{6}$\cite{zhouMagicPhys.Rev.A2010}\\
 \hline
 \end{longtable}
 
