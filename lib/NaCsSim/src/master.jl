@@ -90,7 +90,7 @@ struct System{T<:Real,N,D,JMap}
         jop = [(iout, iin, v) for ((iin, iout), v) in jmap]
         # Group the ones with the same output together
         sort!(jop)
-        return new{T,N,D,tuple(jop...)}(spzeros(T, N, N), data)
+        return new{T,_N,D,tuple(jop...)}(spzeros(T, N, N), data)
     end
 end
 
@@ -101,7 +101,7 @@ struct SystemCoherent{T<:Real,N,D}
         if _N !== nothing
             N = _N
         end
-        return new{T,N,D}(spzeros(T, N, N), data)
+        return new{T,_N,D}(spzeros(T, N, N), data)
     end
 end
 
@@ -117,7 +117,7 @@ end
 
 @inline function do_mul!(result::DenseMatrix, B::DenseMatrix,
                          M::SparseMatrixCSC, ::Val{_nrow}) where _nrow
-    @inbounds prev_colptr = M.colptr[1]
+    prev_colptr = 1
     nrow = get_nrow(M, Val(_nrow))
     @inbounds for col in 1:nrow
         filled = false
@@ -176,33 +176,31 @@ end
     return
 end
 
-@inline function do_imul!(result::DenseVector, M::SparseMatrixCSC,
-                          B::DenseVector, ::Val{_nrow}) where _nrow
+@inline function dschroedinger(t, ψ::DenseVector, dψ::DenseVector,
+                               sys::SystemCoherent{T,_nrow}, drive) where {T,_nrow}
+    @inline update!(drive, sys, t)
+    M = sys.op
     nrow = get_nrow(M, Val(_nrow))
-    @inbounds result .= 0
-    @inbounds prev_colptr = M.colptr[1]
+    colptrs = M.colptr
+    rowval = M.rowval
+    nzval = M.nzval
+    prev_colptr = 1
     @inbounds for col in 1:nrow
-        colptr = M.colptr[col + 1]
-        Bv = im * B[col]
+        r = zero(eltype(dψ))
+        colptr = colptrs[col + 1]
         for i in prev_colptr:colptr - 1
-            row = M.rowval[i]
-            result[row] = muladd(M.nzval[i], Bv, result[row])
+            ψv = ψ[rowval[i]]
+            r = muladd(conj(nzval[i]), complex(-imag(ψv), real(ψv)), r)
         end
+        dψ[col] = r
         prev_colptr = colptr
     end
 end
 
-@inline function dschroedinger(t, ψ_data::DenseVector, dψ_data::DenseVector,
-                               sys::SystemCoherent{T,_nrow}, drive) where {T,_nrow}
-    @inline update!(drive, sys, t)
-    @inline do_imul!(dψ_data, sys.op, ψ_data, Val{_nrow}())
-    return
-end
-
-function integrate(tspan, df_::F, x0, fout;
+function integrate(tspan, df_::F, x0, fout::FO;
                    alg = OrdinaryDiffEq.DP5(),
                    save_everystep = false, saveat=tspan,
-                   callback = nothing, kwargs...) where {F}
+                   callback = nothing, kwargs...) where {F,FO}
 
     function fout_(x, t, integrator)
         @inline fout(t, x)
@@ -237,7 +235,7 @@ end
 Base.@pure pure_inference(fout, T) = Core.Compiler.return_type(fout, T)
 
 function evolve(drive, sys::System, x0::DenseMatrix, tlen, npoints=1001;
-                fout=nothing, kws...)
+                fout::FO=nothing, kws...) where FO
     init!(drive, sys)
     function dmaster_(dx, x, p, t)
         dmaster(t, x, dx, sys, drive)
@@ -249,7 +247,7 @@ function evolve(drive, sys::System, x0::DenseMatrix, tlen, npoints=1001;
 end
 
 function evolve(drive, sys::SystemCoherent, x0::DenseVector, tlen, npoints=1001;
-                fout=nothing, kws...)
+                fout::FO=nothing, kws...) where FO
     init!(drive, sys)
     function dschroedinger_(dx, x, p, t)
         dschroedinger(t, x, dx, sys, drive)
