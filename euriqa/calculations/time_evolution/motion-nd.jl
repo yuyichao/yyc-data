@@ -163,7 +163,7 @@ end
     _update!(drive, sys, t)
 end
 
-function evolve(E, ωs, ηs, ψs0, n0s, Ω, tlen, npoints=1001;
+function evolve(E, ωs, ηs, ψs0, n0s, Ω, tspan;
                 δmax=0, Ωprofile::F=nothing, kws...) where F
     E0 = motion_energy(ωs, n0s)
     dE = hypot(Ω, abs(E) + abs(δmax)) * 10
@@ -179,6 +179,6 @@ function evolve(E, ωs, ηs, ψs0, n0s, Ω, tlen, npoints=1001;
         n = sqrt(sum(abs2(x) for x in xs))
         return Ket(basis, [x / n for x in xs])
     end
-    return Master.evolve(Drive(Ω / 2, Ωprofile), sys, ψ0.data, tlen, npoints;
+    return Master.evolve(Drive(Ω / 2, Ωprofile), sys, ψ0.data, tspan;
                          fout=fout, kws...)
 end

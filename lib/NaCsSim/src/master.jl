@@ -234,7 +234,7 @@ end
 
 Base.@pure pure_inference(fout, T) = Core.Compiler.return_type(fout, T)
 
-function evolve(drive, sys::System, x0::DenseMatrix, tlen, npoints=1001;
+function evolve(drive, sys::System, x0::DenseMatrix, tspan;
                 fout::FO=nothing, kws...) where FO
     init!(drive, sys)
     function dmaster_(dx, x, p, t)
@@ -243,10 +243,10 @@ function evolve(drive, sys::System, x0::DenseMatrix, tlen, npoints=1001;
     if fout === nothing
         fout = (t, x) -> copy(x)
     end
-    return integrate(range(0, tlen, npoints), dmaster_, x0, fout; kws...)
+    return integrate(tspan, dmaster_, x0, fout; kws...)
 end
 
-function evolve(drive, sys::SystemCoherent, x0::DenseVector, tlen, npoints=1001;
+function evolve(drive, sys::SystemCoherent, x0::DenseVector, tspan;
                 fout::FO=nothing, kws...) where FO
     init!(drive, sys)
     function dschroedinger_(dx, x, p, t)
@@ -255,7 +255,7 @@ function evolve(drive, sys::SystemCoherent, x0::DenseVector, tlen, npoints=1001;
     if fout === nothing
         fout = (t, x) -> copy(x)
     end
-    return integrate(range(0, tlen, npoints), dschroedinger_, x0, fout; kws...)
+    return integrate(tspan, dschroedinger_, x0, fout; kws...)
 end
 
 end

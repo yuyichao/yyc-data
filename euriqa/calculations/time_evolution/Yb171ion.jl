@@ -258,9 +258,9 @@ function get_ρ(sys::Yb171Sys, name::Symbol, F, mF)
     return ψ ⊗ ψ'
 end
 
-function evolve(drive, sys::Yb171Sys, ρ0, tlen, npoints=1001; kws...)
+function evolve(drive, sys::Yb171Sys, ρ0, tspan; kws...)
     fout(t, x) = Operator(ρ0.basis_l, ρ0.basis_r, copy(x))
-    return Master.evolve(drive, sys, ρ0.data, tlen, npoints; fout=fout, kws...)
+    return Master.evolve(drive, sys, ρ0.data, tspan; fout=fout, kws...)
 end
 
 function Master.init!(::Nothing, sys::Yb171Sys)
