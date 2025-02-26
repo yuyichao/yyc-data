@@ -91,6 +91,14 @@ struct System{T<:Real,N,D,JMap}
     end
 end
 
+struct SystemCoherent{T<:Real,N,D}
+    op::SparseMatrixCSC{Complex{T},Int}
+    data::D
+    function SystemCoherent{T,N}(data::D) where {T<:Real,N,D}
+        return new{T,N,D}(spzeros(T, N, N), data)
+    end
+end
+
 function init! end
 function update! end
 
@@ -153,6 +161,28 @@ end
     return
 end
 
+@inline function do_imul!(result::DenseVector, M::SparseMatrixCSC,
+                          B::DenseVector, ::Val{nrow}) where nrow
+    @inbounds result .= 0
+    @inbounds prev_colptr = M.colptr[1]
+    @inbounds for col in 1:nrow
+        colptr = M.colptr[col + 1]
+        Bv = im * B[col]
+        for i in prev_colptr:colptr - 1
+            row = M.rowval[i]
+            result[row] = muladd(M.nzval[i], Bv, result[row])
+        end
+        prev_colptr = colptr
+    end
+end
+
+@inline function dschroedinger(t, ψ_data::DenseVector, dψ_data::DenseVector,
+                               sys::SystemCoherent{T,nrow}, drive) where {T,nrow}
+    @inline update!(drive, sys, t)
+    @inline do_imul!(dψ_data, sys.op, ψ_data, Val{nrow}())
+    return
+end
+
 function integrate(tspan, df_::F, x0, fout;
                    alg = OrdinaryDiffEq.DP5(),
                    save_everystep = false, saveat=tspan,
@@ -200,6 +230,18 @@ function evolve(drive, sys::System, x0::DenseMatrix, tlen, npoints=1001;
         fout = (t, x) -> copy(x)
     end
     return integrate(range(0, tlen, npoints), dmaster_, x0, fout; kws...)
+end
+
+function evolve(drive, sys::SystemCoherent, x0::DenseVector, tlen, npoints=1001;
+                fout=nothing, kws...)
+    init!(drive, sys)
+    function dschroedinger_(dx, x, p, t)
+        dschroedinger(t, x, dx, sys, drive)
+    end
+    if fout === nothing
+        fout = (t, x) -> copy(x)
+    end
+    return integrate(range(0, tlen, npoints), dschroedinger_, x0, fout; kws...)
 end
 
 end
