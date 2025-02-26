@@ -70,6 +70,13 @@ function MotionNDData(E, ωs::NTuple{N}, ηs::NTuple{N}, states) where N
 end
 const MotionND{N,nrow} = Master.SystemCoherent{Float64,nrow,MotionNDData{N}}
 
+struct Drive{T,F}
+    Ω_2::T
+    f::F
+end
+(drive::Drive{T,Nothing} where T)(t) = drive.Ω_2
+@inline (drive::Drive)(t) = drive.Ω_2 * drive.f(t)
+
 function Master.init!(drive, sys::MotionND)
     data = sys.data
     disp = data.disp
@@ -115,9 +122,10 @@ function Master.init!(drive, sys::MotionND)
         prev_disp_colptr = disp_colptr
         prev_colptr1 = colptr1
     end
+    post_init!(drive, sys)
 end
 
-function Master.update!(drive, sys::MotionND, t)
+function _update!(drive, sys, t)
     Ω = drive(t)
 
     data = sys.data
@@ -127,32 +135,33 @@ function Master.update!(drive, sys::MotionND, t)
     disp_nnz = length(disp.rowval)
     half_op_nnz = disp_nnz + nmotion
 
+    disp_colptrs = disp.colptr
+    disp_nzval = disp.nzval
+    disp_dagger_nzval = disp_dagger.nzval
     nzval = sys.op.nzval
 
     prev_disp_colptr = 1
-    prev_colptr1 = 1
-    for i in 1:nmotion
-        disp_colptr = disp.colptr[i + 1]
-        colptr1 = disp_colptr + i
-
-        for disp_cp in prev_disp_colptr:disp_colptr - 1
-            v = disp.nzval[disp_cp]
-            nzval[disp_cp + i] = v * Ω
-            v_dagger = disp_dagger.nzval[disp_cp]
-            nzval[disp_cp + i - 1 + half_op_nnz] = v_dagger * conj(Ω)
+    @inbounds for i in 1:nmotion
+        disp_colptr = disp_colptrs[i + 1]
+        @simd ivdep for disp_cp in prev_disp_colptr:disp_colptr - 1
+            nzval[disp_cp + i] = disp_nzval[disp_cp] * Ω
+            nzval[disp_cp + i - 1 + half_op_nnz] =
+                disp_dagger_nzval[disp_cp] * conj(Ω)
         end
         prev_disp_colptr = disp_colptr
-        prev_colptr1 = colptr1
     end
     return
 end
 
-struct Drive{T,F}
-    Ω_2::T
-    f::F
+@inline function post_init!(drive::Drive{T,Nothing} where T, sys::MotionND)
+    _update!(drive, sys, 0.0)
 end
-(drive::Drive{T,Nothing} where T)(t) = drive.Ω_2
-@inline (drive::Drive)(t) = drive.Ω_2 * drive.f(t)
+@inline function post_init!(drive::Drive, sys::MotionND) end
+
+@inline function Master.update!(drive::Drive{T,Nothing} where T, sys::MotionND, t) end
+@inline function Master.update!(drive, sys::MotionND, t)
+    _update!(drive, sys, t)
+end
 
 function evolve(E, ωs, ηs, ψs0, n0s, Ω, tlen, npoints=1001;
                 δmax=0, Ωprofile::F=nothing, kws...) where F
@@ -165,6 +174,10 @@ function evolve(E, ωs, ηs, ψs0, n0s, Ω, tlen, npoints=1001;
     m_basis = NLevelBasis(N)
     ψ0 = nlevelstate(m_basis, findfirst(==(n0s), mstates)) ⊗ ψs0
     basis = m_basis ⊗ SpinBasis(1//2)
-    ts, xs = Master.evolve(Drive(Ω / 2, Ωprofile), sys, ψ0.data, tlen, npoints; kws...)
-    return ts, [Ket(basis, x) for x in xs], sys
+    function fout(t, xs)
+        n = sqrt(sum(abs2(x) for x in xs))
+        return Ket(basis, [x / n for x in xs])
+    end
+    return Master.evolve(Drive(Ω / 2, Ωprofile), sys, ψ0.data, tlen, npoints;
+                         fout=fout, kws...)
 end
