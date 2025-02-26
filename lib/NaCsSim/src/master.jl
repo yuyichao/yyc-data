@@ -65,7 +65,10 @@ end
 struct System{T<:Real,N,D,JMap}
     op_dagger::SparseMatrixCSC{Complex{T},Int}
     data::D
-    function System{T,N}(Js, data::D) where {T<:Real, N, D}
+    function System{T,_N}(Js, data::D, N=nothing) where {T<:Real, _N, D}
+        if _N !== nothing
+            N = _N
+        end
         linidx = LinearIndices((N, N))
         jmap = Dict{NTuple{2,Int},T}()
         function add_jterm(xi, yi, xo, yo, v)
@@ -94,7 +97,10 @@ end
 struct SystemCoherent{T<:Real,N,D}
     op::SparseMatrixCSC{Complex{T},Int}
     data::D
-    function SystemCoherent{T,N}(data::D) where {T<:Real,N,D}
+    function SystemCoherent{T,_N}(data::D, N=nothing) where {T<:Real,_N,D}
+        if _N !== nothing
+            N = _N
+        end
         return new{T,N,D}(spzeros(T, N, N), data)
     end
 end
@@ -102,9 +108,17 @@ end
 function init! end
 function update! end
 
+@inline function get_nrow(M, ::Val{nothing})
+    return size(M, 1)
+end
+@inline function get_nrow(M, ::Val{nrow}) where nrow
+    return nrow
+end
+
 @inline function do_mul!(result::DenseMatrix, B::DenseMatrix,
-                         M::SparseMatrixCSC, ::Val{nrow}) where nrow
+                         M::SparseMatrixCSC, ::Val{_nrow}) where _nrow
     @inbounds prev_colptr = M.colptr[1]
+    nrow = get_nrow(M, Val(_nrow))
     @inbounds for col in 1:nrow
         filled = false
         colptr = M.colptr[col + 1]
@@ -138,10 +152,11 @@ function update! end
 end
 
 @inline function dmaster(t, rho_data::DenseMatrix, drho_data::DenseMatrix,
-                         sys::System{T,nrow,D,JMap}, drive) where {T,nrow,D,JMap}
+                         sys::System{T,_nrow,D,JMap}, drive) where {T,_nrow,D,JMap}
     @inline update!(drive, sys, t)
-    @inline do_mul!(drho_data, rho_data, sys.op_dagger, Val{nrow}())
+    @inline do_mul!(drho_data, rho_data, sys.op_dagger, Val{_nrow}())
     # compute -i * drho^dagger + i * drho
+    nrow = get_nrow(sys.op_dagger, Val(_nrow))
     @inbounds for i in 1:nrow
         drho_data[i + (i - 1) * nrow] = -2 * imag(drho_data[i + (i - 1) * nrow])
         for j in (i + 1):nrow
@@ -162,7 +177,8 @@ end
 end
 
 @inline function do_imul!(result::DenseVector, M::SparseMatrixCSC,
-                          B::DenseVector, ::Val{nrow}) where nrow
+                          B::DenseVector, ::Val{_nrow}) where _nrow
+    nrow = get_nrow(M, Val(_nrow))
     @inbounds result .= 0
     @inbounds prev_colptr = M.colptr[1]
     @inbounds for col in 1:nrow
@@ -177,9 +193,9 @@ end
 end
 
 @inline function dschroedinger(t, ψ_data::DenseVector, dψ_data::DenseVector,
-                               sys::SystemCoherent{T,nrow}, drive) where {T,nrow}
+                               sys::SystemCoherent{T,_nrow}, drive) where {T,_nrow}
     @inline update!(drive, sys, t)
-    @inline do_imul!(dψ_data, sys.op, ψ_data, Val{nrow}())
+    @inline do_imul!(dψ_data, sys.op, ψ_data, Val{_nrow}())
     return
 end
 
