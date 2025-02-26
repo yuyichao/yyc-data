@@ -147,20 +147,25 @@ function Master.update!(drive, sys::MotionND, t)
     return
 end
 
-unit_profile(t) = 1
+struct Drive{T,F}
+    Ω::T
+    f::F
+end
+(drive::Drive{T,Nothing} where T)(t) = drive.Ω
+@inline (drive::Drive)(t) = drive.Ω * drive.f(t)
+
 function evolve(E, ωs, ηs, ψs0, n0s, Ω, tlen, npoints=1001;
-                δmax=0, Ωprofile=unit_profile, kws...)
+                δmax=0, Ωprofile::F=nothing, kws...) where F
     E0 = motion_energy(ωs, n0s)
     dE = hypot(Ω, δmax) * 10
     mstates = collect_motion_states(ωs, max(E0 - dE, 0.0), E0 + dE)
     N = length(mstates)
     @show N
     data = MotionNDData(E, ωs, ηs, mstates)
-    sys = Master.SystemCoherent{Float64,2 * N}(data)
+    sys = Master.SystemCoherent{Float64,nothing}(data, 2 * N)
     m_basis = NLevelBasis(N)
     ψ0 = nlevelstate(m_basis, findfirst(==(n0s), mstates)) ⊗ ψs0
-    drive(t) = Ω * Ωprofile(t)
     basis = m_basis ⊗ SpinBasis(1//2)
-    ts, xs = Master.evolve(drive, sys, ψ0.data, tlen, npoints; kws...)
+    ts, xs = Master.evolve(Drive(Ω, Ωprofile), sys, ψ0.data, tlen, npoints; kws...)
     return ts, [Ket(basis, x) for x in xs], sys
 end
