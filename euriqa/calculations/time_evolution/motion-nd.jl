@@ -164,9 +164,9 @@ end
 end
 
 function evolve(E, ωs, ηs, ψs0, n0s, Ω, tspan;
-                δmax=0, Ωprofile::F=nothing, kws...) where F
+                δmax=0, Ωprofile::F=nothing, Erange=10, kws...) where F
     E0 = motion_energy(ωs, n0s)
-    dE = hypot(Ω, abs(E) + abs(δmax)) * 10
+    dE = hypot(Ω, abs(E) + abs(δmax)) * Erange
     mstates = collect_motion_states(ωs, max(E0 - dE, 0.0), E0 + dE)
     N = length(mstates)
     @show N
