@@ -194,7 +194,9 @@ function _mul_hermitian!(result::DenseVector, M::SparseMatrixCSC,
         prev_colptr = colptr
     end
 end
-_mul_hermitian!(result::DenseVector, M, B::DenseVector, _) = @inline mul!(result, M, B)
+function _mul_hermitian!(result::DenseVector, M, B::DenseVector, _)
+    @inline mul!(result, M, B, im, false)
+end
 
 @inline function dschroedinger(t, ψ::DenseVector, dψ::DenseVector,
                                sys::SystemCoherent{OP,_nrow}, drive) where {OP,_nrow}
