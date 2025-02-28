@@ -94,14 +94,14 @@ struct System{T<:Real,N,D,JMap}
     end
 end
 
-struct SystemCoherent{T<:Real,N,D}
-    op::SparseMatrixCSC{Complex{T},Int}
+struct SystemCoherent{OP<:AbstractMatrix,N,D}
+    op::OP
     data::D
-    function SystemCoherent{T,_N}(data::D, N=nothing) where {T<:Real,_N,D}
+    function SystemCoherent{OP,_N}(data::D, N=nothing) where {OP,_N,D}
         if _N !== nothing
             N = _N
         end
-        return new{T,_N,D}(spzeros(T, N, N), data)
+        return new{OP,_N,D}(zeros(N, N), data)
     end
 end
 
@@ -176,25 +176,30 @@ end
     return
 end
 
-@inline function dschroedinger(t, ψ::DenseVector, dψ::DenseVector,
-                               sys::SystemCoherent{T,_nrow}, drive) where {T,_nrow}
-    @inline update!(drive, sys, t)
-    M = sys.op
+function _mul_hermitian!(result::DenseVector, M::SparseMatrixCSC,
+                         B::DenseVector, ::Val{_nrow}) where _nrow
     nrow = get_nrow(M, Val(_nrow))
     colptrs = M.colptr
     rowval = M.rowval
     nzval = M.nzval
     prev_colptr = 1
     @inbounds for col in 1:nrow
-        r = zero(eltype(dψ))
+        r = zero(eltype(result))
         colptr = colptrs[col + 1]
         for i in prev_colptr:colptr - 1
-            ψv = ψ[rowval[i]]
-            r = muladd(conj(nzval[i]), complex(-imag(ψv), real(ψv)), r)
+            Bv = B[rowval[i]]
+            r = muladd(conj(nzval[i]), complex(-imag(Bv), real(Bv)), r)
         end
-        dψ[col] = r
+        result[col] = r
         prev_colptr = colptr
     end
+end
+_mul_hermitian!(result::DenseVector, M, B::DenseVector, _) = @inline mul!(result, M, B)
+
+@inline function dschroedinger(t, ψ::DenseVector, dψ::DenseVector,
+                               sys::SystemCoherent{OP,_nrow}, drive) where {OP,_nrow}
+    @inline update!(drive, sys, t)
+    @inline _mul_hermitian!(dψ, sys.op, ψ, Val(_nrow))
 end
 
 function integrate(tspan, df_::F, x0, fout::FO;

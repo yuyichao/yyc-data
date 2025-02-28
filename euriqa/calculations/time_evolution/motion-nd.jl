@@ -68,7 +68,8 @@ function MotionNDData(E, ωs::NTuple{N}, ηs::NTuple{N}, states) where N
     disp = displace_sparse(states, ηs)
     return MotionNDData{N}(E, ωs, ηs, states, disp, disp')
 end
-const MotionND{N,nrow} = Master.SystemCoherent{Float64,nrow,MotionNDData{N}}
+const MotionND{N,nrow} = Master.SystemCoherent{SparseMatrixCSC{ComplexF64,Int},
+                                               nrow,MotionNDData{N}}
 
 struct Drive{T,F}
     Ω_2::T
@@ -171,7 +172,7 @@ function evolve(E, ωs, ηs, ψs0, n0s, Ω, tspan;
     N = length(mstates)
     @show N
     data = MotionNDData(E, ωs, ηs, mstates)
-    sys = Master.SystemCoherent{Float64,nothing}(data, 2 * N)
+    sys = Master.SystemCoherent{SparseMatrixCSC{ComplexF64,Int},nothing}(data, 2 * N)
     m_basis = NLevelBasis(N)
     ψ0 = nlevelstate(m_basis, findfirst(==(n0s), mstates)) ⊗ ψs0
     basis = m_basis ⊗ SpinBasis(1//2)
