@@ -21,10 +21,14 @@ struct FidelityCalculator{N}
         cos_phases = cos.(phases)
         sin_phases = sin.(phases)
         real_off = @variable(m, [1:(N - 1) * N ÷ 2])
-        imag_off = @variable(m, [1:(N - 1) * N ÷ 2])
-        k = 0
-        obj = 0
-        for i in 1:(N - 1)
+        imag_off = @variable(m, [1:(N - 1) * N ÷ 2 - N + 1])
+        obj = real_off[1] * cos_phases[2]
+        k = 1
+        for j in 3:N
+            k += 1
+            obj += real_off[k] * cos_phases[j]
+        end
+        for i in 2:(N - 1)
             c1 = cos_phases[i]
             s1 = sin_phases[i]
             for j in (i + 1):N
@@ -34,7 +38,7 @@ struct FidelityCalculator{N}
 
                 c = c1 * c2 + s1 * s2
                 s = s1 * c2 - c1 * s2
-                obj += real_off[k] * c - imag_off[k] * s
+                obj += real_off[k] * c - imag_off[k - N + 1] * s
             end
         end
         @objective(m, Max, obj)
@@ -43,13 +47,16 @@ struct FidelityCalculator{N}
 end
 
 function (calc::FidelityCalculator{N})(vals::Vararg{Any,N2}) where {N,N2}
-    @assert N2 == (N - 1) * N
-    for i in 1:N2 ÷ 2
+    @assert N2 == (N - 2) * N + 1
+    N_ = (N - 1) * N ÷ 2
+    for i in 1:N_
         fix(calc.real_off[i], vals[i])
-        fix(calc.imag_off[i], vals[i + N2 ÷ 2])
+        if i > N - 1
+            fix(calc.imag_off[i - N + 1], vals[i - N + 1 + N_])
+        end
     end
     JuMP.optimize!(calc.m)
-    return (value(calc.obj) * 2 + N) / (N * N)
+    return value(calc.obj)
 end
 
 function get_finite_grad(func)
@@ -61,8 +68,46 @@ function get_finite_grad(func)
     end
 end
 
-function complex_mul((r1, i1), (r2, i2))
-    return r1 * r2 - i1 * i2, r1 * i2 + i1 * r2
+function rmul(r1, r2)
+    if iszero(r1) || iszero(r2)
+        return 0
+    elseif isa(r1, Number) && isone(r1)
+        return r2
+    elseif isa(r1, Number) && isone(r2)
+        return r1
+    end
+    return r1 * r2
+end
+
+function radd(r1, r2)
+    if iszero(r1)
+        return r2
+    elseif iszero(r2)
+        return r1
+    end
+    return r1 + r2
+end
+
+function rsub(r1, r2)
+    if iszero(r1)
+        return -r2
+    elseif iszero(r2)
+        return r1
+    end
+    return r1 - r2
+end
+
+function cmul((r1, i1), (r2, i2))
+    return (rsub(rmul(r1, r2), rmul(i1, i2)),
+            radd(rmul(r1, i2), rmul(i1, r2)))
+end
+
+function cadd((r1, i1), (r2, i2))
+    return radd(r1, r2), radd(i1, i2)
+end
+
+function csub((r1, i1), (r2, i2))
+    return rsub(r1, r2), rsub(i1, i2)
 end
 
 function determinant_trivial(Mr, Mi)
@@ -70,83 +115,97 @@ function determinant_trivial(Mr, Mi)
     if N == 1
         return Mr[1, 1], Mi[1, 1]
     end
-    r = complex_mul((Mr[1, 1], Mi[1, 1]),
-                    determinant_trivial(Mr[2:N, 2:N], Mi[2:N, 2:N]))
+    r = cmul((Mr[1, 1], Mi[1, 1]),
+             determinant_trivial(Mr[2:N, 2:N], Mi[2:N, 2:N]))
     for i in 2:N
-        ele = complex_mul((Mr[1, i], Mi[1, i]),
-                          determinant_trivial(Mr[2:N, [1:(i - 1); (i + 1):N]],
-                                              Mi[2:N, [1:(i - 1); (i + 1):N]]))
+        ele = cmul((Mr[1, i], Mi[1, i]),
+                   determinant_trivial(Mr[2:N, [1:(i - 1); (i + 1):N]],
+                                       Mi[2:N, [1:(i - 1); (i + 1):N]]))
         if i % 2 == 1
-            r = r .+ ele
+            r = cadd(r, ele)
         else
-            r = r .- ele
+            r = csub(r, ele)
         end
     end
     return r
 end
 
-function add_pos_constraints(m, ρr, ρi)
+function add_pos_constraints(m, constraints, ρr, ρi)
     N = size(ρr, 1)
-    if N == 1
-        return
+    for i in 1:N - 1
+        for j in i + 1:N
+            ex = determinant_trivial(ρr[[i, j], [i, j]], ρi[[i, j], [i, j]])[1]
+            push!(constraints, ex)
+            @constraint(m, ex >= 0)
+        end
     end
-    add_pos_constraints(m, ρr[1:N - 1, 1:N - 1], ρi[1:N - 1, 1:N - 1])
-    @constraint(m, determinant_trivial(ρr, ρi)[1] >= 0)
+    for i in 3:N
+        ex = determinant_trivial(ρr[1:i, 1:i], ρi[1:i, 1:i])[1]
+        push!(constraints, ex)
+        @constraint(m, ex >= 0)
+    end
 end
 
-function get_real_imag_matrix(M)
-    N = size(M, 1)
-    return ([(i <= j ? M[i, j] : M[j, i]) for i in 1:N, j in 1:N],
-            [(i == j ? 0 : (i < j ? M[j, i] : -M[i, j])) for i in 1:N, j in 1:N])
+function create_density_matrix(m, name, N)
+    ρr = Matrix{Any}(undef, N, N)
+    ρi = Matrix{Any}(undef, N, N)
+    fid_args_r = []
+    fid_args_i = []
+    for i in 1:N
+        for j in i:N
+            er = @variable(m, base_name="$(name)r[$i, $j]", start = 0)
+            ρr[i, j] = er
+            set_upper_bound(er, 1)
+            if i == j
+                set_lower_bound(er, 0)
+                ρi[i, j] = 0
+                continue
+            end
+            set_lower_bound(er, -1)
+            push!(fid_args_r, er)
+            ρr[j, i] = er
+            if i == 1
+                ρi[i, j] = 0
+                ρi[j, i] = 0
+                continue
+            end
+            ei = @variable(m, base_name="$(name)i[$i, $j]", start = 0)
+            set_lower_bound(ei, -1)
+            set_upper_bound(ei, 1)
+            ρi[i, j] = ei
+            ρi[j, i] = -ei
+            push!(fid_args_i, ei)
+        end
+    end
+    return ρr, ρi, [fid_args_r; fid_args_i]
 end
 
 struct IonIonModel{N}
     m::Model
     fcalc::FidelityCalculator{N}
-    ρ1r::Matrix{VariableRef}
+    constraints::Vector{Any}
+    ρ1r::Matrix{Any}
     ρ1i::Matrix{Any}
-    ρ2r::Matrix{VariableRef}
+    ρ2r::Matrix{Any}
     ρ2i::Matrix{Any}
-    obj::VariableRef
+    obj::Any
     function IonIonModel{N}() where N
         fcalc = FidelityCalculator{N}()
         m = Model(Ipopt.Optimizer)
-        @variable(m, ρ1[1:N, 1:N])
-        @variable(m, ρ2[1:N, 1:N])
-        for i in 1:N
-            set_lower_bound(ρ1[i, i], 0)
-            set_lower_bound(ρ2[i, i], 0)
-            set_upper_bound(ρ1[i, i], 1)
-            set_upper_bound(ρ2[i, i], 1)
-        end
-        rate1 = sum(ρ1[i, i] for i in 1:N)
-        rate2 = sum(ρ2[i, i] for i in 1:N)
-        ρ1r, ρ1i = get_real_imag_matrix(ρ1)
-        ρ2r, ρ2i = get_real_imag_matrix(ρ2)
-        add_pos_constraints(m, ρ1r, ρ1i)
-        add_pos_constraints(m, ρ2r, ρ2i)
-
-        r1 = VariableRef[]
-        i1 = VariableRef[]
-        r2 = VariableRef[]
-        i2 = VariableRef[]
-        for i in 1:(N - 1)
-            for j in i + 1:N
-                push!(r1, ρ1[i, j])
-                push!(i1, ρ1[j, i])
-                push!(r2, ρ2[i, j])
-                push!(i2, ρ2[j, i])
-            end
-        end
+        ρ1r, ρ1i, fid_args1 = create_density_matrix(m, "ρ1", N)
+        ρ2r, ρ2i, fid_args2 = create_density_matrix(m, "ρ2", N)
+        rate1 = sum(ρ1r[i, i] for i in 1:N)
+        rate2 = sum(ρ2r[i, i] for i in 1:N)
+        constraints = []
+        add_pos_constraints(m, constraints, ρ1r, ρ1i)
+        add_pos_constraints(m, constraints, ρ2r, ρ2i)
         gradf = get_finite_grad(fcalc)
-        @operator(m, ffunc, N * (N - 1), (x...)->fcalc(x...), gradf)
-        f1 = @expression(m, ffunc(r1..., i1...) / rate1)
-        f2 = @expression(m, ffunc(r2..., i2...) / rate2)
-        @variable(m, f)
-        @constraint(m, f >= f1)
-        @constraint(m, f >= f2)
+        @operator(m, ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf)
+        f1 = @expression(m, (ffunc(fid_args1...) / rate1 * 2 + 1) / N)
+        f2 = @expression(m, (ffunc(fid_args2...) / rate2 * 2 + 1) / N)
+        f = max(f1, f2)
         @objective(m, Min, f)
-        return new{N}(m, fcalc, ρ1r, ρ1i, ρ2r, ρ2i, f)
+        return new{N}(m, fcalc, constraints, ρ1r, ρ1i, ρ2r, ρ2i, f)
     end
 end
 
@@ -160,11 +219,18 @@ function calc_mid(lb, ub)
     end
 end
 
+function rate_expr(model::IonIonModel, i, j)
+    return model.ρ1r[i, i] * model.ρ2r[j, j] + model.ρ2r[i, i] * model.ρ1r[j, j]
+end
+
 function constraint_pair!(model::IonIonModel, i, j;
                           rate_lb=nothing, rate_ub=nothing,
                           fid_lb=nothing, fid_ub=nothing)
     @assert i != j
-    rate = model.ρ1r[i, i] * model.ρ2r[j, j] + model.ρ2r[i, i] * model.ρ1r[j, j]
+    if i > j
+        i, j = j, i
+    end
+    rate = rate_expr(model, i, j)
     if rate_lb !== nothing
         @constraint(model.m, rate >= rate_lb)
     end
@@ -179,9 +245,9 @@ function constraint_pair!(model::IonIonModel, i, j;
         set_start_value(model.ρ2r[j, j], sqrt(rate_mid / 2))
     end
 
-    off_r, off_i = complex_mul((model.ρ1r[i, j], model.ρ1i[i, j]),
-                               (model.ρ2r[i, j], model.ρ2i[i, j]))
-    off2 = off_r^2 + off_i^2
+    off_r, off_i = cmul((model.ρ1r[i, j], model.ρ1i[i, j]),
+                        (model.ρ2r[i, j], model.ρ2i[i, j]))
+    off2 = radd(off_r^2, off_i^2)
     if fid_lb !== nothing
         @assert fid_lb >= 0.5
         @constraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
@@ -191,14 +257,12 @@ function constraint_pair!(model::IonIonModel, i, j;
     end
     fid_mid = calc_mid(fid_lb, fid_ub)
     if fid_mid !== nothing && rate_mid !== nothing
-        set_start_value(model.ρ1r[i, j], ((fid_mid - 0.5) * rate_mid))
-        set_start_value(model.ρ1i[i, j], 0)
-        set_start_value(model.ρ2r[i, j], ((fid_mid - 0.5) * rate_mid))
-        set_start_value(model.ρ2i[i, j], 0)
+        set_start_value(model.ρ1r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
+        set_start_value(model.ρ2r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
     end
 end
 
 function min_fidelity!(model::IonIonModel)
     JuMP.optimize!(model.m)
-    return value(calc.obj)
+    return value(model.obj)
 end
