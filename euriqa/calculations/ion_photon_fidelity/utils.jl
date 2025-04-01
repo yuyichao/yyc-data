@@ -139,7 +139,17 @@ function add_pos_constraints(m, constraints, ρr, ρi)
             @constraint(m, ex >= 0)
         end
     end
-    for i in 3:N
+    for i in 1:N - 2
+        for j in i + 1:N - 1
+            for k in j + 1:N
+                ex = determinant_trivial(ρr[[i, j, k], [i, j, k]],
+                                         ρi[[i, j, k], [i, j, k]])[1]
+                push!(constraints, ex)
+                @constraint(m, ex >= 0)
+            end
+        end
+    end
+    for i in 4:N
         ex = determinant_trivial(ρr[1:i, 1:i], ρi[1:i, 1:i])[1]
         push!(constraints, ex)
         @constraint(m, ex >= 0)
@@ -189,9 +199,8 @@ struct IonIonModel{N}
     ρ2r::Matrix{Any}
     ρ2i::Matrix{Any}
     obj::Any
-    function IonIonModel{N}() where N
+    function IonIonModel{N}(m::Model) where N
         fcalc = FidelityCalculator{N}()
-        m = Model(Ipopt.Optimizer)
         ρ1r, ρ1i, fid_args1 = create_density_matrix(m, "ρ1", N)
         ρ2r, ρ2i, fid_args2 = create_density_matrix(m, "ρ2", N)
         rate1 = sum(ρ1r[i, i] for i in 1:N)
@@ -221,6 +230,12 @@ end
 
 function rate_expr(model::IonIonModel, i, j)
     return model.ρ1r[i, i] * model.ρ2r[j, j] + model.ρ2r[i, i] * model.ρ1r[j, j]
+end
+function fid_expr(model::IonIonModel, i, j)
+    off_r, off_i = cmul((model.ρ1r[i, j], model.ρ1i[i, j]),
+                        (model.ρ2r[i, j], model.ρ2i[i, j]))
+    off2 = radd(off_r^2, off_i^2)
+    return 0.5 + sqrt(off2) / rate_expr(model, i, j)
 end
 
 function constraint_pair!(model::IonIonModel, i, j;
