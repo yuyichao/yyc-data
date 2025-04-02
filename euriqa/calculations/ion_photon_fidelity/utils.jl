@@ -136,7 +136,7 @@ function add_pos_constraints(m, constraints, ρr, ρi)
         for j in i + 1:N
             ex = determinant_trivial(ρr[[i, j], [i, j]], ρi[[i, j], [i, j]])[1]
             push!(constraints, ex)
-            @constraint(m, ex >= 0)
+            @NLconstraint(m, ex >= 0)
         end
     end
     for i in 1:N - 2
@@ -145,14 +145,14 @@ function add_pos_constraints(m, constraints, ρr, ρi)
                 ex = determinant_trivial(ρr[[i, j, k], [i, j, k]],
                                          ρi[[i, j, k], [i, j, k]])[1]
                 push!(constraints, ex)
-                @constraint(m, ex >= 0)
+                @NLconstraint(m, ex >= 0)
             end
         end
     end
     for i in 4:N
         ex = determinant_trivial(ρr[1:i, 1:i], ρi[1:i, 1:i])[1]
         push!(constraints, ex)
-        @constraint(m, ex >= 0)
+        @NLconstraint(m, ex >= 0)
     end
 end
 
@@ -203,17 +203,18 @@ struct IonIonModel{N}
         fcalc = FidelityCalculator{N}()
         ρ1r, ρ1i, fid_args1 = create_density_matrix(m, "ρ1", N)
         ρ2r, ρ2i, fid_args2 = create_density_matrix(m, "ρ2", N)
-        rate1 = sum(ρ1r[i, i] for i in 1:N)
-        rate2 = sum(ρ2r[i, i] for i in 1:N)
+        rate1 = @NLexpression(m, sum(ρ1r[i, i] for i in 1:N))
+        rate2 = @NLexpression(m, sum(ρ2r[i, i] for i in 1:N))
         constraints = []
         add_pos_constraints(m, constraints, ρ1r, ρ1i)
         add_pos_constraints(m, constraints, ρ2r, ρ2i)
         gradf = get_finite_grad(fcalc)
-        @operator(m, ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf)
-        f1 = @expression(m, (ffunc(fid_args1...) / rate1 * 2 + 1) / N)
-        f2 = @expression(m, (ffunc(fid_args2...) / rate2 * 2 + 1) / N)
-        f = max(f1, f2)
-        @objective(m, Min, f)
+        register(m, :ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf, autodiff=false)
+        # @operator(m, ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf)
+        f1 = @NLexpression(m, (ffunc(fid_args1...) / rate1 * 2 + 1) / N)
+        f2 = @NLexpression(m, (ffunc(fid_args2...) / rate2 * 2 + 1) / N)
+        f = @NLexpression(m, max(f1, f2))
+        @NLobjective(m, Min, f)
         return new{N}(m, fcalc, constraints, ρ1r, ρ1i, ρ2r, ρ2i, f)
     end
 end
@@ -247,10 +248,10 @@ function constraint_pair!(model::IonIonModel, i, j;
     end
     rate = rate_expr(model, i, j)
     if rate_lb !== nothing
-        @constraint(model.m, rate >= rate_lb)
+        @NLconstraint(model.m, rate >= rate_lb)
     end
     if rate_ub !== nothing
-        @constraint(model.m, rate <= rate_ub)
+        @NLconstraint(model.m, rate <= rate_ub)
     end
     rate_mid = calc_mid(rate_lb, rate_ub)
     if rate_mid !== nothing
@@ -265,10 +266,10 @@ function constraint_pair!(model::IonIonModel, i, j;
     off2 = radd(off_r^2, off_i^2)
     if fid_lb !== nothing
         @assert fid_lb >= 0.5
-        @constraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
+        @NLconstraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
     end
     if fid_ub !== nothing
-        @constraint(model.m, off2 <= ((fid_ub - 0.5) * rate)^2)
+        @NLconstraint(model.m, off2 <= ((fid_ub - 0.5) * rate)^2)
     end
     fid_mid = calc_mid(fid_lb, fid_ub)
     if fid_mid !== nothing && rate_mid !== nothing
