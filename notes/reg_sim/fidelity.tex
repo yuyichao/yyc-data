@@ -252,6 +252,32 @@
 
 \maketitle
 
+\section{Goal}
+
+Entangling two qudits by pair-wise interference of the photons emitted from each qudit states (in a way similar to qubit remote entanglement generation) produces Bell states that's probabilitically distributed between different qudit state pairs.
+However, the state produced this way contains less entanglement than the original atom-photon states.
+While making full use of the atom-photon state may require complex optical setup, it would still be interesting to put a bound on the atom-photon state fidelity based on the pairwise entanglement result.
+
+\section{Definition of fidelity}
+
+For a density matrix $\rho$ and an target state $|\psi\rangle$, the fidelity is defined as,
+\eqar{
+  f=&\langle\psi|\rho|\psi\rangle
+}
+
+Ideally, the $d$-dimensional target state for the $i$-th atom-photon state is,
+\eqar{
+  |\psi\rangle^i=&\frac{1}{\sqrt{d}}\sum_{n}|n_A,n_P\rangle^{i}
+}
+where the I and P subscripts are for the atom and photon state, and the target state for the pair-wise atom-atom state between the $m$ and $n$-th qudit is,
+\eqar{
+  |\psi\rangle^i_{mn}=&\frac{|m_A\rangle^1|n_A\rangle^2+|n_A\rangle^1|m_A\rangle^2}{\sqrt{2}}
+}
+
+However, both of these states
+
+\section{}
+
 First we can bound the probability of the system being outside the perfectly correlated Hilbert space. If the probability of ion-photon pair $i=1,2$ being outside the correlated Hilbert space is $\varepsilon^i_C$, the probability of the ion-ion state being outside the correlated Hilbert space is,
 \eqar{
   \varepsilon'_C\geqslant&\varepsilon_{C1}+\varepsilon_{C2}
@@ -259,9 +285,21 @@ First we can bound the probability of the system being outside the perfectly cor
 so we have $\varepsilon^i_C\leqslant\varepsilon'_C$. This is not the best bound we can get but should be good enough.
 
 From now on, we can assume both ion-photon pairs are in the perfectly correlated Hilbert space $|n_I,n_P\rangle^i$. With the ion-photon density matrix $\rho^i$ for the $i$-th pair, the density matrix after detecting two photons in the $n$ and $m$ time bins is,
-
 \eqar{
-  P_{mn}(\rho^1\rho^2)=&
+  P_{mn}(\rho^1\rho^2)=&\begin{pmatrix}
+                         \rho^1_{nn}\rho^2_{mm}&\rho^1_{nm}\rho^2_{mn}\\
+                         \rho^1_{mn}\rho^2_{nm}&\rho^1_{mm}\rho^2_{nn}
+                        \end{pmatrix}
 }
+which gives a rate of
+\eqar{
+  r_{mn}=&\rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn}
+}
+and a fidelity of
+\eqar{
+  f_{mn}=&\frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{r_{mn}}\nonumber\\
+  =&\frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{\rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn}}
+}
+Here we define the fidelity as the maximum overlap with a Bell state with any phase.
 
 \end{document}
