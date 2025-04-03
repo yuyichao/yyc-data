@@ -159,6 +159,7 @@ end
 function create_density_matrix(m, name, N)
     ρr = Matrix{Any}(undef, N, N)
     ρi = Matrix{Any}(undef, N, N)
+    fid_args_d = []
     fid_args_r = []
     fid_args_i = []
     for i in 1:N
@@ -167,6 +168,7 @@ function create_density_matrix(m, name, N)
             ρr[i, j] = er
             set_upper_bound(er, 1)
             if i == j
+                push!(fid_args_d, er)
                 set_lower_bound(er, 0)
                 ρi[i, j] = 0
                 continue
@@ -187,7 +189,7 @@ function create_density_matrix(m, name, N)
             push!(fid_args_i, ei)
         end
     end
-    return ρr, ρi, [fid_args_r; fid_args_i]
+    return ρr, ρi, [fid_args_d; fid_args_r; fid_args_i]
 end
 
 struct IonIonModel{N}
@@ -208,12 +210,17 @@ struct IonIonModel{N}
         constraints = []
         add_pos_constraints(m, constraints, ρ1r, ρ1i)
         add_pos_constraints(m, constraints, ρ2r, ρ2i)
-        gradf = get_finite_grad(fcalc)
-        register(m, :ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf, autodiff=false)
-        # @operator(m, ffunc, N * (N - 2) + 1, (x...)->fcalc(x...), gradf)
-        f1 = @NLexpression(m, (ffunc(fid_args1...) / rate1 * 2 + 1) / N)
-        f2 = @NLexpression(m, (ffunc(fid_args2...) / rate2 * 2 + 1) / N)
-        f = @NLexpression(m, max(f1, f2))
+        function full_fid(x...)
+            diag1 = x[1:N]
+            off1 = x[N + 1:N * (N - 1) + 1]
+            diag2 = x[N * (N - 1) + 2:N * N + 1]
+            off2 = x[N * N + 2:end]
+            return (max(fcalc(off1...) / sum(diag1),
+                        fcalc(off2...) / sum(diag2)) * 2 + 1) / N
+        end
+        gradf = get_finite_grad(full_fid)
+        register(m, :ffunc, (N * (N - 1) + 1) * 2, full_fid, gradf, autodiff=false)
+        f = @NLexpression(m, ffunc(fid_args1..., fid_args2...))
         @NLobjective(m, Min, f)
         return new{N}(m, fcalc, constraints, ρ1r, ρ1i, ρ2r, ρ2i, f)
     end
