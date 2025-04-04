@@ -254,37 +254,56 @@
 
 \section{Goal}
 
-Entangling two qudits by pair-wise interference of the photons emitted from each qudit states (in a way similar to qubit remote entanglement generation) produces Bell states that's probabilitically distributed between different qudit state pairs.
-However, the state produced this way contains less entanglement than the original atom-photon states.
+Entangling two qudits by pair-wise interference of the photons emitted from each qudit states produces entangled qubit states in which the two qubit states are probabilitically distributed between different qudit state pairs.
+However, the state produced this way, a qubit Bell state, contains less entanglement than the original atom-photon states.
 While making full use of the atom-photon state may require complex optical setup, it would still be interesting to put a bound on the atom-photon state fidelity based on the pairwise entanglement result.
 
 \section{Definition of fidelity}
-
-For a density matrix $\rho$ and an target state $|\psi\rangle$, the fidelity is defined as,
+Given an target state $|\psi\rangle$, the fidelity of a density matrix $\rho$ is defined as its overlap with the state,
 \eqar{
   f=&\langle\psi|\rho|\psi\rangle
 }
 
-Ideally, the $d$-dimensional target state for the $i$-th atom-photon state is,
+The $d$-dimensional target state for the atom-photon pair is,
 \eqar{
-  |\psi\rangle^i=&\frac{1}{\sqrt{d}}\sum_{n}|n_A,n_P\rangle^{i}
+  |\psi_0\rangle=&\frac{1}{\sqrt{d}}\sum_{n}|n_A,n_P\rangle
 }
-where the I and P subscripts are for the atom and photon state, and the target state for the pair-wise atom-atom state between the $m$ and $n$-th qudit is,
+where the A and P subscripts are for the atom and photon state. The target state for the pair-wise atom-atom state between the $m$ and $n$-th qudit is,
 \eqar{
-  |\psi\rangle^i_{mn}=&\frac{|m_A\rangle^1|n_A\rangle^2+|n_A\rangle^1|m_A\rangle^2}{\sqrt{2}}
+  |\psi_0\rangle_{mn}=&\frac{|mn\rangle+|nm\rangle}{\sqrt{2}}
 }
+where $m$ and $n$ are the two qudit state entangled.
+However, both of these states contain phase degrees of freedoms that does not affect their utility as long as the phase is known/can be measured.
+It is therefore more useful to define the fidelity as the maximum overlap between the density matrix and the target state while varying the phase of the target state.
 
-However, both of these states
+For the $d$-dimensional atom-photon state, the final fidelity is,
+\eqar{
+  \label{eq:fid-ap}
+  f^{AP}=&\frac{1}{d}\max_{\{\phi\}}\sum_{m,n}\ue^{\ui\paren{\phi_n-\phi_m}}\langle m_A,m_P|\rho|n_A,n_P\rangle\nonumber\\
+  =&\frac{1}{d}+\frac{2}{d}\max_{\{\phi\}}\sum_{m<n}\mathrm{Re}\paren{\ue^{\ui\paren{\phi_n-\phi_m}}\langle m_A,m_P|\rho|n_A,n_P\rangle}
+}
+For the atom-atom Bell state, the final fidelity is,
+\eqar{
+  \label{eq:fid-aa}
+  f^{AA}_{mn}=&\frac12\max_{\phi}\paren{\langle mn|+\ue^{-\ui\phi}\langle nm|}\rho\paren{|mn\rangle+\ue^{\ui\phi}|nm\rangle}\nonumber\\
+  =&\frac12+\abs{\langle mn|\rho|nm\rangle}
+}
+The second step in the derivation for both assumes that the density matrix is normalized to the subspace span by the states involved.
+If the probability of being in this subspace is not $1$, this probability should be multiplied with the number here to obtain the full fidelity.
+It is worth noting that in both cases, the fidelity does not depend explicitly on the diagonal elements of the density matrix.
 
-\section{}
-
-First we can bound the probability of the system being outside the perfectly correlated Hilbert space. If the probability of ion-photon pair $i=1,2$ being outside the correlated Hilbert space is $\varepsilon^i_C$, the probability of the ion-ion state being outside the correlated Hilbert space is,
+\section{Relation between the fidelity/density matrix of the atom-atom and atom-photon state}
+\subsection{Correlation}
+First we discuss the probability of the system being in the correct Hilbert space, the one where the state of the photon to be perfectly correlated with the atom that emits the photon.
+If the probability of atom-photon pair $i=1,2$ being outside the correlated Hilbert space is $\varepsilon^i_C$, the probability of the ion-ion state being outside the correlated Hilbert space is,
 \eqar{
   \varepsilon'_C\geqslant&\varepsilon_{C1}+\varepsilon_{C2}
 }
-so we have $\varepsilon^i_C\leqslant\varepsilon'_C$. This is not the best bound we can get but should be good enough.
+so we have a bound for the atom-photon correlation $\varepsilon^i_C\leqslant\varepsilon'_C$. This could potentially also be bound directly by measuring the single chamber atom-photon correlation.
 
-From now on, we can assume both ion-photon pairs are in the perfectly correlated Hilbert space $|n_I,n_P\rangle^i$. With the ion-photon density matrix $\rho^i$ for the $i$-th pair, the density matrix after detecting two photons in the $n$ and $m$ time bins is,
+\subsection{Fidelity within perfectly correlated subspace}
+From now on, we can assume both atom-photon pairs are in the perfectly correlated Hilbert space $|n_A,n_P\rangle^i$. With the ion-photon density matrix $\rho^i\equiv\dsum_{m,n}|m_A,m_P\rangle^i\rho_{mn}^i\langle n_A,n_P|^i$ for the $i$-th pair.
+The (unnormalized) density matrix after detecting two photons in the $n$ and $m$ time bins is,
 \eqar{
   P_{mn}(\rho^1\rho^2)=&\begin{pmatrix}
                          \rho^1_{nn}\rho^2_{mm}&\rho^1_{nm}\rho^2_{mn}\\
@@ -295,11 +314,40 @@ which gives a rate of
 \eqar{
   r_{mn}=&\rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn}
 }
-and a fidelity of
+and a fidelity of (eq.~\ref{eq:fid-aa} extended for unnormalized density matrix)
 \eqar{
-  f_{mn}=&\frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{r_{mn}}\nonumber\\
-  =&\frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{\rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn}}
+  \label{eq:fid-aa-rate}
+  f_{mn}=&\frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{r_{mn}}
 }
-Here we define the fidelity as the maximum overlap with a Bell state with any phase.
+The atom-atom entanglement measurement allows both $r_{mn}$ and $f_{mn}$ to be bounded, which in turns provides a bound for the atom-photon state fidelity.
+In particular, the balance between $r_{mn}$'s constraint the diagonal elements of the atom-photon density matrix and the atom-atom fidelities $f_{mn}$ constraint ratio of the absolute values of the off-diagonal elements and the diagonal elements.
+Although the diagonal elements doesn't directly affect the atom-photon fidelity~(eq.~\ref{eq:fid-ap}), they do involve in the constraints on the off-diagonal elements~(eq~\ref{eq:fid-aa-rate}) and also in the constraints from the positive-semidefinity of the density matrix (see below).
+
+The phase of the atom-atom state is in principle also measured, however, the phase is the sum of the phase from the two atom-photon state and therefore is a bit difficult to use as constraints on the phase of the individual atom-photon state.
+
+\section{Numerical calculation}
+I was unable to derive an analytical expression for the atom-photon fidelity $f^{AP}$ and therefore had to use numerical optimization to bound the fidelity.
+
+\subsection{Physical constraints on the density matrix}
+Other than the constraints listed above (mostly on the absolute values of the matrix elements), the density matrix is further constrained since it must be a positive semidefinite matrix.
+This constraint is important since allowing arbitrary phase on the off-diagonal matrix element of the density matrix could produce non-physical density matrix with very small, or even negative fidelities.
+Numerically, this constraint can be expressed using the Sylvester's criterion, which stated that the leading principal minors must be non-negative.
+However, during optimization, it was found that this constraint is not numerically robust, but can be improved by requiring the determinant of all of the sub-density matrixes to be non-negative.
+
+\subsection{All constraints}
+In all, the constraints used for optimization are.
+
+\begin{enumerate}
+\item Lower and upper bound on the atom-atom entangling rates
+  \eqar{
+    &r_{mn}^{\mathrm{lo}}\leqslant r_{mn} \leqslant r_{mn}^{\mathrm{hi}}\leqslant
+  }
+\item Lower and upper bound on the atom-atom entangling fidelities
+  \eqar{
+    &f_{mn}^{\mathrm{lo}}\leqslant f_{mn} \leqslant f_{mn}^{\mathrm{hi}}\leqslant
+  }
+\item Both of the atom-photon desity matrices are positive-semidefinite.
+\end{enumerate}
+
 
 \end{document}
