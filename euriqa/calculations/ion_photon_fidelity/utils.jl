@@ -226,16 +226,6 @@ struct IonIonModel{N}
     end
 end
 
-function calc_mid(lb, ub)
-    if lb === nothing
-        return ub
-    elseif ub === nothing
-        return lb
-    else
-        return (lb + ub) / 2
-    end
-end
-
 function rate_expr(model::IonIonModel, i, j)
     return model.ρ1r[i, i] * model.ρ2r[j, j] + model.ρ2r[i, i] * model.ρ1r[j, j]
 end
@@ -246,43 +236,29 @@ function fid_expr(model::IonIonModel, i, j)
     return 0.5 + sqrt(off2) / rate_expr(model, i, j)
 end
 
-function constraint_pair!(model::IonIonModel, i, j;
-                          rate_lb=nothing, rate_ub=nothing,
-                          fid_lb=nothing, fid_ub=nothing)
+function constraint_pair!(model::IonIonModel, i, j; rate_lb, rate_ub, fid_lb, fid_ub)
     @assert i != j
     if i > j
         i, j = j, i
     end
     rate = rate_expr(model, i, j)
-    if rate_lb !== nothing
-        @NLconstraint(model.m, rate >= rate_lb)
-    end
-    if rate_ub !== nothing
-        @NLconstraint(model.m, rate <= rate_ub)
-    end
-    rate_mid = calc_mid(rate_lb, rate_ub)
-    if rate_mid !== nothing
-        set_start_value(model.ρ1r[i, i], sqrt(rate_mid / 2))
-        set_start_value(model.ρ2r[i, i], sqrt(rate_mid / 2))
-        set_start_value(model.ρ1r[j, j], sqrt(rate_mid / 2))
-        set_start_value(model.ρ2r[j, j], sqrt(rate_mid / 2))
-    end
+    @NLconstraint(model.m, rate >= rate_lb)
+    @NLconstraint(model.m, rate <= rate_ub)
+    rate_mid = (rate_lb + rate_ub) / 2
+    set_start_value(model.ρ1r[i, i], sqrt(rate_mid / 2))
+    set_start_value(model.ρ2r[i, i], sqrt(rate_mid / 2))
+    set_start_value(model.ρ1r[j, j], sqrt(rate_mid / 2))
+    set_start_value(model.ρ2r[j, j], sqrt(rate_mid / 2))
 
     off_r, off_i = cmul((model.ρ1r[i, j], model.ρ1i[i, j]),
                         (model.ρ2r[i, j], model.ρ2i[i, j]))
     off2 = radd(off_r^2, off_i^2)
-    if fid_lb !== nothing
-        @assert fid_lb >= 0.5
-        @NLconstraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
-    end
-    if fid_ub !== nothing
-        @NLconstraint(model.m, off2 <= ((fid_ub - 0.5) * rate)^2)
-    end
-    fid_mid = calc_mid(fid_lb, fid_ub)
-    if fid_mid !== nothing && rate_mid !== nothing
-        set_start_value(model.ρ1r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
-        set_start_value(model.ρ2r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
-    end
+    @assert fid_lb >= 0.5
+    @NLconstraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
+    @NLconstraint(model.m, off2 <= ((fid_ub - 0.5) * rate)^2)
+    fid_mid = (fib_lb + fib_ub) / 2
+    set_start_value(model.ρ1r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
+    set_start_value(model.ρ2r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
 end
 
 function min_fidelity!(model::IonIonModel)
