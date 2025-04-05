@@ -341,11 +341,11 @@ In all, the constraints used for optimization are.
 \begin{enumerate}
 \item Lower and upper bound on the atom-atom entangling rates
   \eqar{
-    &r_{mn}^{\mathrm{lo}}\leqslant r_{mn} \leqslant r_{mn}^{\mathrm{hi}}\leqslant
+    &r_{mn}^{\mathrm{lo}}\leqslant \rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn} \leqslant r_{mn}^{\mathrm{hi}}
   }
 \item Lower and upper bound on the atom-atom entangling fidelities
   \eqar{
-    &f_{mn}^{\mathrm{lo}}\leqslant f_{mn} \leqslant f_{mn}^{\mathrm{hi}}\leqslant
+    &f_{mn}^{\mathrm{lo}}\leqslant \frac12+\frac{\abs{\rho^1_{nm}\rho^2_{mn}}}{\rho^1_{nn}\rho^2_{mm}+\rho^1_{mm}\rho^2_{nn}} \leqslant f_{mn}^{\mathrm{hi}}
   }
 \item Both of the atom-photon desity matrices are positive-semidefinite.
 \end{enumerate}
