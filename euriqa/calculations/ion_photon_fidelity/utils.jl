@@ -5,6 +5,7 @@ using Ipopt
 using JuMP
 using FiniteDiff
 using StaticArrays
+using LinearAlgebra
 
 struct FidelityCalculator{N}
     m::Model
@@ -15,7 +16,7 @@ struct FidelityCalculator{N}
 
     function FidelityCalculator{N}() where N
         m = Model(NLopt.Optimizer)
-        set_attribute(m, "algorithm", :LD_MMA)
+        set_attribute(m, "algorithm", :LD_TNEWTON_PRECOND_RESTART)
         phase_vars = @variable(m, [1:N - 1], start=0.0)
         phases = [0; phase_vars]
         cos_phases = cos.(phases)
@@ -130,12 +131,11 @@ function determinant_trivial(Mr, Mi)
     return r
 end
 
-function add_pos_constraints(m, constraints, ρr, ρi)
+function add_pos_constraints(m, ρr, ρi)
     N = size(ρr, 1)
     for i in 1:N - 1
         for j in i + 1:N
             ex = determinant_trivial(ρr[[i, j], [i, j]], ρi[[i, j], [i, j]])[1]
-            push!(constraints, ex)
             @NLconstraint(m, ex >= 0)
         end
     end
@@ -144,14 +144,12 @@ function add_pos_constraints(m, constraints, ρr, ρi)
             for k in j + 1:N
                 ex = determinant_trivial(ρr[[i, j, k], [i, j, k]],
                                          ρi[[i, j, k], [i, j, k]])[1]
-                push!(constraints, ex)
                 @NLconstraint(m, ex >= 0)
             end
         end
     end
     for i in 4:N
         ex = determinant_trivial(ρr[1:i, 1:i], ρi[1:i, 1:i])[1]
-        push!(constraints, ex)
         @NLconstraint(m, ex >= 0)
     end
 end
@@ -195,21 +193,20 @@ end
 struct IonIonModel{N}
     m::Model
     fcalc::FidelityCalculator{N}
-    constraints::Vector{Any}
     ρ1r::Matrix{Any}
     ρ1i::Matrix{Any}
     ρ2r::Matrix{Any}
     ρ2i::Matrix{Any}
     obj::Any
+    vars::Vector{VariableRef}
     function IonIonModel{N}(m::Model) where N
         fcalc = FidelityCalculator{N}()
         ρ1r, ρ1i, fid_args1 = create_density_matrix(m, "ρ1", N)
         ρ2r, ρ2i, fid_args2 = create_density_matrix(m, "ρ2", N)
         rate1 = @NLexpression(m, sum(ρ1r[i, i] for i in 1:N))
         rate2 = @NLexpression(m, sum(ρ2r[i, i] for i in 1:N))
-        constraints = []
-        add_pos_constraints(m, constraints, ρ1r, ρ1i)
-        add_pos_constraints(m, constraints, ρ2r, ρ2i)
+        add_pos_constraints(m, ρ1r, ρ1i)
+        add_pos_constraints(m, ρ2r, ρ2i)
         function full_fid(x...)
             diag1 = x[1:N]
             off1 = x[N + 1:N * (N - 1) + 1]
@@ -222,7 +219,8 @@ struct IonIonModel{N}
         register(m, :ffunc, (N * (N - 1) + 1) * 2, full_fid, gradf, autodiff=false)
         f = @NLexpression(m, ffunc(fid_args1..., fid_args2...))
         @NLobjective(m, Min, f)
-        return new{N}(m, fcalc, constraints, ρ1r, ρ1i, ρ2r, ρ2i, f)
+        return new{N}(m, fcalc, ρ1r, ρ1i, ρ2r, ρ2i, f,
+                      [fid_args1..., fid_args2...])
     end
 end
 
@@ -256,12 +254,121 @@ function constraint_pair!(model::IonIonModel, i, j; rate_lb, rate_ub, fid_lb, fi
     @assert fid_lb >= 0.5
     @NLconstraint(model.m, off2 >= ((fid_lb - 0.5) * rate)^2)
     @NLconstraint(model.m, off2 <= ((fid_ub - 0.5) * rate)^2)
-    fid_mid = (fib_lb + fib_ub) / 2
-    set_start_value(model.ρ1r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
-    set_start_value(model.ρ2r[i, j], sqrt((fid_mid - 0.5) * rate_mid))
+    set_start_value(model.ρ1r[i, j], sqrt((fid_lb - 0.5) * rate_mid))
+    set_start_value(model.ρ2r[i, j], sqrt((fid_lb - 0.5) * rate_mid))
 end
 
 function min_fidelity!(model::IonIonModel)
     JuMP.optimize!(model.m)
     return value(model.obj)
+end
+
+struct IonIonConstraints{N}
+    bounds::Dict{NTuple{2,Int},NTuple{4,Float64}}
+    function IonIonConstraints{N}() where N
+        return new{N}(Dict{NTuple{2,Int},NTuple{4,Float64}}())
+    end
+end
+function constraint_pair!(c::IonIonConstraints, i, j; rate_lb, rate_ub, fid_lb, fid_ub)
+    @assert i != j
+    if i > j
+        i, j = j, i
+    end
+    c.bounds[(i, j)] = (rate_lb, rate_ub, fid_lb, fid_ub)
+    return
+end
+
+function rand_find_min_fidelity(fcalc, vals, ::Val{N}) where N
+    diag_offset = 0
+    offr_offset = N
+    offr2_offset = 2N - 1
+    offi2_offset = N * (N + 1) ÷ 2
+    total_vals = N * (N - 1) + 1
+    @assert total_vals == length(vals)
+    M = MMatrix{N,N,ComplexF64}(undef)
+    fid_args_r1 = MVector{N - 1,Float64}(undef)
+    for i in 1:N
+        M[i, i] = vals[i]
+        if i != 1
+            M[1, i] = M[i, 1] = fid_args_r1[i - 1] = vals[i - 1 + offr_offset]
+        end
+    end
+    fid_args_a2 = MVector{(N - 1) * (N - 2) ÷ 2,Float64}(undef)
+    for i in 1:length(fid_args_a2)
+        fid_args_a2[i] = hypot(vals[i + offr2_offset], vals[i + offi2_offset])
+    end
+    fid_args_r2 = MVector{(N - 1) * (N - 2) ÷ 2,Float64}(undef)
+    fid_args_i2 = MVector{(N - 1) * (N - 2) ÷ 2,Float64}(undef)
+    function rand_off!()
+        for i in 1:length(fid_args_a2)
+            im_scale = rand() * 0.2 - 0.1
+            re_scale = sqrt(1 - im_scale^2)
+            fid_args_r2[i] = fid_args_a2[i] * re_scale
+            fid_args_i2[i] = fid_args_a2[i] * im_scale
+        end
+    end
+    function compute_fid()
+        return fcalc(fid_args_r1..., fid_args_r2..., fid_args_i2...)
+    end
+    function check_posdef()
+        off_idx = 0
+        for i in 2:N - 1
+            for j in i + 1:N
+                off_idx += 1
+                vr = fid_args_r2[off_idx]
+                vi = fid_args_i2[off_idx]
+                M[i, j] = complex(vr, vi)
+                M[j, i] = complex(vr, -vi)
+            end
+        end
+        return isposdef(M)
+    end
+    fid_args_r2 .= fid_args_a2
+    fid_args_i2 .= 0
+
+    opt_args = (fid_args_r1..., fid_args_r2..., fid_args_i2...)
+    opt_fid = compute_fid()
+    for _ in 1:20000
+        rand_off!()
+        if !check_posdef()
+            continue
+        end
+        fid = compute_fid()
+        if fid < opt_fid
+            opt_args = (fid_args_r1..., fid_args_r2..., fid_args_i2...)
+            opt_fid = fid
+        end
+    end
+    return (opt_fid / sum(@view(vals[1:N])) * 2 + 1) / N, opt_args
+end
+
+function min_fidelity!(c::IonIonConstraints{N}) where N
+    m = Model(NLopt.Optimizer)
+    set_attribute(m, "algorithm", :LD_SLSQP)
+    model = IonIonModel{N}(m)
+    for i in 1:N - 1
+        for j in (i + 1):N
+            rate_lb, rate_ub, fid_lb, fid_ub =
+                get(c.bounds, (i, j), (0.0, 1 / N^2, 0.0, 1.0))
+            constraint_pair!(model, i, j, rate_lb=rate_lb, rate_ub=rate_ub,
+                             fid_lb=fid_lb, fid_ub=fid_ub)
+        end
+    end
+    fid1 = @time min_fidelity!(model)
+    println("Initial result: $fid1")
+    fcalc = FidelityCalculator{N}()
+    var_vals = value.(model.vars)
+    Nsingle = N * (N - 1) + 1
+    @assert length(var_vals) == Nsingle * 2
+    opt_fid1, opt_args1 = @time rand_find_min_fidelity(fcalc, var_vals[1:Nsingle], Val(N))
+    opt_fid2, opt_args2 = @time rand_find_min_fidelity(fcalc, var_vals[Nsingle + 1:end], Val(N))
+    println("Randomized result: $opt_fid1, $opt_fid2")
+    set_start_value.(model.vars, var_vals)
+    for i in 1:length(opt_args1)
+        set_start_value(model.vars[N + i], opt_args1[i])
+        set_start_value(model.vars[N + i + Nsingle], opt_args2[i])
+    end
+    fid2 = @time(min_fidelity!(model))
+    println("Final result: $fid2")
+    return fid2, model
 end
