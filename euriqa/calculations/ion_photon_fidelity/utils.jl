@@ -346,6 +346,10 @@ function min_fidelity!(c::IonIonConstraints{N}) where N
     m = Model(NLopt.Optimizer)
     set_attribute(m, "algorithm", :LD_SLSQP)
     model = IonIonModel{N}(m)
+    fcalc = FidelityCalculator{N}()
+    Nsingle = N * (N - 1) + 1
+    @assert length(model.vars) == Nsingle * 2
+
     for i in 1:N - 1
         for j in (i + 1):N
             rate_lb, rate_ub, fid_lb, fid_ub =
@@ -354,21 +358,27 @@ function min_fidelity!(c::IonIonConstraints{N}) where N
                              fid_lb=fid_lb, fid_ub=fid_ub)
         end
     end
-    fid1 = @time min_fidelity!(model)
-    println("Initial result: $fid1")
-    fcalc = FidelityCalculator{N}()
-    var_vals = value.(model.vars)
-    Nsingle = N * (N - 1) + 1
-    @assert length(var_vals) == Nsingle * 2
-    opt_fid1, opt_args1 = @time rand_find_min_fidelity(fcalc, var_vals[1:Nsingle], Val(N))
-    opt_fid2, opt_args2 = @time rand_find_min_fidelity(fcalc, var_vals[Nsingle + 1:end], Val(N))
-    println("Randomized result: $opt_fid1, $opt_fid2")
-    set_start_value.(model.vars, var_vals)
-    for i in 1:length(opt_args1)
-        set_start_value(model.vars[N + i], opt_args1[i])
-        set_start_value(model.vars[N + i + Nsingle], opt_args2[i])
+    opt_fid = @time min_fidelity!(model)
+    println("Initial result: $opt_fid")
+
+    nrounds = 4
+
+    for i in 2:nrounds
+        var_vals = value.(model.vars)
+        rand_fid1, rand_args1 = @time rand_find_min_fidelity(fcalc, var_vals[1:Nsingle], Val(N))
+        rand_fid2, rand_args2 = @time rand_find_min_fidelity(fcalc, var_vals[Nsingle + 1:end], Val(N))
+        println("Randomized result: $rand_fid1, $rand_fid2")
+        set_start_value.(model.vars, var_vals)
+        for i in 1:length(rand_args1)
+            set_start_value(model.vars[N + i], rand_args1[i])
+            set_start_value(model.vars[N + i + Nsingle], rand_args2[i])
+        end
+        opt_fid = @time(min_fidelity!(model))
+        if i == nrounds
+            println("Final result: $opt_fid")
+        else
+            println("Round $i result: $opt_fid")
+        end
     end
-    fid2 = @time(min_fidelity!(model))
-    println("Final result: $fid2")
-    return fid2, model
+    return opt_fid, model
 end
