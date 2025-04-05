@@ -236,6 +236,7 @@
 \setlength{\marginparwidth}{0pt}
 \parindent=0pt
 \title{Ion-photon state fidelity}
+\author{Yichao Yu}
 
 \ifpdf
   % Ensure reproducible output
@@ -274,7 +275,7 @@ where the A and P subscripts are for the atom and photon state. The target state
 }
 where $m$ and $n$ are the two qudit state entangled.
 However, both of these states contain phase degrees of freedoms that does not affect their utility as long as the phase is known/can be measured.
-It is therefore more useful to define the fidelity as the maximum overlap between the density matrix and the target state while varying the phase of the target state.
+It is therefore more useful to define the fidelity as the maximum overlap between the density matrix and the target state while varying the phase of the target state.\\
 
 For the $d$-dimensional atom-photon state, the final fidelity is,
 \eqar{
@@ -321,9 +322,9 @@ and a fidelity of (eq.~\ref{eq:fid-aa} extended for unnormalized density matrix)
 }
 The atom-atom entanglement measurement allows both $r_{mn}$ and $f_{mn}$ to be bounded, which in turns provides a bound for the atom-photon state fidelity.
 In particular, the balance between $r_{mn}$'s constraint the diagonal elements of the atom-photon density matrix and the atom-atom fidelities $f_{mn}$ constraint ratio of the absolute values of the off-diagonal elements and the diagonal elements.
-Although the diagonal elements doesn't directly affect the atom-photon fidelity~(eq.~\ref{eq:fid-ap}), they do involve in the constraints on the off-diagonal elements~(eq~\ref{eq:fid-aa-rate}) and also in the constraints from the positive-semidefinity of the density matrix (see below).
+Although the diagonal elements doesn't directly affect the atom-photon fidelity~(eq.~\ref{eq:fid-ap}), they do involve in the constraints on the off-diagonal elements~(eq~\ref{eq:fid-aa-rate}) and also in the constraints from the positive-semidefinity of the density matrix (see below).\\
 
-The phase of the atom-atom state is in principle also measured, however, the phase is the sum of the phase from the two atom-photon state and therefore is a bit difficult to use as constraints on the phase of the individual atom-photon state.
+The phase of the atom-atom state is also measured. However, the phase is the sum of the phase from the two atom-photon state and therefore is a bit difficult to use as constraints on the phase of the individual atom-photon state.
 
 \section{Numerical calculation}
 I was unable to derive an analytical expression for the atom-photon fidelity $f^{AP}$ and therefore had to use numerical optimization to bound the fidelity.
@@ -349,5 +350,12 @@ In all, the constraints used for optimization are.
 \item Both of the atom-photon desity matrices are positive-semidefinite.
 \end{enumerate}
 
+\subsection{Implementation notes}
+The degrees of freedoms of the problem can be slightly reduced by removing redundant phase variables.
+In eq.~\ref{eq:fid-ap}, we can set the phase for the first state $\phi_1$ to $0$.
+This corresponds to a global phase that does not affect the result.
+Similarly, we can also require the off-diagnonal matrix elements for the first row and column of the atom-photon density matrix to be real numbers, this is always possible to achieve by varying the phases on the basis, which does not affect the fidelity.\\
+
+The optimization for both problems (computing the maximum fidelity given a qudit density matrix and computing the minimum atom-photon fidelity given constraints from atom-atom rate and fidelity) are implemented with gradient based local optimizations\footnote{I settled on \textit{NLOPT\_LD\_TNEWTON\_PRECOND\_RESTART} for finding the max fidelity and \textit{LD\_SLSQP} for finding the minimum fidelity bound}. For finding the atom-photon fidelity bound given the atom-atom result constraints, I find that it is more reliable to do multiple rounds of optimizations and use random sampling to find an off-diagonal phase that could minimize the fidelities. This seems to help the optimizer to get out of any local minima. OTOH, the gradient based optimizer seems to have less trouble finding the distribution of diagonal matrix elements that minimizes the fidelity.
 
 \end{document}
