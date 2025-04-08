@@ -342,7 +342,7 @@ function rand_find_min_fidelity(fcalc, vals, ::Val{N}) where N
     return (opt_fid / sum(@view(vals[1:N])) * 2 + 1) / N, opt_args
 end
 
-function min_fidelity!(c::IonIonConstraints{N}) where N
+function min_fidelity!(c::IonIonConstraints{N}; nrounds=4) where N
     m = Model(NLopt.Optimizer)
     set_attribute(m, "algorithm", :LD_SLSQP)
     model = IonIonModel{N}(m)
@@ -358,22 +358,20 @@ function min_fidelity!(c::IonIonConstraints{N}) where N
                              fid_lb=fid_lb, fid_ub=fid_ub)
         end
     end
-    opt_fid = @time min_fidelity!(model)
+    opt_fid = min_fidelity!(model)
     println("Initial result: $opt_fid")
-
-    nrounds = 4
 
     for i in 2:nrounds
         var_vals = value.(model.vars)
-        rand_fid1, rand_args1 = @time rand_find_min_fidelity(fcalc, var_vals[1:Nsingle], Val(N))
-        rand_fid2, rand_args2 = @time rand_find_min_fidelity(fcalc, var_vals[Nsingle + 1:end], Val(N))
+        rand_fid1, rand_args1 = rand_find_min_fidelity(fcalc, var_vals[1:Nsingle], Val(N))
+        rand_fid2, rand_args2 = rand_find_min_fidelity(fcalc, var_vals[Nsingle + 1:end], Val(N))
         println("Randomized result: $rand_fid1, $rand_fid2")
         set_start_value.(model.vars, var_vals)
         for i in 1:length(rand_args1)
             set_start_value(model.vars[N + i], rand_args1[i])
             set_start_value(model.vars[N + i + Nsingle], rand_args2[i])
         end
-        opt_fid = @time(min_fidelity!(model))
+        opt_fid = min_fidelity!(model)
         if i == nrounds
             println("Final result: $opt_fid")
         else
