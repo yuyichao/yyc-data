@@ -307,9 +307,9 @@ From now on, we can assume both atom-photon pairs are in the perfectly correlate
 The (unnormalized) density matrix after detecting two photons in the $n$ and $m$ time bins is,
 \eqar{
   P_{mn}(\rho^1\rho^2)=&\begin{pmatrix}
-                         \rho^1_{nn}\rho^2_{mm}&\rho^1_{nm}\rho^2_{mn}\\
-                         \rho^1_{mn}\rho^2_{nm}&\rho^1_{mm}\rho^2_{nn}
-                        \end{pmatrix}
+    \rho^1_{nn}\rho^2_{mm}&\rho^1_{nm}\rho^2_{mn}\\
+    \rho^1_{mn}\rho^2_{nm}&\rho^1_{mm}\rho^2_{nn}
+  \end{pmatrix}
 }
 which gives a rate of
 \eqar{
@@ -357,5 +357,64 @@ This corresponds to a global phase that does not affect the result.
 Similarly, we can also require the off-diagnonal matrix elements for the first row and column of the atom-photon density matrix to be real numbers, this is always possible to achieve by varying the phases on the basis, which does not affect the fidelity.\\
 
 The optimization for both problems (computing the maximum fidelity given a qudit density matrix and computing the minimum atom-photon fidelity given constraints from atom-atom rate and fidelity) are implemented with gradient based local optimizations\footnote{I settled on \textit{NLOPT\_LD\_TNEWTON\_PRECOND\_RESTART} for finding the max fidelity and \textit{LD\_SLSQP} for finding the minimum fidelity bound}. For finding the atom-photon fidelity bound given the atom-atom result constraints, I find that it is more reliable to do multiple rounds of optimizations and use random sampling to find an off-diagonal phase that could minimize the fidelities. This seems to help the optimizer to get out of any local minima. OTOH, the gradient based optimizer seems to have less trouble finding the distribution of diagonal matrix elements that minimizes the fidelity.
+
+\section{Short version}
+
+The atom-atom entanglement measurements done in the experiment only contains
+information about the coherence between each pair of the qudit states.
+This is therefore not a direct measurement of the fidelity of the atom-photon
+entangled state, which is higher dimensional than the atom-atom entangled states.
+Fortunately, under the assumption that the preparation of the two atom-photon states
+are independent, we can express each of the atom-photon state as a density matrix.
+By expressing the atom-atom entanglement fidelity as a function of
+these density matrices, we can use the experimental result to constraint
+the values of matrix elements as well as the atom-photon state fidelity.
+
+The experimental data provides three different types of constraints
+on the atom-photon density matrix.
+\begin{enumerate}
+\item The population data measures the correlation between the state
+  of the atom and the photon it emits.
+  This bounds the probability for the atom-photon to be in the perfectly-correlated
+  subspace. Since the desired atom-photon state is within this subspace,
+  this probability is directly proportional to the atom-photon fidelity.
+\item The rate for a particular pair of atom-atom states to be entangled
+  is proportional to the product of the diagonal density matrix elements
+  from the two atom-photon pairs.
+  The balance between the rates for each atom-atom state pair
+  therefore provides a bound for the uniformity of the atom-photon state distribution.
+\item The fidelity of an atom-atom entangled states is proportional to
+  the product of the off-diagonal density matrix elements
+  from the two atom-photon pairs.
+  This therefore measures the coherence of the atom-photon state.
+  Note that since the phase of the atom-atom state is the sum of
+  that for the two atom-photon states, the measurement on the atom-atom state
+  does not provide a good phase measure for the atom-photon state.
+  This bound is therefore only on the amplitude of the off-diagonal matrix element
+  while leaving their phase free to change.
+\end{enumerate}
+We combine these constraints from experimental results
+with the requirement for a physical density matrix
+(that they have to be positive-semidefinite) to compute a lower bound for
+the atom-photon state. This is done numerically and the result can be seen
+in table~\ref{tab:M:atom-photon-result}.
+The fidelity shown is the minimum fidelity at least one of the atom-photon state
+must have in order to reproduce the atom-atom entanglement result.
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{|c|c|}
+    \hline
+    $d$ & $f_{\mathrm{AP}}$ \\\hline
+    \textbf{$d=4$} & $91.3\ \%$ \\ \hline
+    \textbf{$d=3$} & $93.1\ \%$ \\ \hline
+    \textbf{$d=2$} & $95.9\ \%$ \\ \hline
+  \end{tabular}
+  \caption{
+    Lower bound on the atom-photon fidelity different dimensionalities $d=\{2,3,4\}$.
+  }
+  \label{tab:M:atom-photon-result}
+\end{table}
+
 
 \end{document}
