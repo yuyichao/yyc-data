@@ -78,3 +78,73 @@ function compute(p::PhaseZ, grad)
                     0      0  diag2  0
                     0      0  0      1]
 end
+
+function convert_res(op)
+    return abs2(op[1, 1] - 1) * 2 + abs2(op[3, 3] + 1)
+end
+function convert_grad(op, op_grad)
+    op1 = op[1, 1]
+    op3 = op[3, 3]
+    op1_grad = op_grad[1, 1]
+    op2_grad = op_grad[3, 3]
+
+    return (4 * ((real(op1) - 1) * real(op1_grad) + imag(op1) * imag(op1_grad)) +
+        2 * ((real(op3) + 1) * real(op3_grad) + imag(op3) * imag(op3_grad)))
+end
+
+function convert_res_grads(op, op_grads, grads)
+    grads .= convert_grad.(Ref(op), op_grads)
+    return convert_res(op)
+end
+
+mutable struct PMPulseSeq{N,S,P,OB,RB}
+    const s::S # Sequence
+    const params::P # Input parameters
+    res::Float64 # Output result
+    const grads::P # Output gradients
+
+    const op_buff::OB
+    const res_buff::RB
+
+    function PMPulseSeq{N}() where N
+        ops = ntuple(Val(N + 1)) do i
+            return i == 1 ? PhaseZ() : Drive()
+        end
+        s = Sequence{OPType}(ops)
+        params = MVector{N + 2,Float64}(undef)
+        grads = MVector{N + 2,Float64}(undef)
+        op_buff = MVector{2N + 1,OPType}(undef)
+        res_buff = MVector{2N + 1,Float64}(undef)
+        return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
+            s, params, NaN, grads, op_buff, res_buff)
+    end
+end
+
+function update_params!(ps::PMPulseSeq{N}, params) where N
+    if !isnan(ps.res) && all(ps.params .== params)
+        return
+    end
+    res_buff = ps.res_buff
+    res_buff[1] = params[1]
+    angle = params[2] / N
+    for i in 1:N
+        res_buff[2 * i] = angle
+        res_buff[2 * i + 1] = params[i + 2]
+    end
+
+    set_params(ps.s, res_buff)
+    op = compute(ps.s, ps.op_buff)
+    res = covert_res_grads(op, ps.op_buff, res_buff)
+
+    grads = ps.grads
+    grads[1] = res_buff[1]
+    angle_grad = 0.0
+    for i in 1:N
+        angle_grad += res_buff[2 * i]
+        grads[i + 2] = res_buff[2 * i + 1]
+    end
+    grads[2] = angle_grad / N
+    ps.res = res
+    ps.params .= params
+    return
+end
