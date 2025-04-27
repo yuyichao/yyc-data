@@ -1,8 +1,10 @@
 #/usr/bin/julia
 
-const OPType = SMatrix{4,4,ComplexF64}
-
 include("grape.jl")
+
+using StaticArrays
+
+const OPType = SMatrix{4,4,ComplexF64}
 
 mutable struct Drive <: AbstractOP{OPType,2}
     θ::Float64
