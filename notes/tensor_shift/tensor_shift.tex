@@ -282,7 +282,54 @@ The matrix element would be of the form,
 where the $H(F,F',k)$ in the last expression is a generic scalar factor
 that depends only on $F$, $F'$ and $k$ but not on $p$, $m_F$, or $m_F'$.
 
+\subsubsection{Hamiltonian as a function of angular momentum}
+
+Just like the situation that leads to the projection theorem~(Ref.~\ref{sec:general:projection-theorem}), we can rewrite the expression slightly differently by replacing
+the Clebsch-Gordan with angular momentum operators.\\
+
+We'll define the stark shift Hamiltonian as,
+\eqar{
+  H_{\mathrm{stark}}=&-\alpha^{(0)}\abs{E}^2-\ui\alpha^{(1)}\paren{\vec E\times \vec E^*}\cdot\frac{\vec F}{F}-\alpha^{(2)}\paren{\frac{3\crly{\vec E,\vec E^*}}{2}-\abs{E}^2}:\frac{3\vec F\vec F-F(F+1)}{2F(2F-1)}
+}
+where $\crly{\vec E,\vec E^*}\equiv\vec E\vec E^*+\vec E^*\vec E$.\\
+
+We can now match each of the We define the scalar polarizability as,
+\eqar{
+  -\alpha^{(0)}\abs{E}^2\langle F,m_F|F,m_F'\rangle&=H(F,0)T^0_{0}\langle 0,F;0,m_F|F,m_F'\rangle\\
+  \alpha^{(0)}&=\frac{H(F,0)}{\sqrt{3}}
+}
+
+Vector polarizability,
+\eqar{
+  -\ui\frac{\alpha^{(1)}}{F}\paren{\vec E\times \vec E^*}\cdot\langle F,m_F|\vec F|F,m_F'\rangle&=H(F,1)\sum_{p}T^1_{p}\langle 1,F;p,m_F|F,m_F'\rangle\\
+  -\ui\frac{\alpha^{(1)}}{F}\sum_p(-1)^p\paren{\vec E\times \vec E^*}_p\langle F,m_F|F_{-p}|F,m_F'\rangle&=H(F,1)\sum_{p}T^1_{p}\langle 1,F;p,m_F|F,m_F'\rangle\\
+  \sqrt{2}\frac{\alpha^{(1)}}{F}\sum_pT^1_p\sqrt{(F+1)F}\langle 1,F;p,m_F|F,m_F'\rangle&=H(F,1)\sum_{p}T^1_{p}\langle 1,F;p,m_F|F,m_F'\rangle\\
+  \alpha^{(1)}&=\sqrt{\frac{F}{2(F+1)}}H(F,1)
+}
+Tensor polarizability,
+\eqar{
+  \begin{split}
+    &-\frac{9\alpha^{(2)}}{2F(2F-1)}\paren{\frac{\vec E\vec E^*+\vec E\vec E^*}{2}-\frac{\abs{E}^2}{3}}:\langle F,m_F|\vec F\vec F-\frac{F(F+1)}3|F,m_F'\rangle\\
+    =&H(F,2)\sum_{p}T^2_{p}\langle 2,F;p,m_F|F,m_F'\rangle
+  \end{split}\\
+  \begin{split}
+    &-\frac{9\alpha^{(2)}}{2F(2F-1)}\sum_{p}(-1)^pT^2_{p}\langle F,m_F|(\vec F\vec F)^2_{-p}|F,m_F'\rangle\\
+    =&H(F,2)\sum_{p}T^2_{p}\langle 2,F;p,m_F|F,m_F'\rangle
+  \end{split}\\
+  \begin{split}
+    &-\frac{9\alpha^{(2)}}{2}\sum_{p}T^2_{p}
+      \sqrt{\frac{(F+1)(2F+3)}{6F(2F-1)}}
+      \langle 2,F;p,m_F|F,m_F'\rangle\\
+    =&H(F,2)\sum_{p}T^2_{p}\langle 2,F;p,m_F|F,m_F'\rangle
+  \end{split}\\
+  \begin{split}
+    &\alpha^{(2)}=-\frac{2}{3}\sqrt{\frac{2F(2F-1)}{3(F+1)(2F+3)}}H(F,2)
+  \end{split}
+}
+
 % TODO
+% Form of full hamiltonian
+% As effective B field
 
 \subsection{Direct derivation}
 The coupling between state $|F,m_F\rangle$ and $|F',m_F'\rangle$
@@ -897,7 +944,7 @@ for inner product using the spherical harmonic components.
     \end{pmatrix}\\
     =&\sum_{k,q}(-1)^{k+q}T^k_qU^k_{-q}\\
     =&\sum_{k}\sqrt{2k+1}\sum_{q}\langle 0,0|k,k;q,-q\rangle T^k_qU^k_{-q}\\
-  \end{split}
+  \end{split}\label{eq:spherical-dot-product}
 }
 we can see that each rank of spherical tensor component is only multiplied with
 that of the same rank and the result is also consistent with the
@@ -935,6 +982,23 @@ Combining the three,
 \eqar{
   \begin{split}
     \overline{\overline{T}}:\overline{\overline{U}}=&\frac13E^{T}E^{U}+\frac12\vec A^{T}\cdot\vec A^{U}+\overline{\overline{S}}^{T}:\overline{\overline{S}}^{U}
+  \end{split}
+}
+By comparing to Eq.~\ref{eq:spherical-dot-product} and based on the correspondence
+of the cartesian and spherical expression for the scalar/vector/tensor parts\footnote{i.e. that $E$, $\vec A$, $\overline{\overline{S}}$ contains only terms from
+$T^0$, $T^1$ and $T^2$ sperical tensors.}, we can conclude that
+\eqar{
+  \begin{split}
+    \frac13E^{T}E^{U}=&T^0_0U^0_0\\
+    =&\langle 0,0|0,0;0,0\rangle T^0_0U^0_{0}
+  \end{split}\\
+  \begin{split}
+    \frac12\vec A^{T}\cdot\vec A^{U}=&-\sum_{q}(-1)^{q}T^1_qU^1_{-q}\\
+    =&\sqrt{3}\sum_{q}\langle 0,0|1,1;q,-q\rangle T^1_qU^1_{-q}
+  \end{split}\\
+  \begin{split}
+    \overline{\overline{S}}^{T}:\overline{\overline{S}}^{U}=&\sum_{q}(-1)^{q}T^2_qU^2_{-q}\\
+    =&\sqrt{5}\sum_{q}\langle 0,0|2,2;q,-q\rangle T^2_qU^2_{-q}
   \end{split}
 }
 
@@ -994,7 +1058,7 @@ since,
 }
 which is $0$ when $m=0$.
 
-\subsubsection{Projection theorem}
+\subsubsection{Projection theorem}\label{sec:general:projection-theorem}
 We can use this to derive the projection theorem.
 Explicitly writing down the proportionality factor in Eq. \ref{eq:jj:prop1}, we have,
 \eqar{
@@ -1144,6 +1208,8 @@ Inserting an identity and using equation~\ref{eq:projection:spin1},
          2&j&j\\
          j&1&1
        \end{Bmatrix}
+       \langle j,2;m',p|j,m\rangle\\
+    =&\sqrt{\frac{j(j+1)(2j-1)(2j+3)}{6}}
        \langle j,2;m',p|j,m\rangle
   \end{split}
 }
