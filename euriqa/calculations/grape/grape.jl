@@ -37,16 +37,17 @@ end
     return starts, cum_nparams
 end
 
-@inline function _set_params(op, start_idx, end_idx, params)
-    set_params(op, params[start_idx:end_idx])
-    return
-end
-
-function set_params(s::Sequence, params)
-    @assert length(params) == nparams(typeof(s))
-    starts, ends = param_range(typeof(s))
-    @inline _set_params.(s.ops, starts, ends, Ref(params))
-    return
+@generated function set_params(s::Sequence, params)
+    ex = quote
+        @assert length(params) == nparams($s)
+    end
+    starts, ends = param_range(s)
+    for (i, (start_idx, end_idx)) in enumerate(zip(starts, ends))
+        push!(ex.args, :(@inline set_params(@inbounds(s.ops[$i]),
+                                            @view params[$start_idx:$end_idx])))
+    end
+    push!(ex.args, :(return))
+    return ex
 end
 
 @inline function _eval_compute(s, op, start_idx, end_idx)

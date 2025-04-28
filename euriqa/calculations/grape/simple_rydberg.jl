@@ -4,7 +4,7 @@ include("grape.jl")
 
 using StaticArrays
 
-const OPType = SMatrix{4,4,ComplexF64}
+const OPType = SMatrix{4,4,ComplexF64,16}
 
 mutable struct Drive <: AbstractOP{OPType,2}
     θ::Float64
@@ -79,10 +79,10 @@ function compute(p::PhaseZ, grad)
                     0      0  0      1]
 end
 
-function convert_res(op)
+@inline function convert_res(op)
     return abs2(op[1, 1] - 1) * 2 + abs2(op[3, 3] + 1)
 end
-function convert_grad(op, op_grad)
+@inline function convert_grad(op, op_grad)
     op1 = op[1, 1]
     op3 = op[3, 3]
     op1_grad = op_grad[1, 1]
@@ -92,7 +92,7 @@ function convert_grad(op, op_grad)
         2 * ((real(op3) + 1) * real(op3_grad) + imag(op3) * imag(op3_grad)))
 end
 
-function convert_res_grads(op, op_grads, grads)
+@inline function convert_res_grads(op, op_grads, grads)
     grads .= convert_grad.(Ref(op), op_grads)
     return convert_res(op)
 end
@@ -124,27 +124,32 @@ function update_params!(ps::PMPulseSeq{N}, params) where N
     if !isnan(ps.res) && all(ps.params .== params)
         return
     end
+    @assert length(params) == N + 2
     res_buff = ps.res_buff
-    res_buff[1] = params[1]
-    angle = params[2] / N
-    for i in 1:N
-        res_buff[2 * i] = angle
-        res_buff[2 * i + 1] = params[i + 2]
+    @inbounds begin
+        res_buff[1] = params[1]
+        angle = params[2] / N
+        for i in 1:N
+            res_buff[2 * i] = angle
+            res_buff[2 * i + 1] = params[i + 2]
+        end
     end
 
     set_params(ps.s, res_buff)
     op = compute(ps.s, ps.op_buff)
     res = convert_res_grads(op, ps.op_buff, res_buff)
 
-    grads = ps.grads
-    grads[1] = res_buff[1]
-    angle_grad = 0.0
-    for i in 1:N
-        angle_grad += res_buff[2 * i]
-        grads[i + 2] = res_buff[2 * i + 1]
+    @inbounds begin
+        grads = ps.grads
+        grads[1] = res_buff[1]
+        angle_grad = 0.0
+        for i in 1:N
+            angle_grad += res_buff[2 * i]
+            grads[i + 2] = res_buff[2 * i + 1]
+        end
+        grads[2] = angle_grad / N
+        ps.res = res
+        ps.params .= params
     end
-    grads[2] = angle_grad / N
-    ps.res = res
-    ps.params .= params
     return
 end
