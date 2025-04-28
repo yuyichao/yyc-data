@@ -22,19 +22,19 @@ function compute(dri::Drive, grad)
 
     sp, cp = sincos(dri.ϕ)
 
-    diag1 = c
-    diag1_θ = -s
+    diag1 = ct
+    diag1_θ = -st
     diag1_ϕ = 0
-    off1 = s * complex(sp, -cp)
-    off1_θ = c * complex(sp, -cp)
-    off1_ϕ = s * complex(cp, sp)
+    off1 = st * complex(sp, -cp)
+    off1_θ = ct * complex(sp, -cp)
+    off1_ϕ = st * complex(cp, sp)
 
-    diag2 = c2
-    diag2_θ = -√2 * s2
+    diag2 = ct2
+    diag2_θ = -√2 * st2
     diag2_ϕ = 0
-    off2 = s2 * complex(sp, -cp)
-    off2_θ = √2 * c2 * complex(sp, -cp)
-    off2_ϕ = s2 * complex(cp, sp)
+    off2 = st2 * complex(sp, -cp)
+    off2_θ = √2 * ct2 * complex(sp, -cp)
+    off2_ϕ = st2 * complex(cp, sp)
 
     grad[1] = @SMatrix[diag1_θ       off1_θ   0             0
                        conj(off1_θ)  diag1_θ  0             0
@@ -86,7 +86,7 @@ function convert_grad(op, op_grad)
     op1 = op[1, 1]
     op3 = op[3, 3]
     op1_grad = op_grad[1, 1]
-    op2_grad = op_grad[3, 3]
+    op3_grad = op_grad[3, 3]
 
     return (4 * ((real(op1) - 1) * real(op1_grad) + imag(op1) * imag(op1_grad)) +
         2 * ((real(op3) + 1) * real(op3_grad) + imag(op3) * imag(op3_grad)))
@@ -113,7 +113,7 @@ mutable struct PMPulseSeq{N,S,P,OB,RB}
         s = Sequence{OPType}(ops)
         params = MVector{N + 2,Float64}(undef)
         grads = MVector{N + 2,Float64}(undef)
-        op_buff = MVector{2N + 1,OPType}(undef)
+        op_buff = Vector{OPType}(undef,2N + 1)
         res_buff = MVector{2N + 1,Float64}(undef)
         return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
             s, params, NaN, grads, op_buff, res_buff)
@@ -134,7 +134,7 @@ function update_params!(ps::PMPulseSeq{N}, params) where N
 
     set_params(ps.s, res_buff)
     op = compute(ps.s, ps.op_buff)
-    res = covert_res_grads(op, ps.op_buff, res_buff)
+    res = convert_res_grads(op, ps.op_buff, res_buff)
 
     grads = ps.grads
     grads[1] = res_buff[1]
