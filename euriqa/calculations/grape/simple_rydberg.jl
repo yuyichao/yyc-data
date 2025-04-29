@@ -91,21 +91,21 @@ end
 
     dgr = ct * ca + α / 2 * sct * sa
     dgr_θ′ = -st * ca / 2 + α / 2 * cct * sa
-    dgr_θ = dgr_θ′ * θ′_θ * s
+    dgr_θ = dgr_θ′ * θ′_θ * s * 2
     dgr_α = dgr_θ′ * θ′_α - ct * sa / 2 + 1 / 2 * sct * sa + α / 4 * sct * ca
 
     dgi = ct * sa - α / 2 * sct * ca
     dgi_θ′ = -st * sa / 2 + α / 2 * cct * ca
-    dgi_θ = dgi_θ′ * θ′_θ * s
+    dgi_θ = dgi_θ′ * θ′_θ * s * 2
     dgi_α = dgi_θ′ * θ′_α + ct * ca / 2 + 1 / 2 * sct * ca - α / 4 * sct * sa
 
     ofr = θ / 2 * sct * sp
-    ofr_θ = (1 / 2 * sct * sp + θ / 2 * cct * sp * θ′_θ) * s
+    ofr_θ = (1 / 2 * sct * sp + θ / 2 * cct * sp * θ′_θ) * s * 2
     ofr_ϕ = θ / 2 * sct * cp
     ofr_α = θ / 2 * cct * sp * θ′_α + θ / 2 * sct * cp / 2
 
     ofi = -θ / 2 * sct * cp
-    ofi_θ = (-1 / 2 * sct * cp - θ / 2 * cct * cp * θ′_θ) * s
+    ofi_θ = (-1 / 2 * sct * cp - θ / 2 * cct * cp * θ′_θ) * s * 2
     ofi_ϕ = θ / 2 * sct * sp
     ofi_α = -θ / 2 * cct * cp * θ′_α + θ / 2 * sct * sp / 2
 
