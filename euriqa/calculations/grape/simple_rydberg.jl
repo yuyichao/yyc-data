@@ -214,7 +214,7 @@ mutable struct PMPulseSeq{N,S,P,OB,RB}
     end
 end
 
-@inline function _set_params_buff!(res_buff, params, N)
+@inline function _pm_set_params_buff!(res_buff, params, N)
     @inbounds begin
         res_buff[1] = params[1]
         angle = params[2] / N
@@ -232,7 +232,7 @@ function update_params!(ps::PMPulseSeq{N}, params) where N
     @assert length(params) == N + 2
     res_buff = ps.res_buff
 
-    _set_params_buff!(res_buff, params, N)
+    _pm_set_params_buff!(res_buff, params, N)
     set_params(ps.s, res_buff)
     op = compute(ps.s, ps.op_buff)
     res = convert_res_grads(op, ps.op_buff, res_buff)
@@ -270,9 +270,9 @@ function optimize_pulse!(ps::PMPulseSeq{N}, init_params; opt_angle=false) where 
     @variable(m, global_z, start=init_params[1])
     @variable(m, total_angle >= 0, start=abs(init_params[2]))
     @variable(m, phases[i=1:N], start=init_params[i + 2])
-    obj = @NLexpression(m, fidelity(global_z, total_angle, phases...))
+    obj = @NLexpression(m, 1e-10 + fidelity(global_z, total_angle, phases...))
     if opt_angle
-        obj = @NLexpression(m, (total_angle + 1) * (1e-10 + obj))
+        obj = @NLexpression(m, (total_angle + 1) * obj)
     end
     @NLobjective(m, Min, obj)
     JuMP.optimize!(m)
