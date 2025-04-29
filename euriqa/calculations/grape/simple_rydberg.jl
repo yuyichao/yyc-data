@@ -193,6 +193,8 @@ end
     return convert_res(op)
 end
 
+const pm_use_ramp_drive = true
+
 mutable struct PMPulseSeq{N,S,P,OB,RB}
     const s::S # Sequence
     const params::P # Input parameters
@@ -204,13 +206,22 @@ mutable struct PMPulseSeq{N,S,P,OB,RB}
 
     function PMPulseSeq{N}() where N
         ops = ntuple(Val(N + 1)) do i
-            return i == 1 ? PhaseZ() : Drive()
+            if pm_use_ramp_drive
+                return i == 1 ? PhaseZ() : DetDrive()
+            else
+                return i == 1 ? PhaseZ() : Drive()
+            end
         end
         s = Sequence{OPType}(ops)
         params = MVector{N + 2,Float64}(undef)
         grads = MVector{N + 2,Float64}(undef)
-        op_buff = Vector{OPType}(undef,2N + 1)
-        res_buff = MVector{2N + 1,Float64}(undef)
+        if pm_use_ramp_drive
+            op_buff = Vector{OPType}(undef,3N + 1)
+            res_buff = MVector{3N + 1,Float64}(undef)
+        else
+            op_buff = Vector{OPType}(undef,2N + 1)
+            res_buff = MVector{2N + 1,Float64}(undef)
+        end
         return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
             s, params, NaN, grads, op_buff, res_buff)
     end
@@ -221,8 +232,14 @@ end
         res_buff[1] = params[1]
         angle = params[2] / N
         for i in 1:N
-            res_buff[2 * i] = angle
-            res_buff[2 * i + 1] = params[i + 2]
+            if pm_use_ramp_drive
+                res_buff[3 * i - 1] = angle
+                res_buff[3 * i] = params[i + 2]
+                res_buff[3 * i + 1] = 0
+            else
+                res_buff[2 * i] = angle
+                res_buff[2 * i + 1] = params[i + 2]
+            end
         end
     end
 end
@@ -244,8 +261,13 @@ function update_params!(ps::PMPulseSeq{N}, params) where N
         grads[1] = res_buff[1]
         angle_grad = 0.0
         for i in 1:N
-            angle_grad += res_buff[2 * i]
-            grads[i + 2] = res_buff[2 * i + 1]
+            if pm_use_ramp_drive
+                angle_grad += res_buff[3 * i - 1]
+                grads[i + 2] = res_buff[3 * i]
+            else
+                angle_grad += res_buff[2 * i]
+                grads[i + 2] = res_buff[2 * i + 1]
+            end
         end
         grads[2] = angle_grad / N
         ps.res = res
