@@ -281,20 +281,22 @@ Evolution under $H_1$,
 Original time evolution
 \eqar{
   &T_0\\
-  =&U_1^\dagger T_1 U_1\\
+  =&U_1^\dagger T_1 U_1(t=0)\\
   =&\begin{pmatrix}
-    \cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}&
-                                                                                                -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{\ui\paren{\delta t + \phi}}\\
-    -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{-\ui\paren{\delta t + \phi}}&\cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}
+    \paren{\cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}}\ue^{\ui\delta t/2}
+    &-\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{\ui\paren{\delta t/2 + \phi}}\\
+U    -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{-\ui\paren{\delta t/2 + \phi}}
+    &\paren{\cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}}\ue^{-\ui\delta t/2}
   \end{pmatrix}
 }
 
 If $\Delta=0$,
 \eqar{
   T_0=&\begin{pmatrix}
-    \cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}&
-                                                                                               -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{\ui\paren{\delta t + \phi}}\\
-    -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{-\ui\paren{\delta t + \phi}}&\cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}
+    \paren{\cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}}\ue^{\ui\delta t/2}
+    &-\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{\ui\paren{\delta t/2 + \phi}}\\
+    -\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{-\ui\paren{\delta t/2 + \phi}}
+    &\paren{\cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}}\ue^{-\ui\delta t/2}
   \end{pmatrix}
 }
 Now converting all the parameter to angles,
@@ -305,15 +307,56 @@ Now converting all the parameter to angles,
 }
 \eqar{
   T_0=&\begin{pmatrix}
-    \cos\paren{\dfrac{\theta'}{2}}-\ui\dfrac{\alpha}{\theta'}\sin\paren{\dfrac{\theta'}{2}}&
-                                                                                             -\ui\dfrac{\theta}{\theta'}\sin\paren{\dfrac{\theta'}{2}}\ue^{\ui\paren{\alpha + \phi}}\\
-    -\ui\dfrac{\theta}{\theta'}\sin\paren{\dfrac{\theta'}{2}}\ue^{-\ui\paren{\alpha + \phi}}&\cos\paren{\dfrac{\theta'}{2}}+\ui\dfrac{\alpha}{\theta'}\sin\paren{\dfrac{\theta'}{2}}
+    \paren{\cos\paren{\dfrac{\theta'}{2}}-\ui\dfrac{\alpha}{\theta'}\sin\paren{\dfrac{\theta'}{2}}}\ue^{\ui\alpha/2}
+    &-\ui\dfrac{\theta}{\theta'}\sin\paren{\dfrac{\theta'}{2}}\ue^{\ui\paren{\alpha/2 + \phi}}\\
+    -\ui\dfrac{\theta}{\theta'}\sin\paren{\dfrac{\theta'}{2}}\ue^{-\ui\paren{\alpha/2 + \phi}}
+    &\paren{\cos\paren{\dfrac{\theta'}{2}}+\ui\dfrac{\alpha}{\theta'}\sin\paren{\dfrac{\theta'}{2}}}\ue^{-\ui\alpha/2}
   \end{pmatrix}\\
   =&\begin{pmatrix}
-    \cos\paren{\dfrac{\theta'}{2}}-\ui\dfrac{\alpha}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}&
-                                                                                                -\ui\dfrac{\theta}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}\ue^{\ui\paren{\alpha + \phi}}\\
-    -\ui\dfrac{\theta}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}\ue^{-\ui\paren{\alpha + \phi}}&\cos\paren{\dfrac{\theta'}{2}}+\ui\dfrac{\alpha}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}
+    \paren{\cos\paren{\dfrac{\theta'}{2}}-\ui\dfrac{\alpha}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}}\ue^{\ui\alpha/2}
+    &-\ui\dfrac{\theta}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}\ue^{\ui\paren{\alpha/2 + \phi}}\\
+    -\ui\dfrac{\theta}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}\ue^{-\ui\paren{\alpha/2 + \phi}}
+    &\paren{\cos\paren{\dfrac{\theta'}{2}}+\ui\dfrac{\alpha}{2}\mathrm{sinc}\paren{\dfrac{\theta'}{2}}}\ue^{-\ui\alpha/2}
   \end{pmatrix}
 }
+
+\section*{Check}
+Time derivative of $T_1$
+\eqar{
+  \ui\diff{T_1}{t}T_1^\dagger=&\ui\frac{\Omega'}{2}\begin{pmatrix}
+    -\sin\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{\Omega'}\cos\paren{\dfrac{\Omega'}{2}t}&-\ui\dfrac{\Omega}{\Omega'}\cos\paren{\dfrac{\Omega'}{2}t}\\
+    -\ui\dfrac{\Omega}{\Omega'}\cos\paren{\dfrac{\Omega'}{2}t}&-\sin\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{\Omega'}\cos\paren{\dfrac{\Omega'}{2}t}
+  \end{pmatrix}\\
+  &\begin{pmatrix}
+    \cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}&\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\\
+    \ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}&\cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}
+  \end{pmatrix}\\
+  =&\ui\frac{\Omega'}{2}\begin{pmatrix}
+    -\ui\dfrac{\Delta'}{\Omega'}&-\ui\dfrac{\Omega}{\Omega'}\\
+    -\ui\dfrac{\Omega}{\Omega'}&\ui\dfrac{\Delta'}{\Omega'}
+  \end{pmatrix}\\
+  =&\frac{1}{2}\begin{pmatrix}
+    \Delta'&\Omega\\
+    \Omega&-\Delta'
+  \end{pmatrix}\\
+  =&H_1
+}
+
+% Time derivative of $T_0$
+% \eqar{
+%   &\ui\diff{T_0}{t}T_0^\dagger\\
+%   =&\begin{pmatrix}
+%     -\dfrac{\Omega'}{2}\sin\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{2}\cos\paren{\dfrac{\Omega'}{2}t}&\paren{\dfrac{\Omega\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Omega}{2}\cos\paren{\dfrac{\Omega'}{2}t}}\ue^{\ui\paren{\delta t + \phi}}\\
+%     \paren{-\dfrac{\Omega\delta}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Omega}{2}\cos\paren{\dfrac{\Omega'}{2}t}}\ue^{-\ui\paren{\delta t + \phi}}&-\dfrac{\Omega'}{2}\sin\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{2}\cos\paren{\dfrac{\Omega'}{2}t}
+%   \end{pmatrix}\\
+%   &\begin{pmatrix}
+%     \cos\paren{\dfrac{\Omega'}{2}t}+\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}
+%     &\ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{\ui\paren{\delta t + \phi}}\\
+%     \ui\dfrac{\Omega}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}\ue^{-\ui\paren{\delta t + \phi}}
+%     &\cos\paren{\dfrac{\Omega'}{2}t}-\ui\dfrac{\Delta'}{\Omega'}\sin\paren{\dfrac{\Omega'}{2}t}
+%   \end{pmatrix}\\
+%   &-\ui\dfrac{\Delta'}{2}\\
+%   &+\ui\dfrac{\Omega^2\delta}{\Omega'^2}\sin^2\paren{\dfrac{\Omega'}{2}t}
+% }
 
 \end{document}
