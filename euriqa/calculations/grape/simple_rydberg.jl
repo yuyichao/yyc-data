@@ -65,66 +65,68 @@ mutable struct DetDrive <: AbstractOP{OPType,3}
     DetDrive() = new()
 end
 function set_params(dri::DetDrive, params)
-    dri.θ = params[1]
+    dri.θ = params[1] * 2
     dri.ϕ = params[2]
     dri.α = params[3]
     return
+end
+@inline function detdrive_terms(θ, ϕ, α, s)
+    θ = θ * s
+
+    θ′ = sqrt(abs2(θ) + abs2(α))
+    if θ′ == 0
+        θ′_θ = 0.0
+        θ′_α = 0.0
+    else
+        θ′_θ = θ / θ′
+        θ′_α = α / θ′
+    end
+
+    st, ct = sincos(θ′ / 2)
+    sct = sinc(θ′ / (2π))
+    cct = cosc(θ′ / (2π)) / (2π)
+
+    sa, ca = sincos(α / 2)
+    sp, cp = sincos(α / 2 + ϕ)
+
+    dgr = ct * ca + α / 2 * sct * sa
+    dgr_θ′ = -st * ca / 2 + α / 2 * cct * sa
+    dgr_θ = dgr_θ′ * θ′_θ * s
+    dgr_α = dgr_θ′ * θ′_α - ct * sa / 2 + 1 / 2 * sct * sa + α / 4 * sct * ca
+
+    dgi = ct * sa - α / 2 * sct * ca
+    dgi_θ′ = -st * sa / 2 + α / 2 * cct * ca
+    dgi_θ = dgi_θ′ * θ′_θ * s
+    dgi_α = dgi_θ′ * θ′_α + ct * ca / 2 + 1 / 2 * sct * ca - α / 4 * sct * sa
+
+    ofr = θ / 2 * sct * sp
+    ofr_θ = (1 / 2 * sct * sp + θ / 2 * cct * sp * θ′_θ) * s
+    ofr_ϕ = θ / 2 * sct * cp
+    ofr_α = θ / 2 * cct * sp * θ′_α + θ / 2 * sct * cp / 2
+
+    ofi = -θ / 2 * sct * cp
+    ofi_θ = (-1 / 2 * sct * cp - θ / 2 * cct * cp * θ′_θ) * s
+    ofi_ϕ = θ / 2 * sct * sp
+    ofi_α = -θ / 2 * cct * cp * θ′_α + θ / 2 * sct * sp / 2
+
+    return (dgr, dgr_θ, dgr_α,
+            dgi, dgi_θ, dgi_α,
+            ofr, ofr_θ, ofr_ϕ, ofr_α,
+            ofi, ofi_θ, ofi_ϕ, ofi_α)
 end
 function compute(dri::DetDrive, grad)
     θ = dri.θ
     ϕ = dri.ϕ
     α = dri.α
 
-    θ′ = sqrt(abs2(θ) + abs2(α))
-    θ′_θ = θ / θ′
-    θ′_α = α / θ′
-
-    st, ct = sincos(θ′ / 2)
-    sct = sinc(θ′ / (2π))
-    cct = cosc(θ′ / (2π)) / (2π)
-
-    sp, cp = sincos(α + ϕ)
-
-    dg1r = ct
-    dg1r_θ = -st / 2 * θ′_θ
-    dg1r_α = -st / 2 * θ′_α
-    dg1i = -α / 2 * sct
-    dg1i_θ = -α / 2 * cct * θ′_θ
-    dg1i_α = -α / 2 * cct * θ′_α - 1 / 2 * sct
-
-    of1r = θ / 2 * sct * sp
-    of1r_θ = θ / 2 * cct * θ′_θ * sp + 1 / 2 * sct * sp
-    of1r_ϕ = θ / 2 * sct * cp
-    of1r_α = θ / 2 * cct * θ′_α * sp
-    of1i = -θ / 2 * sct * cp
-    of1i_θ = -θ / 2 * cct * θ′_θ * cp - 1 / 2 * sct * cp
-    of1r_ϕ = θ / 2 * sct * sp
-    of1i_α = -θ / 2 * cct * θ′_α * cp
-
-    θ2 = √2 * θ
-    θ2′ = sqrt(abs2(θ2) + abs2(α))
-    θ2′_θ = θ2 / θ2′ * √2
-    θ2′_α = α / θ2′
-
-    st2, ct2 = sincos(θ2′ / 2)
-    sct2 = sinc(θ2′ / (2π))
-    cct2 = cosc(θ2′ / (2π)) / (2π)
-
-    dg3r = ct2
-    dg3r_θ = -st2 / 2 * θ2′_θ
-    dg3r_α = -st2 / 2 * θ2′_α
-    dg3i = -α / 2 * sct2
-    dg3i_θ = -α / 2 * cct2 * θ2′_θ
-    dg3i_α = -α / 2 * cct2 * θ2′_α - 1 / 2 * sct2
-
-    of3r = θ2 / 2 * sct2 * sp
-    of3r_θ = θ2 / 2 * cct2 * θ2′_θ * sp + 1 / √2 * sct2 * sp
-    of3r_ϕ = θ2 / 2 * sct2 * cp
-    of3r_α = θ2 / 2 * cct2 * θ2′_α * sp
-    of3i = -θ2 / 2 * sct2 * cp
-    of3i_θ = -θ2 / 2 * cct2 * θ2′_θ * cp - 1 / √2 * sct2 * cp
-    of3r_ϕ = θ2 / 2 * sct2 * sp
-    of3i_α = -θ2 / 2 * cct2 * θ2′_α * cp
+    (dg1r, dg1r_θ, dg1r_α,
+     dg1i, dg1i_θ, dg1i_α,
+     of1r, of1r_θ, of1r_ϕ, of1r_α,
+     of1i, of1i_θ, of1i_ϕ, of1i_α) = detdrive_terms(θ, ϕ, α, 1)
+    (dg3r, dg3r_θ, dg3r_α,
+     dg3i, dg3i_θ, dg3i_α,
+     of3r, of3r_θ, of3r_ϕ, of3r_α,
+     of3i, of3i_θ, of3i_ϕ, of3i_α) = detdrive_terms(θ, ϕ, α, √2)
 
     grad[1] = @SMatrix[complex(dg1r_θ, dg1i_θ)   complex(of1r_θ, of1i_θ)   0  0
                        complex(-of1r_θ, of1i_θ)  complex(dg1r_θ, -dg1i_θ)  0  0
@@ -270,6 +272,104 @@ function optimize_pulse!(ps::PMPulseSeq{N}, init_params; opt_angle=false) where 
     @variable(m, global_z, start=init_params[1])
     @variable(m, total_angle >= 0, start=abs(init_params[2]))
     @variable(m, phases[i=1:N], start=init_params[i + 2])
+    obj = @NLexpression(m, 1e-10 + fidelity(global_z, total_angle, phases...))
+    if opt_angle
+        obj = @NLexpression(m, (total_angle + 1) * obj)
+    end
+    @NLobjective(m, Min, obj)
+    JuMP.optimize!(m)
+    params = [value(global_z); value(total_angle); value.(phases)]
+    res = res_func(params...)
+    return value(obj), res, params
+end
+
+mutable struct PMRampSeq{N,S,P,OB,RB}
+    const s::S # Sequence
+    const params::P # Input parameters
+    res::Float64 # Output result
+    const grads::P # Output gradients
+
+    const op_buff::OB
+    const res_buff::RB
+
+    function PMRampSeq{N}() where N
+        ops = ntuple(Val(N + 1)) do i
+            return i == 1 ? PhaseZ() : DetDrive()
+        end
+        s = Sequence{OPType}(ops)
+        params = MVector{N + 3,Float64}(undef)
+        grads = MVector{N + 3,Float64}(undef)
+        op_buff = Vector{OPType}(undef,3N + 1)
+        res_buff = MVector{3N + 1,Float64}(undef)
+        return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
+            s, params, NaN, grads, op_buff, res_buff)
+    end
+end
+
+@inline function _pr_set_params_buff!(res_buff, params, N)
+    @inbounds begin
+        res_buff[1] = params[1]
+        angle = params[2] / N
+        prev_phase = params[3]
+        for i in 1:N
+            res_buff[3 * i - 1] = angle
+            res_buff[3 * i] = prev_phase
+            phase = params[i + 3]
+            res_buff[3 * i + 1] = phase - prev_phase
+            prev_phase = phase
+        end
+    end
+end
+
+function update_params!(ps::PMRampSeq{N}, params) where N
+    if !isnan(ps.res) && all(ps.params .== params)
+        return
+    end
+    @assert length(params) == N + 3
+    res_buff = ps.res_buff
+
+    _pr_set_params_buff!(res_buff, params, N)
+    set_params(ps.s, res_buff)
+    op = compute(ps.s, ps.op_buff)
+    res = convert_res_grads(op, ps.op_buff, res_buff)
+
+    @inbounds begin
+        grads = ps.grads
+        grads[1] = res_buff[1]
+        angle_grad = 0.0
+        prev_α_grad = 0.0
+        for i in 1:N
+            angle_grad += res_buff[3 * i - 1]
+            α_grad = res_buff[3 * i + 1]
+            grads[i + 2] = prev_α_grad + res_buff[3 * i] - α_grad
+            prev_α_grad = α_grad
+        end
+        grads[2] = angle_grad / N
+        grads[N + 3] = prev_α_grad
+        ps.res = res
+        ps.params .= params
+    end
+    return
+end
+
+function optimize_pulse!(ps::PMRampSeq{N}, init_params; opt_angle=false) where N
+    m = Model(NLopt.Optimizer)
+    set_attribute(m, "algorithm", :LD_SLSQP)
+    function res_func(params...)
+        @assert length(params) == N + 3
+        update_params!(ps, params)
+        return ps.res
+    end
+    function grad_func(g, params...)
+        @assert length(params) == N + 3
+        update_params!(ps, params)
+        g .= ps.grads
+        return
+    end
+    register(m, :fidelity, N + 3, res_func, grad_func, autodiff=false)
+    @variable(m, global_z, start=init_params[1])
+    @variable(m, total_angle >= 0, start=abs(init_params[2]))
+    @variable(m, phases[i=1:N + 1], start=init_params[i + 2])
     obj = @NLexpression(m, 1e-10 + fidelity(global_z, total_angle, phases...))
     if opt_angle
         obj = @NLexpression(m, (total_angle + 1) * obj)
