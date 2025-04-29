@@ -58,6 +58,92 @@ function compute(dri::Drive, grad)
                     0      0      coff2  diag2]
 end
 
+mutable struct DetDrive <: AbstractOP{OPType,3}
+    θ::Float64
+    ϕ::Float64
+    α::Float64
+    DetDrive() = new()
+end
+function set_params(dri::DetDrive, params)
+    dri.θ = params[1]
+    dri.ϕ = params[2]
+    dri.α = params[3]
+    return
+end
+function compute(dri::DetDrive, grad)
+    θ = dri.θ
+    ϕ = dri.ϕ
+    α = dri.α
+
+    θ′ = sqrt(abs2(θ) + abs2(α))
+    θ′_θ = θ / θ′
+    θ′_α = α / θ′
+
+    st, ct = sincos(θ′ / 2)
+    sct = sinc(θ′ / (2π))
+    cct = cosc(θ′ / (2π)) / (2π)
+
+    sp, cp = sincos(α + ϕ)
+
+    dg1r = ct
+    dg1r_θ = -st / 2 * θ′_θ
+    dg1r_α = -st / 2 * θ′_α
+    dg1i = -α / 2 * sct
+    dg1i_θ = -α / 2 * cct * θ′_θ
+    dg1i_α = -α / 2 * cct * θ′_α - 1 / 2 * sct
+
+    of1r = θ / 2 * sct * sp
+    of1r_θ = θ / 2 * cct * θ′_θ * sp + 1 / 2 * sct * sp
+    of1r_ϕ = θ / 2 * sct * cp
+    of1r_α = θ / 2 * cct * θ′_α * sp
+    of1i = -θ / 2 * sct * cp
+    of1i_θ = -θ / 2 * cct * θ′_θ * cp - 1 / 2 * sct * cp
+    of1r_ϕ = θ / 2 * sct * sp
+    of1i_α = -θ / 2 * cct * θ′_α * cp
+
+    θ2 = √2 * θ
+    θ2′ = sqrt(abs2(θ2) + abs2(α))
+    θ2′_θ = θ2 / θ2′ * √2
+    θ2′_α = α / θ2′
+
+    st2, ct2 = sincos(θ2′ / 2)
+    sct2 = sinc(θ2′ / (2π))
+    cct2 = cosc(θ2′ / (2π)) / (2π)
+
+    dg3r = ct2
+    dg3r_θ = -st2 / 2 * θ2′_θ
+    dg3r_α = -st2 / 2 * θ2′_α
+    dg3i = -α / 2 * sct2
+    dg3i_θ = -α / 2 * cct2 * θ2′_θ
+    dg3i_α = -α / 2 * cct2 * θ2′_α - 1 / 2 * sct2
+
+    of3r = θ2 / 2 * sct2 * sp
+    of3r_θ = θ2 / 2 * cct2 * θ2′_θ * sp + 1 / √2 * sct2 * sp
+    of3r_ϕ = θ2 / 2 * sct2 * cp
+    of3r_α = θ2 / 2 * cct2 * θ2′_α * sp
+    of3i = -θ2 / 2 * sct2 * cp
+    of3i_θ = -θ2 / 2 * cct2 * θ2′_θ * cp - 1 / √2 * sct2 * cp
+    of3r_ϕ = θ2 / 2 * sct2 * sp
+    of3i_α = -θ2 / 2 * cct2 * θ2′_α * cp
+
+    grad[1] = @SMatrix[complex(dg1r_θ, dg1i_θ)   complex(of1r_θ, of1i_θ)   0  0
+                       complex(-of1r_θ, of1i_θ)  complex(dg1r_θ, -dg1i_θ)  0  0
+                       0  0  complex(dg3r_θ, dg3i_θ)   complex(of3r_θ, of3i_θ)
+                       0  0  complex(-of3r_θ, of3i_θ)  complex(dg3r_θ, -dg3i_θ)]
+    grad[2] = @SMatrix[0                         complex(of1r_ϕ, of1i_ϕ)  0  0
+                       complex(-of1r_ϕ, of1i_ϕ)  0                        0  0
+                       0  0  0                         complex(of3r_ϕ, of3i_ϕ)
+                       0  0  complex(-of3r_ϕ, of3i_ϕ)  0]
+    grad[3] = @SMatrix[complex(dg1r_α, dg1i_α)   complex(of1r_α, of1i_α)   0  0
+                       complex(-of1r_α, of1i_α)  complex(dg1r_α, -dg1i_α)  0  0
+                       0  0  complex(dg3r_α, dg3i_α)   complex(of3r_α, of3i_α)
+                       0  0  complex(-of3r_α, of3i_α)  complex(dg3r_α, -dg3i_α)]
+    return @SMatrix[complex(dg1r, dg1i)   complex(of1r, of1i)   0  0
+                    complex(-of1r, of1i)  complex(dg1r, -dg1i)  0  0
+                    0  0  complex(dg3r, dg3i)   complex(of3r, of3i)
+                    0  0  complex(-of3r, of3i)  complex(dg3r, -dg3i)]
+end
+
 mutable struct PhaseZ <: AbstractOP{OPType,1}
     ϕ::Float64
     PhaseZ() = new()
