@@ -305,14 +305,13 @@ function optimize_pulse!(ps::PMPulseSeq{N}, init_params; opt_angle=false) where 
     return value(obj), res, params
 end
 
-mutable struct PMRampSeq{N,S,P,OB,RB}
+mutable struct PMRampSeq{N,S,P,OB}
     const s::S # Sequence
     const params::P # Input parameters
     res::Float64 # Output result
     const grads::P # Output gradients
 
     const op_buff::OB
-    const res_buff::RB
 
     function PMRampSeq{N}() where N
         ops = ntuple(Val(N + 1)) do i
@@ -322,9 +321,8 @@ mutable struct PMRampSeq{N,S,P,OB,RB}
         params = MVector{3N + 1,Float64}(undef)
         grads = MVector{3N + 1,Float64}(undef)
         op_buff = Vector{OPType}(undef,3N + 1)
-        res_buff = MVector{3N + 1,Float64}(undef)
-        return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
-            s, params, NaN, grads, op_buff, res_buff)
+        return new{N,typeof(s),typeof(params),typeof(op_buff)}(
+            s, params, NaN, grads, op_buff)
     end
 end
 
@@ -333,13 +331,11 @@ function update_params!(ps::PMRampSeq{N}, params) where N
         return
     end
     @assert length(params) == 3N + 1
-    res_buff = ps.res_buff
-
-    res_buff .= params
-    set_params(ps.s, res_buff)
+    ps.res = NaN
+    ps.params .= params
+    set_params(ps.s, ps.params)
     op = compute(ps.s, ps.op_buff)
     ps.res = convert_res_grads(op, ps.op_buff, ps.grads)
-    ps.params .= params
     return
 end
 
