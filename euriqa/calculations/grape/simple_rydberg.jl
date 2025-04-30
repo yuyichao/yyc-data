@@ -95,9 +95,9 @@ end
     dgr_α = dgr_θ′ * θ′_α - ct * sa / 2 + 1 / 2 * sct * sa + α / 4 * sct * ca
 
     dgi = ct * sa - α / 2 * sct * ca
-    dgi_θ′ = -st * sa / 2 + α / 2 * cct * ca
+    dgi_θ′ = -st * sa / 2 - α / 2 * cct * ca
     dgi_θ = dgi_θ′ * θ′_θ * s * 2
-    dgi_α = dgi_θ′ * θ′_α + ct * ca / 2 + 1 / 2 * sct * ca - α / 4 * sct * sa
+    dgi_α = dgi_θ′ * θ′_α + ct * ca / 2 - 1 / 2 * sct * ca + α / 4 * sct * sa
 
     ofr = θ / 2 * sct * sp
     ofr_θ = (1 / 2 * sct * sp + θ / 2 * cct * sp * θ′_θ) * s * 2
