@@ -320,7 +320,7 @@ mutable struct PMRampSeq{N,S,P,OB}
         s = Sequence{OPType}(ops)
         params = MVector{3N + 1,Float64}(undef)
         grads = MVector{3N + 1,Float64}(undef)
-        op_buff = Vector{OPType}(undef,3N + 1)
+        op_buff = Vector{OPType}(undef, 3N + 1)
         return new{N,typeof(s),typeof(params),typeof(op_buff)}(
             s, params, NaN, grads, op_buff)
     end

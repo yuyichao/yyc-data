@@ -40,18 +40,33 @@ end
 @generated function set_params(s::Sequence, params)
     ex = quote
         @assert length(params) == nparams($s)
+        ops = s.ops
     end
     starts, ends = param_range(s)
     for (i, (start_idx, end_idx)) in enumerate(zip(starts, ends))
-        push!(ex.args, :(@inline set_params(@inbounds(s.ops[$i]),
+        push!(ex.args, :(@inline set_params(@inbounds(ops[$i]),
                                             @view params[$start_idx:$end_idx])))
     end
     push!(ex.args, :(return))
     return ex
 end
 
-@inline function _eval_compute(s, op, start_idx, end_idx)
-    return @inbounds compute(op, @view(s.grad_buff[start_idx:end_idx]))
+@generated function _eval_compute(s)
+    ex = quote
+        ops = s.ops
+        grad_buff = s.grad_buff
+        val_buff = s.val_buff
+    end
+    starts, ends = param_range(s)
+    for (i, (start_idx, end_idx)) in enumerate(zip(starts, ends))
+        push!(ex.args, :(
+            @inbounds begin
+                @inline val_buff[$i] =
+                    compute(ops[$i], @view grad_buff[$start_idx:$end_idx])
+            end))
+    end
+    push!(ex.args, :(return))
+    return ex
 end
 
 function compute(s::Sequence, grads)
@@ -62,7 +77,7 @@ function compute(s::Sequence, grads)
     if N == 1
         return compute(s.ops[1], grads)
     end
-    @inbounds s.val_buff .= _eval_compute.(Ref(s), s.ops, starts, ends)
+    @inline _eval_compute(s)
     @inbounds s.prefix_buff[1] = s.val_buff[1]
     @inbounds for i in 2:N - 1
         s.prefix_buff[i] = s.prefix_buff[i - 1] * s.val_buff[i]
