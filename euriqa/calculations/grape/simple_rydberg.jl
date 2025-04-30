@@ -193,118 +193,6 @@ end
     return convert_res(op)
 end
 
-const pm_use_ramp_drive = true
-
-mutable struct PMPulseSeq{N,S,P,OB,RB}
-    const s::S # Sequence
-    const params::P # Input parameters
-    res::Float64 # Output result
-    const grads::P # Output gradients
-
-    const op_buff::OB
-    const res_buff::RB
-
-    function PMPulseSeq{N}() where N
-        ops = ntuple(Val(N + 1)) do i
-            if pm_use_ramp_drive
-                return i == 1 ? PhaseZ() : DetDrive()
-            else
-                return i == 1 ? PhaseZ() : Drive()
-            end
-        end
-        s = Sequence{OPType}(ops)
-        params = MVector{N + 2,Float64}(undef)
-        grads = MVector{N + 2,Float64}(undef)
-        if pm_use_ramp_drive
-            op_buff = Vector{OPType}(undef,3N + 1)
-            res_buff = MVector{3N + 1,Float64}(undef)
-        else
-            op_buff = Vector{OPType}(undef,2N + 1)
-            res_buff = MVector{2N + 1,Float64}(undef)
-        end
-        return new{N,typeof(s),typeof(params),typeof(op_buff),typeof(res_buff)}(
-            s, params, NaN, grads, op_buff, res_buff)
-    end
-end
-
-@inline function _pm_set_params_buff!(res_buff, params, N)
-    @inbounds begin
-        res_buff[1] = params[1]
-        angle = params[2] / N
-        for i in 1:N
-            if pm_use_ramp_drive
-                res_buff[3 * i - 1] = angle
-                res_buff[3 * i] = params[i + 2]
-                res_buff[3 * i + 1] = 0
-            else
-                res_buff[2 * i] = angle
-                res_buff[2 * i + 1] = params[i + 2]
-            end
-        end
-    end
-end
-
-function update_params!(ps::PMPulseSeq{N}, params) where N
-    if !isnan(ps.res) && all(ps.params .== params)
-        return
-    end
-    @assert length(params) == N + 2
-    res_buff = ps.res_buff
-
-    _pm_set_params_buff!(res_buff, params, N)
-    set_params(ps.s, res_buff)
-    op = compute(ps.s, ps.op_buff)
-    res = convert_res_grads(op, ps.op_buff, res_buff)
-
-    @inbounds begin
-        grads = ps.grads
-        grads[1] = res_buff[1]
-        angle_grad = 0.0
-        for i in 1:N
-            if pm_use_ramp_drive
-                angle_grad += res_buff[3 * i - 1]
-                grads[i + 2] = res_buff[3 * i]
-            else
-                angle_grad += res_buff[2 * i]
-                grads[i + 2] = res_buff[2 * i + 1]
-            end
-        end
-        grads[2] = angle_grad / N
-        ps.res = res
-        ps.params .= params
-    end
-    return
-end
-
-function optimize_pulse!(ps::PMPulseSeq{N}, init_params; opt_angle=false) where N
-    m = Model(NLopt.Optimizer)
-    set_attribute(m, "algorithm", :LD_SLSQP)
-    function res_func(params...)
-        @assert length(params) == N + 2
-        update_params!(ps, params)
-        return ps.res
-    end
-    function grad_func(g, params...)
-        @assert length(params) == N + 2
-        update_params!(ps, params)
-        g .= ps.grads
-        return
-    end
-    register(m, :fidelity, N + 2, res_func, grad_func, autodiff=false)
-    @variable(m, global_z, start=init_params[1])
-    @variable(m, total_angle >= 0, start=abs(init_params[2]))
-    @variable(m, phases[i=1:N], start=init_params[i + 2])
-    obj = @NLexpression(m, 1e-10 + fidelity(global_z, total_angle, phases...))
-    if opt_angle
-        obj = @NLexpression(m, (total_angle + 1) * obj)
-    end
-    @NLobjective(m, Min, obj)
-    JuMP.optimize!(m)
-    params = [value(global_z); value(total_angle); value.(phases)]
-    res = res_func(params...)
-    return value(obj), res, params
-end
-
 mutable struct PMRampSeq{N,S,P,OB}
     const s::S # Sequence
     const params::P # Input parameters
@@ -346,26 +234,63 @@ function update_params!(ps::PMRampSeq{N}, params) where N
     return
 end
 
-function optimize_pulse!(ps::PMRampSeq{N}, init_params; opt_angle=false) where N
-    m = Model(NLopt.Optimizer)
-    set_attribute(m, "algorithm", :LD_SLSQP)
-    function res_func(params...)
-        @assert length(params) == 3N + 1
-        update_params!(ps, params)
-        return ps.res
+mutable struct SeqModel{M,S}
+    const m::M
+    const sys::S
+    const fid_args::Vector{Any}
+    const args::Vector{VariableRef}
+    extra_cost::Any
+    res::Any
+    obj::Any
+    function SeqModel(ps::PMRampSeq{N}; m=nothing) where N
+        if m === nothing
+            m = Model(NLopt.Optimizer)
+            set_attribute(m, "algorithm", :LD_SLSQP)
+        end
+        function res_func(params...)
+            update_params!(ps, params)
+            return ps.res
+        end
+        function grad_func(g, params...)
+            update_params!(ps, params)
+            g .= ps.grads
+            return
+        end
+        @variable(m, global_z)
+        register(m, :fidelity, 3N + 1, res_func, grad_func, autodiff=false)
+        return new{typeof(m),typeof(ps)}(m, ps, [global_z], [global_z], 1,
+                                         nothing, nothing)
     end
-    function grad_func(g, params...)
-        @assert length(params) == 3N + 1
-        update_params!(ps, params)
-        g .= ps.grads
-        return
+end
+
+function finalize!(model::SeqModel)
+    m = model.m
+    res = @NLexpression(m, fidelity(model.fid_args...))
+    obj = @NLexpression(m, 1e-10 + res)
+    obj = @NLexpression(m, obj * model.extra_cost)
+    @NLobjective(m, Min, obj)
+    model.res = res
+    model.obj = obj
+    return
+end
+
+function optimize_pulse!(model::SeqModel, init_params)
+    for (var, val) in zip(model.args, init_params)
+        set_start_value(var, val)
     end
-    register(m, :fidelity, 3N + 1, res_func, grad_func, autodiff=false)
-    @variable(m, global_z, start=init_params[1])
-    @variable(m, total_angle >= 0, start=abs(init_params[2]))
-    @variable(m, phases[i=1:N + 1], start=init_params[i + 2])
-    fid_args = []
-    push!(fid_args, global_z)
+    JuMP.optimize!(model.m)
+    return (value(model.obj), value(model.res),
+            value.(model.args), Float64.(value.(model.fid_args)))
+end
+
+struct LinearPMSeq{N}
+end
+function LinearPMSeq{N}(; opt_angle=false, kws...) where N
+    ps = PMRampSeq{N}()
+    model = SeqModel(ps; kws...)
+    @variable(model.m, total_angle >= 0)
+    @variable(model.m, phases[i=1:N + 1])
+    fid_args = model.fid_args
     start_phase = phases[1]
     angle = total_angle / N
     for i in 1:N
@@ -375,15 +300,36 @@ function optimize_pulse!(ps::PMRampSeq{N}, init_params; opt_angle=false) where N
         push!(fid_args, end_phase - start_phase)
         start_phase = end_phase
     end
-    res_expr = @NLexpression(m, fidelity(fid_args...))
-    obj = @NLexpression(m, 1e-10 + res_expr)
     if opt_angle
-        obj = @NLexpression(m, (total_angle + 1) * obj)
+        model.extra_cost = total_angle + 1
     end
-    @NLobjective(m, Min, obj)
-    JuMP.optimize!(m)
-    params = [value(global_z); value(total_angle); value.(phases)]
-    return value(obj), value(res_expr), params
+    push!(model.args, total_angle)
+    append!(model.args, phases)
+    finalize!(model)
+    return model
+end
+
+struct StepPMSeq{N}
+end
+function StepPMSeq{N}(; opt_angle=false, kws...) where N
+    ps = PMRampSeq{N}()
+    model = SeqModel(ps; kws...)
+    @variable(model.m, total_angle >= 0)
+    @variable(model.m, phases[i=1:N])
+    fid_args = model.fid_args
+    angle = total_angle / N
+    for i in 1:N
+        push!(fid_args, angle)
+        push!(fid_args, phases[i])
+        push!(fid_args, 0)
+    end
+    if opt_angle
+        model.extra_cost = total_angle + 1
+    end
+    push!(model.args, total_angle)
+    append!(model.args, phases)
+    finalize!(model)
+    return model
 end
 
 # Params after output (first number is single qubit Z rotation phase, second number is total rotation angle, third number on are the phase of each of the small rotation steps)
