@@ -377,7 +377,6 @@ function optimize_pulse!(ps::PMRampSeq{N}, init_params; opt_angle=false) where N
     end
     res_expr = @NLexpression(m, fidelity(fid_args...))
     obj = @NLexpression(m, 1e-10 + res_expr)
-    # @show res_expr
     if opt_angle
         obj = @NLexpression(m, (total_angle + 1) * obj)
     end
