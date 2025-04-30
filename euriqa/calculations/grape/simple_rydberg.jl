@@ -327,12 +327,19 @@ mutable struct PMRampSeq{N,S,P,OB}
 end
 
 function update_params!(ps::PMRampSeq{N}, params) where N
-    if !isnan(ps.res) && all(ps.params .== params)
+    @assert length(params) == 3N + 1
+    params_ary = ps.params
+    has_diff = false
+    @inbounds @simd ivdep for i in 1:3N + 1
+        p0 = params_ary[i]
+        p1 = params[i]
+        has_diff |= p0 != p1
+        params_ary[i] = p1
+    end
+    if !isnan(ps.res) && !has_diff
         return
     end
-    @assert length(params) == 3N + 1
     ps.res = NaN
-    ps.params .= params
     set_params(ps.s, ps.params)
     op = compute(ps.s, ps.op_buff)
     ps.res = convert_res_grads(op, ps.op_buff, ps.grads)
