@@ -234,9 +234,19 @@
 \begin{document}
 
 %% Outline
-% * At DQC we have a bunch of systems
-% * For scaling, feedback/QEC
-% * Different ways to achieve this.
+% * Intro
+% _ * Multiple systems at DQC
+% _ * MCMR for feedback/QEC
+% * omg for MCMR and Metastable state control
+% _ * MCMR in a single species with omg, without additional ind beams
+% _ * Dressing
+% _ * Qubit rotation
+% * Different approaches
+% _ * Shelving
+% _ * Hands-off
+% * Implementations
+% _ * Measurement
+% _ * Reset
 
 %% Title
 % I'm Yichao from the Monroe group at Duke Quantum Center
@@ -251,6 +261,36 @@
     \titlepage
   \end{frame}
 }
+
+%% Intro
+% Systems at DQC
+% Hyperfine qubit with Yb/Ba
+% Raman based single/two qubit MS gate (fidelity numbers)
+% Ion numbers from 5 to 27?
+% Work on adding mid-circuit measurement and reset capabilities
+
+\begin{frame}{}
+\end{frame}
+
+%% Implementation of MCMR in amo/ion systems
+% Need to avoid perturbing data atoms
+% Shuttling based/Multi-species, requires complex structure/more ions/time
+% Use internal states (metastable states that do not participate in the decipative process)
+% D/F in Yb, D in Ba
+
+%% Individual control of metestabile state
+% Dressing, show spectrum
+% Note that this is done with Raman dressing.
+% Qubit rotation
+
+%% Use metastable state for MCMR
+% Shelving
+% Hands off
+% Combination with individual metastate control methods
+
+%% Realization
+% Measurement
+% Reset
 
 % With that
 % {
@@ -267,14 +307,8 @@
 %         {\includegraphics[height=1.7cm]{imgs/members/Chris.jpg}\\Christopher R Monroe};
 %         \node[align=center,below,font=\tiny] at (-3, 0)
 %         {\includegraphics[height=1.7cm]{imgs/members/Alex.jpg}\\Alexander Kozhanov};
-%         \node[align=center,below,font=\tiny] at (-1, 0)
-%         {\includegraphics[height=1.7cm]{imgs/members/Marko.jpg}\\Marko Cetina};
 %         \node[align=center,below,font=\tiny] at (1, 0)
 %         {\includegraphics[height=1.7cm]{imgs/members/Crystal.jpg}\\Crystal Noel};
-%         \node[align=center,below,font=\tiny] at (3, 0)
-%         {\includegraphics[height=1.7cm]{imgs/members/Lei.png}\\Lei Feng};
-%         \node[align=center,below,font=\tiny] at (5, 0)
-%         {\includegraphics[height=1.7cm]{imgs/members/Mila.jpg}\\Liudmila Zhukas};
 
 %         \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (-5.8,0.05-3) rectangle (5.8,0.15-3);
 
@@ -286,10 +320,6 @@
 %         {\includegraphics[height=1.7cm]{imgs/members/Keqin.jpg}\\Keqin Yan};
 %         \node[align=center,below,font=\tiny] at (1, -3)
 %         {\includegraphics[height=1.7cm]{imgs/members/Bahaa.jpg}\\Bahaa Harraz};
-%         \node[align=center,below,font=\tiny] at (3, -3)
-%         {\includegraphics[height=1.7cm]{imgs/members/Grant.jpg}\\Grant Eberle};
-%         \node[align=center,below,font=\tiny] at (5, -3)
-%         {\includegraphics[height=1.7cm]{imgs/members/Drew.jpg}\\Andrew Risinger};
 %       \end{tikzpicture}
 %     \end{center}
 %   \end{frame}
