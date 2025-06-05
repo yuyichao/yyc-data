@@ -263,34 +263,64 @@
 }
 
 %% Intro
-% Systems at DQC
-% Hyperfine qubit with Yb/Ba
-% Raman based single/two qubit MS gate (fidelity numbers)
-% Ion numbers from 5 to 27?
-% Work on adding mid-circuit measurement and reset capabilities
+% Here at DQC, we operate a variety of quantum computing systems based on
+% a trapped chain of 5-30 Yb/Ba ions.
+% So far almost all of the experiments running on these systems follows
+% the standard procedure of AMO experiments. We start with state initialization,
+% which is done by optical pumping on the D1 transitions.
+% This is followed by the coherent evolution phase, during which we use Raman transition
+% to realize single qubit operations and we use MS gate to realize two qubit interactions
+% using their shared motions mode (fidelity numbers)..
+% The experiment would end by detecting the states of the ions,
+% which uses a variation of the same D1 transition we use for initialization.
+
+% While this type of operation is very powerful, techique such as QEC,
+% which is important for a scalable quantum computing system,
+% requires ammending the coherent evolution process with classical feedback.
+% Necessitate measurement and also reset of the measured qubit to be done
+% mid-circuit.
 
 \begin{frame}{}
 \end{frame}
 
 %% Implementation of MCMR in amo/ion systems
-% Need to avoid perturbing data atoms
-% Shuttling based/Multi-species, requires complex structure/more ions/time
+% Compared to measurement and reset process we currently used, the difference and
+% the main challenge of a mid-circuit version, is of course that we need distinguish
+% between the atoms that needs to be measured, the auxiliary atoms,
+% and the atoms that aren't, the data atoms.
+% For ion systems, this have been realized with shuttling, differentiating the two types
+% with physical separation. or by using multiple ion species that uses different
+% measurement and reset wavelengths.
+
+% requires complex structure/more ions/time
 % Use internal states (metastable states that do not participate in the decipative process)
 % D/F in Yb, D in Ba
+
+\begin{frame}{}
+\end{frame}
 
 %% Individual control of metestabile state
 % Dressing, show spectrum
 % Note that this is done with Raman dressing.
 % Qubit rotation
 
+\begin{frame}{}
+\end{frame}
+
 %% Use metastable state for MCMR
 % Shelving
 % Hands off
 % Combination with individual metastate control methods
 
+\begin{frame}{}
+\end{frame}
+
 %% Realization
 % Measurement
 % Reset
+
+\begin{frame}{}
+\end{frame}
 
 % With that
 % {
