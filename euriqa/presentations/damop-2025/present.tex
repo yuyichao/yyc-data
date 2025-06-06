@@ -264,7 +264,7 @@
 
 %% Intro
 % Here at DQC, we operate a variety of quantum computing systems based on
-% a trapped chain of 5-30 Yb/Ba ions.
+% a trapped chain of 5-30 Yb/Ba ions. (with single qubit addressibility)
 % So far almost all of the experiments running on these systems follows
 % the standard procedure of AMO experiments. We start with state initialization,
 % which is done by optical pumping on the D1 transitions.
@@ -289,28 +289,48 @@
 % between the atoms that needs to be measured, the auxiliary atoms,
 % and the atoms that aren't, the data atoms.
 % For ion systems, this have been realized with shuttling, differentiating the two types
-% with physical separation. or by using multiple ion species that uses different
+% with physical separation. or by using multiple ion species with different
 % measurement and reset wavelengths.
+% (Mention broad linewidth hard to differentiate)
 
-% requires complex structure/more ions/time
-% Use internal states (metastable states that do not participate in the decipative process)
-% D/F in Yb, D in Ba
-
-\begin{frame}{}
-\end{frame}
-
-%% Individual control of metestabile state
-% Dressing, show spectrum
-% Note that this is done with Raman dressing.
-% Qubit rotation
+% However, both of these adds significant complexity, and in the case of shuttling,
+% time cost, to the experiment. Instead, we developed a technique
+% that can be added with low overhead and minimum footprint on the experiment setup.
+% This would allow the MCMR capabilities to be added to many experiments
+% even including a lot of the existing ones like ours.
 
 \begin{frame}{}
 \end{frame}
 
 %% Use metastable state for MCMR
-% Shelving
-% Hands off
-% Combination with individual metastate control methods
+% We achieve this using the so-called omg-archtecture,
+% taking advantage of the metastable states that exist in almost all of the ion species.
+% (D in Ba, D/F in Yb).
+% This can in general happen in two different ways.
+% In what we called the shelving method,
+% the data ion is driven to the metastable state which protects it from seeing the
+% the detection or pumping transitions.
+% Alternatively, if the data ion is left untouched in the ground state
+% but the auxiliary ion is driven to the metastable state we can scatter photon off of
+% the metastable state to either pump or detect the ions.
+% We named this second one the hands-off methods, since it, when done right,
+% nominally does all the operations on the auxiliary ion without perturbing the
+% data ion.
+
+\begin{frame}{}
+\end{frame}
+
+%% Individual control of metestabile state
+% Both of these methods, however, still rely on individual control of the metastable state.
+% The most obvious way to achieve this, of course, is to add focused beams to drive
+% such a transition only on the desired target ions. However, true to our goal of
+% minimizing the footprint, and knowing how challenging and distruptive it is to
+% add a new individual addressing beam path, we implemented all our schemes with
+% a single global beam to couple to the metastable states.
+
+% Dressing, show spectrum
+% Note that this is done with Raman dressing.
+% Qubit rotation
 
 \begin{frame}{}
 \end{frame}
