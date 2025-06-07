@@ -273,6 +273,7 @@
 % using their shared motions mode (fidelity numbers)..
 % The experiment would end by detecting the states of the ions,
 % which uses a variation of the same D1 transition we use for initialization.
+% (Mention we are Gold and we use Yb 171)
 
 % While this type of operation is very powerful, techique such as QEC,
 % which is important for a scalable quantum computing system,
@@ -331,8 +332,9 @@
 % the individual qubit control beam used for gate operations,
 % to distinguish between the data and auxiliary ions.
 
-% In general, this can be achieved by dressing a target ion, usually the auxiliary ion,
-% using the individual gate control. The dressing can selectively shift the resonance of
+% One of the ways this can be achieved is by dressing a target ion,
+% usually the auxiliary ion, using the individual gate control.
+% The dressing can selectively shift the resonance of
 % the metastable transition allowing us to drive only the ions we want.
 % Note that I used the term dressing, rather than Stark shift,
 % which is a special case of dressing. This is because, well first I'd like to be more
@@ -340,7 +342,7 @@
 % is specifically selected to produce minimum Stark shift during gate operation.
 % We therefore had to rely on driving a near resonant Raman transition
 % using our 355nm lasers to produce an appriaciable shift.
-% Here's what that spectrum look like.
+% Here's what that spectrum look like when this is applied to our Yb171 ions.
 % The ... and ... line shows the spectrum with and without the Raman dressing.
 % Both lines are taken with the pi time for the dressed transition
 % using a Blackman pulse shape to reduce off resonance coupling,
@@ -348,14 +350,61 @@
 % The pulse shaping is also why the bare reasonance peak, which is overdriven
 % due to a higher Rabi frequency, actually appears to be smaller.
 
-% Qubit rotation
+% While reusing the qubit control laser for dressing works,
+% this process does involve using them in a somewhat different way compared
+% to their original role. This is not a hard requirement, however, and we could use them
+% exactly the same as how they are used in a normal circuit.
+% One way to see this is to treat the qubit states and the metastable state together
+% as a qudit system where full individual control on two of the levels,
+% combined with global operations connecting to other levels,
+% is enough to achieve individual qudit control.
+% An example of such a sequence is shown here, in which only one of the ion
+% ends up being in the metastable state, despite requiring only global drive there.
+% The sequence here can of course be customized as needed for each qudit systems
+% and I'll show the sequence we use for our demostration in a minute.
+
+% This second way of individual metastable state control,
+% which we called the qubit rotation implementation, for lack of a better name,
+% does have it drawback since it usually does mean that all of the atoms needs to be
+% driven to the metastable state at least temporarily.
+% This can be seen clearly in this table showing the combination of the different
+% methods mentioned so far, where dressing can be applied equally well
+% to both of the method of MCMR, but since the hands-off methods' selling point
+% is to not touch the data atoms, having to drive all ions to the metastable state
+% defeats the point and it doesn't usually make sense to have this combination.
 
 \begin{frame}{}
 \end{frame}
 
 %% Realization
-% Measurement
-% Reset
+% With that survey of the methods in minds, we went on and demonstrated all
+% of the combinations that makes sense in our system.
+% For mid-circuit measurement, we selected the shelving method.
+% This allow us to use the normal transition,
+% which has high scattering rate and without requiring a different detector.
+% We tried both dressing and qubit rotation and here's the qubit rotation sequence
+% we use for this particular case to shelve the data qubit away from the 1 state
+% that scatters photon, while keeping the population for the auxiliary ion there
+% untouched.
+% We measured a detection fidelity that's identical to our normal one, around 99.7%
+% and the an fidelity for the data ion of % and % respectively when using dressing
+% or qubit rotation.
+% The data ion fidelity for qubit rotation is limited by the coherence of the D state
+% where the ion is shelved at, and the error on top of that for dressing
+% comes from a more complex sequence and crosstalk from the dressing beam.
+% Both of these aspect can be improved with improvment in our beam path and laser locking.
+
+% We also demonstrated mid-circuit reset, this time using the hands-off method.
+% Here the goal is simply to selectively drive one of the qubit state of the auxiliary
+% ions to the D state before pumping them back and repeats this cycle
+% until the ion is in the right state.
+% As discussed, the individual control is done with dressing and here I'm showing
+% the reset error when the auxiliary ion was initialized in either of the qubit states.
+% Similarly, the data ion error is shown here. With about * cycle of pumping,
+% we can pump the ion with 99% fidelity while causing % of data infidelity.
+% We believe this residue error is mainly caused by off resonant
+% coupling to the motional mode since the ion wasn't fully cooled for this experiment
+% and Raman crosstalk.
 
 \begin{frame}{}
 \end{frame}
