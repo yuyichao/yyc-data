@@ -16,6 +16,7 @@
 \usepackage{esint}
 \usepackage{hyperref}
 \usepackage{tikz}
+\usepackage{circuitikz}
 \usepackage{xkeyval}
 \usepackage{xargs}
 \usepackage{xcolor}
@@ -67,6 +68,50 @@
 \begin{tikzfadingfrompicture}[name=north edge fading]
   \shade [shading=north edge] (-1,-1) rectangle (1, 1);
 \end{tikzfadingfrompicture}
+
+\definecolor{atomorange}{rgb}{1.0,0.483,0.0}
+\definecolor{pyplotc0}{rgb}{0.122,0.467,0.706}
+\definecolor{pyplotc1}{rgb}{1.000,0.498,0.055}
+\definecolor{pyplotc2}{rgb}{0.173,0.627,0.173}
+\definecolor{pyplotc3}{rgb}{0.839,0.153,0.157}
+\definecolor{pyplotc4}{rgb}{0.580,0.404,0.741}
+\definecolor{pyplotc5}{rgb}{0.549,0.337,0.294}
+\definecolor{pyplotc6}{rgb}{0.890,0.467,0.761}
+\definecolor{pyplotc7}{rgb}{0.498,0.498,0.498}
+\definecolor{pyplotc8}{rgb}{0.737,0.741,0.133}
+\definecolor{pyplotc9}{rgb}{0.090,0.745,0.812}
+
+\pgfdeclarelayer{tweezer}
+\pgfsetlayers{tweezer,main}
+\pgfooclass{tweezer}{
+  \method tweezer() {
+  }
+  \method drawTweezer(#1,#2,#3) {
+    \shade[shading=radial,path fading=glow fading,shift={(#1,#2)},rotate=90,yscale=1,
+    fill opacity=0.9,inner color=#3]
+    plot[draw,samples=200,domain=-4.5:4.5] function {sqrt(0.02 + (x)**2 / 10)}
+    -- plot[draw,samples=200,domain=4.5:-4.5] function {-sqrt(0.02 + (x)**2 / 10)};
+  }
+  \method drawRaman(#1,#2) {
+    \pgfoothis.drawTweezer(#1,#2,pyplotc4);
+  }
+  \method drawAtom(#1,#2,#3,#4) {
+    \fill [#4,path fading=glow2 fading] (#1,#2) circle (#3);
+  }
+  \method drawDownAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc0);
+  }
+  \method drawUpAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc1);
+  }
+  \method drawDownAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc2);
+  }
+  \method drawUpAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc3);
+  }
+}
+\pgfoonew \mytweezer=new tweezer()
 
 \mode<handout>{
   \usepackage{pgfpages}
@@ -164,6 +209,7 @@
 \tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
   post length=0.2cm, snake, amplitude=.4mm,
   segment length=2mm},thick, ->]
+\tikzset{meter/.append style={draw, inner sep=10, rectangle, font=\vphantom{A}, minimum width=30, line width=.8,  path picture={\draw[black] ([shift={(.1,.3)}]path picture bounding box.south west) to[bend left=50] ([shift={(-.1,.3)}]path picture bounding box.south east);\draw[black,-{Latex[length=8mm, width=1.8mm]}] ([shift={(0,.2)}]path picture bounding box.south) -- ([shift={(.4,-.1)}]path picture bounding box.north);}}}
 
 %% document-wide tikz options and styles
 
@@ -289,10 +335,99 @@
 % or MCMR for short.
 
 \begin{frame}{Mid-circuit measurement and reset (MCMR)}
-  \begin{tikzpicture}
-    % Standard experiment procedure
-    % Adding feedback procedure, MCMR
-  \end{tikzpicture}
+  \begin{center}
+    \begin{tikzpicture}
+      \node (I0) at (-5, 3) {$|0\rangle$};
+      \node (I1) at (-5, 2.5) {$|0\rangle$};
+      \node (I2) at (-5, 2) {$|0\rangle$};
+      \node (I3) at (-5, 1.5) {$|0\rangle$};
+      \node (I4) at (-5, 1) {$|0\rangle$};
+
+      \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+      minimum height=2.5cm,line width=1]
+      (C) at (0, 2) {Coherent evolution\\
+      \scriptsize{(single qubit gates, two qubit gates, \dots)}};
+
+      \node[meter,scale=0.45,outer sep=0] (M0) at (5, 3) {};
+      \node[meter,scale=0.45,outer sep=0] (M1) at (5, 2.5) {};
+      \node[meter,scale=0.45,outer sep=0] (M2) at (5, 2) {};
+      \node[meter,scale=0.45,outer sep=0] (M3) at (5, 1.5) {};
+      \node[meter,scale=0.45,outer sep=0] (M4) at (5, 1) {};
+
+      \draw[line width=0.7] (I0) -- ($(I0 -| C.west)$);
+      \draw[line width=0.7] (I1) -- ($(I1 -| C.west)$);
+      \draw[line width=0.7] (I2) -- ($(I2 -| C.west)$);
+      \draw[line width=0.7] (I3) -- ($(I3 -| C.west)$);
+      \draw[line width=0.7] (I4) -- ($(I4 -| C.west)$);
+
+      \draw[line width=0.7] (M0) -- ($(M0 -| C.east)$);
+      \draw[line width=0.7] (M1) -- ($(M1 -| C.east)$);
+      \draw[line width=0.7] (M2) -- ($(M2 -| C.east)$);
+      \draw[line width=0.7] (M3) -- ($(M3 -| C.east)$);
+      \draw[line width=0.7] (M4) -- ($(M4 -| C.east)$);
+
+      \visible<2-> {
+        \begin{scope}[shift={(0cm, -3.5cm)}]
+          \node (I0) at (-5, 3) {$|0\rangle$};
+          \node (I1) at (-5, 2.5) {$|0\rangle$};
+          \node (I2) at (-5, 2) {$|0\rangle$};
+          \node (I3) at (-5, 1.5) {$|0\rangle$};
+          \node (I4) at (-5, 1) {$|0\rangle$};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=2.3cm,line width=1]
+          (C0) at (-3, 2) {Coherent\\evolution};
+
+          \node[meter,scale=0.45,outer sep=0] (Mm) at (-1, 1) {};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=1.8cm,line width=1]
+          (C1) at (0, 2.25) {Feedback};
+
+          \node (Im) at (1, 1) {$|0\rangle$};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=2.3cm,line width=1]
+          (C2) at (3, 2) {Coherent\\evolution};
+
+          \node[meter,scale=0.45,outer sep=0] (M0) at (5, 3) {};
+          \node[meter,scale=0.45,outer sep=0] (M1) at (5, 2.5) {};
+          \node[meter,scale=0.45,outer sep=0] (M2) at (5, 2) {};
+          \node[meter,scale=0.45,outer sep=0] (M3) at (5, 1.5) {};
+          \node[meter,scale=0.45,outer sep=0] (M4) at (5, 1) {};
+
+          \draw[line width=0.7] (I0) -- ($(I0 -| C0.west)$);
+          \draw[line width=0.7] (I1) -- ($(I1 -| C0.west)$);
+          \draw[line width=0.7] (I2) -- ($(I2 -| C0.west)$);
+          \draw[line width=0.7] (I3) -- ($(I3 -| C0.west)$);
+          \draw[line width=0.7] (I4) -- ($(I4 -| C0.west)$);
+
+          \draw[line width=0.7] ($(M0 -| C0.east)$) -- ($(M0 -| C1.west)$);
+          \draw[line width=0.7] ($(M1 -| C0.east)$) -- ($(M1 -| C1.west)$);
+          \draw[line width=0.7] ($(M2 -| C0.east)$) -- ($(M2 -| C1.west)$);
+          \draw[line width=0.7] ($(M3 -| C0.east)$) -- ($(M3 -| C1.west)$);
+          \draw[line width=0.7] (Mm) -- ($(C0.east |- Mm)$);
+
+          \draw[line width=0.7,double,->,>=stealth] ($(Mm.east)+(0, 0.1)$) -| (C1.south);
+          \draw[line width=0.7,opacity=0.6,->] ($(Mm.east)-(0, 0.05)$) --
+          node[below] {Reset}
+          ($(Mm.east -| Im.west)+(0.02, -0.05)$);
+
+          \draw[line width=0.7] ($(C1.east |- I0)$) -- ($(C2.west |- I0)$);
+          \draw[line width=0.7] ($(C1.east |- I1)$) -- ($(C2.west |- I1)$);
+          \draw[line width=0.7] ($(C1.east |- I2)$) -- ($(C2.west |- I2)$);
+          \draw[line width=0.7] ($(C1.east |- I3)$) -- ($(C2.west |- I3)$);
+          \draw[line width=0.7] (Im) -- ($(C2.west |- Im)$);
+
+          \draw[line width=0.7] (M0) -- ($(M0 -| C2.east)$);
+          \draw[line width=0.7] (M1) -- ($(M1 -| C2.east)$);
+          \draw[line width=0.7] (M2) -- ($(M2 -| C2.east)$);
+          \draw[line width=0.7] (M3) -- ($(M3 -| C2.east)$);
+          \draw[line width=0.7] (M4) -- ($(M4 -| C2.east)$);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Implementation of MCMR in amo/ion systems
@@ -315,17 +450,43 @@
 % This would allow the MCMR capabilities to be added to many experiments
 % even including a lot of the existing ones like ours.
 
-\begin{frame}{Mid-circuit measurement and reset (MCMR)}
-  % Diagram showing scattering from one without affecting other, define data/auxiliary
-  % Shuttling, multi species references
-\end{frame}
-
-%% Use metastable state for MCMR
 % We achieve this using the so-called omg-archtecture, similar to how it is also done
 % in some neutral atom tweezer experiments recently.
 % This takes advantage of the metastable states that exist in almost all of
 % the ion species. (D in Ba, D/F in Yb).
 
+\begin{frame}{Mid-circuit measurement and reset (MCMR)}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+        \mytweezer.drawTweezer(-2, -1, cyan!60!blue)
+        \mytweezer.drawTweezer(2, -1, cyan!60!blue)
+
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(230:1.2);
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(140:1.2);
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(20:1.2);
+
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(-40:1.2);
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(30:1.2);
+        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(200:1.2);
+
+        \mytweezer.drawUpAtom2(-2, -1, 0.35)
+        \mytweezer.drawUpAtom(0, -1, 0.35)
+        \mytweezer.drawUpAtom2(2, -1, 0.35)
+        \mytweezer.drawUpAtom(4, -1, 0.35)
+
+        \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+        \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+        \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+        \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+      \end{pgflowlevelscope}
+    \end{tikzpicture}
+  \end{center}
+  % Shuttling, multi species references
+  % Metastable states in ions
+\end{frame}
+
+%% Use metastable state for MCMR
 % This can in general happen in two different ways.
 % In what we called the shelving method, which takes advantage of the long lifetime
 % of the metastable state, the data ion is driven to the metastable state
@@ -342,7 +503,6 @@
 
 \begin{frame}{MCMR with metastable state
     \only<2>{-- shelving}\only<3->{-- hands-off}}
-  % Metastable states in ions
   % Shelving method
   % Hands off method
 \end{frame}
