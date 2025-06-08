@@ -346,7 +346,7 @@
       \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
       minimum height=2.5cm,line width=1]
       (C) at (0, 2) {Coherent evolution\\
-      \scriptsize{(single qubit gates, two qubit gates, \dots)}};
+        \scriptsize{(single qubit gates, two qubit gates, \dots)}};
 
       \node[meter,scale=0.45,outer sep=0] (M0) at (5, 3) {};
       \node[meter,scale=0.45,outer sep=0] (M1) at (5, 2.5) {};
@@ -458,32 +458,56 @@
 \begin{frame}{Mid-circuit measurement and reset (MCMR)}
   \begin{center}
     \begin{tikzpicture}
-      \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
-        \mytweezer.drawTweezer(-2, -1, cyan!60!blue)
-        \mytweezer.drawTweezer(2, -1, cyan!60!blue)
+      \begin{scope}
+        \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+          \mytweezer.drawTweezer(-2, -1, cyan!60!blue)
+          \mytweezer.drawTweezer(2, -1, cyan!60!blue)
 
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(230:1.2);
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(140:1.2);
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(20:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(230:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(140:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(20:1.2);
 
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(-40:1.2);
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(30:1.2);
-        \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(200:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(-40:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(30:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(200:1.2);
 
-        \mytweezer.drawUpAtom2(-2, -1, 0.35)
-        \mytweezer.drawUpAtom(0, -1, 0.35)
-        \mytweezer.drawUpAtom2(2, -1, 0.35)
-        \mytweezer.drawUpAtom(4, -1, 0.35)
+          \mytweezer.drawUpAtom2(-2, -1, 0.35)
+          \mytweezer.drawUpAtom(0, -1, 0.35)
+          \mytweezer.drawUpAtom2(2, -1, 0.35)
+          \mytweezer.drawUpAtom(4, -1, 0.35)
 
-        \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
-        \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
-        \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
-        \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
-      \end{pgflowlevelscope}
+          \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+          \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+          \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+          \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+        \end{pgflowlevelscope}
+        % Seems that the pgflowlevelscope doesn't count towards the picture size
+        % Create an empty rectangle to mark its place.
+        \path (-1.5, -2.5) rectangle (2.5, 1.5);
+      \end{scope}
+      \visible<2->{
+        \node[align=center,text width=5cm,inner sep=0,outter sep=0] at (6, 1) {
+          \begin{block}{MCMR in ions}
+            \begin{itemize}
+            \item Shuttling % TODO ref
+            \item Multi-species % TODO ref
+            \item<3-> Metastable states\\
+              \scalebox{0.9}{\textit{omg}-architecture} % TODO ref
+            \end{itemize}
+          \end{block}
+        };
+      }
+      \visible<4->{
+        \node[align=left,text width=5cm,inner sep=0,outter sep=0] at (6, -2) {
+          \begin{itemize}
+          \item Yb: $D_{3/2}$, $D_{5/2}$, $F_{7/2}$
+          \item Ba: $D_{3/2}$, $D_{5/2}$
+          \item Sr: $D_{3/2}$, $D_{5/2}$
+          \end{itemize} % TODO add lifetime?
+        };
+      }
     \end{tikzpicture}
   \end{center}
-  % Shuttling, multi species references
-  % Metastable states in ions
 \end{frame}
 
 %% Use metastable state for MCMR
