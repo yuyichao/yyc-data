@@ -259,6 +259,7 @@
   }
   \begin{frame}{}
     \titlepage
+    % TODO: add reference to paper
   \end{frame}
 }
 
@@ -268,6 +269,12 @@
 % All of these systems have high fidelity state preparation and measurement
 % as well as individual addressing of single ions for single and two qubit gate operations.
 % Ours is the gold system, currently operates with up to 7-x Yb171 ions.
+
+\begin{frame}{Duke Quantum Center}
+  % Systems picture, with species and ion count
+  % SPAM/single/two qubit gate fidelity for gold
+\end{frame}
+
 % Like most of the other systems, experiments on our system typically follows
 % the standard procedure of AMO experiments so far.
 % Starting with state initialization with optical pumping,
@@ -281,7 +288,11 @@
 % to be done mid-circuit, hence the name mid-circuit measurement and reset,
 % or MCMR for short.
 
-\begin{frame}{}
+\begin{frame}{Mid-circuit measurement and reset (MCMR)}
+  \begin{tikzpicture}
+    % Standard experiment procedure
+    % Adding feedback procedure, MCMR
+  \end{tikzpicture}
 \end{frame}
 
 %% Implementation of MCMR in amo/ion systems
@@ -304,7 +315,9 @@
 % This would allow the MCMR capabilities to be added to many experiments
 % even including a lot of the existing ones like ours.
 
-\begin{frame}{}
+\begin{frame}{Mid-circuit measurement and reset (MCMR)}
+  % Diagram showing scattering from one without affecting other, define data/auxiliary
+  % Shuttling, multi species references
 \end{frame}
 
 %% Use metastable state for MCMR
@@ -327,10 +340,14 @@
 % nominally does all the operations on the auxiliary ion
 % without perturbing the data ion.
 
-\begin{frame}{}
+\begin{frame}{MCMR with metastable state
+    \only<2>{-- shelving}\only<3->{-- hands-off}}
+  % Metastable states in ions
+  % Shelving method
+  % Hands off method
 \end{frame}
 
-%% Individual control of metestabile state
+%% Individual control of metastable state
 % Still, both of these methods rely on individual control of the metastable state.
 % The most obvious way to achieve this, of course, is to add focused beams to drive
 % such a transition only on the desired target ions.
@@ -386,7 +403,15 @@
 % is to not touch the data ions, having to drive all of them to the metastable state
 % defeats the point and it doesn't usually make sense to have this combination.
 
-\begin{frame}{}
+\begin{frame}{Individual control of metastable state}
+  % Dressing energy diagram
+  % Raman dressing?
+  % Dressed spectrum
+
+  % Qubit rotation method (qudit diagram)
+  % Example sequence
+
+  % Method combination table
 \end{frame}
 
 %% Realization
@@ -397,6 +422,7 @@
 % limited by laser lock and off-resonant scattering.
 % All of the demonstration are done on a short chain of only two ions,
 % and with their separation set to be the same as in a longer chain.
+% (Mention Ba result)
 
 % For mid-circuit measurement, we selected the shelving method.
 % This allow us to use the normal transition for detection,
@@ -427,6 +453,13 @@
 % and Raman crosstalk.
 
 \begin{frame}{}
+  % Yb metastable level diagram
+
+  % Qubit rotation sequence
+  % Measurement results
+
+  % Reset sequence
+  % Reset result
 \end{frame}
 
 % With that
