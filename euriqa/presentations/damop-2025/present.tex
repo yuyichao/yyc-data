@@ -209,7 +209,10 @@
 \tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
   post length=0.2cm, snake, amplitude=.4mm,
   segment length=2mm},thick, ->]
-\tikzset{meter/.append style={draw, inner sep=10, rectangle, font=\vphantom{A}, minimum width=30, line width=.8,  path picture={\draw[black] ([shift={(.1,.3)}]path picture bounding box.south west) to[bend left=50] ([shift={(-.1,.3)}]path picture bounding box.south east);\draw[black,-{Latex[length=8mm, width=1.8mm]}] ([shift={(0,.2)}]path picture bounding box.south) -- ([shift={(.4,-.1)}]path picture bounding box.north);}}}
+\tikzstyle{tightsnakearrow} = [decorate, decoration={pre length=0.1cm,
+  post length=0.1cm, snake, amplitude=.2mm,
+  segment length=2mm},thick, ->]
+\tikzset{meter/.append style={draw, inner sep=10, rectangle, font=\vphantom{A}, minimum width=30, line width=.8,  path picture={\draw ([shift={(.1,.3)}]path picture bounding box.south west) to[bend left=50] ([shift={(-.1,.3)}]path picture bounding box.south east);\draw[-{Latex[length=8mm, width=1.8mm]}] ([shift={(0,.2)}]path picture bounding box.south) -- ([shift={(.4,-.1)}]path picture bounding box.north);}}}
 
 %% document-wide tikz options and styles
 
@@ -378,13 +381,13 @@
           minimum height=2.3cm,line width=1]
           (C0) at (-3, 2) {Coherent\\evolution};
 
-          \node[meter,scale=0.45,outer sep=0] (Mm) at (-1, 1) {};
+          \node[meter,scale=0.45,outer sep=0,pyplotc3] (Mm) at (-1, 1) {};
 
           \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
           minimum height=1.8cm,line width=1]
           (C1) at (0, 2.25) {Feedback};
 
-          \node (Im) at (1, 1) {$|0\rangle$};
+          \node[pyplotc3] (Im) at (1, 1) {$|0\rangle$};
 
           \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
           minimum height=2.3cm,line width=1]
@@ -408,10 +411,11 @@
           \draw[line width=0.7] ($(M3 -| C0.east)$) -- ($(M3 -| C1.west)$);
           \draw[line width=0.7] (Mm) -- ($(C0.east |- Mm)$);
 
-          \draw[line width=0.7,double,->,>=stealth] ($(Mm.east)+(0, 0.1)$) -| (C1.south);
-          \draw[line width=0.7,opacity=0.6,->] ($(Mm.east)-(0, 0.05)$) --
+          \draw[line width=0.7,double,->,>=stealth,pyplotc3]
+          ($(Mm.east)+(0, 0.1)$) -| (C1.south);
+          \draw[line width=0.7,opacity=0.6,->,pyplotc3] ($(Mm.east)-(0, 0.05)$) --
           node[below] {Reset}
-          ($(Mm.east -| Im.west)+(0.02, -0.05)$);
+          ($(Mm.east -| Im.west)+(0.03, -0.05)$);
 
           \draw[line width=0.7] ($(C1.east |- I0)$) -- ($(C2.west |- I0)$);
           \draw[line width=0.7] ($(C1.east |- I1)$) -- ($(C2.west |- I1)$);
@@ -486,7 +490,7 @@
         \path (-1.5, -2.5) rectangle (2.5, 1.5);
       \end{scope}
       \visible<2->{
-        \node[align=center,text width=5cm,inner sep=0,outter sep=0] at (6, 1) {
+        \node[align=center,text width=5cm,inner sep=0,outer sep=0] at (6, 1) {
           \begin{block}{MCMR in ions}
             \begin{itemize}
             \item Shuttling % TODO ref
@@ -498,7 +502,7 @@
         };
       }
       \visible<4->{
-        \node[align=left,text width=5cm,inner sep=0,outter sep=0] at (6, -2) {
+        \node[align=left,text width=5cm,inner sep=0,outer sep=0] at (6, -2) {
           \begin{itemize}
           \item Yb: $D_{3/2}$, $D_{5/2}$, $F_{7/2}$
           \item Ba: $D_{3/2}$, $D_{5/2}$
@@ -526,9 +530,150 @@
 % without perturbing the data ion.
 
 \begin{frame}{MCMR with metastable state
-    \only<2>{-- shelving}\only<3->{-- hands-off}}
-  % Shelving method
-  % Hands off method
+    \hspace{0.15cm}---\hspace{0.15cm} \only<1>{shelving method}\only<2->{hands-off method}}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<1>{
+        \begin{scope}[shift={(-3.3, 0)}]
+          \begin{scope}[shift={(-1.2, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Data}};
+
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,align=center,above=-0.03] {\scalebox{0.7}{Shelve}} (0.75, 0.1);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom(0.75, 0.1, 0.14)
+            \mytweezer.drawDownAtom(0, -1.2, 0.14)
+          \end{scope}
+
+          \begin{scope}[shift={(1.15, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Aux}};
+
+            \draw[pyplotc3,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,above=-0.03,pos=0.55] {\scalebox{0.7}{Scatter}} (-0.05, 0.9);
+
+            \draw[cyan!70!pyplotc0,->,tightsnakearrow,>=stealth,line width=0.7]
+            (-0.15, 0.9) -- (0.2, -0.8);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom2(0, -1.2, 0.14)
+          \end{scope}
+          \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-2.1, -1.6) rectangle (2.7, 1.6);
+        \end{scope}
+        \begin{scope}[shift={(3.3, 0)}]
+          \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+            \begin{scope}
+              \clip (-3, -2.5) rectangle (5.5, 0.5);
+              \shade[shading=radial,path fading=glow fading,fill opacity=0.6,
+              inner color=cyan!50!pyplotc0]
+              (1, -1) ellipse (20 and 1.2);
+            \end{scope}
+
+            \mytweezer.drawTweezer(0, -1, pyplotc0!80!blue)
+            \mytweezer.drawTweezer(4, -1, pyplotc0!80!blue)
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(260:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(120:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(20:1.2);
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(-80:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(60:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(200:1.2);
+
+            \mytweezer.drawUpAtom2(-2, -1, 0.35)
+            \mytweezer.drawUpAtom(0, -1, 0.35)
+            \mytweezer.drawUpAtom2(2, -1, 0.35)
+            \mytweezer.drawUpAtom(4, -1, 0.35)
+
+            \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+            \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+
+            \node at (2, 3) {\scalebox{2}{Individual Shelve}};
+          \end{pgflowlevelscope}
+          % Seems that the pgflowlevelscope doesn't count towards the picture size
+          % Create an empty rectangle to mark its place.
+          \path (-1.5, -2.5) rectangle (2.5, 1.5);
+        \end{scope}
+      }
+      \visible<2->{
+        \begin{scope}[shift={(-3.3, 0)}]
+          \begin{scope}[shift={(-1.2, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Data}};
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom(0, -1.2, 0.14)
+          \end{scope}
+
+          \begin{scope}[shift={(1.15, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Aux}};
+
+            \draw[pyplotc3,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.75, 0.1) -- node[sloped,above=-0.042,pos=0.3] {\scalebox{0.57}{Repump}} (-0.1, 0.9);
+
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,align=center,above=-0.03] {\scalebox{0.7}{Drive}} (0.75, 0.1);
+
+            \draw[cyan!70!pyplotc0,->,tightsnakearrow,>=stealth,line width=0.7]
+            (-0.1, 0.9) -- (0.2, -0.8);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom2(0, -1.2, 0.14)
+          \end{scope}
+          \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-2.1, -1.6) rectangle (2.7, 1.6);
+        \end{scope}
+        \begin{scope}[shift={(3.3, 0)}]
+          \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+            \mytweezer.drawTweezer(-2, -1, pyplotc0!80!blue)
+            \mytweezer.drawTweezer(2, -1, pyplotc0!80!blue)
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(230:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(140:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(20:1.2);
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(-40:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(30:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(200:1.2);
+
+            \mytweezer.drawUpAtom2(-2, -1, 0.35)
+            \mytweezer.drawUpAtom(0, -1, 0.35)
+            \mytweezer.drawUpAtom2(2, -1, 0.35)
+            \mytweezer.drawUpAtom(4, -1, 0.35)
+
+            \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+            \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+
+            \node at (0, 3) {\scalebox{2}{Individual Drive}};
+          \end{pgflowlevelscope}
+          % Seems that the pgflowlevelscope doesn't count towards the picture size
+          % Create an empty rectangle to mark its place.
+          \path (-1.5, -2.5) rectangle (2.5, 1.5);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
 \end{frame}
 
 %% Individual control of metastable state
