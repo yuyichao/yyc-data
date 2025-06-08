@@ -697,8 +697,9 @@
 % The dressing can selectively shift the resonance of
 % the metastable transition allowing us to drive only the ions we want.
 % Note that I used the term dressing, rather than Stark shift,
-% which is a special case of dressing. This is because, well first I'd like to be more
-% general, but more importantly, the 355nm laser we use for gate operations
+% which is a special case of dressing for large detuning.
+% This is because, well first I'd like to be more general,
+% but more importantly, the 355nm laser we use for gate operations
 % is specifically selected to produce minimum Stark shift to improve gate fidelity.
 % We therefore had to rely on driving a near resonant Raman transition
 % using our 355nm lasers, outside the Stark shift regime,
@@ -736,18 +737,172 @@
 % is to not touch the data ions, having to drive all of them to the metastable state
 % defeats the point and it doesn't usually make sense to have this combination.
 
-\begin{frame}{Individual control of metastable state}
+\begin{frame}{Individual control of metastable state
+    \hspace{0.15cm}---\hspace{0.15cm} \only<-3>{dressing}\only<4->{qubit rotation}}
   \begin{center}
     \begin{tikzpicture}
+      \visible<-3> {
+        \begin{scope}[shift={(-1.2, 0)}]
+          \node[above] at (0.4, 1.1) {\scalebox{0.9}{Raw}};
+
+          \visible<2-> {
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+            (0.35, -1.1) -- node[sloped,below=-0.03] {\scalebox{0.7}{Original}} (0.8, 0.8);
+          }
+
+          \draw[line width=1.6] (0.15, -1.1) -- (0.55, -1.1) node[right=-0.03] {\scalebox{0.82}{$|0\rangle$}};
+          \draw[line width=1.6] (-0.3, 0.0) -- (0.1, 0.0) node[right=-0.03] {\scalebox{0.82}{$|1\rangle$}};
+          \draw[line width=1.6] (0.6, 0.8) -- (1, 0.8) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+          \visible<2-> {
+            \mytweezer.drawUpAtom(0.35, -1.1, 0.16)
+          }
+        \end{scope}
+
+        \begin{scope}[shift={(1.15, 0)}]
+          \node[above] at (0.4, 1.1) {\scalebox{0.9}{Dressed}};
+
+          \draw[pyplotc2,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.3, -1.05) -- node[sloped,below=-0.03] {\scalebox{0.6}{Dressing}} (-0.1, -0.05);
+          \visible<2-> {
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+            (0.4, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.7}{Shifted}} (0.8, 0.8);
+          }
+
+          \draw[line width=1,densely dotted,opacity=0.7] (0.15, -1.1) -- (0.55, -1.1);
+          \draw[line width=1,densely dotted,opacity=0.7] (-0.3, 0.0) -- (0.1, 0.0);
+
+          \draw[line width=1.6] (0.15, -1.3) -- (0.55, -1.3) node[right=-0.03] {\scalebox{0.82}{$|0'\rangle$}};
+          \draw[line width=1.6] (-0.3, 0.2) -- (0.1, 0.2) node[right=-0.03] {\scalebox{0.82}{$|1'\rangle$}};
+          \draw[line width=1.6] (0.6, 0.8) -- (1, 0.8) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+          \visible<2-> {
+            \mytweezer.drawUpAtom2(0.35, -1.3, 0.16)
+          }
+        \end{scope}
+        \draw[line width=1,opacity=0.4] (0.5, 1.3) -- (0.5, -1.35);
+        \visible<3-> {
+          \node at (5.5, -0.3) {\includegraphics[width=5cm]{imgs/435_f1_spec.pdf}};
+        }
+      }
+      \visible<4-> {
+        \begin{scope}[shift={(-0.6, 1.5)}]
+          \node[above] at (0.4, 1.2) {\scalebox{0.9}{Individual \textbf{qudit} control}};
+          \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+          (0.35, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.65}{Global}} (1.0, 0.8);
+          \draw[pyplotc2,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+          (0.35, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.65}{Individual}}
+          (-0.3, 0.0);
+
+          \draw[line width=1.6] (0.15, -1.3) -- (0.55, -1.3) node[right=-0.03] {\scalebox{0.82}{$|0\rangle$}};
+          \draw[line width=1.6] (-0.5, 0.0) -- (-0.1, 0.0) node[right=-0.03] {\scalebox{0.82}{$|1\rangle$}};
+          \draw[line width=1.6] (0.8, 0.8) -- (1.2, 0.8) node[right=-0.03] {\scalebox{0.82}{$|2\rangle$ \scriptsize{$\left(|m\rangle\right)$}}};
+        \end{scope}
+        \begin{scope}[scale=0.77,shift={(-0.9, -3)}]
+          \begin{scope}
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Shelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom(0.5, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Shelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+
+            \begin{scope}[shift={(-0.08, 0.1)}]
+              \fill[opacity=0.18] (3.15, 0) -- (3, 0.6) -- (2.98, 0.6) |- (2.91, 0.3) -- (2.91, -0.3) -| (2.98, -0.6) -- (3, -0.6);
+            \end{scope}
+          \end{scope}
+          \begin{scope}[shift={(5.3, 0)}]
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc4,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.55, -1.2) to [bend right=50] node[above=-0.05] {\scalebox{0.6}{Qubit Rotation}} (0.0, -1.2);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom(0.0, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+            \node[above=0.1] at (0.3, 1.8) {Example Sequence};
+
+            \begin{scope}[shift={(-0.08, 0.1)}]
+              \fill[opacity=0.18] (3.15, 0) -- (3, 0.6) -- (2.98, 0.6) |- (2.91, 0.3) -- (2.91, -0.3) -| (2.98, -0.6) -- (3, -0.6);
+            \end{scope}
+          \end{scope}
+          \begin{scope}[shift={(10.6, 0)}]
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Swap}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawUpAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawDownAtom(0.0, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-,line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Unshelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.0, -1.2, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+          \end{scope}
+        \end{scope}
+      }
     \end{tikzpicture}
   \end{center}
-  % TODO: Dressing energy diagram
-  % TODO: Raman dressing?
-  % TODO: Dressed spectrum
-
-  % TODO: Qubit rotation method (qudit diagram)
-  % TODO: Example sequence
-
   % TODO: Method combination table
 \end{frame}
 
