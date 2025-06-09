@@ -316,17 +316,19 @@ symbolgreek
 
 {
   \usebackgroundtemplate{
-    \makebox[\paperwidth][c]{\centering
-      \begin{tikzpicture}
+    \begin{tikzpicture}[remember picture,overlay]
+      \begin{scope}[shift=(current page.center)]
         \node[outer sep=0,inner sep=0] at (0, 0) {\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}};
+        \node at (-1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DoE.pdf}};
+        \node at (0, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DARPA.png}};
+        \node at (1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/NSF.pdf}};
         \node[above] at (5.15, -3) {\scalebox{0.7}{arXiv:2504.12544}};
         \node at (5.5, -3.5) {\includegraphics[width=1cm]{imgs/2504.12544.png}};
-      \end{tikzpicture}
-    }
+      \end{scope}
+    \end{tikzpicture}
   }
   \begin{frame}{}
     \titlepage
-    % TODO: update funding agency
   \end{frame}
 }
 
@@ -1196,7 +1198,14 @@ symbolgreek
 % With that
 {
   \usebackgroundtemplate{
-    \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
+    \begin{tikzpicture}[remember picture,overlay]
+      \begin{scope}[shift=(current page.center)]
+        \node[outer sep=0,inner sep=0] at (0, 0) {\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}};
+        \node at (-1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DoE.pdf}};
+        \node at (0, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DARPA.png}};
+        \node at (1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/NSF.pdf}};
+      \end{scope}
+    \end{tikzpicture}
   }
   \begin{frame}{}
     \begin{center}
