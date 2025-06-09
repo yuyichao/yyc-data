@@ -305,13 +305,21 @@
 
 {
   \usebackgroundtemplate{
-    \makebox[\paperwidth][c]{\centering\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}}
+    \makebox[\paperwidth][c]{\centering
+      \begin{tikzpicture}
+        \node[outer sep=0,inner sep=0] at (0, 0) {\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.png}};
+        \node[above] at (5.15, -3) {\scalebox{0.7}{arXiv:2504.12544}};
+        \node at (5.5, -3.5) {\includegraphics[width=1cm]{imgs/2504.12544.png}};
+      \end{tikzpicture}
+    }
   }
   \begin{frame}{}
     \titlepage
-    % TODO: add reference to paper
+    % TODO: update funding agency
   \end{frame}
 }
+
+\title[MCMR with \textit{omg} (arXiv:2504.12544)]{Mid-circuit measurement and reset using \textit{omg} architecture in trapped-ion quantum computing systems}
 
 %% Intro
 % Here at the Duke quantum center, we operate a variety of quantum computing systems
