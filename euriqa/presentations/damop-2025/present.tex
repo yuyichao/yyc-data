@@ -1179,9 +1179,16 @@ symbolgreek
           (-5.85, -0.25) rectangle (6.3, 8.3);
         \end{scope}
       \end{scope}
+      \visible<2-> {
+        \node at (6.35, 5.35) {\scalebox{0.9}{Aux Reset Error}};
+        \node at (6.1, 3.4) {\includegraphics[width=4.7cm]{imgs/pump_aux_error_log.pdf}};
+      }
+      \visible<3-> {
+        \node at (6.35, 1.05) {\scalebox{0.9}{Data Error}};
+        \node at (6.1, -1.0) {\includegraphics[width=4.7cm]{imgs/pump_data_x_error.pdf}};
+      }
     \end{tikzpicture}
   \end{center}
-  % TODO: Reset result
 \end{frame}
 
 \title[MCMR with \textit{omg}]{Mid-circuit measurement and reset using \textit{omg} architecture in trapped-ion quantum computing systems}
