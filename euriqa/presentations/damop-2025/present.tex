@@ -515,12 +515,16 @@
         };
       }
       \visible<4->{
-        \node[align=left,text width=5cm,inner sep=0,outer sep=0] at (6, -2) {
+        \node[align=left,text width=6cm,inner sep=0,outer sep=0] at (6, -2) {
           \begin{itemize}
-          \item Yb: $D_{3/2}$, $D_{5/2}$, $F_{7/2}$
-          \item Ba: $D_{3/2}$, $D_{5/2}$
-          \item Sr: $D_{3/2}$, $D_{5/2}$
-          \end{itemize} % TODO add lifetime?
+          \item\makebox[0.7cm]{Yb$^+$}: D$_{3/2}$ \scalebox{0.85}{($50$ ms)},
+            D$_{5/2}$ \scalebox{0.85}{($7$ ms)},\\
+            \phantom{\makebox[0.7cm]{Yb$^+$}: }F$_{7/2}$ \scalebox{0.85}{($>\!\!1$ yr)}
+          \item\makebox[0.7cm]{Ba$^+$}: D$_{3/2}$ \scalebox{0.85}{($20$ s)},
+            D$_{5/2}$ \scalebox{0.85}{($30$ s)}
+          \item\makebox[0.7cm]{Sr$^+$}: D$_{3/2}$ \scalebox{0.85}{($0.4$ s)},
+            D$_{5/2}$ \scalebox{0.85}{($0.4$ s)}
+          \end{itemize}
         };
       }
     \end{tikzpicture}
@@ -994,6 +998,8 @@
   % TODO: Reset result
 \end{frame}
 
+\title[MCMR with \textit{omg}]{Mid-circuit measurement and reset using \textit{omg} architecture in trapped-ion quantum computing systems}
+
 % With that
 {
   \usebackgroundtemplate{
@@ -1021,6 +1027,18 @@
         {\includegraphics[height=2.1cm]{imgs/members/Debo.jpg}\\Debopriyo Biswas};
         \node[align=center,below,font=\tiny] at (4.2, -3)
         {\includegraphics[height=2.1cm]{imgs/members/Bahaa.jpg}\\Bahaa Harraz};
+
+        \node[left,align=left,execute at begin node=\setlength{\baselineskip}{8pt}]
+        at (5, -6) {
+          \scalebox{0.8}{\textbf{Yb result}}\\
+          \scalebox{0.7}{\textbf{arXiv:2504.12544}}};
+        \node at (5.34, -6) {\includegraphics[width=0.7cm]{imgs/2504.12544.png}};
+
+        \node[left,align=left,execute at begin node=\setlength{\baselineskip}{8pt}]
+        at (5, -6.9) {
+          \scalebox{0.75}{Ba result}\\
+          \scalebox{0.7}{arXiv:2504.12538}};
+        \node at (5.34, -6.9) {\includegraphics[width=0.7cm]{imgs/2504.12538.png}};
       \end{tikzpicture}
     \end{center}
   \end{frame}
