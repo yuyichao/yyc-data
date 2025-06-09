@@ -11,6 +11,11 @@
 \usepackage[latin1]{inputenc}
 \usepackage{times}
 \usepackage[T1]{fontenc}
+\usepackage{tgheros}
+\renewcommand{\rmdefault}{qhv}
+\usepackage[
+symbolgreek
+]{mathastext}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{esint}
@@ -110,6 +115,12 @@
   }
   \method drawUpAtom2(#1,#2,#3) {
     \pgfoothis.drawAtom(#1,#2,#3,pyplotc3);
+  }
+  \method drawState(#1,#2) {
+    \draw[line width=1,shift={(#1,#2)}] (-0.2, 0) -- (0.2, 0);
+  }
+  \method drawState2(#1,#2) {
+    \draw[line width=1,shift={(#1,#2)}] (-0.4, 0) -- (0.4, 0);
   }
 }
 \pgfoonew \mytweezer=new tweezer()
@@ -515,7 +526,7 @@
         };
       }
       \visible<4->{
-        \node[align=left,text width=6cm,inner sep=0,outer sep=0] at (6, -2) {
+        \node[align=left,text width=6cm,inner sep=0,outer sep=0] at (6, -2.4) {
           \begin{itemize}
           \item\makebox[0.7cm]{Yb$^+$}: D$_{3/2}$ \scalebox{0.85}{($50$ ms)},
             D$_{5/2}$ \scalebox{0.85}{($7$ ms)},\\
@@ -524,6 +535,7 @@
             D$_{5/2}$ \scalebox{0.85}{($30$ s)}
           \item\makebox[0.7cm]{Sr$^+$}: D$_{3/2}$ \scalebox{0.85}{($0.4$ s)},
             D$_{5/2}$ \scalebox{0.85}{($0.4$ s)}
+          \item\hspace{0.2cm}$\cdots$
           \end{itemize}
         };
       }
@@ -972,6 +984,95 @@
 % comes from a more complex sequence and crosstalk from the dressing beam.
 % Both of these aspect can be improved with improvment in our beam path and laser locking.
 
+\begin{frame}{}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<1-2> {
+        \begin{scope}
+          \def\Sx{0.0}
+          \def\Sy{0.1}
+          \def\Shf{1.2}
+
+          \def\Px{0.0}
+          \def\Py{2.55}
+          \def\Phf{0.7}
+
+          \def\Dx{1.1}
+          \def\Dy{1.8}
+          \def\Dhf{0.4}
+
+          \def\Bx{1.1}
+          \def\By{3.2}
+          \def\Bhf{0.3}
+
+          \begin{scope}[shift={(\Sx, \Sy)}]
+            % S
+            \mytweezer.drawState(0, \Shf/2)
+            \node[left=-0.03] at (-0.2, \Shf/2) {\scalebox{0.7}{$F=1$}};
+            \mytweezer.drawState(0, -\Shf/2)
+            \node[left=-0.03] at (-0.2, -\Shf/2) {\scalebox{0.7}{$F=0$}};
+            \node[left=-0.03] at (-1, 0) {\scalebox{0.75}{$S_{1/2}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Px, \Py)}]
+            % P
+            \mytweezer.drawState(0, \Phf/2)
+            \node[left=-0.03] at (-0.2, \Phf/2) {\scalebox{0.7}{$F=1$}};
+            \mytweezer.drawState(0, -\Phf/2)
+            \node[left=-0.03] at (-0.2, -\Phf/2) {\scalebox{0.7}{$F=0$}};
+            \node[left=-0.03] at (-1, 0) {\scalebox{0.75}{$P_{1/2}$}};
+            \node[left=-0.03] at (-1, -0.27) {\scalebox{0.5}{$8.1\ \mathrm{ns}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Dx, \Dy)}]
+            % D
+            \mytweezer.drawState(0, \Dhf/2)
+            \node[right=-0.03] at (0.2, \Dhf/2) {\scalebox{0.7}{$F=2$}};
+            \mytweezer.drawState(0, -\Dhf/2)
+            \node[right=-0.03] at (0.2, -\Dhf/2) {\scalebox{0.7}{$F=1$}};
+            \node[right=-0.03] at (0.9, 0.0) {\scalebox{0.75}{$D_{3/2}$}};
+            \node[right=-0.03] at (0.94, -0.28) {\scalebox{0.5}{$52\ \mathrm{ms}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Bx, \By)}]
+            % []
+            \mytweezer.drawState(0, \Bhf/2)
+            \node[right=-0.03] at (0.2, \Bhf/2) {\scalebox{0.7}{$F=0$}};
+            \mytweezer.drawState(0, -\Bhf/2)
+            \node[right=-0.03] at (0.2, -\Bhf/2) {\scalebox{0.7}{$F=1$}};
+            \node[right=-0.03] at (0.9, 0.0) {\scalebox{0.75}{$[3/2]_{1/2}$}};
+            \node[right=-0.03] at (1.0, -0.28) {\scalebox{0.5}{$38\ \mathrm{ns}$}};
+          \end{scope}
+
+          \draw[cyan!90!pyplotc0, ->, >=stealth, line width=0.8]
+          (\Sx+0.05, \Sy) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{$370\ \mathrm{nm}$}} (\Px+0.05, \Py);
+          \draw[pyplotc3, ->, >=stealth, line width=0.8]
+          (\Dx, \Dy) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{$935\ \mathrm{nm}$}} (\Bx, \By);
+          \draw[cyan!10!pyplotc0, <->, >=stealth, line width=0.8]
+          (\Sx+0.05, \Sy) --
+          node[sloped,below=-0.03] {\scalebox{0.6}{$435\ \mathrm{nm}$}} (\Dx, \Dy);
+          \draw[pyplotc4, <->, >=stealth, line width=0.8]
+          (\Sx-0.05, \Sy-\Shf/2) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{Raman}} (\Sx-0.05, \Sy+\Shf/2);
+        \end{scope}
+      }
+      \visible<2-> {
+        \node at (6.6, 1.2) {\includegraphics[width=7.5cm]{imgs/sequence.pdf}};
+      }
+      \visible<3-> {
+        \node at (0.75, 5.3) {\scalebox{0.9}{Aux Detection}};
+        \node at (0.5, 3.4) {\includegraphics[width=4.8cm]{imgs/detect_aux_rabi.pdf}};
+      }
+      \visible<4-> {
+        \node at (0.75, 0.9) {\scalebox{0.9}{Data Coherence}};
+        \node at (0.5, -1.0) {\includegraphics[width=4.8cm]{imgs/detect_data_ramsey_square.pdf}};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
 % We also demonstrated mid-circuit reset, this time using the hands-off method.
 % Here the goal is simply to selectively drive one of the qubit state of the auxiliary
 % ions to the D state before pumping them back and repeats this cycle
@@ -987,14 +1088,99 @@
 \begin{frame}{}
   \begin{center}
     \begin{tikzpicture}
+      \begin{scope}[scale=0.5]
+        \begin{scope}[shift={(-2.15, -1.5)}]
+          \fill[color=pyplotc4] (-3.5, 0) rectangle (7.9, -1.5)
+          node[white,pos=.5,align=center] {\scalebox{0.92}{Raman Dressing}};
+
+          \fill[color=pyplotc0] (-3.4, 0) rectangle (-1.3, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Drive}\\\scalebox{0.86}{to $D_{3/2}$}};
+          \fill[color=pyplotc3] (-1.2, 0) rectangle (0.9, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Pump}\\\scalebox{0.86}{to $S_{1/2}$}};
+
+          \node at (2.2, 0.75) {\Huge $\mathbf{\cdots}$};
+
+          \fill[color=pyplotc0] (3.5, 0) rectangle (5.6, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Drive}\\\scalebox{0.86}{to $D_{3/2}$}};
+          \fill[color=pyplotc3] (5.7, 0) rectangle (7.8, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Pump}\\\scalebox{0.86}{to $S_{1/2}$}};
+
+          \draw[-{Stealth[length=2.5mm,width=1.6mm]},line width=2]
+          (-3.6, 0) -- (8.5, 0);
+        \end{scope}
+        % Zeeman
+        \def\Zx{1.0}
+        \def\Zy{0.1}
+        % S
+        \def\Sx{0}
+        \def\Sy{0}
+        \def\Sh{1.2}
+        \def\Sdh{1.8}
+
+        % D
+        \def\Dx{2.2}
+        \def\Dy{5.7}
+
+        % Bracket
+        \def\Bx{-2.1}
+        \def\By{7.4}
+        \begin{scope}[shift={(0, 0.6)}]
+          % Bracket
+          \node[left] at (\Bx-\Zx-0.3, \By-\Zy) {\scalebox{0.9}{$[3/2]_{1/2}$}};
+          \node[above] at (\Bx, \By) {\scalebox{0.8}{$F=1$}};
+          \mytweezer.drawState2(\Bx-\Zx, \By-\Zy)
+          \mytweezer.drawState2(\Bx, \By)
+          \mytweezer.drawState2(\Bx+\Zx, \By+\Zy)
+
+          % D
+          \node[right] at (\Dx+\Zx*2 + 0.3, \Dy+\Zy*2-0.05)
+          {\scalebox{0.9}{$\mathrm{D}_{3/2}$}};
+          \node[right] at (\Dx+\Zx*2 + 0.35, \Dy-0.4) {\scalebox{0.8}{$F=2$}};
+          \mytweezer.drawState2(\Dx-\Zx*2, \Dy-\Zy*2)
+          \mytweezer.drawState2(\Dx-\Zx, \Dy-\Zy)
+          \mytweezer.drawState2(\Dx, \Dy)
+          \mytweezer.drawState2(\Dx+\Zx, \Dy+\Zy)
+          \mytweezer.drawState2(\Dx+\Zx*2, \Dy+\Zy*2)
+
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx - \Zx, \Dy - \Zy + 0.15) -- (\Bx - \Zx + 0.3, \By - \Zy - 0.4);
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx + \Zx, \Dy + \Zy + 0.15) -- (\Bx + \Zx + 0.3, \By + \Zy - 0.4);
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx + \Zx * 2, \Dy + \Zy * 2 + 0.15) --
+          node[sloped,above=-0.02,pos=0.45] {\scalebox{0.8}{$935\ \mathrm{nm}$}}
+          (\Bx + \Zx * 2 + 0.3, \By + \Zy * 2 - 0.4);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx - \Zx + 0.0, \By - \Zy - 0.2) -- (\Sx - \Zx - 0.3, \Sy - \Zy + \Sdh + 0.5);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx + 0.0, \By - 0.2) -- (\Sx - 0.3, \Sy + \Sdh + 0.7);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx + \Zx + 0.0, \By + \Zy - 0.2) -- (\Sx + \Zx - 0.3, \Sy + \Zy + \Sdh + 0.6);
+
+          % S
+          \node[left] at (\Sx-\Zx-0.3, \Sy+\Sh-\Zy) {\scalebox{0.9}{$\mathrm{S}_{1/2}$}};
+          \mytweezer.drawState2(\Sx, \Sy+\Sdh)
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx-\Zx, \Sy+\Sh-\Zy+0.05) -- (\Dx-\Zx, \Dy-\Zy-0.05);
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx+\Zx, \Sy+\Sh+\Zy+0.05) --
+          node[sloped,below=0,pos=0.48] {\scalebox{0.8}{$435\ \mathrm{nm}$}}
+          (\Dx+\Zx, \Dy+\Zy-0.05);
+          \mytweezer.drawState2(\Sx-\Zx, \Sy+\Sh-\Zy)
+          \mytweezer.drawState2(\Sx+\Zx, \Sy+\Sh+\Zy)
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx, \Sy+\Sdh+0.05) -- (\Dx+\Zx*2, \Dy+\Zy*2-0.05);
+          \mytweezer.drawState2(\Sx, \Sy)
+          \draw[pyplotc4, <->, >=stealth, line width=1.2]
+          (\Sx, \Sy+0.05) -- node[sloped,above=0] {\scalebox{0.7}{Dress}}
+          (\Sx, \Sy+\Sdh-0.05);
+
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-5.85, -0.25) rectangle (6.3, 8.3);
+        \end{scope}
+      \end{scope}
     \end{tikzpicture}
   \end{center}
-  % TODO: Yb metastable level diagram
-
-  % TODO: Qubit rotation sequence
-  % TODO: Measurement results
-
-  % TODO: Reset sequence
   % TODO: Reset result
 \end{frame}
 
