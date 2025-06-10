@@ -310,8 +310,8 @@ symbolgreek
 % _ * Reset
 
 %% Title
-% I'm Yichao from the Monroe group at Duke Quantum Center
-% and today I'll tell you about our in-situ mid-circuit measurement
+% I'm Yichao from the Monroe group at the Duke Quantum Center
+% and today I'll tell you about our in-situ mid-circuit measurement and reset
 % in a trapped ion quantum computer.
 
 {
@@ -335,13 +335,15 @@ symbolgreek
 \title[MCMR with \textit{omg} (arXiv:2504.12544)]{}
 
 %% Intro
-% Here at the Duke quantum center, we operate a variety of quantum computing systems
-% based on trapped chain of 5-30 Yb/Ba ions.
+% Here at the DQC, we operate a variety of quantum computing systems
+% based on chains of mainly Yb/Ba ions.
 % All of these systems have high fidelity state preparation and measurement
-% as well as individual addressing of single ions for single and two qubit gate operations.
-% Ours is the gold system, currently operates with up to 7-x Yb171 ions.
+% as well as individual Raman addressability of single ions,
+% for both single and two qubit gate operations.
+% Out of these, mine is the gold system, currently tweaking up the gate fidelities
+% with our latest status shown here.
 
-\begin{frame}{Duke Quantum Center \visible<2->{--- Gold System}}
+\begin{frame}{Duke Quantum Center (DQC) \visible<2->{--- Gold System}}
   \begin{center}
     \begin{tikzpicture}
       \begin{scope}[shift={(-4, 3.3)}]
@@ -387,15 +389,15 @@ symbolgreek
   \end{center}
 \end{frame}
 
-% Like most of the other systems, experiments on our system typically follows
-% the standard procedure of AMO experiments so far.
-% Starting with state initialization with optical pumping,
+% Like the other systems, experiments on ours typically follow
+% the standard procedure of most AMO experiments up to this point.
+% We start by initializing state with optical pumping,
 % do some coherent evolution including single and two qubit gates,
-% and finally do state detection in the end with optical fluorescence.
+% and finally detect the state in the end with optical fluorescence.
 
-% While this type of operation works well and is quite versatile, techique such as QEC,
-% which is important for a scalable quantum computing system,
-% requires ammending the coherent evolution process with classical feedback.
+% While this type of operation works well and is quite versatile,
+% techiques such as quantum error correction may
+% require ammending the coherent evolution process with classical feedback.
 % This necessitate measurement and also reset of the measured qubit
 % to be done mid-circuit, hence the name mid-circuit measurement and reset,
 % or MCMR for short.
@@ -498,29 +500,32 @@ symbolgreek
 \end{frame}
 
 %% Implementation of MCMR in amo/ion systems
-% Compared to measurement and reset process we currently used,
-% the main difference for a mid-circuit version,
-% is of course that we need to distinguish between the atoms that needs to be measured,
+% Now compared to what we currently used,
+% the main difference for a mid-circuit version is of course that
+% we need to clearly distinguish between the atoms that needs to be measured,
 % which we'll call the auxiliary atoms, and the atoms that aren't,
 % which will be called the data atoms.
-% Due to the broad linewidth of the transition typically used,
-% it can be really challenging to prevent scattering on the data atom
-% caused by any kind of crosstalk.
+% Due to the broad linewidth of the transition typically used here,
+% it can be really challenging to prevent scattering
+% and loss of coherence on the data atom
+% caused by any kind of crosstalk from the auxiliary.
 
-% In ion systems, the isolation of the data ion have been realized with shuttling,
-% differentiating the two types with physical separation,
-% or by using multiple ion species with different measurement and reset wavelengths.
+% Still, in ion systems, this isolation has been realized,
+% either with shuttling, differentiating the two types with physical separation,
+% or by using multiple ion species with different wavelengths.
 
-% However, both of these adds significant complexity, and in the case of shuttling,
-% time cost, to the experiment. Instead, we developed a technique
-% that can be added with low overhead and minimum footprint on the experiment setup.
+% Both of these approaches, however, adds significant complexity,
+% and in the case of shuttling, time cost, to the experiment.
+% So instead, we developed a technique that can be added with low overhead
+% and minimum footprint on the experiment setup.
 % This would allow the MCMR capabilities to be added to many experiments
 % even including a lot of the existing ones like ours.
 
-% We achieve this using the so-called omg-archtecture, similar to how it is also done
-% in some neutral atom tweezer experiments recently.
-% This takes advantage of the metastable states that exist in almost all of
-% the ion species. (D in Ba, D/F in Yb).
+% We achieve this using the so-called omg-archtecture,
+% taking advantage of the metastable states that exist in almost all of
+% the ion species as shown here.
+% And this is similar to how some neutral atom experiments
+% implements it recently as well.
 
 \begin{frame}{Mid-circuit measurement and reset (MCMR)}
   \begin{center}
@@ -586,19 +591,20 @@ symbolgreek
 \end{frame}
 
 %% Use metastable state for MCMR
-% This can in general happen in two different ways.
-% In what we called the shelving method, which takes advantage of the long lifetime
-% of the metastable state, the data ion is driven to the metastable state
+% The process can in general happen in two different ways.
+% In what we called the shelving method,
+% the data ion is driven to the long lived metastable state
 % which protects it from seeing the the detection or pumping transitions.
 
 % Alternatively, if the data ion is left untouched in the ground state
-% but the auxiliary ion is driven to the metastable state we can scatter photon off of
+% but the auxiliary ion is driven to the metastable state
+% we can pump or in general scatter photons off of
 % the metastable state to either pump or detect the ions.
-% In this case the narrow linewidth of the metastable state can help
-% reducing unwanted coupling to the data ions.
-% We named this second one the hands-off methods, since it, when done right,
-% nominally does all the operations on the auxiliary ion
-% without perturbing the data ion.
+% In this case the narrow linewidth of the metastable transition can help
+% reducing unwanted coupling on the data ions.
+% We named this second one the hands-off methods,
+% since it nominally operates exclusively on the auxiliary ions
+% without perturbing the data.
 
 \begin{frame}{MCMR with metastable state
     \hspace{0.15cm}---\hspace{0.15cm} \only<1>{shelving method}\only<2->{hands-off method}}
@@ -748,58 +754,59 @@ symbolgreek
 \end{frame}
 
 %% Individual control of metastable state
-% Still, both of these methods rely on individual control of the metastable state.
-% The most obvious way to achieve this, of course, is to add focused beams to drive
-% such a transition only on the desired target ions.
-% True to our goal of minimizing the footprint, however,
+% Still, both of these rely on individual control of the metastable state,
+% which **could** of course be done using focused metastable drive beams.
+% But true to our goal of minimizing the footprint,
 % and knowing how challenging and distruptive it could be to
 % add a new individual addressing beam path,
 % we implemented all our schemes with a single global beam
-% to drive the metastable transition,
-% and to use exisiting individual addressing beams, the ones used for gate operations,
-% to distinguish between the ions types.
+% to drive the metastable transition.
+% All the distinctions between ion types are done with
+% existing individual addressing beams for gate operations.
 
-% One of the ways this can be achieved is by dressing a target ion,
-% usually the auxiliary ions, using the individual gate control beams.
+% One of the ways this can be achieved is by dressing some target ions,
+% usually the auxiliary ones, with the individual gate control beams.
 % The dressing can selectively shift the resonance of
 % the metastable transition allowing us to drive only the ions we want.
 % Note that I used the term dressing, rather than Stark shift,
-% which is a special case of dressing for large detuning.
+% which is a special case of dressing with large detuning.
 % This is because, well first I'd like to be more general,
 % but more importantly, the 355nm laser we use for gate operations
 % is specifically selected to produce minimum Stark shift to improve gate fidelity.
 % We therefore had to rely on driving a near resonant Raman transition
-% using our 355nm lasers, outside the Stark shift regime,
+% using that laser outside the Stark shift regime,
 % in order to produce an appriaciable shift.
 
 % Here's what that shift look like on our Yb ions.
-% The ... and ... line shows the spectrum with and without the Raman dressing.
+% The red and orange lines show the metastable state spectrum
+% with and without the Raman dressing.
 % The spectra are taken with a Blackman pulse shape to reduce off-resonance coupling,
-% giving rise to the smooth and narrow peak shape.
+% giving rise to the smooth and narrow peak shape and clear separation.
 % Both lines are also taken with the pi time for the dressed transition.
 % This overdrives the bare resonance, and combined with the Blackman pulse shape,
-% is why that resonance appears to be smaller.
+% is why that peak appears to be smaller.
 
-% While reusing the qubit control laser for dressing works,
-% this process does involve using them in a somewhat different way compared
-% to their original role. It's not a hard requirement, however, and we could use them
-% exactly the same as how they are used in a normal circuit.
+% Now, while reusing the qubit laser for dressing indeed works,
+% it does involve using them differently compared to their original role.
+% But this is actually not a hard requirement
+% and we could get individual metastable control
+% while using the lasers exactly the same as in a normal circuit.
 % One way to see how this works is to treat the qubit states
-% and the metastable state together as a qudit system.
-% Here, full individual *qudit* control, can be achieved by simply having
+% as well as the metastable state together as a qudit system.
+% Here, full individual *qudit* control can be achieved by simply having
 % full individual *qubit* contrl on any two of the levels,
-% combined with global operations connecting to other levels.
+% combined with global operations connecting to other ones.
 % An example of such a sequence is shown here, in which only one of the ion
 % ends up being in the metastable state, despite requiring only global drive there.
-% The sequence here can of course be customized as needed for each qudit systems
-% and I'll show the sequence we use for our demostration in a minute.
+% The sequence can of course be customized as needed for each qudit systems
+% and I'll show what we use for our demostration in a minute.
 
-% This second way of individual metastable state control,
+% This second way of individual control of metastable state,
 % which we called the qubit rotation implementation, for lack of a better name,
-% does have it drawback since it usually mean that all of the atoms needs to be
-% driven to the metastable state at least temporarily.
-% This can be seen clearly in this table showing the combination of the different
-% methods mentioned so far. While dressing can be applied equally well
+% does have it drawback since it usually drive all ions
+% to the metastable state at least temporarily.
+% As you can see in this table showing the combination of the different
+% methods mentioned so far, while dressing can be applied equally well
 % to both of the methods of MCMR, since the main selling point of the hands-off methods'
 % is to not touch the data ions, having to drive all of them to the metastable state
 % defeats the point and it doesn't usually make sense to have this combination.
@@ -1001,27 +1008,26 @@ symbolgreek
 \end{frame}
 
 %% Realization
-% With that survey of the methods in minds, we demonstrated all
-% of the combinations that makes sense in our system.
-% The metastable state we used here is the F=2 clock state
-% in the D3/2 manifold of Yb171 ions which have a coherence time of 10ms
+% With the survey of the methods in minds, we demonstrated all
+% of the combinations that make sense on our system.
+% The metastable state we used here is this F=2 clock state
+% in the D3/2 manifold of Yb171 ions which have a coherence time of 10ms in our system
 % limited by laser lock and off-resonant scattering.
-% All of the demonstration are done on a short chain of only two ions,
-% and with their separation set to be the same as in a longer chain.
-% (Mention Ba result)
+% All of the demonstrations are done on a short chain of two ions,
+% with their separation set to be the same as in a longer chain.
 
-% For mid-circuit measurement, we selected the shelving method.
-% This allow us to use the normal transition for detection,
-% which has high scattering rate and we can use the same imaging optics and detector.
-% We tried both dressing and qubit rotation and here's the qubit rotation sequence
-% we use for this particular case.
-% This shelves the data qubit away from the 1 state
-% where photon scattering happens,
-% while keeping the population for the auxiliary ion there untouched to be detected.
-% We measured a detection fidelity that's identical to our normal one, around 99.7%
-% and a fidelity for the data ion of % and % respectively when using dressing
-% or qubit rotation.
-% The data ion fidelity for qubit rotation is limited by the coherence of the D state
+% For mid-circuit measurement, we picked the shelving method,
+% so that we can keep the same lasers and detector.
+% We tried with both dressing and qubit rotation and here's the qubit rotation sequence
+% customized for this particular case.
+% Since the only state that will scatter photon is the |1> state,
+% this shelves the data qubit away from it while keeping the population for
+% the auxiliary ion there to be detected.
+% We varied the state of auxiliary ion and measured a detection fidelity
+% that's identical to our normal one, around 99.7%.
+% And we measured the Ramsey fringe contrast to obtain a fidelity
+% for the data ion to be 92 % and 99 % respectively when using dressing or qubit rotation.
+% The data fidelity for qubit rotation is limited by the coherence time of the D state
 % where the ion is shelved to, and the error on top of that for dressing
 % comes from a more complex sequence and crosstalk from the dressing beam.
 % Both of these aspect can be improved with improvment in our beam path and laser locking.
@@ -1070,6 +1076,7 @@ symbolgreek
             % D
             \mytweezer.drawState(0, \Dhf/2)
             \node[right=-0.03] at (0.2, \Dhf/2) {\scalebox{0.7}{$F=2$}};
+            \draw[pyplotc2!70!lime,line width=1] (0.3, \Dhf/2) ellipse (0.7 and 0.2);
             \mytweezer.drawState(0, -\Dhf/2)
             \node[right=-0.03] at (0.2, -\Dhf/2) {\scalebox{0.7}{$F=1$}};
             \node[right=-0.03] at (0.9, 0.0) {\scalebox{0.75}{$D_{3/2}$}};
@@ -1101,7 +1108,7 @@ symbolgreek
         \end{scope}
       }
       \visible<2-> {
-        \node at (6.6, 1.2) {\includegraphics[width=7.5cm]{imgs/sequence.pdf}};
+        \node at (6.6, 2.1) {\includegraphics[width=7.5cm]{imgs/sequence.pdf}};
       }
       \visible<3-> {
         \node at (0.75, 5.3) {\scalebox{0.9}{Aux Detection}};
@@ -1110,22 +1117,26 @@ symbolgreek
       \visible<4-> {
         \node at (0.75, 0.9) {\scalebox{0.9}{Data Coherence}};
         \node at (0.5, -1.0) {\includegraphics[width=4.8cm]{imgs/detect_data_ramsey_square.pdf}};
+        \node[text width=5cm,align=left] at (6.9, -1.5) {
+          \scalebox{0.85}{\makebox[2.4cm][r]{Dressing}: $91.7(4)\%$}\\
+          \scalebox{0.85}{\makebox[2.4cm][r]{Qubit rotation}: $98.5(5)\%$}\\
+        };
       }
     \end{tikzpicture}
   \end{center}
 \end{frame}
 
-% We also demonstrated mid-circuit reset, this time using the hands-off method.
+% We then demonstrated mid-circuit reset, this time using the hands-off method.
 % Here the goal is simply to selectively drive one of the qubit state of the auxiliary
 % ions to the D state before pumping them back and repeats this cycle
 % until the ion is in the other qubit state.
-% As discussed, the individual control is done with dressing and here I'm showing
+% As discussed, the individual control is done with Raman dressing and here I'm showing
 % the reset error when the auxiliary ion was initialized in either of the qubit states.
-% Similarly, the data ion error is shown here. With about 14 cycle of pumping,
-% we can pump the ion with 99% fidelity while causing % of data infidelity.
+% Similarly, the data ion error is shown here. With about 16 cycles of pumping,
+% we can pump the ion with 99% fidelity while causing 3-4% of data error.
 % We believe this residue error is mainly caused by off resonant
 % coupling to the motional mode since the ion wasn't fully cooled for this experiment
-% and Raman crosstalk.
+% as well as Raman crosstalk.
 
 \begin{frame}{}
   \begin{center}
@@ -1175,9 +1186,9 @@ symbolgreek
           \mytweezer.drawState2(\Bx+\Zx, \By+\Zy)
 
           % D
-          \node[right] at (\Dx+\Zx*2 + 0.3, \Dy+\Zy*2-0.05)
+          \node[right] at (\Dx+\Zx*2 + 0.3, \Dy+\Zy*2+0.05)
           {\scalebox{0.9}{$\mathrm{D}_{3/2}$}};
-          \node[right] at (\Dx+\Zx*2 + 0.35, \Dy-0.4) {\scalebox{0.8}{$F=2$}};
+          \node[right] at (\Dx+\Zx*2 + 0.35, \Dy-0.45) {\scalebox{0.8}{$F=2$}};
           \mytweezer.drawState2(\Dx-\Zx*2, \Dy-\Zy*2)
           \mytweezer.drawState2(\Dx-\Zx, \Dy-\Zy)
           \mytweezer.drawState2(\Dx, \Dy)
