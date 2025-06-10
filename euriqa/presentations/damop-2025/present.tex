@@ -278,8 +278,8 @@ symbolgreek
 \author[Yichao Yu]{Yichao Yu\\
   \vspace{0.5cm}
   {\footnotesize Keqin Yan, Vivian Zhang, Debopriyo Biswas, Bahaa Harraz,}\\
-  {\footnotesize Crystal Noel, Christopher R Monroe, Alexander Kozhanov}}
-\institute[Duke Quantum Center]{Monroe Group/Duke Quantum Center}
+  {\footnotesize Crystal Noel, Christopher R Monroe and Alexander Kozhanov}}
+\institute[Duke Quantum Center]{Duke Quantum Center, Duke University}
 
 \ifpdf
   % Ensure reproducible output
@@ -449,7 +449,7 @@ symbolgreek
 
           \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
           minimum height=1.8cm,line width=1]
-          (C1) at (0, 2.25) {Feedback};
+          (C1) at (0, 2.25) {Conditional\\operation};
 
           \node[pyplotc3] (Im) at (1, 1) {$|0\rangle$};
 
@@ -1027,7 +1027,12 @@ symbolgreek
 
 \begin{frame}{}
   \begin{center}
+    \vspace{-0.4cm}
     \begin{tikzpicture}
+      \visible<2-> {
+        \node[below,align=center] at (7.8, 5.8)
+        {\usebeamercolor[fg]{frametitle}{\bf Mid-circuit measurement}};
+      }
       \visible<1-2> {
         \begin{scope}[shift={(0, 0.5)}]
           \def\Sx{0.0}
@@ -1134,8 +1139,9 @@ symbolgreek
 % coupling to the motional mode as well as Raman crosstalk,
 % especially since the ion wasn't fully cooled for this experiment.
 
-\begin{frame}{}
+\begin{frame}{Mid-circuit reset}
   \begin{center}
+    \vspace{-0.6cm}
     \begin{tikzpicture}
       \begin{scope}[scale=0.5]
         \begin{scope}[shift={(-2.15, -1.5)}]
