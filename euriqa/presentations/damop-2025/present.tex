@@ -336,11 +336,11 @@ symbolgreek
 
 %% Intro
 % Here at the DQC, we operate a variety of quantum computing systems
-% based on chains of mainly Yb/Ba ions.
+% based on chains of trapped ions.
 % All of these systems have high fidelity state preparation and measurement
 % as well as individual Raman addressability of single ions,
 % for both single and two qubit gate operations.
-% Out of these, mine is the gold system, currently tweaking up the gate fidelities
+% Out of these, I work on the gold system, currently tweaking up the gate fidelities
 % with our latest status shown here.
 
 \begin{frame}{Duke Quantum Center (DQC) \visible<2->{--- Gold System}}
@@ -389,13 +389,12 @@ symbolgreek
   \end{center}
 \end{frame}
 
-% Like the other systems, experiments on ours typically follow
+% Like many others, experiments on our system typically follow
 % the standard procedure of most AMO experiments up to this point.
-% We start by initializing state with optical pumping,
-% do some coherent evolution including single and two qubit gates,
+% We start by initializing state with optical pumping, do some coherent evolution,
 % and finally detect the state in the end with optical fluorescence.
 
-% While this type of operation works well and is quite versatile,
+% While this type of operation works well,
 % techiques such as quantum error correction may
 % require ammending the coherent evolution process with classical feedback.
 % This necessitate measurement and also reset of the measured qubit
@@ -502,19 +501,19 @@ symbolgreek
 %% Implementation of MCMR in amo/ion systems
 % Now compared to what we currently used,
 % the main difference for a mid-circuit version is of course that
-% we need to clearly distinguish between the ions that needs to be measured,
-% which we'll call the auxiliary ions, and the ions that aren't,
+% we need to clearly distinguish between the ions that need to be measured,
+% which we'll call the auxiliary ions, and the ions that should be preserved,
 % which will be called the data ions.
 % Due to the broad linewidth of the transition typically used here,
 % it can be really challenging to prevent scattering
 % and loss of coherence on the data ion
 % caused by any kind of crosstalk from the auxiliary.
 
-% Still, in ion systems, this isolation has been realized,
+% Still, for ion systems, this isolation has been realized,
 % either with shuttling, differentiating the two types with physical separation,
 % or by using multiple ion species with different wavelengths.
 
-% Both of these approaches, however, adds significant complexity,
+% Both of these approaches, however, add significant complexity,
 % and in the case of shuttling, time cost, to the experiment.
 % So instead, we developed a technique that can be added with low overhead
 % and minimum footprint on the experiment setup.
@@ -524,8 +523,7 @@ symbolgreek
 % We achieve this using the so-called omg-archtecture,
 % taking advantage of the metastable states that exist in almost all of
 % the ion species as shown here.
-% This is also similar to how some neutral atom experiments
-% implements it recently as well.
+% This is also similar to how some neutral atom experiments implements it recently.
 
 \begin{frame}{Mid-circuit measurement and reset (MCMR)}
   \begin{center}
@@ -761,7 +759,7 @@ symbolgreek
 % add a new individual addressing beam path,
 % we implemented all our schemes with a single global beam
 % to drive the metastable transition.
-% All the distinctions between ion types are done with
+% Instead, all the distinctions between ion types are done with
 % existing individual addressing beams for gate operations.
 
 % One of the ways this can be achieved is by dressing some target ions,
@@ -791,18 +789,19 @@ symbolgreek
 % Here, full individual *qudit* control can be achieved by simply having
 % individual *qubit* control on any two of the levels,
 % combined with global operations connecting to other ones.
-% An example is shown here, in which only one of the ion
-% ends up being in the metastable state, despite requiring only global drive there.
-% This can of course be customized as needed for each qudit systems.
+% This kind of sequence can of course be customized as needed for each qudit systems,
+% but as an example,
+% this sequence leaves only one of the ion to metastable state in the end,
+% despite requiring only global drive there.
 
 % This second way of individual control of metastable state,
 % which we called the qubit rotation implementation,
-% does have it drawback since it usually drive all ions to the metastable state.
+% does have it drawback since it usually involves driving all ions to the metastable state.
 % As you can see in this table showing the combination of the different methods,
 % while dressing can be applied equally well to both of the MCMR methods,
-% since the main selling point of the hands-off methods is to not touch the data ions,
-% having to drive all ions to the metastable state defeats the point
-% and it doesn't usually make sense to have this combination.
+% the combination of qubit-rotation with the hands-off methods usually doesn't make sense
+% since driving everything to metastable state defeats the whole point of
+% "hands-off the data".
 
 \begin{frame}{Individual control of metastable state
     \only<-3>{\hspace{0.15cm}---\hspace{0.15cm} dressing}\only<5>{\hspace{0.15cm}---\hspace{0.15cm} qubit rotation}}
@@ -1005,7 +1004,7 @@ symbolgreek
 % With the survey of the methods in minds, we demonstrated all
 % of the combinations that make sense on our system.
 % The metastable state we used here is this F=2 clock state
-% in the D3/2 manifold of Yb171 ions which have a coherence time of 10ms in our system
+% in the D3/2 manifold of Yb171 ions which has a coherence time of 10ms in our system
 % limited by laser lock and off-resonant scattering.
 % All of the demonstrations are done on a short chain of two ions,
 % with their separation set to be the same as in a longer chain.
@@ -1022,7 +1021,7 @@ symbolgreek
 % And we measured the Ramsey fringe contrast to obtain a fidelity
 % for the data ion to be 92 % and 99 % respectively when using dressing or qubit rotation.
 % The data fidelity for qubit rotation is limited by the coherence time of the D state
-% where the ion is shelved to, and the error on top of that for dressing
+% and the error on top of that for dressing
 % comes from a more complex sequence and crosstalk from the dressing beam.
 % Both of these aspect can be improved with improvment in our beam path and laser locking.
 
@@ -1030,7 +1029,7 @@ symbolgreek
   \begin{center}
     \begin{tikzpicture}
       \visible<1-2> {
-        \begin{scope}
+        \begin{scope}[shift={(0, 0.5)}]
           \def\Sx{0.0}
           \def\Sy{0.1}
           \def\Shf{1.2}
@@ -1100,6 +1099,8 @@ symbolgreek
           (\Sx-0.05, \Sy-\Shf/2) --
           node[sloped,above=-0.03] {\scalebox{0.6}{Raman}} (\Sx-0.05, \Sy+\Shf/2);
         \end{scope}
+        \node at (0.5, -0.9) {\scalebox{0.7}{$t_2^{|D\rangle}\approx10\ \mathrm{ms}$}};
+        \node at (0.5, 4.7) {\scalebox{1}{$^{171}\mathrm{Yb}^+$ levels}};
       }
       \visible<2-> {
         \node at (6.6, 2.1) {\includegraphics[width=7.5cm]{imgs/sequence.pdf}};
@@ -1120,9 +1121,9 @@ symbolgreek
   \end{center}
 \end{frame}
 
-% We then demonstrated mid-circuit reset, this time using the hands-off method
-% with dressing.
-% Here the goal is simply to selectively drive one of the qubit state of the auxiliary
+% We then demonstrated mid-circuit reset,
+% this time using the hands-off method with dressing.
+% Here the goal is simply to selectively drive one of the qubit states of the auxiliary
 % ions to the D state before pumping them back and repeats this cycle
 % until the ion is in the other qubit state.
 % Here I'm showing the reset error as well as the data error when the auxiliary ion
@@ -1130,8 +1131,8 @@ symbolgreek
 % With about 16 cycles of pumping,
 % we can pump the ion with 99% fidelity while causing 3-4% of data error.
 % We believe this residue error is mainly caused by off resonant
-% coupling to the motional mode since the ion wasn't fully cooled for this experiment
-% as well as Raman crosstalk.
+% coupling to the motional mode as well as Raman crosstalk,
+% especially since the ion wasn't fully cooled for this experiment.
 
 \begin{frame}{}
   \begin{center}
