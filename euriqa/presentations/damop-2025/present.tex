@@ -502,12 +502,12 @@ symbolgreek
 %% Implementation of MCMR in amo/ion systems
 % Now compared to what we currently used,
 % the main difference for a mid-circuit version is of course that
-% we need to clearly distinguish between the atoms that needs to be measured,
-% which we'll call the auxiliary atoms, and the atoms that aren't,
-% which will be called the data atoms.
+% we need to clearly distinguish between the ions that needs to be measured,
+% which we'll call the auxiliary ions, and the ions that aren't,
+% which will be called the data ions.
 % Due to the broad linewidth of the transition typically used here,
 % it can be really challenging to prevent scattering
-% and loss of coherence on the data atom
+% and loss of coherence on the data ion
 % caused by any kind of crosstalk from the auxiliary.
 
 % Still, in ion systems, this isolation has been realized,
@@ -524,7 +524,7 @@ symbolgreek
 % We achieve this using the so-called omg-archtecture,
 % taking advantage of the metastable states that exist in almost all of
 % the ion species as shown here.
-% And this is similar to how some neutral atom experiments
+% This is also similar to how some neutral atom experiments
 % implements it recently as well.
 
 \begin{frame}{Mid-circuit measurement and reset (MCMR)}
@@ -765,17 +765,12 @@ symbolgreek
 % existing individual addressing beams for gate operations.
 
 % One of the ways this can be achieved is by dressing some target ions,
-% usually the auxiliary ones, with the individual gate control beams.
+% with the individual gate control beams.
 % The dressing can selectively shift the resonance of
 % the metastable transition allowing us to drive only the ions we want.
-% Note that I used the term dressing, rather than Stark shift,
-% which is a special case of dressing with large detuning.
-% This is because, well first I'd like to be more general,
-% but more importantly, the 355nm laser we use for gate operations
-% is specifically selected to produce minimum Stark shift to improve gate fidelity.
-% We therefore had to rely on driving a near resonant Raman transition
-% using that laser outside the Stark shift regime,
-% in order to produce an appriaciable shift.
+% Since the 355nm gate operation laser we use generates minimum scalar light shift
+% to improve gate fidelity, we had to use a near resonance Raman dressing
+% to produce an appriaciable shift.
 
 % Here's what that shift look like on our Yb ions.
 % The red and orange lines show the metastable state spectrum
@@ -791,25 +786,23 @@ symbolgreek
 % But this is actually not a hard requirement
 % and we could get individual metastable control
 % while using the lasers exactly the same as in a normal circuit.
-% One way to see how this works is to treat the qubit states
+% The way this works is to treat the qubit states
 % as well as the metastable state together as a qudit system.
 % Here, full individual *qudit* control can be achieved by simply having
-% full individual *qubit* contrl on any two of the levels,
+% individual *qubit* control on any two of the levels,
 % combined with global operations connecting to other ones.
-% An example of such a sequence is shown here, in which only one of the ion
+% An example is shown here, in which only one of the ion
 % ends up being in the metastable state, despite requiring only global drive there.
-% The sequence can of course be customized as needed for each qudit systems
-% and I'll show what we use for our demostration in a minute.
+% This can of course be customized as needed for each qudit systems.
 
 % This second way of individual control of metastable state,
-% which we called the qubit rotation implementation, for lack of a better name,
-% does have it drawback since it usually drive all ions
-% to the metastable state at least temporarily.
-% As you can see in this table showing the combination of the different
-% methods mentioned so far, while dressing can be applied equally well
-% to both of the methods of MCMR, since the main selling point of the hands-off methods'
-% is to not touch the data ions, having to drive all of them to the metastable state
-% defeats the point and it doesn't usually make sense to have this combination.
+% which we called the qubit rotation implementation,
+% does have it drawback since it usually drive all ions to the metastable state.
+% As you can see in this table showing the combination of the different methods,
+% while dressing can be applied equally well to both of the MCMR methods,
+% since the main selling point of the hands-off methods is to not touch the data ions,
+% having to drive all ions to the metastable state defeats the point
+% and it doesn't usually make sense to have this combination.
 
 \begin{frame}{Individual control of metastable state
     \only<-3>{\hspace{0.15cm}---\hspace{0.15cm} dressing}\only<5>{\hspace{0.15cm}---\hspace{0.15cm} qubit rotation}}
