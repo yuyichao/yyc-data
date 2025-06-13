@@ -348,23 +348,23 @@ symbolgreek
     \begin{tikzpicture}
       \begin{scope}[shift={(-4, 3.3)}]
         \node at (0, 0) {\includegraphics[width=3cm]{imgs/blue.jpg}};
-        \node[pyplotc0!40!cyan] at (-0.5, 0.3) {\textbf{blue \scalebox{0.8}{(Yb)}}};
+        \node[pyplotc0!40!cyan] at (-0.5, 0.3) {\textbf{Blue \scalebox{0.8}{(Yb)}}};
       \end{scope}
       \begin{scope}[shift={(0, 3.2)}]
         \node at (0, 0) {\includegraphics[width=3.7cm]{imgs/purple.jpg}};
-        \node[pyplotc4!40!pyplotc6] at (-0.6, 1.1) {\textbf{purple \scalebox{0.8}{(Yb)}}};
+        \node[pyplotc4!40!pyplotc6] at (-0.6, 1.1) {\textbf{Purple \scalebox{0.8}{(Yb)}}};
       \end{scope}
       \begin{scope}[shift={(4, 3.2)}]
         \node at (0, 0) {\includegraphics[width=3.6cm]{imgs/red_chamber.jpg}};
-        \node[pyplotc3] at (-1.1, -0.3) {\textbf{red \scalebox{0.8}{(Yb)}}};
+        \node[pyplotc3] at (-1.1, -0.3) {\textbf{Red \scalebox{0.8}{(Yb)}}};
       \end{scope}
       \begin{scope}[shift={(-4, -0.3)}]
         \node at (0, 0) {\includegraphics[width=3.6cm]{imgs/brown.jpg}};
-        \node[pyplotc5!70!orange] at (-0.7, -1.1) {\textbf{brown \scalebox{0.8}{(Yb)}}};
+        \node[pyplotc5!70!orange] at (-0.7, -1.1) {\textbf{Brown \scalebox{0.8}{(Yb)}}};
       \end{scope}
       \begin{scope}[shift={(4, -0.2)}]
         \node at (0, 0) {\includegraphics[width=2.8cm]{imgs/green.png}};
-        \node[green!80!white] at (-0.4, -1.0) {\textbf{green \scalebox{0.8}{(Ba)}}};
+        \node[green!80!white] at (-0.4, -1.0) {\textbf{Green \scalebox{0.8}{(Ba)}}};
       \end{scope}
 
       \visible<2-> {
@@ -577,7 +577,7 @@ symbolgreek
           \item\makebox[0.7cm][r]{Yb$^+$}: D$_{3/2}$ \scalebox{0.85}{($50$ ms)},
             D$_{5/2}$ \scalebox{0.85}{($7$ ms)},\\
             \phantom{\makebox[0.7cm]{}: }F$_{7/2}$ \scalebox{0.85}{($>\!\!1$ yr)}
-          \item\makebox[0.7cm][r]{Ba$^+$}: D$_{3/2}$ \scalebox{0.85}{($20$ s)},
+          \item\makebox[0.7cm][r]{Ba$^+$}: D$_{3/2}$ \scalebox{0.85}{($80$ s)},
             D$_{5/2}$ \scalebox{0.85}{($30$ s)}
           \item\makebox[0.7cm][r]{Sr$^+$}: D$_{3/2}$ \scalebox{0.85}{($0.4$ s)},
             D$_{5/2}$ \scalebox{0.85}{($0.4$ s)}
@@ -1028,14 +1028,13 @@ symbolgreek
 
 \begin{frame}{}
   \begin{center}
-    \vspace{-0.4cm}
     \begin{tikzpicture}
       \visible<2-> {
-        \node[below,align=center] at (7.8, 5.8)
-        {\usebeamercolor[fg]{frametitle}{\bf Mid-circuit measurement}};
+        \node[below,align=center,left] at (10.2, 5.5)
+        {\usebeamercolor[fg]{frametitle}{\bf Mid-circuit measurement (shelving)}};
       }
-      \visible<1-2> {
-        \begin{scope}[shift={(0, 0.5)}]
+      \visible<1-> {
+        \begin{scope}[shift={(0, 1)}]
           \def\Sx{0.0}
           \def\Sy{0.1}
           \def\Shf{1.2}
@@ -1044,11 +1043,11 @@ symbolgreek
           \def\Py{2.55}
           \def\Phf{0.7}
 
-          \def\Dx{1.1}
+          \def\Dx{1.4}
           \def\Dy{1.8}
           \def\Dhf{0.4}
 
-          \def\Bx{1.1}
+          \def\Bx{1.4}
           \def\By{3.2}
           \def\Bhf{0.3}
 
@@ -1104,21 +1103,19 @@ symbolgreek
           \draw[pyplotc4, <->, >=stealth, line width=0.8]
           (\Sx-0.05, \Sy-\Shf/2) --
           node[sloped,above=-0.03] {\scalebox{0.6}{Raman}} (\Sx-0.05, \Sy+\Shf/2);
+
+          \node[pyplotc0] at (1.9, 0.8) {\scalebox{0.7}{$t_2^{|D\rangle}\approx10\ \mathrm{ms}$}};
+          \node at (1, 4) {\scalebox{1}{$^{171}\mathrm{Yb}^+$ levels}};
         \end{scope}
-        \node at (0.5, -0.9) {\scalebox{0.7}{$t_2^{|D\rangle}\approx10\ \mathrm{ms}$}};
-        \node at (0.5, 4.7) {\scalebox{1}{$^{171}\mathrm{Yb}^+$ levels}};
       }
       \visible<2-> {
-        \node at (6.6, 2.1) {\includegraphics[width=7.5cm]{imgs/sequence.pdf}};
+        \node at (6.95, 5.0) {\scalebox{0.9}{Aux Detection}};
+        \node at (6.7, 3.1) {\includegraphics[width=4.8cm]{imgs/detect_aux_rabi.pdf}};
       }
       \visible<3-> {
-        \node at (0.75, 5.3) {\scalebox{0.9}{Aux Detection}};
-        \node at (0.5, 3.4) {\includegraphics[width=4.8cm]{imgs/detect_aux_rabi.pdf}};
-      }
-      \visible<4-> {
-        \node at (0.75, 0.9) {\scalebox{0.9}{Data Coherence}};
-        \node at (0.5, -1.0) {\includegraphics[width=4.8cm]{imgs/detect_data_ramsey_square.pdf}};
-        \node[text width=5cm,align=left] at (6.9, -1.5) {
+        \node at (6.95, 0.9) {\scalebox{0.9}{Data Coherence}};
+        \node at (6.7, -1.0) {\includegraphics[width=4.8cm]{imgs/detect_data_ramsey_square.pdf}};
+        \node[text width=5cm,align=left] at (1.2, -1.5) {
           \scalebox{0.85}{\makebox[2.4cm][r]{Dressing}: $91.7(4)\%$}\\
           \scalebox{0.85}{\makebox[2.4cm][r]{Qubit rotation}: $98.5(5)\%$}\\
         };
@@ -1140,7 +1137,7 @@ symbolgreek
 % coupling to the motional mode as well as Raman crosstalk,
 % especially since the ion wasn't fully cooled for this experiment.
 
-\begin{frame}{Mid-circuit reset}
+\begin{frame}{Mid-circuit reset (hands-off)}
   \begin{center}
     \vspace{-0.6cm}
     \begin{tikzpicture}
