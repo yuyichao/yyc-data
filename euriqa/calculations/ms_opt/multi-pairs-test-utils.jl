@@ -37,14 +37,14 @@ function (::PreOptObjective{NModes})(vals) where NModes
     dis = vals[1]
     disδ = vals[2]
     area = zero(eltype(vals))
-    areaδ = zero(eltype(vals))
+    # areaδ = zero(eltype(vals))
     for i in 1:NModes
-        areai = abs(vals[2 + i])
-        areaδi = abs(vals[2 + NModes + i])
-        area += areai
-        areaδ += areaδi / areai
+        # areai = abs(vals[2 + i])
+        # areaδi = abs(vals[2 + NModes + i])
+        area = max(area, abs(vals[2 + i]))
+        # areaδ += areaδi / areai
     end
-    return (dis + disδ / 200) * areaδ / area^2
+    return (dis + disδ / 200) / area^2
 end
 
 function get_preobj(modes, buf, ratio=0.6)
