@@ -64,7 +64,7 @@ struct PreOptimizer{NModes,ObjArgs,Obj}
     opt::NLopt.Opt
 end
 function PreOptimizer(preobj::Obj;
-                      τmin=0.1, τmax=3, Ω=0.4, ωmin=2π * 2.39, ωmax=2π * 2.52) where Obj
+                      τmin=0.1, τmax=3, Ω=0.4, ωmin=2π * 2.37, ωmax=2π * 2.52) where Obj
     nargs = Seq.nparams(preobj)
     tracker = Opts.NLVarTracker(nargs)
     Opts.set_bound!(tracker, preobj.param.τ, τmin, τmax)
