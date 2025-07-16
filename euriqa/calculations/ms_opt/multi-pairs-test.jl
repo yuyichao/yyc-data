@@ -14,8 +14,8 @@ for i in 1:length(nsegs)
 end
 
 @time Threads.@threads for i in 1:length(nsegs)
-    open("pairs_data_$(nsegs[i])_seg.json", "w") do io
-        println(io, JSON.json(todict(run_preopts(nsegs[i], preopts[i], 100, 150.0, 350.0, 25))))
+    open("pairs_data_$(nsegs[i])_segs_3.json", "w") do io
+        println(io, JSON.json(todict(run_preopts(nsegs[i], preopts[i], 6000, 150.0, 350.0, 25))))
     end
 end
 # open("pairs_data.json", "w") do io
