@@ -262,6 +262,7 @@ function mode_weight!(weights, ion1, ion2)
     for i in 1:7
         weights[i] = participation_factors[i, ion1] * participation_factors[i, ion2] * lamb_dicke_parameters[i]^2
     end
+    return weights
 end
 
 const modes = Seq.Modes()
