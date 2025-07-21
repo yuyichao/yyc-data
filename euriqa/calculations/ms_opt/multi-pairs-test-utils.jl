@@ -13,22 +13,7 @@ const Opts = MSSim.Optimizers
 const SS = MSSim.SegSeq
 const SL = MSSim.SymLinear
 const Seq = MSSim.Sequence
-
-blackman(x) = 0.42 + 0.5 * cospi(x) + 0.08 * cospi(2 * x)
-
-struct BlackmanStartEnd{Ratio} <: Function
-end
-
-function (::BlackmanStartEnd{Ratio})(x) where Ratio
-    if -Ratio <= x <= Ratio
-        return float(one(x))
-    elseif x < 0
-        x = (x + Ratio) / (1 - Ratio)
-    else
-        x = (x - Ratio) / (1 - Ratio)
-    end
-    return blackman(x)
-end
+const U = MSSim.Utils
 
 struct PreOptObjective{NModes}
 end
@@ -55,7 +40,7 @@ function get_preobj(modes, buf, ratio=0.6)
                          ((:dis2, 0), (:disδ2, 0), area_args..., areaδ_args...),
                          Opts.autodiff(PreOptObjective{7}()), modes, buf,
                          freq=Seq.FreqSpec(true, sym=false),
-                         amp=Seq.AmpSpec(cb=BlackmanStartEnd{ratio}()))
+                         amp=Seq.AmpSpec(cb=U.BlackmanStartEnd{ratio}()))
 end
 
 struct PreOptimizer{NModes,ObjArgs,Obj}
