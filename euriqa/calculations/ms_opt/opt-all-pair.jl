@@ -17,7 +17,7 @@ mutable struct ThreadObjectPool{T,CB}
     # So access of the array member/size does not need to be atomic.
     # Access of the Atomic variables stored in the array should all be atomic exchanges
     # so that we never have duplicated/missing references to any objects.
-    array::Vector{Atomic{Union{T,Nothing}}}
+    @atomic array::Vector{Atomic{Union{T,Nothing}}}
     const extra::Vector{T} # Protected by lock
     function ThreadObjectPool(cb::CB) where CB
         obj = cb()
