@@ -125,6 +125,7 @@ struct PreOptimizer{NSeg,PreObj,Sum}
         end
 
         pre_opt = NLopt.Opt(:LD_LBFGS, nargs)
+        precompile(pre_obj, (Vector{Float64}, Vector{Float64}))
         NLopt.min_objective!(pre_opt, pre_obj)
         NLopt.maxeval!(pre_opt, maxiter)
 
@@ -147,7 +148,7 @@ end
 function opt_one!(o::PreOptimizer)
     objval, args, ret = NLopt.optimize!(o.pre_opt,
                                         Opts.init_vars!(o.pre_tracker, o.args_buff))
-    if getfield(NLopt, ret) < 0
+    if getfield(NLopt, ret)::NLopt.Result < 0
         return false
     end
     raw_params = Seq.RawParams(o.pre_obj, args, buff=o.rawparams_buff)
@@ -190,9 +191,6 @@ function opt_all_rounds!(pool::ThreadObjectPool{PreOpt},
     nions = length(o0.ωs)
     ntimes = o0.ntimes
     put!(pool, o0)
-    precompile(set_mode!, (PreOpt, Int))
-    precompile(set_time_range!, (PreOpt, Float64, Float64))
-    precompile(opt_one!, (PreOpt,))
     @threads :greedy for (mode_idx, time_idx) in Iterators.product(1:nions, 1:ntimes)
         o = get(pool)
         set_mode!(o, mode_idx)
