@@ -118,16 +118,16 @@ const bij = [0.002163619698947626 -0.019894333993010195 0.07990263247850947 -0.1
 
 const amp_ratio = 0.7
 meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
-_meta, candidates = load_candidates_dir(joinpath(@__DIR__, "data/ion13_0.7r/"))
+_meta, candidates = load_candidates_dir(joinpath(@__DIR__, "data/ion13_0.7r_2/"))
 println("Loaded $(length(candidates))")
 @assert _meta === nothing || _meta == meta
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
                               tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
 end
-candidates = @time opt_all_rounds!(pre_pool, 10, candidates)
+candidates = @time opt_all_rounds!(pre_pool, 30, candidates)
 @show length(candidates)
-save_candidates(joinpath(@__DIR__, "data/ion13_0.7r/candidates_"), candidates, meta)
+save_candidates(joinpath(@__DIR__, "data/ion13_0.7r_2/candidates_"), candidates, meta)
 
 
 # full_opt = Optimizer{nseg}(2π .* fs, ηs, bij, 2π .* (fs .+ 0.3);
