@@ -88,16 +88,16 @@ Base.Dict(c::Candidate) = Dict("param"=>c.param, "props"=>Dict(c.props))
 Candidate(d::Dict{<:AbstractString}) = Candidate(copy(d["param"]),
                                                  Seq.SolutionProperties(d["props"]))
 
-function load_candidate_file(io::IO)
+function load_candidates_file(io::IO)
     data = JSON.parse(io)
     meta = get(data, "meta")
     return meta, Candidate.(data["candidates"])
 end
 
-function load_candidate_dir(dir)
+function load_candidates_dir(dir)
     candidates = Candidate[]
     for f in readdir(dir, join=true)
-        file_meta, file_candidates = open(load_candidate_file, f)
+        file_meta, file_candidates = open(load_candidates_file, f)
         if !@isdefined(meta)
             meta = file_meta
         elseif file_meta != meta
@@ -105,14 +105,17 @@ function load_candidate_dir(dir)
         end
         append!(candidates, file_candidates)
     end
-    return meta, file_candidates
+    if !@isdefined(meta)
+        meta = nothing
+    end
+    return meta, candidates
 end
 
-function save_candidates(prefix, candidates, meta, block_size=2000)
+function save_candidates(prefix, candidates, meta; block_size=2000)
     ncandidates = length(candidates)
     for (i, start_idx) in enumerate(1:block_size:ncandidates)
         end_idx = min(start_idx + block_size - 1, ncandidates)
-        open("$(prefix)$(i)", "w") do io
+        open("$(prefix)$(i).json", "w") do io
             JSON.print(io, Dict("meta"=>meta,
                                 "candidates"=>Dict.(@view candidates[start_idx:end_idx])))
         end
