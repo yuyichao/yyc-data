@@ -125,7 +125,7 @@ const pre_pool = ThreadObjectPool() do
     return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
                               tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
 end
-candidates = @time opt_all_rounds!(pre_pool, 3, candidates)
+candidates = @time opt_all_rounds!(pre_pool, 10, candidates)
 @show length(candidates)
 save_candidates(joinpath(@__DIR__, "data/ion13_0.7r/candidates_"), candidates, meta)
 
