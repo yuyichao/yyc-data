@@ -90,7 +90,7 @@ Candidate(d::Dict{<:AbstractString}) = Candidate(copy(d["param"]),
 
 function load_candidates_file(io::IO)
     data = JSON.parse(io)
-    meta = get(data, "meta")
+    meta = get(data, "meta", nothing)
     return meta, Candidate.(data["candidates"])
 end
 
@@ -116,8 +116,9 @@ function save_candidates(prefix, candidates, meta; block_size=2000)
     for (i, start_idx) in enumerate(1:block_size:ncandidates)
         end_idx = min(start_idx + block_size - 1, ncandidates)
         open("$(prefix)$(i).json", "w") do io
-            JSON.print(io, Dict("meta"=>meta,
-                                "candidates"=>Dict.(@view candidates[start_idx:end_idx])))
+            d = Dict("meta"=>meta,
+                     "candidates"=>Dict.(@view candidates[start_idx:end_idx]))
+            JSON.print(io, d, 2)
         end
     end
 end
