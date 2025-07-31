@@ -6,6 +6,7 @@ import MSSim.SymLinear as SL
 import MSSim.Sequence as Seq
 import MSSim.Utils as U
 
+using JSON
 using NLopt
 using Base.Threads
 
@@ -70,9 +71,52 @@ function Base.put!(pool::ThreadObjectPool{T}, obj::T) where T
     return
 end
 
+function set_mode_weight!(weights, ηs, bij, ion1, ion2)
+    nions = length(ηs)
+    for i in 1:nions
+        weights[i] = bij[i, ion1] * bij[i, ion2] * ηs[i]^2
+    end
+    return weights
+end
+
 struct Candidate
     param::Vector{Float64}
     props::Seq.SolutionProperties
+end
+
+Base.Dict(c::Candidate) = Dict("param"=>c.param, "props"=>Dict(c.props))
+Candidate(d::Dict{<:AbstractString}) = Candidate(copy(d["param"]),
+                                                 Seq.SolutionProperties(d["props"]))
+
+function load_candidate_file(io::IO)
+    data = JSON.parse(io)
+    meta = get(data, "meta")
+    return meta, Candidate.(data["candidates"])
+end
+
+function load_candidate_dir(dir)
+    candidates = Candidate[]
+    for f in readdir(dir, join=true)
+        file_meta, file_candidates = open(load_candidate_file, f)
+        if !@isdefined(meta)
+            meta = file_meta
+        elseif file_meta != meta
+            error("Metadata mismatch")
+        end
+        append!(candidates, file_candidates)
+    end
+    return meta, file_candidates
+end
+
+function save_candidates(prefix, candidates, meta, block_size=2000)
+    ncandidates = length(candidates)
+    for (i, start_idx) in enumerate(1:block_size:ncandidates)
+        end_idx = min(start_idx + block_size - 1, ncandidates)
+        open("$(prefix)$(i)", "w") do io
+            JSON.print(io, Dict("meta"=>meta,
+                                "candidates"=>Dict.(@view candidates[start_idx:end_idx])))
+        end
+    end
 end
 
 struct PreOptimizer{NSeg,PreObj,Sum}
@@ -205,4 +249,114 @@ function opt_all_rounds!(pool::ThreadObjectPool{PreOpt},
         put!(pool, o)
     end
     return candidates
+end
+
+struct PairOptimizer{NSeg,AreaObj,Sum}
+    ωs::Vector{Float64}
+    ηs::Vector{Float64}
+    bij::Matrix{Float64}
+    ωs2::Vector{Float64}
+    modes::Seq.Modes
+
+    Ωmax::Float64
+
+    area_obj::AreaObj
+    area_tracker::Opts.NLVarTracker
+    area_opt::NLopt.Opt
+
+    sum::Sum
+    weights_buff::Vector{Float64}
+    args_buff::Vector{Float64}
+    rawparams_buff::Vector{Float64}
+
+    function PairOptimizer{NSeg}(ωs, ηs, bij, ωs2;
+                                 tmin, tmax, ntimes=11,
+                                 ωmin, ωmax, δω=2π * 0.0005,
+                                 Ωmax=0.4, amp_ratio=0.7,
+                                 area_maxiter=10000) where NSeg
+        nions = length(ωs)
+        modes = Seq.Modes()
+        for ω in ωs
+            push!(modes, ω)
+        end
+        for ω in ωs
+            push!(modes, ω - δω)
+        end
+        for ω in ωs
+            push!(modes, ω + δω)
+        end
+        for ω in ωs2
+            push!(modes, ω)
+        end
+
+        freq_spec = Seq.FreqSpec(true, sym=false)
+        amp_spec = Seq.AmpSpec(cb=U.BlackmanStartEnd{amp_ratio}())
+
+        dis_weights = [fill(1, nions); fill(0.002, nions * 2); fill(0.0005, nions)]
+        disδ_weights = [fill(0.01, nions); fill(0, nions * 2); fill(0.0000001, nions)]
+        area_targets = [Opts.AreaTarget(1, area_weights=zeros(nions),
+                                        areaδ_weights=zeros(nions)),
+                        Opts.AreaTarget(nions + 1, area_weights=zeros(nions)),
+                        Opts.AreaTarget(nions * 2 + 1, area_weights=zeros(nions))]
+
+        area_obj = Opts.target_area_obj(NSeg, modes, SL.pmask_full,
+                                        freq=freq_spec, amp=amp_spec,
+                                        dis_weights=dis_weights,
+                                        disδ_weights=disδ_weights,
+                                        area_targets=area_targets)
+        nargs = Seq.nparams(area_obj)
+        area_tracker = Opts.NLVarTracker(nargs)
+        Opts.set_bound!(area_tracker, area_obj.param.Ωs[1], 0.01 * Ωmax, Ωmax)
+        for ω in area_obj.param.ωs
+            Opts.set_bound!(area_tracker, ω, ωmin, ωmax)
+        end
+        area_opt = NLopt.Opt(:LD_LBFGS, nargs)
+        precompile(area_obj, (Vector{Float64}, Vector{Float64}))
+        NLopt.min_objective!(area_opt, area_obj)
+        NLopt.maxeval!(area_opt, area_maxiter)
+
+        s = Seq.Summarizer{NSeg}()
+        return new{NSeg,typeof(area_obj),typeof(s)}(
+            ωs, ηs, bij, ωs2, modes, Ωmax,
+            area_obj, area_tracker, area_opt,
+            s, Vector{Float64}(undef, nions), Vector{Float64}(undef, nargs),
+            Vector{Float64}(undef, NSeg * 5)
+        )
+    end
+end
+
+function update_bounds!(o::PairOptimizer)
+    NLopt.lower_bounds!(o.area_opt, Opts.lower_bounds(o.area_tracker))
+    NLopt.upper_bounds!(o.area_opt, Opts.upper_bounds(o.area_tracker))
+    return
+end
+
+function opt_pair!(o::PairOptimizer, args, areas, ion1, ion2)
+    weights = set_mode_weight!(o.weights_buff, o.ηs, o.bij, ion1, ion2)
+    area = abs(sum(a * w for (a, w) in zip(areas, weights)))
+    args[o.area_obj.param.Ωs[1]] .*= sqrt((π / 2) / area)
+
+    τ0 = args[o.area_obj.param.τ]
+    Opts.set_bound!(o.area_tracker, o.area_obj.param.τ, 0.95 * τ0, 1.05 * τ0)
+    update_bounds!(o)
+
+    area_tgt1 = o.area_obj.area_targets[1]
+    area_tgt2 = o.area_obj.area_targets[2]
+    area_tgt3 = o.area_obj.area_targets[3]
+
+    area_tgt1.target = π / 2 * 10
+    area_tgt1.area_weights .= weights * 10
+    area_tgt1.areaδ_weights .= weights .* 0.01
+    area_tgt3.target = π / 2 * 0.001
+    area_tgt3.area_weights .= weights .* 0.001
+    area_tgt2.target = π / 2 * 0.001
+    area_tgt2.area_weights .= weights .* 0.001
+
+    objval, args, ret = NLopt.optimize!(o.area_opt, args)
+    if getfield(NLopt, ret)::NLopt.Result < 0
+        return
+    end
+    raw_params = Seq.RawParams(o.area_obj, args, buff=o.rawparams_buff)
+    props = get(o.sum, raw_params, o.modes)
+    return Candidate(args, props)
 end
