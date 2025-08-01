@@ -21,9 +21,12 @@ const bij = [0.002163619698947626 -0.019894333993010195 0.07990263247850947 -0.1
              0.42615110225953595 0.36754442103650975 0.30557641737122976 0.23756305532151642 0.16305861335609598 0.08309676955971396 0.0 -0.08309676955974268 -0.16305861335598906 -0.23756305532148866 -0.305576417371162 -0.36754442103645346 -0.4261511022594881
              0.2773500981126128 0.2773500981125969 0.27735009811258304 0.2773500981125812 0.2773500981125842 0.27735009811259226 0.277350098112603 0.277350098112613 0.277350098112625 0.2773500981126366 0.277350098112647 0.27735009811265454 0.27735009811265965]
 
+const prefix = ARGS[1]
+const nrep = parse(Int, ARGS[2])
+
 const amp_ratio = 0.7
 meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
-_meta, candidates = load_candidates_dir(joinpath(@__DIR__, "data/ion13_0.7r_2/"))
+_meta, candidates = load_candidates_dir(dirname(prefix))
 println("Loaded $(length(candidates))")
 @assert _meta === nothing || _meta == meta
 const pre_pool = ThreadObjectPool() do
@@ -32,8 +35,7 @@ const pre_pool = ThreadObjectPool() do
 end
 candidates = @time opt_all_rounds!(pre_pool, 300, candidates)
 @show length(candidates)
-save_candidates(joinpath(@__DIR__, "data/ion13_0.7r_2/candidates_"), candidates, meta)
-
+save_candidates(prefix, candidates, meta)
 
 # full_opt = Optimizer{nseg}(2π .* fs, ηs, bij, 2π .* (fs .+ 0.3);
 #                            tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.3978)
