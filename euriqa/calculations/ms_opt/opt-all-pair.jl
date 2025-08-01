@@ -9,6 +9,7 @@ import MSSim.Utils as U
 using JSON
 using NLopt
 using Base.Threads
+using Printf
 
 mutable struct ThreadObjectPool{T,CB}
     const lock::ReentrantLock
@@ -115,7 +116,7 @@ function save_candidates(prefix, candidates, meta; block_size=2000)
     ncandidates = length(candidates)
     for (i, start_idx) in enumerate(1:block_size:ncandidates)
         end_idx = min(start_idx + block_size - 1, ncandidates)
-        open("$(prefix)$(i).json", "w") do io
+        open("$(prefix)$(@printf("%06d", i)).json", "w") do io
             d = Dict("meta"=>meta,
                      "candidates"=>Dict.(@view candidates[start_idx:end_idx]))
             JSON.print(io, d, 2)
