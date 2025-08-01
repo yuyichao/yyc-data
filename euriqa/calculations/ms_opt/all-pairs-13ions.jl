@@ -76,13 +76,6 @@ save_candidates(prefix, candidates, meta)
 #         end
 #     end
 
-
-#     ####################
-#     delete!(pairs, (5, 3))
-#     delete!(pairs, (5, 4))
-#     delete!(pairs, (4, 3))
-#     ####################
-
 #     candidates_checked = 0
 #     function check_modes(candidates_checked)
 #         for (ion1, ion2) in collect(pairs)
@@ -130,14 +123,6 @@ save_candidates(prefix, candidates, meta)
 #     NLopt.maxeval!(opt, 10000)
 #     for ion1 in 3:6
 #         for ion2 in 2:ion1 - 1
-#             ####################
-#             if (ion1, ion2) in ((5, 3), (5, 4), (4, 3))
-#                 continue
-#             end
-#             ####################
-
-
-
 #             mode_weight!(kernel.weights, ion1, ion2)
 #             tier1 = ParamInfo[]
 #             tier2 = ParamInfo[]
