@@ -259,6 +259,67 @@ function opt_all_rounds!(pool::ThreadObjectPool{PreOpt},
     return candidates
 end
 
+struct GateModeInfo
+    ωs::Vector{Float64}
+    ηs::Vector{Float64}
+    bij::Matrix{Float64}
+    weights_buff::Vector{Float64}
+    GateModeInfo(ωs, ηs, bij) = new(ωs, ηs, bij, Vector{Float64}(undef, length(ωs)))
+end
+
+get_weights!(info::GateModeInfo, ion1, ion2) =
+    set_mode_weight!(info.weights_buff, info.ηs, info.bij, ion1, ion2)
+
+mutable struct PairChecker
+    const weights::Vector{Float64}
+    const areaδ::Vector{Float64}
+    const minarea::Float64
+    candidates_processed::Int
+    passed::Bool
+    PairChecker(weights, minarea) = new(weights, Float64[], minarea, 0, false)
+end
+
+function _check_areaδ(c::PairChecker)
+    c1 = 0
+    c2 = 0
+    for areaδ in c.areaδ
+        if areaδ <= 15
+            return true
+        elseif areaδ <= 30
+            c1 += 1
+        elseif areaδ <= 60
+            c2 += 1
+        end
+    end
+    return c1 >= 10 || (c1 < 6 && c2 >= 30)
+end
+
+function check(c::PairChecker, candidates)
+    if c.passed
+        return true
+    end
+    nmodes = length(c.weights)
+    ncandidates = length(candidates)
+    for i in c.candidates_processed + 1:ncandidates
+        cand = candidates[i]
+        area = abs(sum(c.weights[j] * cand.props.area[j] for j in 1:nmodes))
+        if area < c.minarea
+            continue
+        end
+        areaδ = abs(sum(c.weights[j] * cand.props.areaδ[j] for j in 1:nmodes)) / area
+        push!(c.areaδ, areaδ)
+    end
+    c.candidates_processed = ncandidates
+    if length(c.areaδ) < 100
+        return false
+    end
+    if _check_areaδ(c)
+        c.passed = true
+        return true
+    end
+    return false
+end
+
 struct PairOptimizer{NSeg,AreaObj,Sum}
     ωs::Vector{Float64}
     ηs::Vector{Float64}
