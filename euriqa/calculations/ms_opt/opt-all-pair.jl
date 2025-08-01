@@ -11,21 +11,24 @@ using NLopt
 using Base.Threads
 using Printf
 
+mutable struct ObjSlot{T}
+    @atomic value::Union{T,Nothing}
+end
+
 mutable struct ThreadObjectPool{T,CB}
     const lock::ReentrantLock
     const cb::CB
     # The array is used for lock-less fast path and needs to be accessed atomically
-    # The array itself will never by mutated (only the Atomic{} objects in it will)
+    # The array itself will never by mutated (only the ObjSlot{} objects in it will)
     # So access of the array member/size does not need to be atomic.
     # Access of the Atomic variables stored in the array should all be atomic exchanges
     # so that we never have duplicated/missing references to any objects.
-    @atomic array::Vector{Atomic{Union{T,Nothing}}}
+    @atomic array::Vector{ObjSlot{T}}
     const extra::Vector{T} # Protected by lock
     function ThreadObjectPool(cb::CB) where CB
         obj = cb()
         T = typeof(obj)
-        array = [Atomic{Union{T,Nothing}}(i == 1 ? obj : nothing)
-                 for i in 1:Threads.maxthreadid()]
+        array = [ObjSlot{T}(i == 1 ? obj : nothing) for i in 1:Threads.maxthreadid()]
         return new{T,CB}(ReentrantLock(), cb, array, T[])
     end
 end
@@ -34,7 +37,7 @@ function Base.get(pool::ThreadObjectPool{T}) where T
     array = @atomic :acquire pool.array
     id = Threads.threadid()
     if id <= length(array)
-        obj = atomic_xchg!(@inbounds(array[id]), nothing)
+        obj = @atomicswap(:acquire_release, @inbounds(array[id]).value = nothing)
         if obj !== nothing
             return obj::T
         end
@@ -46,7 +49,7 @@ function Base.get(pool::ThreadObjectPool{T}) where T
         array = pool.array
         oldlen = length(array)
         if id > oldlen
-            array = [i <= oldlen ? array[i] : Atomic{Union{T,Nothing}}(nothing)
+            array = [i <= oldlen ? @inbounds(array[i]) : ObjSlot{T}(nothing)
                      for i in 1:Threads.maxthreadid()]
             @atomic :release pool.array = array
         end
@@ -61,7 +64,7 @@ function Base.put!(pool::ThreadObjectPool{T}, obj::T) where T
     array = @atomic :acquire pool.array
     id = Threads.threadid()
     if id <= length(array)
-        obj = atomic_xchg!(@inbounds(array[id]), obj)
+        obj = @atomicswap(:acquire_release, @inbounds(array[id]).value = obj)
         if obj === nothing
             return
         end
