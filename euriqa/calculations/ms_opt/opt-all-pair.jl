@@ -284,6 +284,7 @@ function _check_areaδ(c::PairChecker)
     c2 = 0
     for areaδ in c.areaδ
         if areaδ <= 15
+            # println("areaδ < 15")
             return true
         elseif areaδ <= 30
             c1 += 1
@@ -291,6 +292,7 @@ function _check_areaδ(c::PairChecker)
             c2 += 1
         end
     end
+    # @show c1, c2
     return c1 >= 10 || (c1 < 6 && c2 >= 30)
 end
 
@@ -311,6 +313,8 @@ function check(c::PairChecker, candidates)
     end
     c.candidates_processed = ncandidates
     if length(c.areaδ) < 100
+        # @show c.weights
+        # println("  Not enough area: $(length(c.areaδ))")
         return false
     end
     if _check_areaδ(c)
@@ -400,9 +404,10 @@ function update_bounds!(o::PairOptimizer)
     return
 end
 
-function opt_pair!(o::PairOptimizer, args, areas, ion1, ion2)
-    weights = set_mode_weight!(o.weights_buff, o.ηs, o.bij, ion1, ion2)
-    area = abs(sum(a * w for (a, w) in zip(areas, weights)))
+get_weights!(o::PairOptimizer, ion1, ion2) =
+    set_mode_weight!(o.weights_buff, o.ηs, o.bij, ion1, ion2)
+
+function opt_pair!(o::PairOptimizer, args, area, weights)
     args[o.area_obj.param.Ωs[1]] .*= sqrt((π / 2) / area)
 
     τ0 = args[o.area_obj.param.τ]

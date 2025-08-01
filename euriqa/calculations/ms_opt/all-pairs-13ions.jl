@@ -28,14 +28,24 @@ const amp_ratio = 0.7
 meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
 _meta, candidates = load_candidates_dir(dirname(prefix))
 println("Loaded $(length(candidates))")
-@assert _meta === nothing || _meta == meta
-const pre_pool = ThreadObjectPool() do
-    return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
-                              tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
+# @assert _meta === nothing || _meta == meta
+# const pre_pool = ThreadObjectPool() do
+#     return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
+#                               tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
+# end
+# candidates = @time opt_all_rounds!(pre_pool, nrep, candidates)
+# @show length(candidates)
+# save_candidates(prefix, candidates, meta)
+
+const mode_info = GateModeInfo(2π .* fs, ηs, bij)
+for ion1 in 2:11
+    for ion2 in ion1 + 1:12
+        weights = get_weights!(mode_info, ion1, ion2)
+        @show (ion1, ion2)
+        checker = PairChecker(copy(weights), π / 2 / (0.39)^2)
+        @show check(checker, candidates)
+    end
 end
-candidates = @time opt_all_rounds!(pre_pool, nrep, candidates)
-@show length(candidates)
-save_candidates(prefix, candidates, meta)
 
 # full_opt = Optimizer{nseg}(2π .* fs, ηs, bij, 2π .* (fs .+ 0.3);
 #                            tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.3978)
