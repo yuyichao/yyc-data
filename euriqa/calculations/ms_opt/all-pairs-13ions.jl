@@ -42,7 +42,7 @@ for ion1 in 2:11
     for ion2 in ion1 + 1:12
         weights = get_weights!(mode_info, ion1, ion2)
         @show (ion1, ion2)
-        checker = PairChecker(copy(weights), π / 2 / (0.39)^2)
+        checker = PairChecker(copy(weights), π / 2 / (0.4)^2)
         @show check(checker, candidates)
     end
 end
