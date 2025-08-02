@@ -12,7 +12,8 @@ println("Loaded $(length(candidates))")
 @assert _meta === nothing || _meta == meta
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
-                              tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
+                              tmin=350, tmax=600, ntimes=21,
+                              ωmin=2π * 2.28, ωmax=2π * 2.497)
 end
 candidates = @time opt_all_rounds!(pre_pool, nrep, candidates)
 @show length(candidates)
