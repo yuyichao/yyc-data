@@ -284,7 +284,6 @@ function _check_areaδ(c::PairChecker)
     c2 = 0
     for areaδ in c.areaδ
         if areaδ <= 15
-            # println("areaδ < 15")
             return true
         elseif areaδ <= 30
             c1 += 1
@@ -292,7 +291,6 @@ function _check_areaδ(c::PairChecker)
             c2 += 1
         end
     end
-    # @show c1, c2
     return c1 >= 10 || (c1 < 6 && c2 >= 30)
 end
 
@@ -302,9 +300,17 @@ function check(c::PairChecker, candidates)
     end
     nmodes = length(c.weights)
     ncandidates = length(candidates)
+    # areas = Float64[]
+    # max_area = 0.0
+    # max_area_time = 0.0
     for i in c.candidates_processed + 1:ncandidates
         cand = candidates[i]
         area = abs(sum(c.weights[j] * cand.props.area[j] for j in 1:nmodes))
+        # if max_area < area
+        #     max_area = area
+        #     max_area_time = cand.props.total_time
+        # end
+        # push!(areas, area)
         if area < c.minarea
             continue
         end
@@ -312,15 +318,11 @@ function check(c::PairChecker, candidates)
         push!(c.areaδ, areaδ)
     end
     c.candidates_processed = ncandidates
-    if length(c.areaδ) < 100
-        # @show c.weights
-        # println("  Not enough area: $(length(c.areaδ))")
-        return false
-    end
     if _check_areaδ(c)
         c.passed = true
         return true
     end
+    # println("  $(length(c.areaδ)), $(max_area) in $(max_area_time)")
     return false
 end
 
