@@ -3,11 +3,11 @@
 include("opt-all-pair.jl")
 include("ion13-params.jl")
 
-const prefix = ARGS[1]
-const nrep = parse(Int, ARGS[2])
-
 meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
-_meta, candidates = load_candidates_dir(dirname(prefix))
+candidates = Candidate[]
+for d in ARGS
+    load_candidates_dir(d, meta=meta, candidates=candidates)
+end
 println("Loaded $(length(candidates))")
 # @assert _meta === nothing || _meta == meta
 # const pre_pool = ThreadObjectPool() do
