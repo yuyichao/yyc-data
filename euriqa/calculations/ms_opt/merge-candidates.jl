@@ -22,4 +22,4 @@ for d in ARGS[2:end]
 end
 append!(candidates, tail_candidates)
 println("Total $(length(candidates))")
-save_candidates(prefix, candidates, meta)
+save_candidates(prefix, candidates, meta, block_size=block_size)
