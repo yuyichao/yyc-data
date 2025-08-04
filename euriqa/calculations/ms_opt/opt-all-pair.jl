@@ -297,11 +297,11 @@ function _check_areaδ(c::PairChecker)
     c1 = 0
     c2 = 0
     for areaδ in c.areaδ
-        if areaδ <= 15
+        if areaδ <= 10
             return true
-        elseif areaδ <= 30
+        elseif areaδ <= 20
             c1 += 1
-        elseif areaδ <= 60
+        elseif areaδ <= 40
             c2 += 1
         end
     end
