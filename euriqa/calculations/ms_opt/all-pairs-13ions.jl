@@ -5,18 +5,8 @@ include("ion13-params.jl")
 
 meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
 candidates = Candidate[]
-for d in ARGS
-    load_candidates_dir(d, meta=meta, candidates=candidates)
-end
+@time load_candidates_dirs(ARGS, meta=meta, candidates=candidates)
 println("Loaded $(length(candidates))")
-# @assert _meta === nothing || _meta == meta
-# const pre_pool = ThreadObjectPool() do
-#     return PreOptimizer{nseg}(2π .* fs, 2π .* (fs .+ 0.3); amp_ratio=amp_ratio,
-#                               tmin=250, tmax=400, ωmin=2π * 2.28, ωmax=2π * 2.497)
-# end
-# candidates = @time opt_all_rounds!(pre_pool, nrep, candidates)
-# @show length(candidates)
-# save_candidates(prefix, candidates, meta)
 
 const mode_info = GateModeInfo(2π .* fs, ηs, bij)
 for ion1 in 2:11
