@@ -98,19 +98,15 @@ function load_candidates_file(io::IO)
     return meta, Candidate.(data["candidates"])
 end
 
-function load_candidates_dir(dir)
-    candidates = Candidate[]
+function load_candidates_dir(dir; candidates=Candidate[], meta=nothing)
     for f in readdir(dir, join=true)
         file_meta, file_candidates = open(load_candidates_file, f)
-        if !@isdefined(meta)
+        if meta === nothing
             meta = file_meta
         elseif file_meta != meta
             error("Metadata mismatch")
         end
         append!(candidates, file_candidates)
-    end
-    if !@isdefined(meta)
-        meta = nothing
     end
     return meta, candidates
 end
