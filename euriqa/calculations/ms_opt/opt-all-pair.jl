@@ -98,9 +98,15 @@ function load_candidates_file(io::IO)
     return meta, Candidate.(data["candidates"])
 end
 
-function load_candidates_dir(dir; candidates=Candidate[], meta=nothing)
-    for f in readdir(dir, join=true)
-        file_meta, file_candidates = open(load_candidates_file, f)
+function load_candidates_files(files; candidates=Candidate[], meta=nothing)
+    results = Dict{String,Tuple{Dict,Vector{Candidate}}}()
+    lock = ReentrantLock()
+    @threads :greedy for f in files
+        res = open(load_candidates_file, f)
+        @lock lock results[f] = res
+    end
+    for f in files
+        file_meta, file_candidates = results[f]
         if meta === nothing
             meta = file_meta
         elseif file_meta != meta
@@ -111,9 +117,21 @@ function load_candidates_dir(dir; candidates=Candidate[], meta=nothing)
     return meta, candidates
 end
 
+function load_candidates_dir(dir; kwargs...)
+    return load_candidates_files(readdir(dir, join=true); kwargs...)
+end
+
+function load_candidates_dirs(dirs; kwargs...)
+    files = String[]
+    for dir in dirs
+        append!(files, readdir(dir, join=true))
+    end
+    return load_candidates_files(files; kwargs...)
+end
+
 function save_candidates(prefix, candidates, meta; block_size=2000)
     ncandidates = length(candidates)
-    for (i, start_idx) in enumerate(1:block_size:ncandidates)
+    @threads :greedy for (i, start_idx) in enumerate(1:block_size:ncandidates)
         end_idx = min(start_idx + block_size - 1, ncandidates)
         open("$(prefix)$(@sprintf("%06d", i)).json", "w") do io
             d = Dict("meta"=>meta,
