@@ -2,7 +2,7 @@
 
 using QuantumOptics
 using LinearAlgebra
-using CGcoefficient
+using WignerSymbols
 using SparseArrays
 
 using NaCsSim.Master
@@ -63,10 +63,10 @@ function get_hf_hamiltonian(gJ, Fl, hfl, hfh)
         mj1 = dmj1 / 2
         mj2 = dmj2 / 2
 
-        cg1l = fCG(dJ, dI, Fl * 2, dmj1, 1, mF * 2)
-        cg2l = fCG(dJ, dI, Fl * 2, dmj2, -1, mF * 2)
-        cg1h = fCG(dJ, dI, Fh * 2, dmj1, 1, mF * 2)
-        cg2h = fCG(dJ, dI, Fh * 2, dmj2, -1, mF * 2)
+        cg1l = clebschgordan(dJ//2, dmj1//2, dI//2, 1//2, Fl, mF)
+        cg2l = clebschgordan(dJ//2, dmj2//2, dI//2, -1//2, Fl, mF)
+        cg1h = clebschgordan(dJ//2, dmj1//2, dI//2, 1//2, Fh, mF)
+        cg2h = clebschgordan(dJ//2, dmj2//2, dI//2, -1//2, Fh, mF)
 
         add_element!(il, il, gJ * (mj1 * cg1l^2 + mj2 * cg2l^2) + hfl)
         add_element!(ih, il,
@@ -80,7 +80,8 @@ end
 function dipole_branch(q, dJ, dJ′, dI, dF, dF′, dmF, dmF′)
     return ((-1)^(dF′ + (dmF + dJ + dI) ÷ 2) *
         sqrt((dJ′ + 1) * (dF + 1) * (dF′ + 1)) *
-        f6j(dJ, dJ′, 2, dF′, dF, dI) * f3j(dF′, 2, dF, dmF′, 2 * q, -dmF))
+        wigner6j(dJ//2, dJ′//2, 1, dF′//2, dF//2, dI//2) *
+        wigner3j(dF′//2, 1, dF//2, dmF′//2, q, -dmF//2))
 end
 
 function add_J!(Js, basis, offsets, Γ, dJ, dJ′, dI, idxFl, idxFl′)
