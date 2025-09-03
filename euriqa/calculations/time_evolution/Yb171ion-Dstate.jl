@@ -71,11 +71,13 @@ function PumpAndDetectResult(sys, drives_pump, drives_detect)
         get_ρ(sys, :D, 2, 1) + get_ρ(sys, :D, 2, 2)) / 5
 
     ts_detect_d20, ρs_detect_d20 = evolve(drives_detect, sys, get_ρ(sys, :D, 2, 0),
-                                           100e-6, 10001, maxiters=1e8)
+                                           range(0, 100e-6, 10001), maxiters=1e8)
     ts_detect_d1, ρs_detect_d1 = evolve(drives_detect, sys, ρ0_d1,
-                                         10e-6, 10001, maxiters=1e8)
-    ts_pump_d2, ρs_pump_d2 = evolve(drives_pump, sys, ρ0_d2, 10e-6, 10001, maxiters=1e8)
-    ts_pump_d1, ρs_pump_d1 = evolve(drives_pump, sys, ρ0_d1, 10e-6, 10001, maxiters=1e8)
+                                         range(0, 10e-6, 10001), maxiters=1e8)
+    ts_pump_d2, ρs_pump_d2 = evolve(drives_pump, sys, ρ0_d2, range(0, 10e-6, 10001),
+                                     maxiters=1e8)
+    ts_pump_d1, ρs_pump_d1 = evolve(drives_pump, sys, ρ0_d1, range(0, 10e-6, 10001),
+                                     maxiters=1e8)
 
     return PumpAndDetectResult(ts_detect_d20, ρs_detect_d20, ts_detect_d1, ρs_detect_d1,
                                ts_pump_d2, ρs_pump_d2, ts_pump_d1, ρs_pump_d1)
