@@ -97,7 +97,7 @@ end
 
 function load_candidates_pb(io::IO)
     decoder = PB.ProtoDecoder(io)
-    candidates = PB.decode(io, Candidates)
+    candidates = PB.decode(decoder, Candidates)
     if candidates.meta == ""
         meta = nothing
     else
