@@ -1,0 +1,23 @@
+//
+
+syntax = "proto3";
+
+message SolutionInfo {
+  repeated double params = 1;
+  double total_t = 2;
+  double dis2 = 3;
+  double dis_det2 = 4;
+  repeated double area = 5;
+  repeated double area_det = 6;
+}
+
+message TimeRangeSolution {
+  double total_t_min = 1;
+  double total_t_max = 2;
+  repeated SolutionInfo solutions = 3;
+}
+
+message NSegSolution {
+  uint32 nseg = 1;
+  repeated TimeRangeSolution solutions = 2;
+}

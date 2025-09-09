@@ -77,37 +77,7 @@ function update_bounds!(o::PreOptimizer)
     NLopt.upper_bounds!(o.opt, Opts.upper_bounds(o.tracker))
 end
 
-struct SolutionInfo{NModes}
-    params::Vector{Float64}
-    total_t::Float64
-    dis2::Float64
-    disδ2::Float64
-    area::NTuple{NModes,Float64}
-    areaδ::NTuple{NModes,Float64}
-end
-
-function todict(info::SolutionInfo)
-    return Dict(
-        "params"=>info.params,
-        "total_t"=>info.total_t,
-        "dis2"=>info.dis2,
-        "disδ2"=>info.disδ2,
-        "area"=>collect(info.area),
-        "areaδ"=>collect(info.areaδ)
-    )
-end
-
-function fromdict(::Type{SolutionInfo}, d)
-    params = d["params"]
-    total_t = d["total_t"]
-    dis2 = d["dis2"]
-    disδ2 = d["disδ2"]
-    area = d["area"]
-    areaδ = d["areaδ"]
-    nmodes = length(area)
-    @assert length(areaδ) == nmodes
-    return SolutionInfo{nmodes}(params, total_t, dis2, disδ2, (area...,), (areaδ...,))
-end
+include("multi_pairs_test_pb.jl")
 
 function compute_one(o::PreOptimizer{NModes,ObjArgs}) where {NModes,ObjArgs}
     obj, params, ret = NLopt.optimize(o.opt, Opts.init_vars!(o.tracker))
@@ -115,8 +85,8 @@ function compute_one(o::PreOptimizer{NModes,ObjArgs}) where {NModes,ObjArgs}
         return
     end
     info = o.preobj(Val(ObjArgs), params) do x
-        return SolutionInfo{NModes}(params, x[1], x[2], x[3], ntuple(i->x[i + 3], NModes),
-                                    ntuple(i->x[i + 3 + NModes], NModes))
+        return SolutionInfo(params, x[1], x[2], x[3], x[1 + 3:NModes + 3],
+                            x[1 + NModes + 3:NModes + NModes + 3])
     end
     area = 0.0
     areaδ = 0.0
@@ -141,47 +111,11 @@ function find_candidates!(o::PreOptimizer, nrounds, candidates=SolutionInfo[])
     return candidates
 end
 
-struct TimeRangeSolution
-    total_t_min::Float64
-    total_t_max::Float64
-    solutions::Vector{SolutionInfo}
-end
-
-function todict(sol::TimeRangeSolution)
-    return Dict(
-        "total_t_min"=>sol.total_t_min,
-        "total_t_max"=>sol.total_t_max,
-        "solutions"=>[todict(s) for s in sol.solutions]
-    )
-end
-
-function fromdict(::Type{TimeRangeSolution}, d)
-    return TimeRangeSolution(d["total_t_min"], d["total_t_max"],
-                             [fromdict(SolutionInfo, s) for s in d["solutions"]])
-end
-
 function merge_into!(sol::TimeRangeSolution, other::TimeRangeSolution)
     @assert sol.total_t_min == other.total_t_min
     @assert sol.total_t_max == other.total_t_max
     append!(sol.solutions, other.solutions)
     return
-end
-
-struct NSegSolution
-    nseg::Int
-    solutions::Vector{TimeRangeSolution}
-end
-
-function todict(sol::NSegSolution)
-    return Dict(
-        "nseg"=>sol.nseg,
-        "solutions"=>[todict(s) for s in sol.solutions]
-    )
-end
-
-function fromdict(::Type{NSegSolution}, d)
-    return NSegSolution(d["nseg"],
-                        [fromdict(TimeRangeSolution, s) for s in d["solutions"]])
 end
 
 function merge_into!(sol::NSegSolution, other::NSegSolution)
