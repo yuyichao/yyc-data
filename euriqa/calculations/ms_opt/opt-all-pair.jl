@@ -83,10 +83,7 @@ function set_mode_weight!(weights, ηs, bij, ion1, ion2)
     return weights
 end
 
-struct Candidate
-    param::Vector{Float64}
-    props::Seq.SolutionProperties
-end
+include("candidate_pb.jl")
 
 Base.Dict(c::Candidate) = Dict("param"=>c.param, "props"=>Dict(c.props))
 Candidate(d::Dict{<:AbstractString}) = Candidate(copy(d["param"]),
@@ -98,11 +95,26 @@ function load_candidates_file(io::IO)
     return meta, Candidate.(data["candidates"])
 end
 
+function load_candidates_pb(io::IO)
+    decoder = PB.ProtoDecoder(io)
+    candidates = PB.decode(io, Candidates)
+    if candidates.meta == ""
+        meta = nothing
+    else
+        meta = JSON.parse(candidates.meta)
+    end
+    return meta, candidates.candidates
+end
+
 function load_candidates_files(files; candidates=Candidate[], meta=nothing)
     results = Dict{String,Tuple{Dict,Vector{Candidate}}}()
     lock = ReentrantLock()
     @threads :greedy for f in files
-        res = open(load_candidates_file, f)
+        if endswith(f, ".binpb")
+            res = open(load_candidates_pb, f)
+        else
+            res = open(load_candidates_file, f)
+        end
         @lock lock results[f] = res
     end
     for f in files
@@ -129,14 +141,25 @@ function load_candidates_dirs(dirs; kwargs...)
     return load_candidates_files(files; kwargs...)
 end
 
-function save_candidates(prefix, candidates, meta; block_size=2000)
+function save_candidates(prefix, candidates, meta; block_size=2000, use_pb=false)
     ncandidates = length(candidates)
+    meta_str = nothing
+    if use_pb && meta !== nothing
+        meta_str = JSON.json(meta)
+    end
     @threads :greedy for (i, start_idx) in enumerate(1:block_size:ncandidates)
         end_idx = min(start_idx + block_size - 1, ncandidates)
-        open("$(prefix)$(@sprintf("%06d", i)).json", "w") do io
-            d = Dict("meta"=>meta,
-                     "candidates"=>Dict.(@view candidates[start_idx:end_idx]))
-            JSON.print(io, d, 2)
+        if use_pb
+            open("$(prefix)$(@sprintf("%06d", i)).binpb", "w") do io
+                encoder = PB.ProtoEncoder(io)
+                PB.encode(encoder, Candidates(candidates[start_idx:end_idx], meta_str))
+            end
+        else
+            open("$(prefix)$(@sprintf("%06d", i)).json", "w") do io
+                d = Dict("meta"=>meta,
+                         "candidates"=>Dict.(@view candidates[start_idx:end_idx]))
+                JSON.print(io, d, 2)
+            end
         end
     end
 end
