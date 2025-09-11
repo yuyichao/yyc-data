@@ -27,7 +27,7 @@ Base.Dict(c::Candidate) = Dict("param"=>c.param, "props"=>Dict(c.props))
 Candidate(d::Dict{<:AbstractString}) = Candidate(copy(d["param"]),
                                                  Seq.SolutionProperties(d["props"]))
 
-function load_candidates_file(io::IO)
+function load_candidates_json(io::IO)
     data = JSON.parse(io)
     meta = get(data, "meta", nothing)
     return meta, Candidate.(data["candidates"])
@@ -51,7 +51,7 @@ function load_candidates_files(files; candidates=Candidate[], meta=nothing)
         if endswith(f, ".binpb")
             res = open(load_candidates_pb, f)
         else
-            res = open(load_candidates_file, f)
+            res = open(load_candidates_json, f)
         end
         @lock lock results[f] = res
     end
