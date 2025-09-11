@@ -17,4 +17,4 @@ const pre_pool = ThreadObjectPool() do
 end
 candidates = @time opt_all_rounds!(pre_pool, nrep, candidates)
 @show length(candidates)
-save_candidates(prefix, candidates, meta; use_pb=true)
+save_candidates(prefix, candidates, meta)
