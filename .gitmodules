@@ -19,9 +19,6 @@
 [submodule "euriqa/presentations/timebin_theory_paper"]
 	path = euriqa/presentations/timebin_theory_paper
 	url = git@github.com:yuyichao/timebin_theory_paper
-[submodule "lib/MSSim"]
-	path = lib/MSSim
-	url = git@github.com:euriqa-brassboard/MSSim.jl
 [submodule "euriqa/calculations/ms_opt/data"]
 	path = euriqa/calculations/ms_opt/data
 	url = git@github.com:yuyichao/ms_opt_data
