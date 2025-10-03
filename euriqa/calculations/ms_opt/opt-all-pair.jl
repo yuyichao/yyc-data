@@ -11,10 +11,11 @@ using NLopt
 using Base.Threads
 using Printf
 
-using GoldGates: ThreadObjectPool, Candidate,
+using GoldGates: Candidate,
     load_candidates_files, load_candidates_dir, load_candidates_dirs,
     save_candidates
 using GoldGates.Optimizers
+using AMO.Utils: ThreadObjectPool
 
 function set_mode_weight!(weights, ηs, bij, ion1, ion2)
     nions = length(ηs)
