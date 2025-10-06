@@ -1298,9 +1298,9 @@ We can derive this relation by expanding the LHS of Eq.~\ref{eq:app:reduced-we2}
     =&(-1)^{j_0+j_1+j_2'+k}
        \sqrt{\paren{2j_1+1}\paren{2j'_2+1}}
        \langle j'_2,k;m'_2,q|j'_1,m'_1\rangle\begin{Bmatrix}
-      j_1&j_2&k\\
-      j'_2&j'_1&j_0
-    \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle
+         j_1&j_2&k\\
+         j'_2&j'_1&j_0
+       \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle
   \end{split}
 }
 Combining with the RHS of Eq.~\ref{eq:app:reduced-we2}, we have
@@ -1308,10 +1308,29 @@ Combining with the RHS of Eq.~\ref{eq:app:reduced-we2}, we have
   \langle j'_1||T^{(k)}||j'_2\rangle=&(-1)^{j_0+j_1+j_2'+k}
   \sqrt{\paren{2j_1+1}\paren{2j'_2+1}}
   \begin{Bmatrix}
-    j'_1&j'_2&k\\
-    j_2&j_1&j_0
+    j_1&j_2&k\\
+    j'_2&j'_1&j_0
   \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle
 }
+More specifically, for hyperfine structure, we have,
+\eqar{
+  \langle F||T^{(k)}||F'\rangle=&(-1)^{I+J+F'+k}
+  \sqrt{\paren{2J+1}\paren{2F'+1}}
+  \begin{Bmatrix}
+    J&J'&k\\
+    F'&F&I
+  \end{Bmatrix}\langle J||T^{(k)}||J'\rangle
+}
+and for LS coupling
+\eqar{
+  \langle J||T^{(k)}||J'\rangle=&(-1)^{S+L+J'+k}
+  \sqrt{\paren{2L+1}\paren{2J'+1}}
+  \begin{Bmatrix}
+    L&L'&k\\
+    J'&J&S
+  \end{Bmatrix}\langle L||T^{(k)}||L'\rangle
+}
+
 
 \end{document}
 
