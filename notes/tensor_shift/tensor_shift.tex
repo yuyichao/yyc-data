@@ -1008,7 +1008,7 @@ in the angular momentum basis.
 The matrix element for different angular momentum states are related to each other
 with Clebsch-Gordan coefficients.
 \eqar{
-  \langle j,m|T_q^{(k)}|j',m' \rangle=&\langle j',k;m',q|j,m\rangle\langle j||T^{(k)}||j'\rangle
+  \langle j,m|T_q^{(k)}|j',m' \rangle=&\langle j',k;m',q|j,m\rangle\langle j||T^{(k)}||j'\rangle\label{eq:wigner-eckart}
 }
 where $T_q^{(k)}$ is the $q$-th component of
 the spherical tensor operator $T^{(k)}$ of rank $k$.
@@ -1215,6 +1215,103 @@ Inserting an identity and using equation~\ref{eq:projection:spin1},
 }
 which is indeed consistent with the Wigner-Echart theorem
 (the only $m$ or $p$-dependent term is the Clebsch-Gordan coefficient).
+
+\subsubsection{Relation between reduced matrix elements}
+The exact value reduced matrix element in Eq.~\ref{eq:wigner-eckart}
+does not have a direct physical meaning.
+In fact, there are multiple convensions that gives different value for their values
+and the convension we selected is also asymmetric,
+i.e. $\langle j||T^{(k)}||j'\rangle\neq\langle j'||T^{(k)}||j\rangle$.
+Nevertheless, it does qualify the coupling strength
+between different angular momentum manifolds and is an important quality to talk about
+when coupling angular momentum states together.
+
+For a tensor operator $T_q^{(k)}$ that couples two angular momentum states together,
+we have
+\eqar{
+  \langle j_1,m_1|T_q^{(k)}|j_2,m_2 \rangle=&\langle j_2,k;m_2,q|j_1,m_1\rangle\langle j_1||T^{(k)}||j_2\rangle
+}
+
+Now suppose there's another angular momentum $j_0$ in the system
+that does not interact with the operator $T_q^{(k)}$
+but does couple to $j_1$ and $j_2$
+to form $j'_1$ and $j'_2$ respectively\footnote{
+  This may be the electron spin $S$ or nuclear spin $I$
+  coupling to the electron orbit for an electric transtion}.
+The matric element between the coupled states also satisfy the Wigner-Echart theorem
+with a different reduced matrix element
+\eqar{
+  \langle j'_1,m'_1|T_q^{(k)}|j'_2,m'_2 \rangle=&\langle j'_2,k;m'_2,q|j'_1,m'_1\rangle\langle j'_1||T^{(k)}||j'_2\rangle\label{eq:app:reduced-we2}
+}
+and we must have
+\eqar{
+  \langle j'_1||T^{(k)}||j'_2\rangle\propto\langle j_1||T^{(k)}||j_2\rangle
+}
+with some proportionality factor.
+We can derive this relation by expanding the LHS of Eq.~\ref{eq:app:reduced-we2}.
+\eqar{
+  \begin{split}
+    &\langle j'_1,m'_1|T_q^{(k)}|j'_2,m'_2 \rangle\\
+    =&\sum_{m_1,m_0,m_2,m'_0}\langle j_1,j_0;m_1,m_0|j'_1,m'_1\rangle
+       \langle j_2,j_0;m_2,m'_0|j'_2,m'_2\rangle
+       \langle j_0,m_0|\langle j_1,m_1|T_q^{(k)}|j_2,m_2\rangle|j_0,m'_0\rangle\\
+    =&\sum_{m_1,m_0,m_2}\langle j_1,j_0;m_1,m_0|j'_1,m'_1\rangle
+       \langle j_2,j_0;m_2,m'_0|j'_2,m'_2\rangle
+       \langle j_2,k;m_2,q|j_1,m_1\rangle\langle j_1||T^{(k)}||j_2\rangle\\
+    =&\sum_{m_1,m_0,m_2}(-1)^{2j_0-j_1-2j_2+k-m'_1-m'_2-m_1}
+       \sqrt{\paren{2j'_1+1}\paren{2j'_2+1}\paren{2j_1+1}}\\
+    &\begin{pmatrix}
+      j_1&j_0&j'_1\\
+      m_1&m_0&-m'_1
+    \end{pmatrix}
+    \begin{pmatrix}
+      j_2&j_0&j'_2\\
+      m_2&m_0&-m'_2
+    \end{pmatrix}
+    \begin{pmatrix}
+      j_2&k&j_1\\
+      m_2&q&-m_1
+    \end{pmatrix}\langle j_1||T^{(k)}||j_2\rangle\\
+    =&\sum_{m_1,m_0,m_2}(-1)^{2j_0-j_2+2k-2m'_2-3m'_1 + m_0+m_1+m_2}
+       \sqrt{\paren{2j'_1+1}\paren{2j'_2+1}\paren{2j_1+1}}\\
+    &\begin{pmatrix}
+      j'_1&j_1&j_0\\
+      -m'_1&m_1&-m_0
+    \end{pmatrix}
+    \begin{pmatrix}
+      j_2&j'_2&j_0\\
+      -m_2&m'_2&m_0
+    \end{pmatrix}
+    \begin{pmatrix}
+      j_2&j_1&k\\
+      m_2&-m_1&q
+    \end{pmatrix}\langle j_1||T^{(k)}||j_2\rangle\\
+    =&(-1)^{j_0-j_1-2j_2+2k-m'_2+q}
+       \sqrt{\paren{2j'_1+1}\paren{2j'_2+1}\paren{2j_1+1}}\\
+    &\begin{pmatrix}
+      j'_1&j'_2&k\\
+      -m'_1&m'_2&q
+    \end{pmatrix}\begin{Bmatrix}
+      j'_1&j'_2&k\\
+      j_2&j_1&j_0
+    \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle\\
+    =&(-1)^{j_0+j_1+j_2'+k}
+       \sqrt{\paren{2j_1+1}\paren{2j'_2+1}}
+       \langle j'_2,k;m'_2,q|j'_1,m'_1\rangle\begin{Bmatrix}
+      j_1&j_2&k\\
+      j'_2&j'_1&j_0
+    \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle
+  \end{split}
+}
+Combining with the RHS of Eq.~\ref{eq:app:reduced-we2}, we have
+\eqar{
+  \langle j'_1||T^{(k)}||j'_2\rangle=&(-1)^{j_0+j_1+j_2'+k}
+  \sqrt{\paren{2j_1+1}\paren{2j'_2+1}}
+  \begin{Bmatrix}
+    j'_1&j'_2&k\\
+    j_2&j_1&j_0
+  \end{Bmatrix}\langle j_1||T^{(k)}||j_2\rangle
+}
 
 \end{document}
 
