@@ -1,6 +1,7 @@
 #!/usr/bin/julia
 
 using QuantumOptics
+using QuantumToolbox
 using LinearAlgebra
 
 struct LabBasisData{B,K,O} <: Function
@@ -16,7 +17,7 @@ struct LabBasisData{B,K,O} <: Function
     function LabBasisData(Ω0, Ω1, δ0, δ1, tlen)
         basis = SpinBasis(1//2)
         op_data = zeros(ComplexF64, 2, 2)
-        op = Operator(basis, op_data)
+        op = QuantumOptics.Operator(basis, op_data)
         ψ0 = spindown(basis)
         Ω0_2 = Ω0 / 2
         dΩ_2 = (Ω1 - Ω0) / tlen / 2
@@ -65,7 +66,7 @@ struct RotBasisData{B,K,O} <: Function
     function RotBasisData(Ω0, Ω1, δ0, δ1, tlen)
         basis = SpinBasis(1//2)
         op_data = zeros(ComplexF64, 2, 2)
-        op = Operator(basis, op_data)
+        op = QuantumOptics.Operator(basis, op_data)
         ψ0 = spindown(basis)
         Ω0_2 = Ω0 / 2
         dΩ_2 = (Ω1 - Ω0) / tlen / 2
@@ -299,6 +300,71 @@ function evolve(calc::MagnusAnalyticCalc, npoints=1001)
         p = @inline cis(φ_2)
         data[1, i] = ψ[1] * p
         data[2, i] = ψ[2] * conj(p)
+    end
+    return ts, data
+end
+
+struct QTLabBasisCalc{HT,ΨT}
+    H::HT
+    ψ0::ΨT
+    tlen::Float64
+    function QTLabBasisCalc(Ω0, Ω1, δ0, δ1, tlen)
+        Ω0_2 = Ω0 / 2
+        dΩ_2 = (Ω1 - Ω0) / tlen / 2
+        dδ_2 = (δ1 - δ0) / tlen / 2
+
+        φ(p, t) = t * muladd(dδ_2, t, δ0)
+        Ω_2(p, t) = muladd(dΩ_2, t, Ω0_2)
+        x(p, t) = Ω_2(p, t) * cos(φ(p, t))
+        y(p, t) = -Ω_2(p, t) * sin(φ(p, t))
+
+        H = QobjEvo(((QuantumToolbox.sigmax(), x),
+                     (QuantumToolbox.sigmay(), y)))
+        ψ0 = Qobj(ComplexF64[0, 1])
+        return new{typeof(H),typeof(ψ0)}(H, ψ0, tlen)
+    end
+end
+
+function evolve(calc::QTLabBasisCalc, npoints=1001; kws...)
+    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints), progress_bar=Val(false))
+    return res.times, [ψ.data[i] for i in 1:2, ψ in res.states]
+end
+
+struct QTRotBasisCalc{HT,ΨT}
+    H::HT
+    ψ0::ΨT
+    δ0_2::Float64
+    dδ_2::Float64
+    tlen::Float64
+    function QTRotBasisCalc(Ω0, Ω1, δ0, δ1, tlen)
+        Ω0_2 = Ω0 / 2
+        δ0_2 = δ0 / 2
+        dΩ_2 = (Ω1 - Ω0) / tlen / 2
+        dδ_2 = (δ1 - δ0) / tlen / 2
+
+        Ω_2(p, t) = muladd(dΩ_2, t, Ω0_2)
+        δ_2(p, t) = muladd(dδ_2, t, δ0_2)
+
+        H = QobjEvo(((QuantumToolbox.sigmax(), Ω_2),
+                     (QuantumToolbox.sigmaz(), δ_2)))
+        ψ0 = Qobj(ComplexF64[0, 1])
+        return new{typeof(H),typeof(ψ0)}(H, ψ0, δ0_2, dδ_2, tlen)
+    end
+end
+
+function evolve(calc::QTRotBasisCalc, npoints=1001; kws...)
+    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints), progress_bar=Val(false))
+    ts = res.times
+    data = [ψ.data[i] for i in 1:2, ψ in res.states]
+
+    δ0_2 = calc.δ0_2
+    dδ_4 = calc.dδ_2 / 2
+    tlen = calc.tlen
+    for (i, t) in enumerate(ts)
+        φ_2 = t * muladd(dδ_4, t, δ0_2)
+        p = cis(φ_2)
+        data[1, i] *= p
+        data[2, i] *= conj(p)
     end
     return ts, data
 end
