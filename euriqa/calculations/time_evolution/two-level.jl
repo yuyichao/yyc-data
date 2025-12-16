@@ -326,7 +326,8 @@ struct QTLabBasisCalc{HT,ΨT}
 end
 
 function evolve(calc::QTLabBasisCalc, npoints=1001; kws...)
-    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints), progress_bar=Val(false))
+    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints);
+                  progress_bar=Val(false), kws...)
     return res.times, [ψ.data[i] for i in 1:2, ψ in res.states]
 end
 
@@ -353,7 +354,8 @@ struct QTRotBasisCalc{HT,ΨT}
 end
 
 function evolve(calc::QTRotBasisCalc, npoints=1001; kws...)
-    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints), progress_bar=Val(false))
+    res = sesolve(calc.H, calc.ψ0, range(0, calc.tlen, npoints);
+                  progress_bar=Val(false), kws...)
     ts = res.times
     data = [ψ.data[i] for i in 1:2, ψ in res.states]
 
