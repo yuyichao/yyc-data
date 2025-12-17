@@ -38,7 +38,7 @@ end
     mul!(dρ, ρ, H, true, false)
     _apply_hc!(dρ)
 end
-@noinline function dmaster(dρ::DenseMatrix, H::AbstractSparseMatrixCSC, ρ::DenseMatrix)
+@noinline function dmaster(dρ::DenseMatrix, H::SparseArrays.AbstractSparseMatrixCSC, ρ::DenseMatrix)
     if nnz(H) < size(dρ, 1)
         # If H is really sparse, the matrix multiplication could be cheaper than
         # computing the hermitian conjugate.
