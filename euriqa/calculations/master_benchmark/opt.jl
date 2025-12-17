@@ -9,7 +9,12 @@ using SparseArrays
 import OrdinaryDiffEq, DiffEqCallbacks
 
 @noinline function dmaster(dρ, H, ρ)
-    mul!(dρ, H, ρ, true, false)
+    mul!(dρ, H, ρ, -im, false)
+    mul!(dρ, ρ, H, im, true)
+    return
+end
+
+@inline function _apply_hc!(dρ)
     n = size(dρ, 1)
     # compute -i * dρ^dagger + i * dρ
     @inbounds for i in 1:n
@@ -26,6 +31,22 @@ import OrdinaryDiffEq, DiffEqCallbacks
             dρ[idx1] = complex(re_o, -im_o)
             dρ[idx2] = complex(re_o, im_o)
         end
+    end
+end
+
+@noinline function dmaster(dρ::DenseMatrix, H::DenseMatrix, ρ::DenseMatrix)
+    mul!(dρ, ρ, H, true, false)
+    _apply_hc!(dρ)
+end
+@noinline function dmaster(dρ::DenseMatrix, H::AbstractSparseMatrixCSC, ρ::DenseMatrix)
+    if nnz(H) < size(dρ, 1)
+        # If H is really sparse, the matrix multiplication could be cheaper than
+        # computing the hermitian conjugate.
+        mul!(dρ, H, ρ, -im, false)
+        mul!(dρ, ρ, H, im, true)
+    else
+        mul!(dρ, ρ, H, true, false)
+        _apply_hc!(dρ)
     end
 end
 
