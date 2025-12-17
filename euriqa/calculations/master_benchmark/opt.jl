@@ -8,6 +8,27 @@ using SparseArrays
 
 import OrdinaryDiffEq, DiffEqCallbacks
 
+@noinline function dmaster(dρ, H, ρ)
+    mul!(dρ, H, ρ, true, false)
+    n = size(dρ, 1)
+    # compute -i * dρ^dagger + i * dρ
+    @inbounds for i in 1:n
+        dρ[i + (i - 1) * n] = -2 * imag(dρ[i + (i - 1) * n])
+        for j in (i + 1):n
+            idx1 = j + (i - 1) * n
+            idx2 = i + (j - 1) * n
+            v1 = dρ[idx1]
+            v2 = dρ[idx2]
+
+            re_o = -imag(v1) - imag(v2)
+            im_o = real(v2) - real(v1)
+
+            dρ[idx1] = complex(re_o, -im_o)
+            dρ[idx2] = complex(re_o, im_o)
+        end
+    end
+end
+
 function solve_master(H, x0, tlist; alg = OrdinaryDiffEq.DP5(), kws...)
     @inline fout(x, t, _) = copy(x)
     tType = float(eltype(tlist))
@@ -15,36 +36,19 @@ function solve_master(H, x0, tlist; alg = OrdinaryDiffEq.DP5(), kws...)
     scb = DiffEqCallbacks.SavingCallback(fout, out, saveat=tlist,
                                          tdir = one(eltype(tlist)))
 
-    @inline function dmaster(dρ, ρ, _, _)
-        mul!(dρ, H, ρ, true, false)
-        n = size(dρ, 1)
-        # compute -i * dρ^dagger + i * dρ
-        @inbounds for i in 1:n
-            dρ[i + (i - 1) * n] = -2 * imag(dρ[i + (i - 1) * n])
-            for j in (i + 1):n
-                idx1 = j + (i - 1) * n
-                idx2 = i + (j - 1) * n
-                v1 = dρ[idx1]
-                v2 = dρ[idx2]
-
-                re_o = -imag(v1) - imag(v2)
-                im_o = real(v2) - real(v1)
-
-                dρ[idx1] = complex(re_o, -im_o)
-                dρ[idx2] = complex(re_o, im_o)
-            end
-        end
+    @inline function dmaster_(dρ, ρ, _, _)
+        dmaster(dρ, H, ρ)
         return dρ
     end
 
-    prob = OrdinaryDiffEq.ODEProblem{true}(dmaster, x0, (convert(tType, tlist[1]),
-                                                         convert(tType, tlist[end])))
+    prob = OrdinaryDiffEq.ODEProblem{true}(dmaster_, x0, (convert(tType, tlist[1]),
+                                                          convert(tType, tlist[end])))
 
-    sol = OrdinaryDiffEq.solve(prob, alg;
-                               reltol = 1.0e-6, abstol = 1.0e-8,
-                               save_everystep = false, save_start = false,
-                               save_end = false,
-                               callback=scb, kws...)
+    OrdinaryDiffEq.solve(prob, alg;
+                         reltol = 1.0e-6, abstol = 1.0e-8,
+                         save_everystep = false, save_start = false,
+                         save_end = false,
+                         callback=scb, kws...)
     return out.t, out.saveval
 end
 

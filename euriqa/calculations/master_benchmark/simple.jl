@@ -8,6 +8,12 @@ using SparseArrays
 
 import OrdinaryDiffEq, DiffEqCallbacks
 
+@noinline function dmaster(dρ, H, ρ)
+    mul!(dρ, H, ρ, -im, false)
+    mul!(dρ, ρ, H, im, true)
+    return
+end
+
 function solve_master(H, x0, tlist; alg = OrdinaryDiffEq.DP5(), kws...)
     @inline fout(x, t, _) = copy(x)
     tType = float(eltype(tlist))
@@ -15,19 +21,19 @@ function solve_master(H, x0, tlist; alg = OrdinaryDiffEq.DP5(), kws...)
     scb = DiffEqCallbacks.SavingCallback(fout, out, saveat=tlist,
                                          tdir = one(eltype(tlist)))
 
-    @inline function dmaster(dρ, ρ, _, _)
-        mul!(dρ, H, ρ, -im, false)
-        return mul!(dρ, ρ, H, im, true)
+    @inline function dmaster_(dρ, ρ, _, _)
+        dmaster(dρ, H, ρ)
+        return dρ
     end
 
-    prob = OrdinaryDiffEq.ODEProblem{true}(dmaster, x0, (convert(tType, tlist[1]),
-                                                         convert(tType, tlist[end])))
+    prob = OrdinaryDiffEq.ODEProblem{true}(dmaster_, x0, (convert(tType, tlist[1]),
+                                                          convert(tType, tlist[end])))
 
-    sol = OrdinaryDiffEq.solve(prob, alg;
-                               reltol = 1.0e-6, abstol = 1.0e-8,
-                               save_everystep = false, save_start = false,
-                               save_end = false,
-                               callback=scb, kws...)
+    OrdinaryDiffEq.solve(prob, alg;
+                         reltol = 1.0e-6, abstol = 1.0e-8,
+                         save_everystep = false, save_start = false,
+                         save_end = false,
+                         callback=scb, kws...)
     return out.t, out.saveval
 end
 
