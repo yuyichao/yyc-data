@@ -52,7 +52,7 @@ function gen_dipole(F1, F2, Ωs, δ, g1=0, g2=0)
             end
 
             i1 = idx1(mF1)
-            i2 = idx1(mF2)
+            i2 = idx2(mF2)
             push!(Is, i1)
             push!(Js, i2)
             push!(Vs, v)
