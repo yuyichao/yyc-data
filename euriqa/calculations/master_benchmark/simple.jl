@@ -53,7 +53,7 @@ function expects(m, states)
     return er, ei
 end
 
-function motion_problem(Ω, ω, δ, nbar, nMax)
+function _motion_problem(Ω, ω, δ, nbar, nMax)
     η = 2π / 578e-9 * sqrt(1.05e-34 / (2 * 171 * 1.67e-27 * (ω * 1e6)))
 
     I_s = qeye(2)
@@ -68,12 +68,25 @@ function motion_problem(Ω, ω, δ, nbar, nMax)
     return H.data, ψ0.data
 end
 
-function solve_motion((H, ψ0), tlist; kws...)
-    return solve_master(H, ψ0, tlist; kws...)
+struct MotionProblem{HT,ΨT}
+    H::HT
+    ψ0::ΨT
 end
 
-function expect_motion((H, ψ0), (tlist, states))
-    nMax = size(H, 1) ÷ 2
+function motion_problem(Ω, ω, δ, nbar, nMax)
+    return MotionProblem(_motion_problem(Ω, ω, δ, nbar, nMax)...)
+end
+function motion2_problem(Ω, ω, δ, nbar, nMax)
+    H, ψ0 = _motion_problem(Ω, ω, δ, nbar, nMax)
+    return MotionProblem(sparse(H), ψ0)
+end
+
+function psolve(p::MotionProblem, tlist; kws...)
+    return solve_master(p.H, p.ψ0, tlist; kws...)
+end
+
+function pexpect(p::MotionProblem, (tlist, states))
+    nMax = size(p.H, 1) ÷ 2
 
     return (tlist, rexpects(fock_dm(2, 0) ⊗ qeye(nMax), states),
             rexpects(fock_dm(2, 1) ⊗ qeye(nMax), states),
@@ -82,50 +95,28 @@ function expect_motion((H, ψ0), (tlist, states))
             expects(sigmap() ⊗ fock_dm(nMax, 0), states)...)
 end
 
-function motion2_problem(Ω, ω, δ, nbar, nMax)
-    η = 2π / 578e-9 * sqrt(1.05e-34 / (2 * 171 * 1.67e-27 * (ω * 1e6)))
-
-    I_s = qeye(2)
-    I_m = qeye(nMax)
-    n_m = num(nMax)
-    ikx_m = im * η * (create(nMax) + destroy(nMax))
-
-    H = ω * n_m ⊗ I_s +
-        Ω / 2 * (exp(-ikx_m) ⊗ sigmap() + exp(ikx_m) ⊗ sigmam()) +
-        δ * I_m ⊗ fock_dm(2, 1)
-    ψ0 = thermal_dm(nMax, nbar + 1e-100) ⊗ fock_dm(2, 0)
-    return H.data, ψ0.data
-end
-
-function solve_motion2((H, ψ0), tlist; kws...)
-    return solve_master(H, ψ0, tlist; kws...)
-end
-
-function expect_motion2((H, ψ0), (tlist, states))
-    nMax = size(H, 1) ÷ 2
-
-    return (tlist, rexpects(qeye(nMax) ⊗ fock_dm(2, 0), states),
-            rexpects(qeye(nMax) ⊗ fock_dm(2, 1), states),
-            rexpects(num(nMax) ⊗ qeye(2), states),
-            rexpects(fock_dm(nMax, 0) ⊗ qeye(2), states),
-            expects(fock_dm(nMax, 0) ⊗ sigmap(), states)...)
+struct SparseProblem{HT,ΨT}
+    H::HT
+    ψ0::ΨT
+    i0::Int
+    i1::Int
 end
 
 function sparse_problem(H, i0, i1)
     n = size(H, 1)
-    return H, fock_dm(n, i0 - 1).data, i0, i1
+    return SparseProblem(H, fock_dm(n, i0 - 1).data, i0, i1)
 end
 
-function solve_sparse((H, ψ0, _, _), tlist; kws...)
-    return solve_master(H, ψ0, tlist; kws...)
+function psolve(p::SparseProblem, tlist; kws...)
+    return solve_master(p.H, p.ψ0, tlist; kws...)
 end
 
-function expect_sparse((H, ψ0, i0, i1), (tlist, states))
-    n = size(H, 1)
+function pexpect(p::SparseProblem, (tlist, states))
+    n = size(p.H, 1)
 
-    return (tlist, rexpects(fock_dm(n, i0 - 1), states),
-            rexpects(fock_dm(n, i1 - 1), states),
-            expects(fock(n, i0 - 1) * fock(n, i1 - 1)', states)...)
+    return (tlist, rexpects(fock_dm(n, p.i0 - 1), states),
+            rexpects(fock_dm(n, p.i1 - 1), states),
+            expects(fock(n, p.i0 - 1) * fock(n, p.i1 - 1)', states)...)
 end
 
 end
