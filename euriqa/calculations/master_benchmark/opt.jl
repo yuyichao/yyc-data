@@ -34,20 +34,14 @@ end
     end
 end
 
-@noinline function dmaster(dρ::DenseMatrix, H::DenseMatrix, ρ::DenseMatrix)
+@noinline function dmaster(dρ::DenseMatrix, H::Union{DenseMatrix,AbstractSparseMatrix}, ρ::DenseMatrix)
     mul!(dρ, ρ, H, true, false)
+    # If H is really sparse, a second matrix multiplication could be cheaper than
+    # computing the hermitian conjugate.
+    # However, based on testing the threshold seems to be very low
+    # and it will also necessarily means the Hamiltonian is not fully connected,
+    # so we'll ignore those cases for now.
     _apply_hc!(dρ)
-end
-@noinline function dmaster(dρ::DenseMatrix, H::SparseArrays.AbstractSparseMatrixCSC, ρ::DenseMatrix)
-    if nnz(H) < size(dρ, 1)
-        # If H is really sparse, the matrix multiplication could be cheaper than
-        # computing the hermitian conjugate.
-        mul!(dρ, H, ρ, -im, false)
-        mul!(dρ, ρ, H, im, true)
-    else
-        mul!(dρ, ρ, H, true, false)
-        _apply_hc!(dρ)
-    end
 end
 
 function solve_master(H, x0, tlist; alg = OrdinaryDiffEq.DP5(), kws...)
