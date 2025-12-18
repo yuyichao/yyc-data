@@ -35,7 +35,7 @@ t_simple = test_motion(SimpleTest)
 t_opt = test_motion(OPTTest)
 
 function write_times(io, name, ts)
-    println(name, ",", join(ts, ','))
+    println(io, name, ",", join(ts, ','))
 end
 
 open(outfile, "w") do io
