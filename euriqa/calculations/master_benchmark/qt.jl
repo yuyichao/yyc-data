@@ -23,6 +23,16 @@ function solve_motion((H, ψ0), tlist; kws...)
     return tlist, mesolve(H, ψ0, tlist; progress_bar=false, kws...).states
 end
 
+function expect_motion((H, ψ0), (tlist, states))
+    nMax = size(H, 1) ÷ 2
+    meas = [fock_dm(2, 0) ⊗ qeye(nMax), fock_dm(2, 1) ⊗ qeye(nMax),
+            qeye(2) ⊗ num(nMax), qeye(2) ⊗ fock_dm(nMax, 0),
+            sigmap() ⊗ fock_dm(nMax, 0)]
+    result = [expect(mea, states) for mea in meas]
+    return (tlist, real.(result[1]), real.(result[2]), real.(result[3]), real.(result[4]),
+            real.(result[5]), imag.(result[5]))
+end
+
 function motion2_problem(Ω, ω, δ, nbar, nMax)
     η = 2π / 578e-9 * sqrt(1.05e-34 / (2 * 171 * 1.67e-27 * (ω * 1e6)))
 
@@ -40,6 +50,16 @@ end
 
 function solve_motion2((H, ψ0), tlist; kws...)
     return tlist, mesolve(H, ψ0, tlist; progress_bar=false, kws...).states
+end
+
+function expect_motion2((H, ψ0), (tlist, states))
+    nMax = size(H, 1) ÷ 2
+    meas = [qeye(nMax) ⊗ fock_dm(2, 0), qeye(nMax) ⊗ fock_dm(2, 1),
+            num(nMax) ⊗ qeye(2), fock_dm(nMax, 0) ⊗ qeye(2),
+            fock_dm(nMax, 0) ⊗ sigmap()]
+    result = [expect(mea, states) for mea in meas]
+    return (tlist, real.(result[1]), real.(result[2]), real.(result[3]), real.(result[4]),
+            real.(result[5]), imag.(result[5]))
 end
 
 end
