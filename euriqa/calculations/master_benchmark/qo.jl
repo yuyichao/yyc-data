@@ -90,4 +90,25 @@ function expect_motion2((H, ψ0), (tlist, states))
                 (fockstate(mbasis, 0) ⊗ fockstate(mbasis, 0)'), states)...)
 end
 
+function sparse_problem(H, i0, i1)
+    n = size(H, 1)
+    basis = FockBasis(n - 1)
+    return Operator(basis, H), fockstate(basis, i0 - 1), i0, i1
+end
+
+function solve_sparse((H, ψ0, _, _), tlist; kws...)
+    return timeevolution.master(tlist, ψ0, H, (); kws...)
+end
+
+function expect_sparse((H, ψ0, i0, i1), (tlist, states))
+    n = size(H, 1)
+
+    basis = FockBasis(n - 1)
+    s0 = fockstate(basis, i0 - 1)
+    s1 = fockstate(basis, i1 - 1)
+
+    return (tlist, rexpects(s0 ⊗ s0', states), rexpects(s1 ⊗ s1', states),
+            expects(s0 ⊗ s1', states)...)
+end
+
 end

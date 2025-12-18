@@ -111,4 +111,21 @@ function expect_motion2((H, ψ0), (tlist, states))
             expects(fock_dm(nMax, 0) ⊗ sigmap(), states)...)
 end
 
+function sparse_problem(H, i0, i1)
+    n = size(H, 1)
+    return H, fock_dm(n, i0 - 1).data, i0, i1
+end
+
+function solve_sparse((H, ψ0, _, _), tlist; kws...)
+    return solve_master(H, ψ0, tlist; kws...)
+end
+
+function expect_sparse((H, ψ0, i0, i1), (tlist, states))
+    n = size(H, 1)
+
+    return (tlist, rexpects(fock_dm(n, i0 - 1), states),
+            rexpects(fock_dm(n, i1 - 1), states),
+            expects(fock(n, i0 - 1) * fock(n, i1 - 1)', states)...)
+end
+
 end
