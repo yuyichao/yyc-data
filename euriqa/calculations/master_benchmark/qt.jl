@@ -3,6 +3,7 @@
 module QTTest
 
 using QuantumToolbox
+using SparseArrays
 
 rexpects(m, states) = [real(expect(m, s)) for s in states]
 function expects(m, states)
@@ -41,7 +42,7 @@ function motion_problem(Ω, ω, δ, nbar, nMax)
 end
 function motion2_problem(Ω, ω, δ, nbar, nMax)
     H, ψ0 = _motion_problem(Ω, ω, δ, nbar, nMax)
-    return MotionProblem(Qobj(sparse(H.data), H.dims), ψ0)
+    return MotionProblem(Qobj(sparse(H.data), dims=H.dims), ψ0)
 end
 
 function psolve(p::MotionProblem, tlist; kws...)

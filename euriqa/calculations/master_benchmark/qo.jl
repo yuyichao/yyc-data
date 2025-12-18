@@ -3,6 +3,7 @@
 module QOTest
 
 using QuantumOptics
+using SparseArrays
 
 rexpects(m, states) = [real(expect(m, s)) for s in states]
 function expects(m, states)
@@ -60,7 +61,7 @@ function pexpect(p::MotionProblem, (tlist, states))
     n_m = number(mbasis)
 
     return (tlist, rexpects(I_m ⊗ (spinup(sbasis) ⊗ spinup(sbasis)'), states),
-            rexpects(I_m ⊗ (spinup(sbasis) ⊗ spinup(sbasis)'), states),
+            rexpects(I_m ⊗ (spindown(sbasis) ⊗ spindown(sbasis)'), states),
             rexpects(n_m ⊗ I_s, states),
             rexpects((fockstate(mbasis, 0) ⊗ fockstate(mbasis, 0)') ⊗ I_s, states),
             expects((fockstate(mbasis, 0) ⊗ fockstate(mbasis, 0)') ⊗
