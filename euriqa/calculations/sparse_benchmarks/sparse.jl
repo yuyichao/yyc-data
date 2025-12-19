@@ -44,24 +44,8 @@ function spmul3(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2,
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    @inbounds for col in axes(A,2)
-        C_col = @view(C[:, col])
-        for k in nzrange(A, col)
-            Aiα = nzv[k] * α
-            rvk = rv[k]
-            X_col = @view(X[:, rvk])
-            mul!(C_col, X_col, Aiα, true, true)
-        end
-    end
-    C
-end
-
-function spmul4(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-    mX, nX = size(X)
-    rv = rowvals(A)
-    nzv = nonzeros(A)
     β_one = isone(β)
+    β_zero = iszero(β)
     @inbounds for col in axes(A,2)
         filled = β_one
         C_col = @view(C[:, col])
@@ -70,14 +54,26 @@ function spmul4(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2,
             rvk = rv[k]
             X_col = @view(X[:, rvk])
             if filled
-                mul!(C_col, X_col, Aiα, true, true)
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] += X_col[multivec_row] * Aiα
+                end
+            elseif β_zero
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] = X_col[multivec_row] * Aiα
+                end
             else
-                mul!(C_col, X_col, Aiα, true, β)
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] = C_col[multivec_row] * β + X_col[multivec_row] * Aiα
+                end
             end
             filled = true
         end
         if !filled
-            LinearAlgebra._rmul_or_fill!(C_col, β)
+            if β_zero
+                fill!(C_col, zero(eltype(C)))
+            else
+                rmul!(C_col, β)
+            end
         end
     end
     C
@@ -88,13 +84,11 @@ function bench_sparse(C, X, A)
     @btime spmul1($C, $X, $A, true, false)
     @btime spmul2($C, $X, $A, true, false)
     @btime spmul3($C, $X, $A, true, false)
-    @btime spmul4($C, $X, $A, true, false)
 
     println("  true")
     @btime spmul1($C, $X, $A, true, true)
     @btime spmul2($C, $X, $A, true, true)
     @btime spmul3($C, $X, $A, true, true)
-    @btime spmul4($C, $X, $A, true, true)
 
     return
 end
