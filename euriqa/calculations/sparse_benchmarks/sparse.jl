@@ -93,24 +93,39 @@ function bench_sparse(C, X, A)
     return
 end
 
-println("ComplexF64")
-println(" 25%")
-bench_sparse(zeros(ComplexF64, 100, 100), zeros(ComplexF64, 100, 100),
-             sprand(ComplexF64, 100, 100, 0.25))
-println(" 5%")
-bench_sparse(zeros(ComplexF64, 100, 100), zeros(ComplexF64, 100, 100),
-             sprand(ComplexF64, 100, 100, 0.05))
-println(" 1%")
-bench_sparse(zeros(ComplexF64, 100, 100), zeros(ComplexF64, 100, 100),
-             sprand(ComplexF64, 100, 100, 0.01))
+function bench_sparse_type(ElType, sz)
+    println(" 25%")
+    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
+                 sprand(ElType, sz, sz, 0.25))
+    println(" 5%")
+    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
+                 sprand(ElType, sz, sz, 0.05))
+    println(" 1%")
+    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
+                 sprand(ElType, sz, sz, 0.01))
+end
 
-println("Float64")
-println(" 25%")
-bench_sparse(zeros(Float64, 100, 100), zeros(Float64, 100, 100),
-             sprand(Float64, 100, 100, 0.25))
-println(" 5%")
-bench_sparse(zeros(Float64, 100, 100), zeros(Float64, 100, 100),
-             sprand(Float64, 100, 100, 0.05))
-println(" 1%")
-bench_sparse(zeros(Float64, 100, 100), zeros(Float64, 100, 100),
-             sprand(Float64, 100, 100, 0.01))
+println("ComplexF64 100x100")
+bench_sparse_type(ComplexF64, 100)
+println("ComplexF64 1000x1000")
+bench_sparse_type(ComplexF64, 1000)
+
+println("Float64 100x100")
+bench_sparse_type(Float64, 100)
+println("Float64 1000x1000")
+bench_sparse_type(Float64, 1000)
+
+println("BigFloat 100x100")
+bench_sparse_type(BigFloat, 100)
+println("BigFloat 1000x1000")
+bench_sparse_type(BigFloat, 1000)
+
+println("Int64 100x100")
+bench_sparse_type(Int64, 100)
+println("Int64 1000x1000")
+bench_sparse_type(Int64, 1000)
+
+println("Int32 100x100")
+bench_sparse_type(Int32, 100)
+println("Int32 1000x1000")
+bench_sparse_type(Int32, 1000)
