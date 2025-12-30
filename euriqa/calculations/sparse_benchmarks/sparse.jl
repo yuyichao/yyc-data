@@ -44,26 +44,34 @@ function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     C
 end
 
-@inline function _inbounds_col_view(A, ::Base.IndexLinear, nrow, col)
-    offset = (col - 1) * nrow
-    return @inbounds @view(A[offset + 1:offset + nrow])
+@inline _wrapper(A, nrow) = A
+struct _Wrapper{T}
+    ref::T
+    nrow::Int
 end
-@inline _inbounds_col_view(A, ::Any, nrow, col) = @inbounds @view(A[:, col])
+@inline _wrapper(A::Matrix, nrow) = _Wrapper(A.ref, nrow)
+@inline Base.getindex(A::_Wrapper, i) = @inbounds Core.memoryrefnew(A.ref, i)[]
+@inline Base.setindex!(A::_Wrapper, v, i) = @inbounds Core.memoryrefnew(A.ref, i)[] = v
+
+@inline _col_view(A, col) = @inbounds @view(A[:, col])
+@inline function _col_view(A::_Wrapper, col)
+    @inbounds _Wrapper(Core.memoryrefnew(A.ref, (col - 1) * A.nrow + 1, false), A.nrow)
+end
 
 function spmul_view2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
     Xaxes1 = axes(X, 1)
-    idxC = Base.IndexStyle(C)
-    idxX = Base.IndexStyle(X)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    _C = _wrapper(C, mX)
+    X = _wrapper(X, mX)
     @inbounds for col in axes(A,2)
-        C_col = _inbounds_col_view(C, idxC, mX, col)
+        C_col = _col_view(_C, col)
         for k in nzrange(A, col)
             Aiα = nzv[k] * α
             rvk = rv[k]
-            X_col = _inbounds_col_view(X, idxX, mX, rvk)
+            X_col = _col_view(X, rvk)
             @simd for multivec_row in Xaxes1
                 C_col[multivec_row] += X_col[multivec_row] * Aiα
             end
@@ -77,15 +85,15 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     rv = rowvals(A)
     nzv = nonzeros(A)
     Xaxes1 = axes(X, 1)
-    idxC = Base.IndexStyle(C)
-    idxX = Base.IndexStyle(X)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    _C = _wrapper(C, mX)
+    X = _wrapper(X, mX)
     @inbounds for col in axes(A,2)
-        C_col = _inbounds_col_view(C, idxC, mX, col)
+        C_col = _col_view(_C, col)
         for k in nzrange(A, col)
             Aiα = nzv[k] * α
             rvk = rv[k]
-            X_col = _inbounds_col_view(X, idxX, mX, rvk)
+            X_col = _col_view(X, rvk)
             @simd for multivec_row in Xaxes1
                 C_col[multivec_row] = muladd(X_col[multivec_row], Aiα,
                                              C_col[multivec_row])
