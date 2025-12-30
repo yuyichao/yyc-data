@@ -1,6 +1,7 @@
 #!/usr/bin/julia
 
 using LinearAlgebra
+using Static
 using SparseArrays
 using SparseArrays: DenseMatrixUnion, SparseMatrixCSCUnion2
 
@@ -171,6 +172,20 @@ function bench_sparse(C, X, A)
     @btime spmul_view($C, $X, $A, true, true)
     @btime spmul_split($C, $X, $A, true, true)
     @btime spmul_split2($C, $X, $A, true, true)
+
+    println("  static(false)")
+    @btime spmul_orig($C, $X, $A, static(true), static(false))
+    @btime spmul_muladd($C, $X, $A, static(true), static(false))
+    @btime spmul_view($C, $X, $A, static(true), static(false))
+    @btime spmul_split($C, $X, $A, static(true), static(false))
+    @btime spmul_split2($C, $X, $A, static(true), static(false))
+
+    println("  static(true)")
+    @btime spmul_orig($C, $X, $A, static(true), static(true))
+    @btime spmul_muladd($C, $X, $A, static(true), static(true))
+    @btime spmul_view($C, $X, $A, static(true), static(true))
+    @btime spmul_split($C, $X, $A, static(true), static(true))
+    @btime spmul_split2($C, $X, $A, static(true), static(true))
 
     return
 end
