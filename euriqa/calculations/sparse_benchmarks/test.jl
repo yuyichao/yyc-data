@@ -22,7 +22,7 @@ function test_matrix(f!, C, X, A)
     v1 = one(eltype(C))
     v2 = v1 + v1
 
-    vs = Any[false, true, v0, v05, v1]
+    vs = Any[false, true, v0, v1, v2]
     for α in vs
         for β in vs
             test_param(f!, C, X, A, α, β)
