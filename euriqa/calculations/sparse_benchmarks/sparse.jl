@@ -63,30 +63,6 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    if nnz(A) == 0
-        return C
-    end
-    Xaxes1 = axes(X, 1)
-    _C = _wrap_matrix(C, mX)
-    X = _wrap_matrix(X, mX)
-    @inbounds for col in axes(A,2)
-        for k in nzrange(A, col)
-            Aiα = nzv[k] * α
-            rvk = rv[k]
-            @simd for multivec_row in Xaxes1
-                _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                               _C[multivec_row, col])
-            end
-        end
-    end
-    C
-end
-
-function spmul_muladd2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-    mX, nX = size(X)
-    rv = rowvals(A)
-    nzv = nonzeros(A)
     isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
     if (α isa Bool && !α) || nnz(A) == 0
         return C
@@ -218,7 +194,6 @@ function bench_sparse(C, X, A)
     @btime spmul_orig($C, $X, $A, true, false)
     @btime spmul_view($C, $X, $A, true, false)
     @btime spmul_muladd($C, $X, $A, true, false)
-    @btime spmul_muladd2($C, $X, $A, true, false)
     # @btime spmul_split($C, $X, $A, true, false)
     # @btime spmul_split2($C, $X, $A, true, false)
 
@@ -226,7 +201,6 @@ function bench_sparse(C, X, A)
     @btime spmul_orig($C, $X, $A, true, true)
     @btime spmul_view($C, $X, $A, true, true)
     @btime spmul_muladd($C, $X, $A, true, true)
-    @btime spmul_muladd2($C, $X, $A, true, true)
     # @btime spmul_split($C, $X, $A, true, true)
     # @btime spmul_split2($C, $X, $A, true, true)
 
