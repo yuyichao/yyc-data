@@ -116,7 +116,7 @@ end
         throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
 end
 
-function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, Annz, ::Val{β_zero}, ::Val{β_one}, ::Val{Small}) where {β_zero,β_one,Small}
+function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, Annz, ::Val{β_zero}, ::Val{β_one}, ::Val{Prefill}) where {β_zero,β_one,Prefill}
     mX, nX = size(X)
     Xaxes1 = axes(X, 1)
     mA, nA = size(A)
@@ -130,14 +130,14 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     if β isa Bool
         β = β_one
     end
-    EmptyMul = (α isa Bool && !α) | Annz == 0
-    if Small || EmptyMul
+    empty_mul = (α isa Bool && !α) | Annz == 0
+    if Prefill || empty_mul
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
-        if EmptyMul
+        if empty_mul
             return C
         end
     end
-    if !Small && β_zero
+    if !Prefill && β_zero
         C_zero = zero(eltype(C))
     end
     _C = _wrap_matrix(C, mX)
@@ -145,7 +145,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     @inbounds for col in Aaxes2
         nzrng = nzrange(A, col)
         if isempty(nzrng)
-            if Small || β_one
+            if Prefill
                 # Already filled
             elseif β_zero
                 @simd for multivec_row in Xaxes1
@@ -158,11 +158,11 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
             end
             continue
         end
-        first = !(Small || β_one)
+        filled = Prefill
         for k in nzrng
             Aiα = α isa Bool ? nzv[k] : nzv[k] * α
             rvk = rv[k]
-            if first
+            if !filled
                 if β_zero
                     @simd for multivec_row in Xaxes1
                         _C[multivec_row, col] = _fast_mul(X[multivec_row, rvk], Aiα)
@@ -173,7 +173,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
                                                        _C[multivec_row, col] * β)
                     end
                 end
-                first = false
+                filled = true
             else
                 @simd for multivec_row in Xaxes1
                     _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
