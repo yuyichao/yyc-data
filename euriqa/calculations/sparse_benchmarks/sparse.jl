@@ -83,7 +83,7 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-function _spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{α_one}) where {α_one}
+@inline function _spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{α_one}) where {α_one}
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
