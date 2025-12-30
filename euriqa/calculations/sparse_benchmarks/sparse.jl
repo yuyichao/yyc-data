@@ -35,12 +35,12 @@ end
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[]
 @inline Base.setindex!(A::_ImmutableMatrix, v, i, j) =
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[] = v
-@inline _axes1(A) = axes(A, 1)
-@inline _axes1(A::_ImmutableMatrix) = 1:A.nrow
 
 function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
+    Xaxes1 = axes(X, 1)
     mA, nA = size(A)
+    Aaxes2 = axes(A, 2)
     mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
@@ -50,8 +50,7 @@ function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     end
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    Xaxes1 = _axes1(X)
-    @inbounds for col in 1:nA
+    @inbounds for col in Aaxes2
         for k in nzrange(A, col)
             Aiα = nzv[k] * α
             rvk = rv[k]
@@ -65,7 +64,9 @@ end
 
 function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
+    Xaxes1 = axes(X, 1)
     mA, nA = size(A)
+    Aaxes2 = axes(A, 2)
     mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
@@ -75,8 +76,7 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     end
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    Xaxes1 = _axes1(X)
-    @inbounds for col in 1:nA
+    @inbounds for col in Aaxes2
         for k in nzrange(A, col)
             Aiα = α isa Bool ? nzv[k] : nzv[k] * α
             rvk = rv[k]
@@ -91,7 +91,9 @@ end
 
 @inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{β_zero}, ::Val{β_one}) where {β_zero,β_one}
     mX, nX = size(X)
+    Xaxes1 = axes(X, 1)
     mA, nA = size(A)
+    Aaxes2 = axes(A, 2)
     mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
@@ -107,8 +109,7 @@ end
     end
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    Xaxes1 = _axes1(X)
-    @inbounds for col in 1:nA
+    @inbounds for col in Aaxes2
         nzrng = nzrange(A, col)
         if isempty(nzrng)
             if β_zero
