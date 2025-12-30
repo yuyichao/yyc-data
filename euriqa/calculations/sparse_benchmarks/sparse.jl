@@ -50,8 +50,10 @@ struct _Wrapper{T}
     nrow::Int
 end
 @inline _wrapper(A::Matrix, nrow) = _Wrapper(A.ref, nrow)
-@inline Base.getindex(A::_Wrapper, i) = @inbounds Core.memoryrefnew(A.ref, i)[]
-@inline Base.setindex!(A::_Wrapper, v, i) = @inbounds Core.memoryrefnew(A.ref, i)[] = v
+@inline Base.getindex(A::_Wrapper, i) =
+    @inbounds Core.memoryrefnew(A.ref, i, false)[]
+@inline Base.setindex!(A::_Wrapper, v, i) =
+    @inbounds Core.memoryrefnew(A.ref, i, false)[] = v
 
 @inline _col_view(A, col) = @inbounds @view(A[:, col])
 @inline function _col_view(A::_Wrapper, col)
