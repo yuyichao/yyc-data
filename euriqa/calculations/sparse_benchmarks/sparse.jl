@@ -48,16 +48,17 @@ end
 struct _Wrapper{T}
     ref::T
     nrow::Int
+    offset::Int
 end
-@inline _wrapper(A::Matrix, nrow) = _Wrapper(A.ref, nrow)
+@inline _wrapper(A::Matrix, nrow) = _Wrapper(A.ref, nrow, 0)
 @inline Base.getindex(A::_Wrapper, i) =
-    @inbounds Core.memoryrefnew(A.ref, i, false)[]
+    @inbounds Core.memoryrefnew(A.ref, A.offset + i, false)[]
 @inline Base.setindex!(A::_Wrapper, v, i) =
-    @inbounds Core.memoryrefnew(A.ref, i, false)[] = v
+    @inbounds Core.memoryrefnew(A.ref, A.offset + i, false)[] = v
 
 @inline _col_view(A, col) = @inbounds @view(A[:, col])
 @inline function _col_view(A::_Wrapper, col)
-    @inbounds _Wrapper(Core.memoryrefnew(A.ref, (col - 1) * A.nrow + 1, false), A.nrow)
+    @inbounds _Wrapper(A.ref, A.nrow, A.offset + (col - 1) * A.nrow)
 end
 
 function spmul_view2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
