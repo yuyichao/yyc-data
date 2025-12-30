@@ -35,19 +35,23 @@ end
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[]
 @inline Base.setindex!(A::_ImmutableMatrix, v, i, j) =
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[] = v
+@inline _axes1(A) = axes(A, 1)
+@inline _axes1(A::_ImmutableMatrix) = 1:A.nrow
 
 function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
+    mA, nA = size(A)
+    mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
     if nnz(A) == 0
         return C
     end
-    Xaxes1 = axes(X, 1)
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    @inbounds for col in axes(A,2)
+    Xaxes1 = _axes1(X)
+    @inbounds for col in 1:nA
         for k in nzrange(A, col)
             Aiα = nzv[k] * α
             rvk = rv[k]
@@ -61,16 +65,18 @@ end
 
 function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
+    mA, nA = size(A)
+    mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
     isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
     if (α isa Bool && !α) || nnz(A) == 0
         return C
     end
-    Xaxes1 = axes(X, 1)
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    @inbounds for col in axes(A,2)
+    Xaxes1 = _axes1(X)
+    @inbounds for col in 1:nA
         for k in nzrange(A, col)
             Aiα = α isa Bool ? nzv[k] : nzv[k] * α
             rvk = rv[k]
@@ -83,8 +89,10 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{β_zero}, ::Val{β_one}) where {β_zero,β_one}
+@inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{β_zero}, ::Val{β_one}) where {β_zero,β_one}
     mX, nX = size(X)
+    mA, nA = size(A)
+    mC, nC = size(C)
     rv = rowvals(A)
     nzv = nonzeros(A)
     if β isa Bool
@@ -97,10 +105,10 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     if β_zero
         C_zero = zero(eltype(C))
     end
-    Xaxes1 = axes(X, 1)
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
-    @inbounds for col in axes(A,2)
+    Xaxes1 = _axes1(X)
+    @inbounds for col in 1:nA
         nzrng = nzrange(A, col)
         if isempty(nzrng)
             if β_zero
