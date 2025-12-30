@@ -70,13 +70,19 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
             Aiα = _fast_mul(nzv[k], α)
             rvk = rv[k]
             X_col = @view(X[:, rvk])
-            @simd for multivec_row in axes(X,1)
-                C_col[multivec_row] = if filled
-                    muladd(X_col[multivec_row], Aiα, C_col[multivec_row])
-                elseif β_zero
-                    _fast_mul(X_col[multivec_row], Aiα)
-                else
-                    muladd(X_col[multivec_row], Aiα, _fast_mul(C_col[multivec_row], β))
+            if filled
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] = muladd(X_col[multivec_row], Aiα,
+                                                 C_col[multivec_row])
+                end
+            elseif β_zero
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] = _fast_mul(X_col[multivec_row], Aiα)
+                end
+            else
+                @simd for multivec_row in axes(X,1)
+                    C_col[multivec_row] = muladd(X_col[multivec_row], Aiα,
+                                                 _fast_mul(C_col[multivec_row], β))
                 end
             end
             filled = true
