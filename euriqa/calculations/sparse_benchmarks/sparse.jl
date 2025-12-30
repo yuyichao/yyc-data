@@ -83,11 +83,10 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-@inline function _spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{α_one}) where {α_one}
+@inline function _spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, ::Val{α_one}) where {α_one}
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
     if (α isa Bool && !α_one) || nnz(A) == 0
         return C
     end
@@ -107,10 +106,11 @@ end
 end
 
 function spmul_muladd2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
     if isone(α)
-        _spmul_muladd(C, X, A, true, β, Val(true))
+        _spmul_muladd(C, X, A, true, Val(true))
     else
-        _spmul_muladd(C, X, A, α, β, Val(false))
+        _spmul_muladd(C, X, A, α, Val(false))
     end
     C
 end
