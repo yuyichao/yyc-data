@@ -107,7 +107,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
                 @simd for multivec_row in Xaxes1
                     _C[multivec_row, col] = C_zero
                 end
-            else
+            elseif !β_one
                 @simd for multivec_row in Xaxes1
                     _C[multivec_row, col] = _fast_mul(_C[multivec_row, col], β)
                 end
