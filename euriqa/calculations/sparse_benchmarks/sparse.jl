@@ -131,6 +131,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
         β = β_one
     end
     empty_mul = (α isa Bool && !α) | Annz == 0
+
     if Prefill || empty_mul
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
         if empty_mul
@@ -140,6 +141,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     if !Prefill && β_zero
         C_zero = zero(eltype(C))
     end
+
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
     @inbounds for col in Aaxes2
