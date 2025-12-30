@@ -20,7 +20,7 @@ end
 function test_matrix(f!, C, X, A)
     v0 = zero(eltype(C))
     v1 = one(eltype(C))
-    v05 = v1 / 2
+    v2 = v1 + v1
 
     vs = Any[false, true, v0, v05, v1]
     for α in vs
