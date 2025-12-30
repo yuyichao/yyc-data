@@ -63,6 +63,9 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     nzv = nonzeros(A)
     β_one = isone(β)
     β_zero = iszero(β)
+    if β_zero
+        C_zero = zero(eltype(C))
+    end
     @inbounds for col in axes(A,2)
         filled = β_one
         C_col = @view(C[:, col])
@@ -89,7 +92,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
         end
         if !filled
             if β_zero
-                fill!(C_col, zero(eltype(C)))
+                fill!(C_col, C_zero)
             else
                 @simd for multivec_row in axes(X,1)
                     C_col[multivec_row] = _fast_mul(C_col[multivec_row], β)
@@ -103,6 +106,9 @@ end
 @inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{β_zero}, ::Val{β_one}) where {β_zero,β_one}
     rv = rowvals(A)
     nzv = nonzeros(A)
+    if β_zero
+        C_zero = zero(eltype(C))
+    end
     @inbounds for col in axes(A,2)
         filled = β_one
         C_col = @view(C[:, col])
@@ -129,7 +135,7 @@ end
         end
         if !filled
             if β_zero
-                fill!(C_col, zero(eltype(C)))
+                fill!(C_col, C_zero)
             else
                 @simd for multivec_row in axes(X,1)
                     C_col[multivec_row] = _fast_mul(C_col[multivec_row], β)
