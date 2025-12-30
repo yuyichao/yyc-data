@@ -149,7 +149,7 @@ function spmul_split2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
         _spmul_split(C, X, A, α, β, Val(false), Val(false))
     end
     return C
- end
+end
 
 function bench_sparse(C, X, A)
     println("  false")
@@ -164,7 +164,7 @@ function bench_sparse(C, X, A)
     @btime spmul_muladd($C, $X, $A, true, true)
     @btime spmul_view($C, $X, $A, true, true)
     @btime spmul_split($C, $X, $A, true, true)
-    @btime spmul_split2($C, $X, $A, true, false)
+    @btime spmul_split2($C, $X, $A, true, true)
 
     return
 end
