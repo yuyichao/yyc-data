@@ -107,7 +107,7 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-@inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, ::Val{β_zero}, ::Val{β_one}) where {β_zero,β_one}
+@inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, Annz, ::Val{β_zero}, ::Val{β_one}, ::Val{Small}) where {β_zero,β_one,Small}
     mX, nX = size(X)
     Xaxes1 = axes(X, 1)
     mA, nA = size(A)
@@ -124,11 +124,13 @@ end
     if β isa Bool
         β = β_one
     end
-    if α isa Bool && !α
+    if (α isa Bool && !α) || Annz == 0
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
         return C
     end
-    if β_zero
+    if Small
+        β_one || LinearAlgebra._rmul_or_fill!(C, β)
+    elseif β_zero
         C_zero = zero(eltype(C))
     end
     _C = _wrap_matrix(C, mX)
@@ -136,18 +138,20 @@ end
     @inbounds for col in Aaxes2
         nzrng = nzrange(A, col)
         if isempty(nzrng)
-            if β_zero
+            if Small || β_one
+                # Already filled
+            elseif β_zero
                 @simd for multivec_row in Xaxes1
                     _C[multivec_row, col] = C_zero
                 end
-            elseif !β_one
+            else
                 @simd for multivec_row in Xaxes1
                     _C[multivec_row, col] = _fast_mul(_C[multivec_row, col], β)
                 end
             end
             continue
         end
-        first = !β_one
+        first = !(Small || β_one)
         for k in nzrng
             Aiα = α isa Bool ? nzv[k] : nzv[k] * α
             rvk = rv[k]
@@ -176,12 +180,17 @@ end
 
 function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2,
                      α::Number, β::Number)
+    Annz = nnz(A)
     if isone(β)
-        _spmul_split(C, X, A, α, true, Val(false), Val(true))
+        _spmul_split(C, X, A, α, true, Annz, Val(false), Val(true), Val(false))
     elseif iszero(β)
-        _spmul_split(C, X, A, α, false, Val(true), Val(false))
+        Annz <= 10 ? _spmul_split(C, X, A, α, false, Annz,
+                                  Val(true), Val(false), Val(true)) :
+            _spmul_split(C, X, A, α, false, Annz, Val(true), Val(false), Val(false))
     else
-        _spmul_split(C, X, A, α, β, Val(false), Val(false))
+        Annz <= 10 ? _spmul_split(C, X, A, α, β, Annz,
+                                  Val(false), Val(false), Val(true)) :
+            _spmul_split(C, X, A, α, β, Annz, Val(false), Val(false), Val(false))
     end
     return C
 end
