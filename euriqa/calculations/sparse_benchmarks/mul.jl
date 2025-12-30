@@ -10,10 +10,18 @@ function mul2(C, A, α)
         C[i] = A[i] * α
     end
 end
+@inline mul3(C, A, α) = mul!(C, A, α, true, true)
+function mul4(C, A, α)
+    @inbounds @simd for i in 1:length(C)
+        C[i] = muladd(A[i], α, C[i])
+    end
+end
 
 function bench_mul(C, A, α)
     @btime mul1($C, $A, $α)
     @btime mul2($C, $A, $α)
+    @btime mul3($C, $A, $α)
+    @btime mul4($C, $A, $α)
     return
 end
 
