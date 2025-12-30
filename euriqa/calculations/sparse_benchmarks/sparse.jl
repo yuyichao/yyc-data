@@ -12,6 +12,15 @@ using BenchmarkTools
                   b::Union{ComplexF16,ComplexF32,ComplexF64}) = muladd(a, b, false)
 
 function spmul_orig(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    mX, nX = size(X)
+    mA, nA = size(A)
+    mC, nC = size(C)
+    nX == mA ||
+        throw(DimensionMismatch("second dimension of X, $nX, does not match the first dimension of A, $(mA)"))
+    mX == mC ||
+        throw(DimensionMismatch("first dimension of X, $mX, does not match the first dimension of C, $(mC)"))
+    nA == nC ||
+        throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
     rv = rowvals(A)
     nzv = nonzeros(A)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
@@ -42,12 +51,15 @@ function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     mA, nA = size(A)
     Aaxes2 = axes(A, 2)
     mC, nC = size(C)
+    nX == mA ||
+        throw(DimensionMismatch("second dimension of X, $nX, does not match the first dimension of A, $(mA)"))
+    mX == mC ||
+        throw(DimensionMismatch("first dimension of X, $mX, does not match the first dimension of C, $(mC)"))
+    nA == nC ||
+        throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
     rv = rowvals(A)
     nzv = nonzeros(A)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    if nnz(A) == 0
-        return C
-    end
     _C = _wrap_matrix(C, mX)
     X = _wrap_matrix(X, mX)
     @inbounds for col in Aaxes2
@@ -68,10 +80,16 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     mA, nA = size(A)
     Aaxes2 = axes(A, 2)
     mC, nC = size(C)
+    nX == mA ||
+        throw(DimensionMismatch("second dimension of X, $nX, does not match the first dimension of A, $(mA)"))
+    mX == mC ||
+        throw(DimensionMismatch("first dimension of X, $mX, does not match the first dimension of C, $(mC)"))
+    nA == nC ||
+        throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
     rv = rowvals(A)
     nzv = nonzeros(A)
     isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
-    if (α isa Bool && !α) || nnz(A) == 0
+    if α isa Bool && !α
         return C
     end
     _C = _wrap_matrix(C, mX)
@@ -95,12 +113,18 @@ end
     mA, nA = size(A)
     Aaxes2 = axes(A, 2)
     mC, nC = size(C)
+    nX == mA ||
+        throw(DimensionMismatch("second dimension of X, $nX, does not match the first dimension of A, $(mA)"))
+    mX == mC ||
+        throw(DimensionMismatch("first dimension of X, $mX, does not match the first dimension of C, $(mC)"))
+    nA == nC ||
+        throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
     rv = rowvals(A)
     nzv = nonzeros(A)
     if β isa Bool
         β = β_one
     end
-    if (α isa Bool && !α) || nnz(A) == 0
+    if α isa Bool && !α
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
         return C
     end
@@ -186,11 +210,11 @@ function bench_sparse_type(ElType, sz)
     bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
                  sprand(ElType, sz, sz, 0.05))
     println(" 1%")
-    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
-                 sprand(ElType, sz, sz, 0.01))
-    println(" 0%")
-    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
-                 spzeros(ElType, sz, sz))
+    A = sprand(ElType, sz, sz, 0.01)
+    while nnz(A) == 0
+        A = sprand(ElType, sz, sz, 0.01)
+    end
+    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz), A)
     println(" diag")
     bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
                  sparse(1:sz, 1:sz, ones(ElType, sz)))
