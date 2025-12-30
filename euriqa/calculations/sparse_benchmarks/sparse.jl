@@ -107,18 +107,24 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-@inline function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, Annz, ::Val{β_zero}, ::Val{β_one}, ::Val{Small}) where {β_zero,β_one,Small}
-    mX, nX = size(X)
-    Xaxes1 = axes(X, 1)
-    mA, nA = size(A)
-    Aaxes2 = axes(A, 2)
-    mC, nC = size(C)
+@noinline function _spmul_error(mX, nX, mA, nA, mC, nC)
     nX == mA ||
         throw(DimensionMismatch("second dimension of X, $nX, does not match the first dimension of A, $(mA)"))
     mX == mC ||
         throw(DimensionMismatch("first dimension of X, $mX, does not match the first dimension of C, $(mC)"))
     nA == nC ||
         throw(DimensionMismatch("second dimension of A, $(nA), does not match the second dimension of C, $(nC)"))
+end
+
+function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number, Annz, ::Val{β_zero}, ::Val{β_one}, ::Val{Small}) where {β_zero,β_one,Small}
+    mX, nX = size(X)
+    Xaxes1 = axes(X, 1)
+    mA, nA = size(A)
+    Aaxes2 = axes(A, 2)
+    mC, nC = size(C)
+    if !(nX == mA & mX == mC & nA == nC)
+        _spmul_error(mX, nX, mA, nA, mC, nC)
+    end
     rv = rowvals(A)
     nzv = nonzeros(A)
     if β isa Bool
