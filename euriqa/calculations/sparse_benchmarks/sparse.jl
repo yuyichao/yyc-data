@@ -25,82 +25,18 @@ function spmul_orig(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     C
 end
 
-function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-    rv = rowvals(A)
-    nzv = nonzeros(A)
-    Xaxes1 = axes(X, 1)
-    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    if nnz(A) == 0
-        return C
-    end
-    @inbounds for col in axes(A,2)
-        C_col = @view(C[:, col])
-        for k in nzrange(A, col)
-            Aiα = nzv[k] * α
-            rvk = rv[k]
-            X_col = @view(X[:, rvk])
-            @simd for multivec_row in Xaxes1
-                C_col[multivec_row] += X_col[multivec_row] * Aiα
-            end
-        end
-    end
-    C
-end
-
-@inline _wrapper(A, nrow) = A
-struct _Wrapper{T}
-    ref::T
-    nrow::Int
-    offset::Int
-end
-@inline _wrapper(A::Matrix, nrow) = _Wrapper(A.ref, nrow, 0)
-@inline Base.getindex(A::_Wrapper, i) =
-    @inbounds Core.memoryrefnew(A.ref, A.offset + i, false)[]
-@inline Base.setindex!(A::_Wrapper, v, i) =
-    @inbounds Core.memoryrefnew(A.ref, A.offset + i, false)[] = v
-
-@inline _col_view(A, col) = @inbounds @view(A[:, col])
-@inline function _col_view(A::_Wrapper, col)
-    @inbounds _Wrapper(A.ref, A.nrow, A.offset + (col - 1) * A.nrow)
-end
-
-function spmul_view2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-    mX, nX = size(X)
-    rv = rowvals(A)
-    nzv = nonzeros(A)
-    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    if nnz(A) == 0
-        return C
-    end
-    Xaxes1 = axes(X, 1)
-    _C = _wrapper(C, mX)
-    X = _wrapper(X, mX)
-    @inbounds for col in axes(A,2)
-        C_col = _col_view(_C, col)
-        for k in nzrange(A, col)
-            Aiα = nzv[k] * α
-            rvk = rv[k]
-            X_col = _col_view(X, rvk)
-            @simd for multivec_row in Xaxes1
-                C_col[multivec_row] += X_col[multivec_row] * Aiα
-            end
-        end
-    end
-    C
-end
-
-@inline _wrapper2(A, nrow) = A
-struct _Wrapper2{T}
+@inline _wrap_matrix(A, nrow) = A
+struct _ImmutableMatrix{T}
     ref::T
     nrow::Int
 end
-@inline _wrapper2(A::Matrix, nrow) = _Wrapper2(A.ref, nrow)
-@inline Base.getindex(A::_Wrapper2, i, j) =
+@inline _wrap_matrix(A::Matrix, nrow) = _ImmutableMatrix(A.ref, nrow)
+@inline Base.getindex(A::_ImmutableMatrix, i, j) =
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[]
-@inline Base.setindex!(A::_Wrapper2, v, i, j) =
+@inline Base.setindex!(A::_ImmutableMatrix, v, i, j) =
     @inbounds Core.memoryrefnew(A.ref, A.nrow * (j - 1) + i, false)[] = v
 
-function spmul_view3(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
@@ -109,8 +45,8 @@ function spmul_view3(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
         return C
     end
     Xaxes1 = axes(X, 1)
-    _C = _wrapper2(C, mX)
-    X = _wrapper2(X, mX)
+    _C = _wrap_matrix(C, mX)
+    X = _wrap_matrix(X, mX)
     @inbounds for col in axes(A,2)
         for k in nzrange(A, col)
             Aiα = nzv[k] * α
@@ -123,28 +59,29 @@ function spmul_view3(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     C
 end
 
-# function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-#     mX, nX = size(X)
-#     rv = rowvals(A)
-#     nzv = nonzeros(A)
-#     Xaxes1 = axes(X, 1)
-#     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-#     _C = _wrapper(C, mX)
-#     X = _wrapper(X, mX)
-#     @inbounds for col in axes(A,2)
-#         C_col = _col_view(_C, col)
-#         for k in nzrange(A, col)
-#             Aiα = nzv[k] * α
-#             rvk = rv[k]
-#             X_col = _col_view(X, rvk)
-#             @simd for multivec_row in Xaxes1
-#                 C_col[multivec_row] = muladd(X_col[multivec_row], Aiα,
-#                                              C_col[multivec_row])
-#             end
-#         end
-#     end
-#     C
-# end
+function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    mX, nX = size(X)
+    rv = rowvals(A)
+    nzv = nonzeros(A)
+    β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    if nnz(A) == 0
+        return C
+    end
+    Xaxes1 = axes(X, 1)
+    _C = _wrap_matrix(C, mX)
+    X = _wrap_matrix(X, mX)
+    @inbounds for col in axes(A,2)
+        for k in nzrange(A, col)
+            Aiα = nzv[k] * α
+            rvk = rv[k]
+            @simd for multivec_row in Xaxes1
+                _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                               _C[multivec_row, col])
+            end
+        end
+    end
+    C
+end
 
 # function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
 #     rv = rowvals(A)
@@ -256,18 +193,14 @@ function bench_sparse(C, X, A)
     println("  false")
     @btime spmul_orig($C, $X, $A, true, false)
     @btime spmul_view($C, $X, $A, true, false)
-    @btime spmul_view2($C, $X, $A, true, false)
-    @btime spmul_view3($C, $X, $A, true, false)
-    # @btime spmul_muladd($C, $X, $A, true, false)
+    @btime spmul_muladd($C, $X, $A, true, false)
     # @btime spmul_split($C, $X, $A, true, false)
     # @btime spmul_split2($C, $X, $A, true, false)
 
     println("  true")
     @btime spmul_orig($C, $X, $A, true, true)
     @btime spmul_view($C, $X, $A, true, true)
-    @btime spmul_view2($C, $X, $A, true, true)
-    @btime spmul_view3($C, $X, $A, true, true)
-    # @btime spmul_muladd($C, $X, $A, true, true)
+    @btime spmul_muladd($C, $X, $A, true, true)
     # @btime spmul_split($C, $X, $A, true, true)
     # @btime spmul_split2($C, $X, $A, true, true)
 
