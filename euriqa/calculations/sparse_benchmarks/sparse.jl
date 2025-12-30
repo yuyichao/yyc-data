@@ -231,6 +231,9 @@ function bench_sparse_type(ElType, sz)
         A = sprand(ElType, sz, sz, 0.01)
     end
     bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz), A)
+    println(" 0%")
+    bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
+                 spzeros(ElType, sz, sz))
     println(" diag")
     bench_sparse(zeros(ElType, sz, sz), zeros(ElType, sz, sz),
                  sparse(1:sz, 1:sz, ones(ElType, sz)))
@@ -255,8 +258,3 @@ println("Int64 10x10")
 bench_sparse_type(Int64, 10)
 println("Int64 100x100")
 bench_sparse_type(Int64, 100)
-
-println("Int32 10x10")
-bench_sparse_type(Int32, 10)
-println("Int32 100x100")
-bench_sparse_type(Int32, 100)
