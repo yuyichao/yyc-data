@@ -30,6 +30,9 @@ function spmul_view(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     nzv = nonzeros(A)
     Xaxes1 = axes(X, 1)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    if nnz(A) == 0
+        return C
+    end
     @inbounds for col in axes(A,2)
         C_col = @view(C[:, col])
         for k in nzrange(A, col)
@@ -65,8 +68,11 @@ function spmul_view2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    Xaxes1 = axes(X, 1)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    if nnz(A) == 0
+        return C
+    end
+    Xaxes1 = axes(X, 1)
     _C = _wrapper(C, mX)
     X = _wrapper(X, mX)
     @inbounds for col in axes(A,2)
@@ -98,8 +104,11 @@ function spmul_view3(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    Xaxes1 = axes(X, 1)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
+    if nnz(A) == 0
+        return C
+    end
+    Xaxes1 = axes(X, 1)
     _C = _wrapper2(C, mX)
     X = _wrapper2(X, mX)
     @inbounds for col in axes(A,2)
