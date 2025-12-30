@@ -141,10 +141,10 @@ end
 
 function spmul_split2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2,
                       α::Number, β::Number)
-    if iszero(β)
-        _spmul_split(C, X, A, α, false, Val(true), Val(false))
-    elseif isone(β)
+    if isone(β)
         _spmul_split(C, X, A, α, true, Val(false), Val(true))
+    elseif iszero(β)
+        _spmul_split(C, X, A, α, false, Val(true), Val(false))
     else
         _spmul_split(C, X, A, α, β, Val(false), Val(false))
     end
