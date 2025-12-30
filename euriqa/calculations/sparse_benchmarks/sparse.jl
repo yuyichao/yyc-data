@@ -108,9 +108,9 @@ end
 
 function spmul_muladd2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     if isone(α)
-        _spmul_muladd(C, X, A, true, β, ::Val{true})
+        _spmul_muladd(C, X, A, true, β, Val(true))
     else
-        _spmul_muladd(C, X, A, α, β, ::Val{true})
+        _spmul_muladd(C, X, A, α, β, Val(false))
     end
     C
 end
