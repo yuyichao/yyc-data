@@ -88,7 +88,7 @@ end
     rv = rowvals(A)
     nzv = nonzeros(A)
     β != one(β) && LinearAlgebra._rmul_or_fill!(C, β)
-    if (α isa Bool && !α_one) && nnz(A) == 0
+    if (α isa Bool && !α_one) || nnz(A) == 0
         return C
     end
     Xaxes1 = axes(X, 1)
