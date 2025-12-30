@@ -184,12 +184,12 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     if isone(β)
         _spmul_split(C, X, A, α, true, Annz, Val(false), Val(true), Val(false))
     elseif iszero(β)
-        Annz <= 10 ? _spmul_split(C, X, A, α, false, Annz,
-                                  Val(true), Val(false), Val(true)) :
+        (isbitstype(eltype(C)) && Annz <= 10) ?
+            _spmul_split(C, X, A, α, false, Annz, Val(true), Val(false), Val(true)) :
             _spmul_split(C, X, A, α, false, Annz, Val(true), Val(false), Val(false))
     else
-        Annz <= 10 ? _spmul_split(C, X, A, α, β, Annz,
-                                  Val(false), Val(false), Val(true)) :
+        (isbitstype(eltype(C)) && Annz <= 10) ?
+            _spmul_split(C, X, A, α, β, Annz, Val(false), Val(false), Val(true)) :
             _spmul_split(C, X, A, α, β, Annz, Val(false), Val(false), Val(false))
     end
     return C
