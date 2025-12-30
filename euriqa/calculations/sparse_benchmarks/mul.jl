@@ -7,7 +7,7 @@ using BenchmarkTools
 @inline mul1(C, A, α) = mul!(C, A, α)
 function mul2(C, A, α)
     @inbounds @simd for i in 1:length(C)
-        C[i] += A[i] * α
+        C[i] = muladd(A[i], α, C[i])
     end
 end
 
