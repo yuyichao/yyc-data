@@ -83,11 +83,12 @@ function spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     C
 end
 
-@inline function _spmul_muladd(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, ::Val{α_one}) where {α_one}
+function spmul_muladd2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     mX, nX = size(X)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    if (α isa Bool && !α_one) || nnz(A) == 0
+    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
+    if (α isa Bool && !α) || nnz(A) == 0
         return C
     end
     Xaxes1 = axes(X, 1)
@@ -95,22 +96,13 @@ end
     X = _wrap_matrix(X, mX)
     @inbounds for col in axes(A,2)
         for k in nzrange(A, col)
-            Aiα = α_one ? nzv[k] : nzv[k] * α
+            Aiα = α isa Bool ? nzv[k] : nzv[k] * α
             rvk = rv[k]
             @simd for multivec_row in Xaxes1
                 _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
                                                _C[multivec_row, col])
             end
         end
-    end
-end
-
-function spmul_muladd2(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
-    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
-    if isone(α)
-        _spmul_muladd(C, X, A, true, Val(true))
-    else
-        _spmul_muladd(C, X, A, α, Val(false))
     end
     C
 end
