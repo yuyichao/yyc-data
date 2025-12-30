@@ -124,13 +124,13 @@ end
     if β isa Bool
         β = β_one
     end
-    if (α isa Bool && !α) || Annz == 0
+    if Small || (α isa Bool && !α) || Annz == 0
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
-        return C
+        if (α isa Bool && !α) || Annz == 0
+            return C
+        end
     end
-    if Small
-        β_one || LinearAlgebra._rmul_or_fill!(C, β)
-    elseif β_zero
+    if !Small && β_zero
         C_zero = zero(eltype(C))
     end
     _C = _wrap_matrix(C, mX)
