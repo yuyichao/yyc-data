@@ -127,7 +127,7 @@ function _spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCU
     if β isa Bool
         β = β_one
     end
-    empty_mul = (α isa Bool && !α) | Annz == 0
+    empty_mul = (α isa Bool && !α) | (Annz == 0)
 
     if Prefill || empty_mul
         β_one || LinearAlgebra._rmul_or_fill!(C, β)
