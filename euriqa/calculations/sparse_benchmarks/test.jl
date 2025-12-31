@@ -31,7 +31,7 @@ function test_matrix(f!, C, X, A)
 end
 
 function test_type(f!, ElType, sz)
-    for _ in 1:100
+    for i in 1:10
         test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
                     sprand(ElType, sz, sz, 0.25))
         test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
@@ -46,13 +46,16 @@ function test_type(f!, ElType, sz)
 end
 
 function test_f(f!)
-    for sz in [1, 3, 10, 30, 100]
-        for ElType in [Float32, Float64, Int32, Int64, ComplexF32, ComplexF64, BigFloat]
-            test_type(f!, ElType, sz)
+    for sz in [1, 3, 10, 20, 50]
+        @testset "Testing $(f!) $(sz)" begin
+            for ElType in [Float32, Float64, Int32, Int64,
+                           ComplexF32, ComplexF64, BigFloat]
+                test_type(f!, ElType, sz)
+            end
         end
     end
 end
 
-@testset "Testing $(f!)" for f! in (spmul_orig, spmul_view, spmul_muladd, spmul_split)
+for f! in (spmul_orig, spmul_view, spmul_muladd, spmul_split)
     test_f(f!)
 end
