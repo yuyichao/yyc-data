@@ -5,11 +5,15 @@ include("sparse.jl")
 using BenchmarkTools
 using YAML
 
+@eval SparseArrays begin
+    Base.@propagate_inbounds nzrange(S::AbstractSparseMatrixCSC, col::Integer) = getcolptr(S)[col]:(getcolptr(S)[col+1]-1)
+end
+
 function bench_sparse_param(C, X, A, α, β)
-    return Dict{String,Any}("orig"=>@btimed(spmul_orig($C, $X, $A, $α, $β)),
-                            "view"=>@btimed(spmul_view($C, $X, $A, $α, $β)),
-                            "muladd"=>@btimed(spmul_muladd($C, $X, $A, $α, $β)),
-                            "split"=>@btimed(spmul_split($C, $X, $A, $α, $β)))
+    return Dict{String,Any}("orig"=>@btimed(spmul_orig($C, $X, $A, $α, $β)).time,
+                            "view"=>@btimed(spmul_view($C, $X, $A, $α, $β)).time,
+                            "muladd"=>@btimed(spmul_muladd($C, $X, $A, $α, $β)).time,
+                            "split"=>@btimed(spmul_split($C, $X, $A, $α, $β)).time)
 end
 
 function bench_sparse_matrix(C, X, A)
@@ -17,8 +21,11 @@ function bench_sparse_matrix(C, X, A)
     vs = Any[false, true, 0, 1, 2]
     res = Dict{String,Any}[]
     for α in vs
+        _α = α isa Bool ? α : ET(α)
         for β in vs
-            b = bench_sparse_param(f!, C, X, A, ET(α), ET(β))
+            _β = β isa Bool ? β : ET(β)
+            @show _α, _β
+            b = bench_sparse_param(C, X, A, _α, _β)
             b["α"] = α
             b["β"] = β
             push!(res, b)
@@ -50,6 +57,7 @@ function bench_sparse_type_sz(ElType, sz)
 end
 
 function bench_sparse_type(ElType)
+    println(ElType)
     return Dict("10"=>bench_sparse_type_sz(ElType, 10),
                 "100"=>bench_sparse_type_sz(ElType, 100))
 end
@@ -61,4 +69,9 @@ function bench_sparse()
                 "BigFloat"=>bench_sparse_type(BigFloat))
 end
 
-YAML.write_file(ARGS[1], bench_sparse())
+const outname = ARGS[1]
+outdir = dirname(outname)
+if !isempty(outdir)
+    mkpath(outdir)
+end
+YAML.write_file(outname, bench_sparse())
