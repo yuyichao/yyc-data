@@ -140,14 +140,28 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    if α isa Bool && !α
-        isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
-        return
-    end
     ElT = eltype(C)
-    C = _fix_size(C, mC, nC)
+
+    _C = _fix_size(C, mC, nC)
     X = _fix_size(X, mX, nX)
+
+    αBool = α isa Bool
+
     @split_β β begin
+        if isone(β) || ((αBool && !α) | (length(rv) < 10))
+            isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
+            if !αBool || α
+                @inbounds for col in Aax2, k in nzrange(A, col)
+                    Aiα = αBool ? nzv[k] : nzv[k] * α
+                    rvk = rv[k]
+                    @simd for multivec_row in Xax1
+                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                       _C[multivec_row, col])
+                    end
+                end
+            end
+            return
+        end
         if iszero(β)
             C_zero = zero(ElT)
         end
@@ -156,35 +170,35 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
             if isempty(nzrng)
                 if iszero(β)
                     @simd for multivec_row in Xax1
-                        C[multivec_row, col] = C_zero
+                        _C[multivec_row, col] = C_zero
                     end
-                elseif !isone(β)
+                else
                     @simd for multivec_row in Xax1
-                        C[multivec_row, col] = C[multivec_row, col] * β
+                        _C[multivec_row, col] = _C[multivec_row, col] * β
                     end
                 end
                 continue
             end
-            filled = isone(β)
+            filled = false
             for k in nzrng
-                Aiα = α isa Bool ? nzv[k] : nzv[k] * α
+                Aiα = αBool ? nzv[k] : nzv[k] * α
                 rvk = rv[k]
                 if !filled
                     if iszero(β)
                         @simd for multivec_row in Xax1
-                            C[multivec_row, col] = X[multivec_row, rvk] * Aiα
+                            _C[multivec_row, col] = X[multivec_row, rvk] * Aiα
                         end
                     else
                         @simd for multivec_row in Xax1
-                            C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                          C[multivec_row, col] * β)
+                            _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                           _C[multivec_row, col] * β)
                         end
                     end
                     filled = true
                 else
                     @simd for multivec_row in Xax1
-                        C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                      C[multivec_row, col])
+                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                       _C[multivec_row, col])
                     end
                 end
             end
