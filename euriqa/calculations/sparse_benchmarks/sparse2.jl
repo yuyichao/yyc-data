@@ -135,9 +135,12 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     αBool = α isa Bool
     ElType = eltype(C)
 
-    βone = isone(β)
-    if βone || α === false || (isbitstype(ElType) && length(rv) < 10)
-        βone || LinearAlgebra._rmul_or_fill!(C, β)
+    if isone(β)
+        @goto mul_only
+    end
+    if α === false || (isbitstype(ElType) && length(rv) < 10)
+        LinearAlgebra._rmul_or_fill!(C, β)
+        @label mul_only
         if α !== false
             @inbounds for col in Aax2, k in nzrange(A, col)
                 _col_muladd!(_C, col, X, rv[k], αBool ? nzv[k] : nzv[k] * α, Xax1)
