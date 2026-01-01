@@ -147,35 +147,29 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
 
     αBool = α isa Bool
 
-    @split_β β begin
-        if isone(β) || ((αBool && !α) | (length(rv) < 10))
-            isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
-            if !αBool || α
-                @inbounds for col in Aax2, k in nzrange(A, col)
-                    Aiα = αBool ? nzv[k] : nzv[k] * α
-                    rvk = rv[k]
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                       _C[multivec_row, col])
-                    end
+    βone = isone(β)
+    if βone || α === false || length(rv) < 10
+        βone || LinearAlgebra._rmul_or_fill!(C, β)
+        if α !== false
+            @inbounds for col in Aax2, k in nzrange(A, col)
+                Aiα = αBool ? nzv[k] : nzv[k] * α
+                rvk = rv[k]
+                @simd for multivec_row in Xax1
+                    _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                   _C[multivec_row, col])
                 end
             end
-            return
         end
-        if iszero(β)
-            C_zero = zero(ElT)
-        end
+        return
+    end
+
+    if iszero(β)
+        C_zero = zero(ElT)
         @inbounds for col in Aax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
-                if iszero(β)
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = C_zero
-                    end
-                else
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = _C[multivec_row, col] * β
-                    end
+                @simd for multivec_row in Xax1
+                    _C[multivec_row, col] = C_zero
                 end
                 continue
             end
@@ -184,15 +178,35 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 Aiα = αBool ? nzv[k] : nzv[k] * α
                 rvk = rv[k]
                 if !filled
-                    if iszero(β)
-                        @simd for multivec_row in Xax1
-                            _C[multivec_row, col] = X[multivec_row, rvk] * Aiα
-                        end
-                    else
-                        @simd for multivec_row in Xax1
-                            _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                           _C[multivec_row, col] * β)
-                        end
+                    @simd for multivec_row in Xax1
+                        _C[multivec_row, col] = X[multivec_row, rvk] * Aiα
+                    end
+                    filled = true
+                else
+                    @simd for multivec_row in Xax1
+                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                       _C[multivec_row, col])
+                    end
+                end
+            end
+        end
+    else
+        @inbounds for col in Aax2
+            nzrng = nzrange(A, col)
+            if isempty(nzrng)
+                @simd for multivec_row in Xax1
+                    _C[multivec_row, col] = _C[multivec_row, col] * β
+                end
+                continue
+            end
+            filled = false
+            for k in nzrng
+                Aiα = αBool ? nzv[k] : nzv[k] * α
+                rvk = rv[k]
+                if !filled
+                    @simd for multivec_row in Xax1
+                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
+                                                       _C[multivec_row, col] * β)
                     end
                     filled = true
                 else
