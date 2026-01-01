@@ -105,34 +105,9 @@ function spmul_orig(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     end
 end
 
-macro split_β(βvar, ex)
-    function process_ex(@nospecialize(e), βone, βzero)
-        if !(e isa Expr)
-            return e
-        end
-        if e.head == :call && length(e.args) == 2 && e.args[2] == βvar
-            if e.args[1] == :isone
-                return βone
-            elseif e.args[1] == :iszero
-                return βzero
-            end
-        end
-        e = copy(e)
-        for i in 1:length(e.args)
-            e.args[i] = process_ex(e.args[i], βone, βzero)
-        end
-        return e
-    end
-    quote
-        if isone($(esc(βvar)))
-            $(esc(process_ex(ex, true, false)))
-        elseif iszero($(esc(βvar)))
-            $(esc(process_ex(ex, false, true)))
-        else
-            $(esc(process_ex(ex, false, false)))
-        end
-    end
-end
+@inline _fast_mul(a, b) = a * b
+@inline _fast_mul(a::Union{ComplexF16,ComplexF32,ComplexF64},
+                  b::Union{ComplexF16,ComplexF32,ComplexF64}) = muladd(a, b, false)
 
 function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     Aax2 = axes(A, 2)
@@ -140,7 +115,6 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
     rv = rowvals(A)
     nzv = nonzeros(A)
-    ElT = eltype(C)
 
     _C = _fix_size(C, mC, nC)
     X = _fix_size(X, mX, nX)
@@ -164,7 +138,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     end
 
     if iszero(β)
-        C_zero = zero(ElT)
+        C_zero = zero(eltype(C))
         @inbounds for col in Aax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
@@ -179,7 +153,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 rvk = rv[k]
                 if !filled
                     @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = X[multivec_row, rvk] * Aiα
+                        _C[multivec_row, col] = _fast_mul(X[multivec_row, rvk], Aiα)
                     end
                     filled = true
                 else
@@ -195,7 +169,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
             nzrng = nzrange(A, col)
             if isempty(nzrng)
                 @simd for multivec_row in Xax1
-                    _C[multivec_row, col] = _C[multivec_row, col] * β
+                    _C[multivec_row, col] = _fast_mul(_C[multivec_row, col], β)
                 end
                 continue
             end
@@ -206,7 +180,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 if !filled
                     @simd for multivec_row in Xax1
                         _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                       _C[multivec_row, col] * β)
+                                                       _fast_mul(_C[multivec_row, col], β))
                     end
                     filled = true
                 else
