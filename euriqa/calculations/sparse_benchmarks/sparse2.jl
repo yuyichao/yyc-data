@@ -120,9 +120,10 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     X = _fix_size(X, mX, nX)
 
     αBool = α isa Bool
+    ElType = eltype(C)
 
     βone = isone(β)
-    if βone || α === false || length(rv) < 10
+    if βone || α === false || (isbitstype(ElType) && length(rv) < 10)
         βone || LinearAlgebra._rmul_or_fill!(C, β)
         if α !== false
             @inbounds for col in Aax2, k in nzrange(A, col)
@@ -138,7 +139,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     end
 
     if iszero(β)
-        C_zero = zero(eltype(C))
+        C_zero = zero(ElType)
         @inbounds for col in Aax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
