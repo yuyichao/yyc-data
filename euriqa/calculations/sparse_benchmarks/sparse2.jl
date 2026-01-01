@@ -109,6 +109,19 @@ end
 @inline _fast_mul(a::Union{ComplexF16,ComplexF32,ComplexF64},
                   b::Union{ComplexF16,ComplexF32,ComplexF64}) = muladd(a, b, false)
 
+@inline _col_fill!(C, ccol, α, ax) = @inbounds @simd for i in ax
+    C[i, ccol] = α
+end
+@inline _col_mul!(C, ccol, X, xcol, α, ax) = @inbounds @simd for i in ax
+    C[i, ccol] = _fast_mul(X[i, xcol], α)
+end
+@inline _col_muladd!(C, ccol, X, xcol, α, ax) = @inbounds @simd for i in ax
+    C[i, ccol] = muladd(X[i, xcol], α, C[i, ccol])
+end
+@inline _col_muladdmul!(C, ccol, X, xcol, α, β, ax) = @inbounds @simd for i in ax
+    C[i, ccol] = muladd(X[i, xcol], α, _fast_mul(C[i, ccol], β))
+end
+
 function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     Aax2 = axes(A, 2)
     Xax1 = axes(X, 1)
@@ -127,12 +140,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
         βone || LinearAlgebra._rmul_or_fill!(C, β)
         if α !== false
             @inbounds for col in Aax2, k in nzrange(A, col)
-                Aiα = αBool ? nzv[k] : nzv[k] * α
-                rvk = rv[k]
-                @simd for multivec_row in Xax1
-                    _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                   _C[multivec_row, col])
-                end
+                _col_muladd!(_C, col, X, rv[k], αBool ? nzv[k] : nzv[k] * α, Xax1)
             end
         end
         return
@@ -143,9 +151,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
         @inbounds for col in Aax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
-                @simd for multivec_row in Xax1
-                    _C[multivec_row, col] = C_zero
-                end
+                _col_fill!(_C, col, C_zero, Xax1)
                 continue
             end
             filled = false
@@ -153,15 +159,10 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 Aiα = αBool ? nzv[k] : nzv[k] * α
                 rvk = rv[k]
                 if !filled
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = _fast_mul(X[multivec_row, rvk], Aiα)
-                    end
+                    _col_mul!(_C, col, X, rvk, Aiα, Xax1)
                     filled = true
                 else
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                       _C[multivec_row, col])
-                    end
+                    _col_muladd!(_C, col, X, rvk, Aiα, Xax1)
                 end
             end
         end
@@ -169,9 +170,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
         @inbounds for col in Aax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
-                @simd for multivec_row in Xax1
-                    _C[multivec_row, col] = _fast_mul(_C[multivec_row, col], β)
-                end
+                _col_mul!(_C, col, _C, col, β, Xax1)
                 continue
             end
             filled = false
@@ -179,16 +178,10 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 Aiα = αBool ? nzv[k] : nzv[k] * α
                 rvk = rv[k]
                 if !filled
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                       _fast_mul(_C[multivec_row, col], β))
-                    end
+                    _col_muladdmul!(_C, col, X, rvk, Aiα, β, Xax1)
                     filled = true
                 else
-                    @simd for multivec_row in Xax1
-                        _C[multivec_row, col] = muladd(X[multivec_row, rvk], Aiα,
-                                                       _C[multivec_row, col])
-                    end
+                    _col_muladd!(_C, col, X, rvk, Aiα, Xax1)
                 end
             end
         end
