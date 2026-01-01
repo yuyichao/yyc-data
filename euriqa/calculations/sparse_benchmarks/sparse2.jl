@@ -138,7 +138,7 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     if isone(β)
         @goto mul_only
     end
-    if α === false || (isbitstype(ElType) && length(rv) < 10)
+    if (isbitstype(ElType) && length(rv) < 10) || α === false
         LinearAlgebra._rmul_or_fill!(C, β)
         @label mul_only
         if α !== false
