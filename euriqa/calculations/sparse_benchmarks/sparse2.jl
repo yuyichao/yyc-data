@@ -2,7 +2,7 @@
 
 using LinearAlgebra
 using SparseArrays
-using SparseArrays: DenseMatrixUnion, SparseMatrixCSCUnion2
+using SparseArrays: AdjOrTrans, DenseMatrixUnion, SparseMatrixCSCUnion2
 
 _fix_size(M, nrow, ncol) = M
 _fix_size(M) = _fix_size(M, size(M)...)
@@ -105,6 +105,32 @@ function spmul_orig(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     end
 end
 
+function spmul_adj_orig(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    Xax1 = axes(X, 1)
+    Cax2 = axes(C, 2)
+    mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
+    rv = rowvals(A)
+    nzv = nonzeros(A)
+    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
+    if α isa Bool && !α
+        return
+    end
+    C = _fix_size(C, mC, nC)
+    X = _fix_size(X, mX, nX)
+    @inbounds for multivec_row in Xax1, col in Cax2
+        nzrng = nzrange(A, col)
+        if isempty(nzrng)
+            continue
+        end
+        tmp = C[multivec_row, col]
+        for k in nzrng
+            tmp = muladd(X[multivec_row, rv[k]],
+                         (α isa Bool ? nzv[k] : nzv[k] * α), tmp)
+        end
+        C[multivec_row, col] = tmp
+    end
+end
+
 @inline _fast_mul(a, b) = a * b
 @inline _fast_mul(a::Union{ComplexF16,ComplexF32,ComplexF64},
                   b::Union{ComplexF16,ComplexF32,ComplexF64}) = muladd(a, b, false)
@@ -186,6 +212,57 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
                 else
                     _col_muladd!(_C, col, X, rvk, Aiα, Xax1)
                 end
+            end
+        end
+    end
+end
+
+@inline function _spmul_adj_accum(X, i, rv, nzv, nzrng, α, accum)
+    @inbounds for k in nzrng
+        accum = muladd(X[i, rv[k]], (α isa Bool ? nzv[k] : nzv[k] * α), accum)
+    end
+    return accum
+end
+
+function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    Xax1 = axes(X, 1)
+    Cax2 = axes(C, 2)
+    mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
+    rv = rowvals(A)
+    nzv = nonzeros(A)
+
+    ElType = eltype(C)
+    _C = _fix_size(C, mC, nC)
+    X = _fix_size(X, mX, nX)
+
+    @inbounds if isone(β)
+        if α isa Bool && !α
+            return
+        end
+        for multivec_row in Xax1, col in Cax2
+            nzrng = nzrange(A, col)
+            if isempty(nzrng)
+                continue
+            end
+            _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv, nzrng,
+                                                     α, _C[multivec_row, col])
+        end
+    else
+        if α isa Bool && !α
+            LinearAlgebra._rmul_or_fill!(C, β)
+            return
+        end
+        if iszero(β)
+            C_zero = zero(ElType)
+            for multivec_row in Xax1, col in Cax2
+                _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
+                                                         nzrange(A, col), α, C_zero)
+            end
+        else
+            for multivec_row in Xax1, col in Cax2
+                _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
+                                                         nzrange(A, col), α,
+                                                         _C[multivec_row, col] * β)
             end
         end
     end

@@ -1,0 +1,62 @@
+#!/usr/bin/julia
+
+using Test
+
+include("sparse2.jl")
+
+function test_param(f!, C, X, A, α, β)
+    X_orig = copy(X)
+    A_orig = copy(A)
+
+    C1 = copy(C)
+    mul!(C1, X, A, α, β)
+
+    C2 = copy(C)
+    f!(C2, X, A, α, β)
+
+    @test C1 ≈ C2
+end
+
+function test_matrix(f!, C, X, A)
+    v0 = zero(eltype(C))
+    v1 = one(eltype(C))
+    v2 = v1 + v1
+
+    vs = Any[false, true, v0, v1, v2]
+    for α in vs
+        for β in vs
+            test_param(f!, C, transpose(X), A, α, β)
+            test_param(f!, C, adjoint(X), A, α, β)
+        end
+    end
+end
+
+function test_type(f!, ElType, sz)
+    for i in 1:10
+        test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
+                    sprand(ElType, sz, sz, 0.25))
+        test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
+                    sprand(ElType, sz, sz, 0.05))
+        test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
+                    sprand(ElType, sz, sz, 0.01))
+        test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
+                    spzeros(ElType, sz, sz))
+        test_matrix(f!, rand(ElType, sz, sz), rand(ElType, sz, sz),
+                    sparse(1:sz, 1:sz, rand(ElType, sz)))
+    end
+end
+
+function test_f(f!)
+    for sz in [1, 3, 10, 20, 50]
+        @testset "Testing $(f!) $(sz)" begin
+            for ElType in [Float32, Float64, Int32, Int64,
+                           ComplexF32, ComplexF64, BigFloat]
+                test_type(f!, ElType, sz)
+            end
+        end
+    end
+end
+
+for f! in (spmul_adj_orig, spmul_adj_split)
+    test_f(f!)
+end
