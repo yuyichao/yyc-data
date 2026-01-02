@@ -218,10 +218,38 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
 end
 
 @inline function _spmul_adj_accum(X, i, rv, nzv, nzrng, α, accum)
-    @inbounds for k in nzrng
+    @inbounds @simd for k in nzrng
         accum = muladd(X[i, rv[k]], (α isa Bool ? nzv[k] : nzv[k] * α), accum)
     end
     return accum
+end
+
+function spmul_adj_order(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    Xax1 = axes(X, 1)
+    Cax2 = axes(C, 2)
+    mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
+    rv = rowvals(A)
+    nzv = nonzeros(A)
+    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
+    C = _fix_size(C, mC, nC)
+    X = _fix_size(X, mX, nX)
+    if (α isa Bool && !α) || isempty(Xax1)
+        return
+    end
+    @inbounds for col in Cax2
+        nzrng = nzrange(A, col)
+        if isempty(nzrng)
+            continue
+        end
+        for multivec_row in Xax1
+            tmp = C[multivec_row, col]
+            for k in nzrng
+                tmp = muladd(X[multivec_row, rv[k]],
+                             (α isa Bool ? nzv[k] : nzv[k] * α), tmp)
+            end
+            C[multivec_row, col] = tmp
+        end
+    end
 end
 
 function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
@@ -239,13 +267,15 @@ function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnio
         if α isa Bool && !α
             return
         end
-        for multivec_row in Xax1, col in Cax2
+        for col in Cax2
             nzrng = nzrange(A, col)
             if isempty(nzrng)
                 continue
             end
-            _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv, nzrng,
-                                                     α, _C[multivec_row, col])
+            for multivec_row in Xax1
+                _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv, nzrng,
+                                                         α, _C[multivec_row, col])
+            end
         end
     else
         if α isa Bool && !α
@@ -254,15 +284,21 @@ function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnio
         end
         if iszero(β)
             C_zero = zero(ElType)
-            for multivec_row in Xax1, col in Cax2
-                _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
-                                                         nzrange(A, col), α, C_zero)
+            for col in Cax2
+                nzrng = nzrange(A, col)
+                for multivec_row in Xax1
+                    _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
+                                                             nzrng, α, C_zero)
+                end
             end
         else
-            for multivec_row in Xax1, col in Cax2
-                _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
-                                                         nzrange(A, col), α,
-                                                         _C[multivec_row, col] * β)
+            for col in Cax2
+                nzrng = nzrange(A, col)
+                for multivec_row in Xax1
+                    _C[multivec_row, col] = _spmul_adj_accum(X, multivec_row, rv, nzv,
+                                                             nzrng, α,
+                                                             _C[multivec_row, col] * β)
+                end
             end
         end
     end

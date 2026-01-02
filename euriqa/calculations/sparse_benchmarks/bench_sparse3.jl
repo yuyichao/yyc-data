@@ -5,18 +5,23 @@ include("sparse2.jl")
 using BenchmarkTools
 
 function bench_sparse(C, X, A)
-    println("  false")
+    println("  adjoint false")
     @btime spmul_adj_orig($C, $(adjoint(X)), $A, true, false)
-    @btime spmul_adj_orig($C, $(transpose(X)), $A, true, false)
+    @btime spmul_adj_order($C, $(adjoint(X)), $A, true, false)
     @btime spmul_adj_split($C, $(adjoint(X)), $A, true, false)
+    println("  transpose false")
+    @btime spmul_adj_orig($C, $(transpose(X)), $A, true, false)
+    @btime spmul_adj_order($C, $(transpose(X)), $A, true, false)
     @btime spmul_adj_split($C, $(transpose(X)), $A, true, false)
 
-    println("  true")
+    println("  adjoint true")
     @btime spmul_adj_orig($C, $(adjoint(X)), $A, true, true)
-    @btime spmul_adj_orig($C, $(transpose(X)), $A, true, true)
+    @btime spmul_adj_order($C, $(adjoint(X)), $A, true, true)
     @btime spmul_adj_split($C, $(adjoint(X)), $A, true, true)
+    println("  transpose true")
+    @btime spmul_adj_orig($C, $(transpose(X)), $A, true, true)
+    @btime spmul_adj_order($C, $(transpose(X)), $A, true, true)
     @btime spmul_adj_split($C, $(transpose(X)), $A, true, true)
-
     return
 end
 

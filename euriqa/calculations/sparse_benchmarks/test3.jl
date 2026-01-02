@@ -57,6 +57,6 @@ function test_f(f!)
     end
 end
 
-for f! in (spmul_adj_orig, spmul_adj_split)
+for f! in (spmul_adj_orig, spmul_adj_order, spmul_adj_split)
     test_f(f!)
 end
