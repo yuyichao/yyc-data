@@ -105,7 +105,7 @@ function spmul_orig(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUni
     end
 end
 
-function spmul_adj_orig(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+@noinline function spmul_adj_orig(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     Xax1 = axes(X, 1)
     Cax2 = axes(C, 2)
     mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
@@ -217,14 +217,33 @@ function spmul_split(C::StridedMatrix, X::DenseMatrixUnion, A::SparseMatrixCSCUn
     end
 end
 
-@inline function _spmul_adj_accum(X, i, rv, nzv, nzrng, α, accum)
-    @inbounds @simd for k in nzrng
-        accum = muladd(X[i, rv[k]], (α isa Bool ? nzv[k] : nzv[k] * α), accum)
+@noinline function spmul_adj_orig2(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+    Xax1 = axes(X, 1)
+    Cax2 = axes(C, 2)
+    mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
+    rv = rowvals(A)
+    nzv = nonzeros(A)
+    isone(β) || LinearAlgebra._rmul_or_fill!(C, β)
+    if α isa Bool && !α
+        return
     end
-    return accum
+    C = _fix_size(C, mC, nC)
+    X = _fix_size(X, mX, nX)
+    @inbounds for col in Cax2, multivec_row in Xax1
+        nzrng = nzrange(A, col)
+        if isempty(nzrng)
+            continue
+        end
+        tmp = C[multivec_row, col]
+        for k in nzrng
+            tmp = muladd(X[multivec_row, rv[k]],
+                         (α isa Bool ? nzv[k] : nzv[k] * α), tmp)
+        end
+        C[multivec_row, col] = tmp
+    end
 end
 
-function spmul_adj_order(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+@noinline function spmul_adj_order(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     Xax1 = axes(X, 1)
     Cax2 = axes(C, 2)
     mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
@@ -252,7 +271,14 @@ function spmul_adj_order(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnio
     end
 end
 
-function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
+@inline function _spmul_adj_accum(X, i, rv, nzv, nzrng, α, accum)
+    @inbounds @simd for k in nzrng
+        accum = muladd(X[i, rv[k]], (α isa Bool ? nzv[k] : nzv[k] * α), accum)
+    end
+    return accum
+end
+
+@noinline function spmul_adj_split(C::StridedMatrix, X::AdjOrTrans{<:Any,<:DenseMatrixUnion}, A::SparseMatrixCSCUnion2, α::Number, β::Number)
     Xax1 = axes(X, 1)
     Cax2 = axes(C, 2)
     mC, nC, mX, nX, mA, nA = _matmul_size_AB(C, X, A)
