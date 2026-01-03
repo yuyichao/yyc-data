@@ -272,7 +272,7 @@ end
 end
 
 @inline function _spmul_adj_accum(X, i, rv, nzv, nzrng, α, accum)
-    @inbounds @simd for k in nzrng
+    @inbounds for k in nzrng
         accum = muladd(X[i, rv[k]], (α isa Bool ? nzv[k] : nzv[k] * α), accum)
     end
     return accum
