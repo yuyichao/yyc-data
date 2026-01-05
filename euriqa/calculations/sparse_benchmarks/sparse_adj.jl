@@ -43,7 +43,7 @@ end
 @noinline function spmul_adj_orig2(C, X, A, colptr, sz)
     nzv = A.nzval
     @inbounds begin
-        for i in 1:sz
+        for i in Base.unchecked_oneto(sz)
             nzrng = Base.unchecked_oneto(colptr[])
             tmp = C[i]
             for k in nzrng
@@ -58,7 +58,7 @@ end
     nzv = A.nzval
     @inbounds begin
         nzrng = Base.unchecked_oneto(colptr[])
-        for i in 1:sz
+        for i in Base.unchecked_oneto(sz)
             tmp = C[i]
             for k in nzrng
                 tmp = muladd(X[k], nzv[k], tmp)
@@ -70,13 +70,29 @@ end
 
 using BenchmarkTools
 using StaticArrays
+using InteractiveUtils
+
+function save_code(f, args, prefix)
+    types = Base.typesof(args...)
+    open(io->code_llvm(io, f, types, raw=true, dump_module=true,
+                       optimize=false, debuginfo=:none),
+         "$(prefix)-raw_noopt.ll", "w")
+    open(io->code_llvm(io, f, types, dump_module=true, optimize=false, debuginfo=:none),
+         "$(prefix)-noopt.ll", "w")
+    open(io->code_llvm(io, f, types, dump_module=true, optimize=true, debuginfo=:none),
+         "$(prefix)-opt.ll", "w")
+    open(io->code_native(io, f, types, dump_module=true, debuginfo=:none),
+         "$(prefix)-opt.s", "w")
+end
 
 function bench_sparse_type(ElType, sz)
     C = (zeros(ElType, sz))
     X = MVector{sz}(zeros(ElType, sz))
     A = (;sz = sz, nzval = (zeros(ElType, sz)))
-    @btime spmul_adj_orig2($(C), $(X), $A, $(Ref(sz)), $sz)
-    @btime spmul_adj_order($(C), $(X), $A, $(Ref(sz)), $sz)
+    @btime spmul_adj_orig2($C, $X, $A, $(Ref(sz)), $sz)
+    @btime spmul_adj_order($C, $X, $A, $(Ref(sz)), $sz)
+    save_code(spmul_adj_orig2, (C, X, A, Ref(sz), sz), "orig2")
+    save_code(spmul_adj_order, (C, X, A, Ref(sz), sz), "order")
     return
 end
 
