@@ -506,10 +506,9 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Results}
-        \vspace{0.5cm}
+        \vspace{0.2cm}
         \begin{center}
           \begin{subblock}{Mid-circuit measurement}
-            \vspace{0.5cm}
             \begin{center}
               \begin{tikzpicture}
                 \node at (0, 0) {\includegraphics[width=27.0cm]{imgs/measure_sequence.pdf}};
@@ -519,17 +518,30 @@
                   \item Detection time: $140\ \mathrm{\mu s}$
                   \end{itemize}
                 };
-                \node at (-7.9, -8) {Detection fidelity: $99.6(2)\ \%$};
-                \node at (-9, -15) {\includegraphics[width=18cm]{imgs/detect_aux_rabi.pdf}};
-                \node at (10.1, -8) {Data coherence: $98.5(6)\ \%$};
-                \node at (9, -15) {\includegraphics[width=18cm]{imgs/detect_data_ramsey_square.pdf}};
+                \node at (-7.9, -7.6) {Detection fidelity: $99.6(2)\ \%$};
+                \node at (-9, -14.6) {\includegraphics[width=18cm]{imgs/detect_aux_rabi.pdf}};
+                \node at (10.1, -5.6) {Data coherence: $98.5(6)\ \%$};
+                \node at (9, -12.6) {\includegraphics[width=18cm]{imgs/detect_data_ramsey_square.pdf}};
               \end{tikzpicture}
             \end{center}
           \end{subblock}
           \begin{subblock}{Mid-circuit reset}
-            \vspace{0.3cm}
-            \begin{tikzpicture}
-            \end{tikzpicture}
+            \begin{center}
+              \vspace{-2.3cm}
+              \begin{tikzpicture}
+                \node at (8, 0) {\includegraphics[width=20.0cm]{imgs/reset_sequence.pdf}};
+                \node[below,text width=14cm,align=left] at (-11, 3) {
+                  \begin{itemize}
+                  \item Using hands-off method with Raman dressing
+                  \item Required pumping cycle: $16$
+                  \end{itemize}
+                };
+                \node at (-7.9, -8) {Pumping fidelity: $99.1(3)\ \%$};
+                \node at (-9, -15.5) {\includegraphics[width=18cm]{imgs/pump_aux_error_log.pdf}};
+                \node at (10.1, -8) {Data coherence: $96.3(5)\ \%$};
+                \node at (9, -15.5) {\includegraphics[width=18cm]{imgs/pump_data_x_error.pdf}};
+              \end{tikzpicture}
+            \end{center}
           \end{subblock}
         \end{center}
       \end{block}
