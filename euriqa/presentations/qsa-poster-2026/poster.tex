@@ -506,12 +506,25 @@
 
     \begin{column}{\colthreewid} % The third column
       \begin{block}{Results}
-        \vspace{0.2cm}
+        \vspace{0.5cm}
         \begin{center}
           \begin{subblock}{Mid-circuit measurement}
-            \vspace{0.2cm}
-            \begin{tikzpicture}
-            \end{tikzpicture}
+            \vspace{0.5cm}
+            \begin{center}
+              \begin{tikzpicture}
+                \node at (0, 0) {\includegraphics[width=27.0cm]{imgs/measure_sequence.pdf}};
+                \node[below,text width=18cm,align=left] at (-9, -3) {
+                  \begin{itemize}
+                  \item Using shelving method
+                  \item Detection time: $140\ \mathrm{\mu s}$
+                  \end{itemize}
+                };
+                \node at (-7.9, -8) {Detection fidelity: $99.6(2)\ \%$};
+                \node at (-9, -15) {\includegraphics[width=18cm]{imgs/detect_aux_rabi.pdf}};
+                \node at (10.1, -8) {Data coherence: $98.5(6)\ \%$};
+                \node at (9, -15) {\includegraphics[width=18cm]{imgs/detect_data_ramsey_square.pdf}};
+              \end{tikzpicture}
+            \end{center}
           \end{subblock}
           \begin{subblock}{Mid-circuit reset}
             \vspace{0.3cm}
