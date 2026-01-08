@@ -1,0 +1,57 @@
+\documentclass{standalone}
+
+\usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{tgheros}
+\renewcommand{\rmdefault}{qhv}
+\usepackage[
+symbolgreek
+]{mathastext}
+\usepackage{tikz}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes,
+  arrows.meta
+}
+\pgfdeclareradialshading{glow}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(5mm)=(white);
+  color(9mm)=(black);
+  color(10mm)=(black)
+}
+
+\begin{tikzfadingfrompicture}[name=glow fading]
+  \shade [shading=glow] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+\begin{tikzpicture}
+  \begin{scope}[shift={(0, 0)}]
+    \node at (0, 0) {\includegraphics[width=4.6cm]{method_direct.pdf}};
+    \node at (4, -0.2) {\includegraphics[width=3.11cm]{method_direct_ions.pdf}};
+  \end{scope}
+  \begin{scope}[shift={(0, -4)}]
+    \node at (0, 0) {\includegraphics[width=4.6cm]{method_shelve.pdf}};
+    \node at (4.1, -0.2) {\includegraphics[width=3.22cm]{method_shelve_ions.pdf}};
+  \end{scope}
+\end{tikzpicture}
+
+\end{document}
