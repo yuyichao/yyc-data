@@ -1,0 +1,317 @@
+\documentclass{standalone}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{tgheros}
+\renewcommand{\rmdefault}{qhv}
+\usepackage[
+    symbolgreek
+    ]{mathastext}
+
+\usetikzlibrary{decorations.pathreplacing,
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes,
+  arrows.meta
+}
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.1cm,
+  post length=0.1cm, snake, amplitude=.4mm,
+  segment length=4mm},thick, ->]
+\usepgfmodule{oo}
+
+\pgfdeclareradialshading{glow2}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(2mm)=(white);
+  color(8mm)=(black);
+  color(10mm)=(black)
+}
+\pgfdeclareradialshading{glow}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(5mm)=(white);
+  color(9mm)=(black);
+  color(10mm)=(black)
+}
+
+\begin{tikzfadingfrompicture}[name=glow fading]
+  \shade [shading=glow] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\begin{tikzfadingfrompicture}[name=glow2 fading]
+  \shade [shading=glow2] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\definecolor{atomorange}{rgb}{1.0,0.483,0.0}
+\definecolor{pyplotc0}{rgb}{0.122,0.467,0.706}
+\definecolor{pyplotc1}{rgb}{1.000,0.498,0.055}
+\definecolor{pyplotc2}{rgb}{0.173,0.627,0.173}
+\definecolor{pyplotc3}{rgb}{0.839,0.153,0.157}
+\definecolor{pyplotc4}{rgb}{0.580,0.404,0.741}
+\definecolor{pyplotc5}{rgb}{0.549,0.337,0.294}
+\definecolor{pyplotc6}{rgb}{0.890,0.467,0.761}
+\definecolor{pyplotc7}{rgb}{0.498,0.498,0.498}
+\definecolor{pyplotc8}{rgb}{0.737,0.741,0.133}
+\definecolor{pyplotc9}{rgb}{0.090,0.745,0.812}
+
+\pgfdeclarelayer{tweezer}
+\pgfsetlayers{tweezer,main}
+\pgfooclass{tweezer}{
+  \method tweezer() {
+  }
+  \method drawTweezer(#1,#2,#3) {
+    \shade[shading=radial,path fading=glow fading,shift={(#1,#2)},rotate=90,yscale=1,
+    fill opacity=0.9,inner color=#3]
+    plot[draw,samples=200,domain=-4.5:4.5] function {sqrt(0.02 + (x)**2 / 10)}
+    -- plot[draw,samples=200,domain=4.5:-4.5] function {-sqrt(0.02 + (x)**2 / 10)};
+  }
+  \method drawRaman(#1,#2) {
+    \pgfoothis.drawTweezer(#1,#2,pyplotc4);
+  }
+  \method drawAtom(#1,#2,#3,#4) {
+    \fill [#4,path fading=glow2 fading] (#1,#2) circle (#3);
+  }
+  \method drawDownAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc0);
+  }
+  \method drawUpAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc1);
+  }
+  \method drawDownAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc2);
+  }
+  \method drawUpAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc3);
+  }
+}
+\pgfoonew \mytweezer=new tweezer()
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+\begin{tikzpicture}[scale=0.7]
+  \begin{scope}[shift={(0, -1.5)}]
+    \fill[color=pyplotc0] (-7.9, 0) rectangle (-5.9, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \fill[color=pyplotc4] (-5.7, 0) rectangle (-3.7, 1)
+    node[white,pos=.5] {$R_{355}\!\left(\pi\right)$};
+    \fill[color=pyplotc0] (-1, 0) rectangle (1, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \fill[color=pyplotc4] (3.7, 0) rectangle (5.7, 1)
+    node[white,pos=.5] {$R_{355}\!\left(\pi\right)$};
+    \fill[color=pyplotc0] (5.9, 0) rectangle (7.9, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \draw[-{Stealth[length=6mm,width=2.5mm]},line width=2]
+    (-8.4, 0) node[left=-0.1] {\scalebox{1.1}{Data}} -- (8.9, 0);
+  \end{scope}
+
+  \begin{scope}
+    \fill[color=pyplotc0] (-7.9, 0) rectangle (-5.9, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \fill[color=cyan!70!pyplotc0] (-3.5, 0) rectangle (-1.2, 1)
+    node[white,pos=.5,align=center] {Detect};
+    \fill[color=pyplotc0] (-1, 0) rectangle (1, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \fill[color=cyan!70!pyplotc0] (1.2, 0) rectangle (3.5, 1)
+    node[white,pos=.5,align=center] {Detect};
+    \fill[color=pyplotc0] (5.9, 0) rectangle (7.9, 1)
+    node[white,pos=.5,align=center] {$R_{435}\!\left(\pi\right)$};
+    \draw[-{Stealth[length=6mm,width=2.5mm]},line width=2]
+    (-8.4, 0) node[left=-0.1] {\scalebox{1.1}{Aux}} -- (8.9, 0);
+  \end{scope}
+
+  \begin{scope}[shift={(-6.3, 4)}]
+    \begin{scope}[shift={(-1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Data};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, -1.2) -- (0.5, 0.7);
+
+      \mytweezer.drawUpAtom(0, 0, 0.17)
+      \mytweezer.drawDownAtom(0, -1.2, 0.17)
+    \end{scope}
+
+    \begin{scope}[shift={(1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Aux};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, -1.2) -- (0.5, 0.7);
+
+      \mytweezer.drawUpAtom2(0, 0, 0.17)
+      \mytweezer.drawDownAtom2(0, -1.2, 0.17)
+    \end{scope}
+    \draw[line width=2,opacity=0.45] (0.3, 1.65) -- (0.3, -1.5);
+    \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+    (-2.6, -1.7) rectangle (3.2, 1.9);
+    \node[color=pyplotc0, above] at (0.7, 1.9)
+    {\scalebox{1.1}{\textbf{Global shelving to $|D\rangle$}}};
+  \end{scope}
+
+  \draw[dashed, line width=1, opacity=0.5] (-7.8, 1.2) -- (-7.8, -1.8);
+  \draw[-{Stealth[length=3mm,width=1.7mm]},line width=1.4]
+  (-6, 2.3) -- (-6, 1.75) -| (-7.8, 1.2);
+
+  \begin{scope}[shift={(-4.9, -4.8)}]
+    \begin{scope}[shift={(-1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Data};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc4,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, 0) -- (0, -1.2);
+
+      \mytweezer.drawUpAtom(0, 0, 0.17)
+      \mytweezer.drawDownAtom(0.5, 0.7, 0.17)
+    \end{scope}
+
+    \begin{scope}[shift={(1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Aux};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \mytweezer.drawUpAtom2(0, 0, 0.17)
+      \mytweezer.drawDownAtom2(0.5, 0.7, 0.17)
+    \end{scope}
+    \draw[line width=2,opacity=0.45] (0.3, 1.65) -- (0.3, -1.5);
+    \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+    (-2.6, -1.7) rectangle (3.2, 1.9);
+    \node[color=pyplotc4, below] at (0.3, -1.7)
+    {\scalebox{1.1}{\textbf{Individual shelving to $|0\rangle$}}};
+  \end{scope}
+
+  \draw[dashed, line width=1, opacity=0.5] (-5.6, 1.2) -- (-5.6, -1.8);
+  \draw[-{Stealth[length=3mm,width=1.7mm]},line width=1.4]
+  (-4.6, -2.9) -- (-4.6, -2.35) -| (-5.6, -1.8);
+
+  \begin{scope}[shift={(-0.3, 4)}]
+    \begin{scope}[shift={(-1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Data};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,{Stealth[length=3mm,width=2mm]}-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, -1.2) -- (0.5, 0.7);
+
+      \mytweezer.drawUpAtom(0, -1.2, 0.17)
+      \mytweezer.drawDownAtom(0.5, 0.7, 0.17)
+    \end{scope}
+
+    \begin{scope}[shift={(1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Aux};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0.5, 0.7) -- (0, -1.2);
+
+      \mytweezer.drawUpAtom2(0, 0, 0.17)
+      \mytweezer.drawDownAtom2(0.5, 0.7, 0.17)
+    \end{scope}
+    \draw[line width=2,opacity=0.45] (0.3, 1.65) -- (0.3, -1.5);
+    \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+    (-2.6, -1.7) rectangle (3.2, 1.9);
+    \node[color=pyplotc0, above] at (0.3, 1.9)
+    {\scalebox{1.1}{\textbf{$|D\rangle$ state echo}}};
+  \end{scope}
+
+  \draw[dashed, line width=1, opacity=0.5] (-0.9, 1.2) -- (-0.9, -1.8);
+  \draw[-{Stealth[length=3mm,width=1.7mm]},line width=1.4]
+  (0.3, 2.3) -- (0.3, 1.75) -| (-0.9, 1.2);
+
+  \begin{scope}[shift={(4.3, -4.8)}]
+    \begin{scope}[shift={(-1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Data};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc4,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, -1.2) -- (0, 0);
+
+      \mytweezer.drawUpAtom(0.5, 0.7, 0.17)
+      \mytweezer.drawDownAtom(0, -1.2, 0.17)
+    \end{scope}
+
+    \begin{scope}[shift={(1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Aux};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \mytweezer.drawUpAtom2(0, 0, 0.17)
+      \mytweezer.drawDownAtom2(0, -1.2, 0.17)
+    \end{scope}
+    \draw[line width=2,opacity=0.45] (0.3, 1.65) -- (0.3, -1.5);
+    \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+    (-2.6, -1.7) rectangle (3.2, 1.9);
+    \node[color=pyplotc4, below] at (0.3, -1.7)
+    {\scalebox{1.1}{\textbf{Individual unshelving from $|0\rangle$}}};
+  \end{scope}
+
+  \draw[dashed, line width=1, opacity=0.5] (3.8, 1.2) -- (3.8, -1.8);
+  \draw[-{Stealth[length=3mm,width=1.7mm]},line width=1.4]
+  (4.6, -2.9) -- (4.6, -2.35) -| (3.8, -1.8);
+
+  \begin{scope}[shift={(5.7, 4)}]
+    \begin{scope}[shift={(-1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Data};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0.5, 0.7) -- (0, -1.2);
+
+      \mytweezer.drawUpAtom(0.5, 0.7, 0.17)
+      \mytweezer.drawDownAtom(0, 0, 0.17)
+    \end{scope}
+
+    \begin{scope}[shift={(1.45, 0)}]
+      \node[above] at (0.3, 1.2) {Aux};
+      \draw[line width=2] (-0.2, 0) node[left] {$|1\rangle$} -- (0.2, 0);
+      \draw[line width=2] (-0.2, -1.2) node[left] {$|0\rangle$} -- (0.2, -1.2);
+      \draw[line width=2] (0.3, 0.7) -- (0.7, 0.7) node[right] {$|D\rangle$};
+
+      \draw[pyplotc0,-{Stealth[length=3mm,width=2mm]},line width=1.4]
+      (0, -1.2) -- (0.5, 0.7);
+
+      \mytweezer.drawUpAtom2(0, 0, 0.17)
+      \mytweezer.drawDownAtom2(0, -1.2, 0.17)
+    \end{scope}
+    \draw[line width=2,opacity=0.45] (0.3, 1.65) -- (0.3, -1.5);
+    \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+    (-2.6, -1.7) rectangle (3.2, 1.9);
+    \node[color=pyplotc0, above] at (0.3, 1.9)
+    {\scalebox{1.1}{\textbf{Global unshelving from $|D\rangle$}}};
+  \end{scope}
+
+  \draw[dashed, line width=1, opacity=0.5] (6, 1.2) -- (6, -1.8);
+  \draw[-{Stealth[length=3mm,width=1.7mm]},line width=1.4]
+  (6, 2.3) -- (6, 1.75) -| (6, 1.2);
+\end{tikzpicture}
+\end{document}

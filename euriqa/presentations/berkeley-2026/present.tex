@@ -1,0 +1,1531 @@
+\documentclass{beamer}
+\mode<presentation>{
+  \usetheme{Boadilla}
+  \usefonttheme[onlylarge]{structurebold}
+  \usefonttheme[stillsansseriflarge]{serif}
+  \setbeamerfont*{frametitle}{size=\normalsize,series=\bfseries}
+  % \setbeamertemplate{navigation symbols}{}
+  \setbeamercovered{transparent}
+}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{tgheros}
+\renewcommand{\rmdefault}{qhv}
+\usepackage[
+symbolgreek
+]{mathastext}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{esint}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{xkeyval}
+\usepackage{xargs}
+\usepackage{xcolor}
+\usepackage{pifont}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{multimedia}
+\usepackage{bm}
+\usepackage{siunitx}
+\usetikzlibrary{
+  arrows,
+  calc,
+  decorations.pathmorphing,
+  decorations.pathreplacing,
+  decorations.markings,
+  fadings,
+  positioning,
+  shapes,
+  arrows.meta
+}
+\usepgfmodule{oo}
+
+\pgfdeclareradialshading{glow2}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(2mm)=(white);
+  color(8mm)=(black);
+  color(10mm)=(black)
+}
+\pgfdeclareradialshading{glow}{\pgfpoint{0cm}{0cm}}{
+  color(0mm)=(white);
+  color(5mm)=(white);
+  color(9mm)=(black);
+  color(10mm)=(black)
+}
+\pgfdeclareverticalshading{north edge}{2cm}{
+  % manual 1082-1083; later - shading is assumed to be 100bp diameter ??
+  color(0cm)=(white);
+  color(1.3cm)=(white);
+  color(1.5cm)=(black)
+}
+
+\begin{tikzfadingfrompicture}[name=glow fading]
+  \shade [shading=glow] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\begin{tikzfadingfrompicture}[name=glow2 fading]
+  \shade [shading=glow2] (0,0) circle (1);
+\end{tikzfadingfrompicture}
+
+\begin{tikzfadingfrompicture}[name=north edge fading]
+  \shade [shading=north edge] (-1,-1) rectangle (1, 1);
+\end{tikzfadingfrompicture}
+
+\definecolor{atomorange}{rgb}{1.0,0.483,0.0}
+\definecolor{pyplotc0}{rgb}{0.122,0.467,0.706}
+\definecolor{pyplotc1}{rgb}{1.000,0.498,0.055}
+\definecolor{pyplotc2}{rgb}{0.173,0.627,0.173}
+\definecolor{pyplotc3}{rgb}{0.839,0.153,0.157}
+\definecolor{pyplotc4}{rgb}{0.580,0.404,0.741}
+\definecolor{pyplotc5}{rgb}{0.549,0.337,0.294}
+\definecolor{pyplotc6}{rgb}{0.890,0.467,0.761}
+\definecolor{pyplotc7}{rgb}{0.498,0.498,0.498}
+\definecolor{pyplotc8}{rgb}{0.737,0.741,0.133}
+\definecolor{pyplotc9}{rgb}{0.090,0.745,0.812}
+
+\pgfdeclarelayer{tweezer}
+\pgfsetlayers{tweezer,main}
+\pgfooclass{tweezer}{
+  \method tweezer() {
+  }
+  \method drawTweezer(#1,#2,#3) {
+    \shade[shading=radial,path fading=glow fading,shift={(#1,#2)},rotate=90,yscale=1,
+    fill opacity=0.9,inner color=#3]
+    plot[draw,samples=200,domain=-4.5:4.5] function {sqrt(0.02 + (x)**2 / 10)}
+    -- plot[draw,samples=200,domain=4.5:-4.5] function {-sqrt(0.02 + (x)**2 / 10)};
+  }
+  \method drawRaman(#1,#2) {
+    \pgfoothis.drawTweezer(#1,#2,pyplotc4);
+  }
+  \method drawAtom(#1,#2,#3,#4) {
+    \fill [#4,path fading=glow2 fading] (#1,#2) circle (#3);
+  }
+  \method drawDownAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc0);
+  }
+  \method drawUpAtom(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc1);
+  }
+  \method drawDownAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc2);
+  }
+  \method drawUpAtom2(#1,#2,#3) {
+    \pgfoothis.drawAtom(#1,#2,#3,pyplotc3);
+  }
+  \method drawState(#1,#2) {
+    \draw[line width=1,shift={(#1,#2)}] (-0.2, 0) -- (0.2, 0);
+  }
+  \method drawState2(#1,#2) {
+    \draw[line width=1,shift={(#1,#2)}] (-0.4, 0) -- (0.4, 0);
+  }
+}
+\pgfoonew \mytweezer=new tweezer()
+
+\mode<handout>{
+  \usepackage{pgfpages}
+  \pgfpagesuselayout{4 on 1}[a4paper,landscape,border shrink=5mm]
+  \setbeamercolor{background canvas}{bg=black!10}
+}
+
+\newcommand\pgfmathsinandcos[3]{%
+  \pgfmathsetmacro#1{sin(#3)}%
+  \pgfmathsetmacro#2{cos(#3)}%
+}
+\newcommand\LongitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % azimuth
+  \tikzset{#1/.estyle={cm={\cost,\sint*\sinEl,0,\cosEl,(0,0)}}}
+}
+\newcommand\LatitudePlane[3][current plane]{%
+  \pgfmathsinandcos\sinEl\cosEl{#2} % elevation
+  \pgfmathsinandcos\sint\cost{#3} % latitude
+  \pgfmathsetmacro\yshift{\cosEl*\sint}
+  \tikzset{#1/.estyle={cm={\cost,0,0,\cost*\sinEl,(0,\yshift)}}} %
+}
+\newcommand\DrawLongitudeCircle[2][1]{
+  \LongitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{atan(sin(#2)*cos(\angEl)/sin(\angEl))} %
+  \draw[current plane] (\angVis:1) arc (\angVis:\angVis+180:1);
+  \draw[current plane,dashed] (\angVis-180:1) arc (\angVis-180:\angVis:1);
+}
+\newcommand\DrawLatitudeCircleArrow[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane,decoration={markings, mark=at position 0.6 with {\arrow{<}}},postaction={decorate},line width=.6mm] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed,line width=.6mm] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\DrawLatitudeCircle[2][1]{
+  \LatitudePlane{\angEl}{#2}
+  \tikzset{current plane/.prefix style={scale=#1}}
+  \pgfmathsetmacro\sinVis{sin(#2)/cos(#2)*sin(\angEl)/cos(\angEl)}
+  % angle of "visibility"
+  \pgfmathsetmacro\angVis{asin(min(1,max(\sinVis,-1)))}
+  \draw[current plane] (\angVis:1) arc (\angVis:-\angVis-180:1);
+  \draw[current plane,dashed] (180-\angVis:1) arc (180-\angVis:\angVis:1);
+}
+\newcommand\coil[1]{
+  {\rh * cos(\t * pi r)}, {\apart * (2 * #1 + \t) + \rv * sin(\t * pi r)}
+}
+\makeatletter
+\define@key{DrawFromCenter}{style}[{->}]{
+  \tikzset{DrawFromCenterPlane/.style={#1}}
+}
+\define@key{DrawFromCenter}{r}[1]{
+  \def\@R{#1}
+}
+\define@key{DrawFromCenter}{center}[(0, 0)]{
+  \def\@Center{#1}
+}
+\define@key{DrawFromCenter}{theta}[0]{
+  \def\@Theta{#1}
+}
+\define@key{DrawFromCenter}{phi}[0]{
+  \def\@Phi{#1}
+}
+\presetkeys{DrawFromCenter}{style, r, center, theta, phi}{}
+\newcommand*\DrawFromCenter[1][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY);
+  }
+}
+\newcommand*\DrawFromCenterText[2][]{
+  \setkeys{DrawFromCenter}{#1}{
+    \pgfmathsinandcos\sint\cost{\@Theta}
+    \pgfmathsinandcos\sinp\cosp{\@Phi}
+    \pgfmathsinandcos\sinA\cosA{\angEl}
+    \pgfmathsetmacro\DX{\@R*\cost*\cosp}
+    \pgfmathsetmacro\DY{\@R*(\cost*\sinp*\sinA+\sint*\cosA)}
+    \draw[DrawFromCenterPlane] \@Center -- ++(\DX, \DY) node {#2};
+  }
+}
+\makeatother
+
+% not mandatory, but I though it was better to set it blank
+\setbeamertemplate{headline}{}
+\def\beamer@entrycode{\vspace{-\headheight}}
+
+\tikzstyle{snakearrow} = [decorate, decoration={pre length=0.2cm,
+  post length=0.2cm, snake, amplitude=.4mm,
+  segment length=2mm},thick, ->]
+\tikzstyle{tightsnakearrow} = [decorate, decoration={pre length=0.1cm,
+  post length=0.1cm, snake, amplitude=.2mm,
+  segment length=2mm},thick, ->]
+\tikzset{meter/.append style={draw, inner sep=10, rectangle, font=\vphantom{A}, minimum width=30, line width=.8,  path picture={\draw ([shift={(.1,.3)}]path picture bounding box.south west) to[bend left=50] ([shift={(-.1,.3)}]path picture bounding box.south east);\draw[-{Latex[length=8mm, width=1.8mm]}] ([shift={(0,.2)}]path picture bounding box.south) -- ([shift={(.4,-.1)}]path picture bounding box.north);}}}
+
+%% document-wide tikz options and styles
+
+\tikzset{%
+  % >=latex, % option for nice arrows
+  inner sep=0pt,%
+  outer sep=2pt,%
+  mark coordinate/.style={inner sep=0pt,outer sep=0pt,minimum size=3pt,
+    fill=black,circle}%
+}
+\tikzset{
+  % Define standard arrow tip
+  >=stealth',
+  % Define style for boxes
+  punkt/.style={
+    rectangle,
+    rounded corners,
+    draw=black, very thick,
+    text width=8em,
+    minimum height=2.5em,
+    text centered},
+}
+
+\tikzset{onslide/.code args={<#1>#2}{%
+    \only<#1>{\pgfkeysalso{#2}}
+    % \pgfkeysalso doesn't change the path
+  }}
+\tikzset{alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}
+    % \pgfkeysalso doesn't change the path
+  }}
+\tikzset{temporal/.code args={<#1>#2#3#4}{%
+    \temporal<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}{\pgfkeysalso{#4}}
+    % \pgfkeysalso doesn't change the path
+  }}
+
+\makeatletter
+\newbox\@backgroundblock
+\newenvironment{backgroundblock}[2]{%
+  \global\setbox\@backgroundblock=\vbox\bgroup%
+  \unvbox\@backgroundblock%
+  \vbox to0pt\bgroup\vskip#2\hbox to0pt\bgroup\hskip#1\relax%
+}{\egroup\egroup\egroup}
+\addtobeamertemplate{background}{\box\@backgroundblock}{}
+\makeatother
+
+% \def\timeleft{15:00->14:55}
+
+\title[MCMR with \textit{omg}]{Mid-circuit measurement and reset using \textit{omg} architecture in trapped-ion quantum computer}
+\date{Jan. 16, 2026}
+\author[Yichao Yu]{Yichao Yu\\
+  \vspace{0.5cm}
+  {\footnotesize Keqin Yan, Vivian Zhang, Debopriyo Biswas, Bahaa Harraz,}\\
+  {\footnotesize Crystal Noel, Christopher R Monroe and Alexander Kozhanov}}
+\institute[Duke Quantum Center]{Duke Quantum Center, Duke University}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\begin{document}
+
+%% Outline
+% * Intro
+% _ * Multiple systems at DQC
+% _ * MCMR for feedback/QEC
+% * omg for MCMR and Metastable state control
+% _ * MCMR in a single species with omg, without additional ind beams
+% _ * Dressing
+% _ * Qubit rotation
+% * Different approaches
+% _ * Shelving
+% _ * Hands-off
+% * Implementations
+% _ * Measurement
+% _ * Reset
+
+%% Title
+% I'm Yichao from the Monroe group at the Duke Quantum Center
+% and today I'll tell you about our in-situ mid-circuit measurement and reset
+% in a trapped ion quantum computer.
+
+{
+  \usebackgroundtemplate{
+    \begin{tikzpicture}[remember picture,overlay]
+      \begin{scope}[shift=(current page.center)]
+        \node[outer sep=0,inner sep=0] at (0, 0) {\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.jpg}};
+        \node at (-1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DoE.pdf}};
+        \node at (0, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DARPA.png}};
+        \node at (1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/NSF.pdf}};
+        \node[above] at (5.15, -3) {\scalebox{0.7}{arXiv:2504.12544}};
+        \node at (5.5, -3.5) {\includegraphics[width=1cm]{imgs/2504.12544.png}};
+      \end{scope}
+    \end{tikzpicture}
+  }
+  \begin{frame}{}
+    \titlepage
+  \end{frame}
+}
+
+\title[MCMR with \textit{omg} (arXiv:2504.12544)]{}
+
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+\section{Brassboard/Gold system}
+\begin{frame}{Quantum computers with individual Raman addressing at DQC}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{scope}[shift={(-4, 3.3)}]
+        \node at (0, 0) {\includegraphics[width=3cm]{imgs/blue.jpg}};
+        \node[pyplotc0!40!cyan] at (-0.5, 0.3) {\textbf{Blue \scalebox{0.8}{(Yb)}}};
+      \end{scope}
+      \begin{scope}[shift={(0, 3.2)}]
+        \node at (0, 0) {\includegraphics[width=3.7cm]{imgs/purple.jpg}};
+        \node[pyplotc4!40!pyplotc6] at (-0.6, 1.1) {\textbf{Purple \scalebox{0.8}{(Yb)}}};
+      \end{scope}
+      \begin{scope}[shift={(4, 3.2)}]
+        \node at (0, 0) {\includegraphics[width=3.6cm]{imgs/red_chamber.jpg}};
+        \node[pyplotc3] at (-1.1, -0.3) {\textbf{Red \scalebox{0.8}{(Yb)}}};
+      \end{scope}
+      \begin{scope}[shift={(-4, -0.3)}]
+        \node at (0, 0) {\includegraphics[width=3.6cm]{imgs/brown.jpg}};
+        \node[pyplotc5!70!orange] at (-0.7, -1.1) {\textbf{Brown \scalebox{0.8}{(Yb)}}};
+      \end{scope}
+      \begin{scope}[shift={(4, -0.2)}]
+        \node at (0, 0) {\includegraphics[width=2.8cm]{imgs/green.png}};
+        \node[green!80!white] at (-0.4, -1.0) {\textbf{Green \scalebox{0.8}{(Ba)}}};
+      \end{scope}
+
+      \begin{scope}[shift={(0, -0.3)}]
+        \node at (0, 0) {\includegraphics[width=3.8cm]{imgs/gold.png}};
+        \node[pyplotc8!30!yellow] at (-1.0, 0.5) {\textbf{gold \scalebox{0.8}{(Yb)}}};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$^{171}\text{Yb}^+$ qubit}
+  \begin{center}
+    \begin{columns}
+      \column{6.5cm}
+      \begin{block}{}
+        \begin{itemize}
+        \item<1-> Long coherence time: $T_2\approx1 \text{hr}$\\
+          {\scriptsize Wang, et al., Nat Commun 12, 233 (2021)}\\
+          \vspace{1em}
+        \item<2-> High fidelity state preparation: $> 99.9\%$ in $\approx 10 \mathrm{\mu s}$
+        \item<2-> High speed and high fidelity readout: $> 99.3\%$ in $\approx 100 \mathrm{\mu s}$\\
+          \vspace{0.5em}
+          {\scriptsize Harty, et al., PRL. 113, 22051, (2014)}
+          {\scriptsize Christensen, et al., NPJ Quantum Inf. 6, 35 (2020)}
+        \end{itemize}
+      \end{block}
+      \column{5cm}
+      \begin{tikzpicture}
+        \begin{scope}[scale=0.8]
+          \draw[line width=1] (-0.6, -3) -- node[above right] {$|\!\downarrow\rangle$} (0.6, -3);
+          \draw[line width=1] (-2.1, -2.15) -- (-0.9, -2.15);
+          \draw[line width=1] (-0.6, -2) --
+          node[above right] {$|\!\uparrow\rangle$} (0.6, -2);
+          \draw[line width=1] (0.9, -1.85) -- (2.1, -1.85);
+          \node[left] at (-2.1, -2.5) {$^2\mathrm{S}_{1/2}$};
+
+          \visible<2->{
+            \begin{scope}[shift={(0, 6)}]
+              \draw[line width=1] (-0.6, -3) -- (0.6, -3);
+              \draw[line width=1] (-2.1, -2.1) -- (-0.9, -2.1);
+              \draw[line width=1] (-0.6, -2) -- (0.6, -2);
+              \draw[line width=1] (0.9, -1.9) -- (2.1, -1.9);
+              \node[left] at (-2.1, -2.5) {$^2\mathrm{P}_{1/2}$};
+            \end{scope}
+
+            \draw[snakearrow,line width=1,blue] (0, -2.5) --
+            node[right] {$369$ nm} (0, 3.5);
+          }
+        \end{scope}
+      \end{tikzpicture}
+    \end{columns}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$^{171}\text{Yb}^+$ chain and coherent manipulation}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (3, 2.5) {\includegraphics[width=5cm]{imgs/Phoenix_with_ion}};
+      \visible<2->{
+        \node at (3, -1.5) {\includegraphics[width=5cm]{imgs/Paladin_Breadboard}};
+        \begin{scope}[shift={(-3, 0)}]
+          \draw[line width=1] (-1.0, -3) -- node[above] {\small $|0, 0\rangle$} (1.0, -3);
+          \draw[line width=1] (-1.0, -2) -- node[above] {\small $|1, 0\rangle$} (1.0, -2);
+          \draw[line width=1] (-1.5, 2.5) node[left] {$^2\mathrm{P}_{1/2}$} -- (1.5, 2.5);
+          \draw[line width=1,dashed] (-1.5, 3) -- (1.5, 3);
+          \draw[line width=1] (-1.5, 4) node[left] {$^2\mathrm{P}_{3/2}$} -- (1.5, 4);
+          \draw[blue,<->,line width=1] (-0.8, -3) -- node[left] {$355$ nm} (0, 3);
+          \draw[blue,<->,line width=1] (0.8, -2) -- (0, 3);
+
+          \draw[<->,dashed,line width=0.5] (0.95, -2) --
+          node[right] {$12.6$ GHz} (0.95, -3);
+          \draw[<->,dashed,line width=0.5] (1.2, 2.5) --
+          node[right] {$33$ THz} (1.2, 3);
+          \draw[<->,dashed,line width=0.5] (1.2, 3) --
+          node[right] {$66$ THz} (1.2, 4);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+\begin{frame}{$1^{\text{st}}$ generation EURIQA system}
+  \begin{center}
+    \textbf{E}rror-corrected \textbf{U}niversal \textbf{R}econfigurable
+    \textbf{I}on-trap \textbf{Q}uantum \textbf{A}rchetype
+    \begin{columns}
+      \column{5.2cm}
+      \includegraphics[width=5cm]{imgs/Breadboard_box}
+      \column{6.3cm}
+      \visible<2->{
+        \begin{block}{}
+          \begin{itemize}
+          \item 15-24 usable qubits
+          \item High fidelity single ($99.9\ \%$) and two-qubit ($99\ \%$) gates
+          \end{itemize}
+        \end{block}
+      }
+    \end{columns}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$2^{\text{nd}}$ generation EURIQA system}
+  \begin{center}
+    \vspace{-0.5cm}
+    \begin{tikzpicture}
+      \node at (0, 0) {\includegraphics[width=7.5cm]{imgs/Brassboard_render}};
+      \draw[->,cyan,line width=3,>=stealth] (-3.8, 3.0) -- (-0.9, 0.5);
+      \node[align=center,font=\tiny] at (-3.8, 3.0)
+      {\includegraphics[width=2.3cm]{imgs/Phoenix_zoomout}\\
+        Sandia Phoenix trap};
+      \draw[->,cyan,line width=3,>=stealth] (-2.7, -3.0) -- (0.9, -1);
+      \node[align=center,font=\tiny] at (-2.7, -3.0)
+      {\includegraphics[width=4cm]{imgs/Harris_overview}\\
+        L3Harris Raman beam path};
+      \draw[->,cyan,line width=3,>=stealth] (3.9, 2.7) -- (-0.4, 1.0);
+      \node[align=center,font=\tiny] at (3.9, 2.7)
+      {\includegraphics[width=2.6cm]{imgs/Vacuum_stack_photo}\\
+        Improved vacuum system};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Improved vacuum}
+  \begin{center}
+    \begin{columns}
+      \column{6.3cm}
+      \begin{itemize}
+      \item Vacuum fired components
+      \item<2-> Reduce ion-chain reordering rate
+      \item<4-> $1.32(21)\times10^{-11}\ \mathrm{Torr}$ measured pressure
+      \end{itemize}
+      \visible<4->{
+        \begin{center}
+          \includegraphics[width=6cm]{imgs/double-well.pdf}
+        \end{center}
+      }
+      \column{5.1cm}
+      \begin{tikzpicture}
+        \node at (0, 0) {\includegraphics[width=5cm]{imgs/Vacuum_stack_photo.png}};
+        \visible<3->{
+          \fill[white,opacity=0.9] (-2.52, -2.63) rectangle (2.52, 2.63);
+          \draw[line width=1, domain=-2.15:2.15,smooth,variable=\x]
+          plot ({\x}, {0.3 * (\x)^4 - 0.7 * (\x)^2 - 1});
+          \fill[red] (-1.0801234497346435, -1) circle (0.1);
+          \fill[red!25!white,draw=red] (1.0801234497346435, -1) circle (0.1);
+
+          \draw[blue,line width=1,<->,>=stealth]
+          (-1, -0.9) to [bend left=40] (1, -0.9);
+        }
+      \end{tikzpicture}
+    \end{columns}
+  \end{center}
+\end{frame}
+
+\definecolor{trapyellow}{HTML}{ffe0a5}
+\definecolor{semgray}{HTML}{cccccc}
+
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Phoenix trap}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (3, 2) {\includegraphics[width=4.8cm]{imgs/Phoenix}};
+      \visible<2-3>{
+        \fill[semgray,opacity=0.6] (1.8, 2.115) -- (-4.65, -0.3875)
+        -- (-0.35, -3.6125) -- (1.9, 2.115) -- cycle;
+      }
+      \visible<4>{
+        \fill[semgray,opacity=0.2] (1.8, 2.115) -- (-4.65, -0.3875)
+        -- (-0.35, -3.6125) -- (1.9, 2.115) -- cycle;
+      }
+      \node[text width=6.5cm] at (-3, 2) {
+        \begin{itemize}
+        \item<2-> Better loading and chain control
+        \item<3-> Reduced surface electrical noise\\
+          \uncover<-2,4->{3x less heating compared to EURIQA-1}
+        \end{itemize}
+      };
+      \visible<2-3>{
+        \fill[trapyellow,opacity=0.6]
+        (2.85, 2.115) -- (0.9, -1) -- (5.7, -1)
+        -- (3.15, 2.115) -- cycle;
+        \node at (3.3, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
+        \node at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
+      }
+      \visible<4>{
+        \fill[trapyellow,opacity=0.15]
+        (2.85, 2.115) -- (0.9, -1) -- (5.7, -1)
+        -- (3.15, 2.115) -- cycle;
+        \node[opacity=0.25] at (3.3, -2) {\includegraphics[width=4.8cm]{imgs/Phoenix_quantum}};
+        \node[opacity=0.25] at (-2.5, -2) {\includegraphics[width=4.3cm]{imgs/Phoenix_Loading_SEM}};
+        \node at (-0.5, -1.8) {\includegraphics[width=7cm]{imgs/heating-rate}};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Imaging system}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (-3.2, 2) {\includegraphics[width=4.5cm]{imgs/photon-gear}};
+      \visible<2->{
+        \node at (-3, -2.2) {\includegraphics[width=6cm]{imgs/imaging_combined.pdf}};
+      }
+      \visible<3->{
+        \fill[gray,opacity=0.4] (-5.75, -1.22) -- (-0.25, -1.22) -- (-4.74, -2.2) -- (-5.545, -2.2) -- cycle;
+        \node at (-3, -1.1) {\includegraphics[width=5.5cm]{imgs/fiber_bundle_tip_zoomin.png}};
+      }
+      \visible<4->{
+        \node at (2.8, -0.6) {\includegraphics[width=6cm]{imgs/pmt-array.png}};
+      }
+      \node[text width=5.7cm] at (3, 3.6) {
+        \begin{itemize}
+        \item<1-> NA=0.63 lens.
+        \item<2-> 32 channel fiber bundle for individual detection.
+        \item<4-> Crosstalk between neighboring channels: $0.05 \%$
+        \end{itemize}
+      };
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{$2^{\text{nd}}$ gen EURIQA: Raman addressing}
+  \begin{center}
+    \begin{tikzpicture}
+      \node at (0, 0) {\includegraphics[width=8cm]{imgs/Brassboard_Raman.png}};
+
+      \node[rotate=90] at (4.5, 0) {\includegraphics[width=7cm]{imgs/Global_beam.png}};
+      \node[rotate=90] at (-4.5, 0) {\includegraphics[width=5.4cm]{imgs/Individual_beam.png}};
+      \visible<2->{
+        \fill[white,opacity=0.9] (-4.9, -3.6) rectangle (4.9, 3.6);
+      }
+      \visible<2->{
+        \fill[white,path fading = north edge fading] (-5.75, -3.2) rectangle (-.34, 2);
+      }
+      \visible<3->{
+        \fill[white,path fading = north edge fading]
+        (5.75, -3.62) rectangle (.32, 2);
+      }
+
+      \node[text width=8cm] at (0, 3) {
+        \begin{itemize}
+        \item<1-> Counter-prop global and individual beams
+        \item<2-> Cross-beam Raman signal
+        \item<3-> Individual addressing\\
+          Nearest neighbor crosstalk: $1-2\%$.\\
+          ($0.1 - 0.2\%$ with cancellation)
+        \end{itemize}
+      };
+      \visible<2->{
+        \node at (-3, -1) {\includegraphics[width=5.5cm]{imgs/Raman_spectrum}};
+      }
+      \visible<3->{
+        \node at (3, -1) {\includegraphics[width=5.5cm]{imgs/Raman_profile}};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\section{Mid-circuit measurement and reset (MCMR)}
+
+% Like many others, experiments on our system typically follow
+% the standard procedure of most AMO experiments up to this point.
+% We start by initializing state with optical pumping, do some coherent evolution,
+% and finally detect the state in the end with optical fluorescence.
+
+% While this type of operation works well,
+% techiques such as quantum error correction may
+% require ammending the coherent evolution process with classical feedback.
+% This necessitate measurement and also reset of the measured qubit
+% to be done mid-circuit, hence the name mid-circuit measurement and reset,
+% or MCMR for short.
+
+\begin{frame}{Mid-circuit measurement and reset (MCMR)}
+  \begin{center}
+    \begin{tikzpicture}
+      \node (I0) at (-5, 3) {$|0\rangle$};
+      \node (I1) at (-5, 2.5) {$|0\rangle$};
+      \node (I2) at (-5, 2) {$|0\rangle$};
+      \node (I3) at (-5, 1.5) {$|0\rangle$};
+      \node (I4) at (-5, 1) {$|0\rangle$};
+
+      \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+      minimum height=2.5cm,line width=1]
+      (C) at (0, 2) {Coherent evolution\\
+        \scriptsize{(single qubit gates, two qubit gates, \dots)}};
+
+      \node[meter,scale=0.45,outer sep=0] (M0) at (5, 3) {};
+      \node[meter,scale=0.45,outer sep=0] (M1) at (5, 2.5) {};
+      \node[meter,scale=0.45,outer sep=0] (M2) at (5, 2) {};
+      \node[meter,scale=0.45,outer sep=0] (M3) at (5, 1.5) {};
+      \node[meter,scale=0.45,outer sep=0] (M4) at (5, 1) {};
+
+      \draw[line width=0.7] (I0) -- ($(I0 -| C.west)$);
+      \draw[line width=0.7] (I1) -- ($(I1 -| C.west)$);
+      \draw[line width=0.7] (I2) -- ($(I2 -| C.west)$);
+      \draw[line width=0.7] (I3) -- ($(I3 -| C.west)$);
+      \draw[line width=0.7] (I4) -- ($(I4 -| C.west)$);
+
+      \draw[line width=0.7] (M0) -- ($(M0 -| C.east)$);
+      \draw[line width=0.7] (M1) -- ($(M1 -| C.east)$);
+      \draw[line width=0.7] (M2) -- ($(M2 -| C.east)$);
+      \draw[line width=0.7] (M3) -- ($(M3 -| C.east)$);
+      \draw[line width=0.7] (M4) -- ($(M4 -| C.east)$);
+
+      \visible<2-> {
+        \begin{scope}[shift={(0cm, -3.5cm)}]
+          \node (I0) at (-5, 3) {$|0\rangle$};
+          \node (I1) at (-5, 2.5) {$|0\rangle$};
+          \node (I2) at (-5, 2) {$|0\rangle$};
+          \node (I3) at (-5, 1.5) {$|0\rangle$};
+          \node (I4) at (-5, 1) {$|0\rangle$};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=2.3cm,line width=1]
+          (C0) at (-3, 2) {Coherent\\evolution};
+
+          \node[meter,scale=0.45,outer sep=0,pyplotc3] (Mm) at (-1, 1) {};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=1.8cm,line width=1]
+          (C1) at (0, 2.25) {Conditional\\operation};
+
+          \node[pyplotc3] (Im) at (1, 1) {$|0\rangle$};
+
+          \node[draw,rounded corners,inner sep=5pt,outer sep=0,align=center,
+          minimum height=2.3cm,line width=1]
+          (C2) at (3, 2) {Coherent\\evolution};
+
+          \node[meter,scale=0.45,outer sep=0] (M0) at (5, 3) {};
+          \node[meter,scale=0.45,outer sep=0] (M1) at (5, 2.5) {};
+          \node[meter,scale=0.45,outer sep=0] (M2) at (5, 2) {};
+          \node[meter,scale=0.45,outer sep=0] (M3) at (5, 1.5) {};
+          \node[meter,scale=0.45,outer sep=0] (M4) at (5, 1) {};
+
+          \draw[line width=0.7] (I0) -- ($(I0 -| C0.west)$);
+          \draw[line width=0.7] (I1) -- ($(I1 -| C0.west)$);
+          \draw[line width=0.7] (I2) -- ($(I2 -| C0.west)$);
+          \draw[line width=0.7] (I3) -- ($(I3 -| C0.west)$);
+          \draw[line width=0.7] (I4) -- ($(I4 -| C0.west)$);
+
+          \draw[line width=0.7] ($(M0 -| C0.east)$) -- ($(M0 -| C1.west)$);
+          \draw[line width=0.7] ($(M1 -| C0.east)$) -- ($(M1 -| C1.west)$);
+          \draw[line width=0.7] ($(M2 -| C0.east)$) -- ($(M2 -| C1.west)$);
+          \draw[line width=0.7] ($(M3 -| C0.east)$) -- ($(M3 -| C1.west)$);
+          \draw[line width=0.7] (Mm) -- ($(C0.east |- Mm)$);
+
+          \draw[line width=0.7,double,->,>=stealth,pyplotc3]
+          ($(Mm.east)+(0, 0.1)$) -| (C1.south);
+          \draw[line width=0.7,opacity=0.6,->,pyplotc3] ($(Mm.east)-(0, 0.05)$) --
+          node[below] {Reset}
+          ($(Mm.east -| Im.west)+(0.03, -0.05)$);
+
+          \draw[line width=0.7] ($(C1.east |- I0)$) -- ($(C2.west |- I0)$);
+          \draw[line width=0.7] ($(C1.east |- I1)$) -- ($(C2.west |- I1)$);
+          \draw[line width=0.7] ($(C1.east |- I2)$) -- ($(C2.west |- I2)$);
+          \draw[line width=0.7] ($(C1.east |- I3)$) -- ($(C2.west |- I3)$);
+          \draw[line width=0.7] (Im) -- ($(C2.west |- Im)$);
+
+          \draw[line width=0.7] (M0) -- ($(M0 -| C2.east)$);
+          \draw[line width=0.7] (M1) -- ($(M1 -| C2.east)$);
+          \draw[line width=0.7] (M2) -- ($(M2 -| C2.east)$);
+          \draw[line width=0.7] (M3) -- ($(M3 -| C2.east)$);
+          \draw[line width=0.7] (M4) -- ($(M4 -| C2.east)$);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+%% Implementation of MCMR in amo/ion systems
+% Now compared to what we currently used,
+% the main difference for a mid-circuit version is of course that
+% we need to clearly distinguish between the ions that need to be measured,
+% which we'll call the auxiliary ions, and the ions that should be preserved,
+% which will be called the data ions.
+% Due to the broad linewidth of the transition typically used here,
+% it can be really challenging to prevent scattering
+% and loss of coherence on the data ion
+% caused by any kind of crosstalk from the auxiliary.
+
+% Still, for ion systems, this isolation has been realized,
+% either with shuttling, differentiating the two types with physical separation,
+% or by using multiple ion species with different wavelengths.
+
+% Both of these approaches, however, add significant complexity,
+% and in the case of shuttling, time cost, to the experiment.
+% So instead, we developed a family of techniques that can be added with low overhead
+% and minimum footprint on the experiment setup.
+% This would allow the MCMR capabilities to be added to many experiments
+% even including a lot of the existing ones like ours.
+
+% We achieve this using the so-called omg-archtecture,
+% taking advantage of the metastable states that exist in almost all of
+% the ion species as shown here.
+% This is also similar to how some neutral atom experiments implements it recently.
+
+\begin{frame}{Mid-circuit measurement and reset (MCMR)}
+  \begin{center}
+    \begin{tikzpicture}
+      \begin{scope}
+        \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+          \mytweezer.drawTweezer(-2, -1, cyan!60!blue)
+          \mytweezer.drawTweezer(2, -1, cyan!60!blue)
+
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(230:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(140:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (-2, -1) -- +(20:1.2);
+
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(-40:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(30:1.2);
+          \draw[->,>=stealth,snakearrow,line width=2,cyan] (2, -1) -- +(200:1.2);
+
+          \mytweezer.drawUpAtom2(-2, -1, 0.35)
+          \mytweezer.drawUpAtom(0, -1, 0.35)
+          \mytweezer.drawUpAtom2(2, -1, 0.35)
+          \mytweezer.drawUpAtom(4, -1, 0.35)
+
+          \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+          \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+          \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+          \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+        \end{pgflowlevelscope}
+        % Seems that the pgflowlevelscope doesn't count towards the picture size
+        % Create an empty rectangle to mark its place.
+        \path (-1.5, -2.5) rectangle (2.5, 1.5);
+      \end{scope}
+      \visible<2->{
+        \node[align=center,text width=5cm,inner sep=0,outer sep=0] at (6, 1.3) {
+          \begin{block}{}
+            \begin{itemize}
+            \item Shuttling\\
+              \vspace{-0.1cm}\scalebox{0.6}{Nature Physics 19, 1 (2023)}
+            \item Multi-species\\
+              \vspace{-0.1cm}\scalebox{0.6}{Science 309, 749 (2005)}
+            \item<3-> Metastable states\\
+              \scalebox{0.9}{\textit{omg}-architecture}\\
+              \vspace{-0.1cm}\scalebox{0.6}{APL 119, 214002 (2021)}\\
+              \vspace{-0.1cm}\scalebox{0.6}{PRX 13, 041035 (2023)}
+            \end{itemize}
+          \end{block}
+        };
+      }
+      \visible<3->{
+        \node[align=left,text width=6cm,inner sep=0,outer sep=0] at (6, -2.4) {
+          \begin{itemize}
+          \item\makebox[0.7cm][r]{Yb$^+$}: D$_{3/2}$ \scalebox{0.85}{($50$ ms)},
+            D$_{5/2}$ \scalebox{0.85}{($7$ ms)},\\
+            \phantom{\makebox[0.7cm]{}: }F$_{7/2}$ \scalebox{0.85}{($>\!\!1$ yr)}
+          \item\makebox[0.7cm][r]{Ba$^+$}: D$_{3/2}$ \scalebox{0.85}{($80$ s)},
+            D$_{5/2}$ \scalebox{0.85}{($30$ s)}
+          \item\makebox[0.7cm][r]{Sr$^+$}: D$_{3/2}$ \scalebox{0.85}{($0.4$ s)},
+            D$_{5/2}$ \scalebox{0.85}{($0.4$ s)}
+          \item\hspace{0.2cm}$\cdots$
+          \end{itemize}
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+%% Use metastable state for MCMR
+% The process can in general happen in two different ways.
+% In what we called the shelving method,
+% the data ion is driven to the long lived metastable state
+% which protects it from seeing the the detection or pumping transitions.
+
+% Alternatively, if the data ion is left untouched in the ground state
+% but the auxiliary ion is driven to the metastable state
+% we can pump or in general scatter photons off of
+% the metastable state to either pump or detect the ions.
+% In this case the narrow linewidth of the metastable transition can help
+% reducing unwanted coupling on the data ions.
+% We named this second one the hands-off methods,
+% since it nominally operates exclusively on the auxiliary ions
+% without perturbing the data.
+
+\begin{frame}{MCMR with metastable state
+    \hspace{0.15cm}---\hspace{0.15cm} \only<1>{shelving method}\only<2->{hands-off method}}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<1>{
+        \begin{scope}[shift={(-3.3, 0)}]
+          \begin{scope}[shift={(-1.2, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Data}};
+
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,align=center,above=-0.03] {\scalebox{0.7}{Shelve}} (0.75, 0.1);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom(0.75, 0.1, 0.14)
+            \mytweezer.drawDownAtom(0, -1.2, 0.14)
+          \end{scope}
+
+          \begin{scope}[shift={(1.15, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Aux}};
+
+            \draw[pyplotc3,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,above=-0.03,pos=0.55] {\scalebox{0.7}{Scatter}} (-0.05, 0.9);
+
+            \draw[cyan!70!pyplotc0,->,tightsnakearrow,>=stealth,line width=0.7]
+            (-0.15, 0.9) -- (0.2, -0.8);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom2(0, -1.2, 0.14)
+          \end{scope}
+          \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-2.1, -1.6) rectangle (2.7, 1.6);
+        \end{scope}
+        \begin{scope}[shift={(3.3, 0)}]
+          \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+            \begin{scope}
+              \clip (-3, -2.5) rectangle (5.5, 0.5);
+              \shade[shading=radial,path fading=glow fading,fill opacity=0.6,
+              inner color=cyan!50!pyplotc0]
+              (1, -1) ellipse (20 and 1.2);
+            \end{scope}
+
+            \mytweezer.drawTweezer(0, -1, pyplotc0!80!blue)
+            \mytweezer.drawTweezer(4, -1, pyplotc0!80!blue)
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(260:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(120:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(20:1.2);
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(-80:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(60:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(200:1.2);
+
+            \mytweezer.drawUpAtom2(-2, -1, 0.35)
+            \mytweezer.drawUpAtom(0, -1, 0.35)
+            \mytweezer.drawUpAtom2(2, -1, 0.35)
+            \mytweezer.drawUpAtom(4, -1, 0.35)
+
+            \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+            \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+
+            \node at (2, 3) {\scalebox{2}{Individual Shelve}};
+          \end{pgflowlevelscope}
+          % Seems that the pgflowlevelscope doesn't count towards the picture size
+          % Create an empty rectangle to mark its place.
+          \path (-1.5, -2.5) rectangle (2.5, 1.5);
+        \end{scope}
+      }
+      \visible<2->{
+        \begin{scope}[shift={(-3.3, 0)}]
+          \begin{scope}[shift={(-1.2, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Data}};
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom(0, -1.2, 0.14)
+          \end{scope}
+
+          \begin{scope}[shift={(1.15, 0)}]
+            \node[above] at (0.3, 1.1) {\scalebox{0.9}{Aux}};
+
+            \draw[pyplotc3,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.75, 0.1) -- node[sloped,above=-0.042,pos=0.3] {\scalebox{0.57}{Repump}} (-0.1, 0.9);
+
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.5, -1.2) -- node[sloped,align=center,above=-0.03] {\scalebox{0.7}{Drive}} (0.75, 0.1);
+
+            \draw[cyan!70!pyplotc0,->,tightsnakearrow,>=stealth,line width=0.7]
+            (-0.1, 0.9) -- (0.2, -0.8);
+
+            \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.03] {\scalebox{0.82}{$|g_2\rangle$}};
+            \draw[line width=1.6] (-0.2, -1.2) node[left=-0.03] {\scalebox{0.82}{$|g_1\rangle$}} -- (0.2, -1.2);
+            \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+            \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.03] {\scalebox{0.82}{$|e\rangle$}};
+
+            \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \mytweezer.drawDownAtom2(0, -1.2, 0.14)
+          \end{scope}
+          \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-2.1, -1.6) rectangle (2.7, 1.6);
+        \end{scope}
+        \begin{scope}[shift={(3.3, 0)}]
+          \begin{pgflowlevelscope}{\pgftransformscale{0.5}}
+            \mytweezer.drawTweezer(-2, -1, pyplotc0!80!blue)
+            \mytweezer.drawTweezer(2, -1, pyplotc0!80!blue)
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(230:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(140:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (-2, -1) -- +(20:1.2);
+
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(-40:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(30:1.2);
+            \draw[->,>=stealth,snakearrow,line width=2,cyan!80!lime] (2, -1) -- +(200:1.2);
+
+            \mytweezer.drawUpAtom2(-2, -1, 0.35)
+            \mytweezer.drawUpAtom(0, -1, 0.35)
+            \mytweezer.drawUpAtom2(2, -1, 0.35)
+            \mytweezer.drawUpAtom(4, -1, 0.35)
+
+            \node[below,pyplotc3] at (-2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (0, -4) {\scalebox{1.8}{Data}};
+            \node[below,pyplotc3] at (2, -4) {\scalebox{1.8}{Aux}};
+            \node[below,pyplotc1] at (4, -4) {\scalebox{1.8}{Data}};
+
+            \node at (0, 3) {\scalebox{2}{Individual Drive}};
+          \end{pgflowlevelscope}
+          % Seems that the pgflowlevelscope doesn't count towards the picture size
+          % Create an empty rectangle to mark its place.
+          \path (-1.5, -2.5) rectangle (2.5, 1.5);
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+%% Individual control of metastable state
+% Still, both of these rely on individual control of the metastable state,
+% which **could** of course be done using focused metastable drive beams.
+% But true to our goal of minimizing the footprint,
+% and knowing how challenging and distruptive it could be to
+% add a new individual addressing beam path,
+% we implemented all our schemes with a single global beam
+% to drive the metastable transition.
+% Instead, all the distinctions between ion types are done with
+% existing individual addressing beams for gate operations.
+
+% One of the ways this can be achieved is by dressing some target ions,
+% with the individual gate control beams.
+% The dressing can selectively shift the resonance of
+% the metastable transition allowing us to drive only the ions we want.
+% Since the 355nm gate operation laser we use generates minimum scalar light shift
+% to improve gate fidelity, we had to use a near resonance Raman dressing
+% to produce an appriaciable shift.
+
+% Here's what that shift look like on our Yb ions.
+% The red and orange lines show the metastable state spectrum
+% with and without the Raman dressing.
+% The spectra are taken with a Blackman pulse shape to reduce off-resonance coupling,
+% giving rise to the smooth and narrow peak shape and clear separation.
+% Both lines are also taken with the pi time for the dressed transition.
+% This overdrives the bare resonance, and combined with the Blackman pulse shape,
+% is why that peak appears to be smaller.
+
+% Now, while reusing the qubit laser for dressing indeed works,
+% it does involve using them differently compared to their original role.
+% But this is actually not a hard requirement
+% and we could get individual metastable control
+% while using the lasers exactly the same as in a normal circuit.
+% The way this works is to treat the qubit states
+% as well as the metastable state together as a qudit system.
+% Here, full individual *qudit* control can be achieved by simply having
+% individual *qubit* control on any two of the levels,
+% combined with global operations connecting to other ones.
+% This kind of sequence can of course be customized as needed for each qudit systems,
+% but as an example,
+% this sequence leaves only one of the ion to metastable state in the end,
+% despite requiring only global drive there.
+
+% This second way of individual control of metastable state,
+% which we called the qubit rotation implementation,
+% does have it drawback since it usually involves driving all ions to the metastable state.
+% As you can see in this table showing the combination of the different methods,
+% while dressing can be applied equally well to both of the MCMR methods,
+% the combination of qubit-rotation with the hands-off methods usually doesn't make sense
+% since driving everything to metastable state defeats the whole point of
+% "hands-off the data".
+
+\begin{frame}{Individual control of metastable state
+    \only<-3>{\hspace{0.15cm}---\hspace{0.15cm} dressing}\only<5>{\hspace{0.15cm}---\hspace{0.15cm} qubit rotation}}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<-3> {
+        \begin{scope}[shift={(-1.2, 0)}]
+          \node[above] at (0.4, 1.1) {\scalebox{0.9}{Raw}};
+
+          \visible<2-> {
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+            (0.35, -1.1) -- node[sloped,below=-0.03] {\scalebox{0.7}{Original}} (0.8, 0.8);
+          }
+
+          \draw[line width=1.6] (0.15, -1.1) -- (0.55, -1.1) node[right=-0.03] {\scalebox{0.82}{$|0\rangle$}};
+          \draw[line width=1.6] (-0.3, 0.0) -- (0.1, 0.0) node[right=-0.03] {\scalebox{0.82}{$|1\rangle$}};
+          \draw[line width=1.6] (0.6, 0.8) -- (1, 0.8) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+          \visible<2-> {
+            \mytweezer.drawUpAtom(0.35, -1.1, 0.16)
+          }
+        \end{scope}
+
+        \begin{scope}[shift={(1.15, 0)}]
+          \node[above] at (0.4, 1.1) {\scalebox{0.9}{Dressed}};
+
+          \draw[pyplotc2,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.3, -1.05) -- node[sloped,below=-0.03] {\scalebox{0.6}{Dressing}} (-0.1, -0.05);
+          \visible<2-> {
+            \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+            (0.4, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.7}{Shifted}} (0.8, 0.8);
+          }
+
+          \draw[line width=1,densely dotted,opacity=0.7] (0.15, -1.1) -- (0.55, -1.1);
+          \draw[line width=1,densely dotted,opacity=0.7] (-0.3, 0.0) -- (0.1, 0.0);
+
+          \draw[line width=1.6] (0.15, -1.3) -- (0.55, -1.3) node[right=-0.03] {\scalebox{0.82}{$|0'\rangle$}};
+          \draw[line width=1.6] (-0.3, 0.2) -- (0.1, 0.2) node[right=-0.03] {\scalebox{0.82}{$|1'\rangle$}};
+          \draw[line width=1.6] (0.6, 0.8) -- (1, 0.8) node[right=-0.03] {\scalebox{0.82}{$|m\rangle$}};
+          \visible<2-> {
+            \mytweezer.drawUpAtom2(0.35, -1.3, 0.16)
+          }
+        \end{scope}
+        \draw[line width=1,opacity=0.4] (0.5, 1.3) -- (0.5, -1.35);
+        \visible<3-> {
+          \node at (5.5, -0.3) {\includegraphics[width=5cm]{imgs/435_f1_spec.pdf}};
+        }
+      }
+      \visible<4-> {
+        \begin{scope}[shift={(-0.6, 1.5)}]
+          \node[above] at (0.4, 1.2) {\scalebox{0.9}{Individual \textbf{qudit} control}};
+          \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+          (0.35, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.65}{Global}} (1.0, 0.8);
+          \draw[pyplotc2,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8]
+          (0.35, -1.3) -- node[sloped,below=-0.03] {\scalebox{0.65}{Individual}}
+          (-0.3, 0.0);
+
+          \draw[line width=1.6] (0.15, -1.3) -- (0.55, -1.3) node[right=-0.03] {\scalebox{0.82}{$|0\rangle$}};
+          \draw[line width=1.6] (-0.5, 0.0) -- (-0.1, 0.0) node[right=-0.03] {\scalebox{0.82}{$|1\rangle$}};
+          \draw[line width=1.6] (0.8, 0.8) -- (1.2, 0.8) node[right=-0.03] {\scalebox{0.82}{$|2\rangle$ \scriptsize{$\left(|m\rangle\right)$}}};
+        \end{scope}
+      }
+      \visible<5-> {
+        \begin{scope}[scale=0.77,shift={(-0.9, -3)}]
+          \begin{scope}
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Shelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom(0.5, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[pyplotc0,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Shelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+
+            \begin{scope}[shift={(-0.08, 0.1)}]
+              \fill[opacity=0.18] (3.15, 0) -- (3, 0.6) -- (2.98, 0.6) |- (2.91, 0.3) -- (2.91, -0.3) -| (2.98, -0.6) -- (3, -0.6);
+            \end{scope}
+          \end{scope}
+          \begin{scope}[shift={(5.3, 0)}]
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc4,-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.55, -1.2) to [bend right=50] node[above=-0.05] {\scalebox{0.6}{Qubit Rotation}} (0.0, -1.2);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom(0.0, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.75, 0.1, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+            \node[above=0.1] at (0.3, 1.8) {Example Sequence};
+
+            \begin{scope}[shift={(-0.08, 0.1)}]
+              \fill[opacity=0.18] (3.15, 0) -- (3, 0.6) -- (2.98, 0.6) |- (2.91, 0.3) -- (2.91, -0.3) -| (2.98, -0.6) -- (3, -0.6);
+            \end{scope}
+          \end{scope}
+          \begin{scope}[shift={(10.6, 0)}]
+            \begin{scope}[shift={(-1.2, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Data}};
+
+              \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-{Stealth[length=1.5mm,width=1mm]},line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Swap}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawUpAtom(0.75, 0.1, 0.14)
+              \mytweezer.drawDownAtom(0.0, -1.2, 0.14)
+            \end{scope}
+
+            \begin{scope}[shift={(1.15, 0)}]
+              \node[above] at (0.3, 1.25) {\scalebox{0.9}{Aux}};
+
+              \draw[pyplotc0,{Stealth[length=1.5mm,width=1mm]}-,line width=0.8] (0.0, -1.2) -- node[sloped,align=center,above=-0.05] {\scalebox{0.6}{Unshelve}} (0.75, 0.1);
+
+              \draw[line width=1.6] (0.3, -1.2) -- (0.7, -1.2) node[right=-0.05] {\scalebox{0.7}{$|g_2\rangle$}};
+              \draw[line width=1.6] (-0.2, -1.2) node[left=-0.05] {\scalebox{0.7}{$|g_1\rangle$}} -- (0.2, -1.2);
+              \draw[line width=1.6] (0.55, 0.1) -- (0.95, 0.1) node[right=-0.05] {\scalebox{0.7}{$|m\rangle$}};
+              \draw[line width=1.6] (-0.3, 0.9) -- (0.1, 0.9) node[right=-0.05] {\scalebox{0.7}{$|e\rangle$}};
+
+              \mytweezer.drawDownAtom2(0.0, -1.2, 0.14)
+              \mytweezer.drawUpAtom2(0.5, -1.2, 0.14)
+            \end{scope}
+            \draw[line width=1,opacity=0.4] (0.3, 1.3) -- (0.3, -1.35);
+            \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3, dashed]
+            (-2.1, -1.6) rectangle (2.7, 1.8);
+          \end{scope}
+        \end{scope}
+      }
+      \visible<6-> {
+        \begin{scope}[shift={(0.3, -0.2)}]
+          \fill[white,opacity=0.75] (-2.7, -4.15) rectangle (9.35, 3.4);
+          \node at (6.1, 3) {\scalebox{0.9}{Individual metastable control}};
+          \node at (4.9, 2.32) {Dressing};
+          \node at (7.3, 2.32) {Qubit rotation};
+          \node[left=-0.1] at (3.6, 1.6) {Shelving};
+          \node[left=-0.1] at (3.6, 0.8) {Hands-off};
+          \node[rotate=90,align=center,
+          execute at begin node=\setlength{\baselineskip}{8pt}]
+          at (1.5, 1.2) {\scalebox{0.9}{MCMR}\\\scalebox{0.9}{methods}};
+
+          \draw[line width=1.7] (3.7, 2.7) -- (8.5, 2.7);
+          \draw[line width=1.7] (1, 2) -- (8.5, 2);
+          \draw[line width=1.3] (1.9, 1.2) -- (8.5, 1.2);
+
+          \draw[line width=1.7] (1.9, 2) -- (1.9, 0.4);
+          \draw[line width=1.7] (3.7, 3.3) -- (3.7, 0.4);
+          \draw[line width=1.3] (6.1, 2.7) -- (6.1, 0.4);
+          \draw[line width=1.7] (8.5, 3.3) -- (8.5, 0.4) -- (1, 0.4);
+
+          \node at (4.9, 1.6) {\scalebox{2}{\textcolor{pyplotc2}{\ding{52}}}};
+          \node at (4.9, 0.8) {\scalebox{2}{\textcolor{pyplotc2}{\ding{52}}}};
+          \node at (7.3, 1.6) {\scalebox{2}{\textcolor{pyplotc2}{\ding{52}}}};
+          \node at (7.3, 0.8) {\scalebox{2}{\textcolor{pyplotc3}{\ding{56}}}};
+        \end{scope}
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+%% Realization
+% With the survey of the methods in minds, we demonstrated all
+% of the combinations that make sense on our system.
+% The metastable state we used here is this F=2 clock state
+% in the D3/2 manifold of Yb171 ions which has a coherence time of 10ms in our system
+% limited by laser lock and off-resonant scattering.
+% All of the demonstrations are done on a short chain of two ions,
+% with their separation set to be the same as in a longer chain.
+
+% For mid-circuit measurement, we picked the shelving method,
+% so that we can keep the same lasers and detector.
+% We tried with both dressing and qubit rotation and here's the qubit rotation sequence
+% customized for this particular case.
+% Since the only state that will scatter photon is the |1> state,
+% this shelves the data qubit away from it while keeping the population for
+% the auxiliary ion there to be detected.
+% We varied the state of auxiliary ion and measured a detection fidelity
+% that's identical to our normal one, around 99.7%.
+% And we measured the Ramsey fringe contrast to obtain a fidelity
+% for the data ion to be 92 % and 99 % respectively when using dressing or qubit rotation.
+% The data fidelity for qubit rotation is limited by the coherence time of the D state
+% and the error on top of that for dressing
+% comes from a more complex sequence and crosstalk from the dressing beam.
+% Both of these aspect can be improved with improvment in our beam path and laser locking.
+
+\begin{frame}{}
+  \begin{center}
+    \begin{tikzpicture}
+      \visible<2-> {
+        \node[below,align=center,left] at (10.2, 5.5)
+        {\usebeamercolor[fg]{frametitle}{\bf Mid-circuit measurement (shelving)}};
+      }
+      \visible<1-> {
+        \begin{scope}[shift={(0, 1)}]
+          \def\Sx{0.0}
+          \def\Sy{0.1}
+          \def\Shf{1.2}
+
+          \def\Px{0.0}
+          \def\Py{2.55}
+          \def\Phf{0.7}
+
+          \def\Dx{1.4}
+          \def\Dy{1.8}
+          \def\Dhf{0.4}
+
+          \def\Bx{1.4}
+          \def\By{3.2}
+          \def\Bhf{0.3}
+
+          \begin{scope}[shift={(\Sx, \Sy)}]
+            % S
+            \mytweezer.drawState(0, \Shf/2)
+            \node[left=-0.03] at (-0.2, \Shf/2) {\scalebox{0.7}{$F=1$}};
+            \mytweezer.drawState(0, -\Shf/2)
+            \node[left=-0.03] at (-0.2, -\Shf/2) {\scalebox{0.7}{$F=0$}};
+            \node[left=-0.03] at (-1, 0) {\scalebox{0.75}{$S_{1/2}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Px, \Py)}]
+            % P
+            \mytweezer.drawState(0, \Phf/2)
+            \node[left=-0.03] at (-0.2, \Phf/2) {\scalebox{0.7}{$F=1$}};
+            \mytweezer.drawState(0, -\Phf/2)
+            \node[left=-0.03] at (-0.2, -\Phf/2) {\scalebox{0.7}{$F=0$}};
+            \node[left=-0.03] at (-1, 0) {\scalebox{0.75}{$P_{1/2}$}};
+            \node[left=-0.03] at (-1, -0.27) {\scalebox{0.5}{$8.1\ \mathrm{ns}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Dx, \Dy)}]
+            % D
+            \mytweezer.drawState(0, \Dhf/2)
+            \node[right=-0.03] at (0.2, \Dhf/2) {\scalebox{0.7}{$F=2$}};
+            \draw[pyplotc2!70!lime,line width=1] (0.3, \Dhf/2) ellipse (0.7 and 0.2);
+            \mytweezer.drawState(0, -\Dhf/2)
+            \node[right=-0.03] at (0.2, -\Dhf/2) {\scalebox{0.7}{$F=1$}};
+            \node[right=-0.03] at (0.9, 0.0) {\scalebox{0.75}{$D_{3/2}$}};
+            \node[right=-0.03] at (0.94, -0.28) {\scalebox{0.5}{$52\ \mathrm{ms}$}};
+          \end{scope}
+
+          \begin{scope}[shift={(\Bx, \By)}]
+            % []
+            \mytweezer.drawState(0, \Bhf/2)
+            \node[right=-0.03] at (0.2, \Bhf/2) {\scalebox{0.7}{$F=0$}};
+            \mytweezer.drawState(0, -\Bhf/2)
+            \node[right=-0.03] at (0.2, -\Bhf/2) {\scalebox{0.7}{$F=1$}};
+            \node[right=-0.03] at (0.9, 0.0) {\scalebox{0.75}{$[3/2]_{1/2}$}};
+            \node[right=-0.03] at (1.0, -0.28) {\scalebox{0.5}{$38\ \mathrm{ns}$}};
+          \end{scope}
+
+          \draw[cyan!90!pyplotc0, ->, >=stealth, line width=0.8]
+          (\Sx+0.05, \Sy) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{$370\ \mathrm{nm}$}} (\Px+0.05, \Py);
+          \draw[pyplotc3, ->, >=stealth, line width=0.8]
+          (\Dx, \Dy) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{$935\ \mathrm{nm}$}} (\Bx, \By);
+          \draw[cyan!10!pyplotc0, <->, >=stealth, line width=0.8]
+          (\Sx+0.05, \Sy) --
+          node[sloped,below=-0.03] {\scalebox{0.6}{$435\ \mathrm{nm}$}} (\Dx, \Dy);
+          \draw[pyplotc4, <->, >=stealth, line width=0.8]
+          (\Sx-0.05, \Sy-\Shf/2) --
+          node[sloped,above=-0.03] {\scalebox{0.6}{Raman}} (\Sx-0.05, \Sy+\Shf/2);
+
+          \node[pyplotc0] at (1.9, 0.8) {\scalebox{0.7}{$t_2^{|D\rangle}\approx10\ \mathrm{ms}$}};
+          \node at (1, 4) {\scalebox{1}{$^{171}\mathrm{Yb}^+$ levels}};
+        \end{scope}
+      }
+      \visible<2-> {
+        \node at (6.95, 5.0) {\scalebox{0.9}{Aux Detection}};
+        \node at (6.7, 3.1) {\includegraphics[width=4.8cm]{imgs/detect_aux_rabi.pdf}};
+      }
+      \visible<3-> {
+        \node at (6.95, 0.9) {\scalebox{0.9}{Data Coherence}};
+        \node at (6.7, -1.0) {\includegraphics[width=4.8cm]{imgs/detect_data_ramsey_square.pdf}};
+        \node[text width=5cm,align=left] at (1.2, -1.5) {
+          \scalebox{0.85}{\makebox[2.4cm][r]{Dressing}: $91.7(4)\%$}\\
+          \scalebox{0.85}{\makebox[2.4cm][r]{Qubit rotation}: $98.5(5)\%$}\\
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+% We then demonstrated mid-circuit reset,
+% this time using the hands-off method with dressing.
+% Here the goal is simply to selectively drive one of the qubit states of the auxiliary
+% ions to the D state before pumping them back and repeats this cycle
+% until the ion is in the other qubit state.
+% Here I'm showing the reset error as well as the data error when the auxiliary ion
+% was initialized in either of the qubit states.
+% With about 16 cycles of pumping,
+% we can pump the ion with 99% fidelity while causing 3-4% of data error.
+% We believe this residue error is mainly caused by off resonant
+% coupling to the motional mode as well as Raman crosstalk,
+% especially since the ion wasn't fully cooled for this experiment.
+
+\begin{frame}{Mid-circuit reset (hands-off)}
+  \begin{center}
+    \vspace{-0.6cm}
+    \begin{tikzpicture}
+      \begin{scope}[scale=0.5]
+        \begin{scope}[shift={(-2.15, -1.5)}]
+          \fill[color=pyplotc4] (-3.5, 0) rectangle (7.9, -1.5)
+          node[white,pos=.5,align=center] {\scalebox{0.92}{Raman Dressing}};
+
+          \fill[color=pyplotc0] (-3.4, 0) rectangle (-1.3, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Drive}\\\scalebox{0.86}{to $D_{3/2}$}};
+          \fill[color=pyplotc3] (-1.2, 0) rectangle (0.9, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Pump}\\\scalebox{0.86}{to $S_{1/2}$}};
+
+          \node at (2.2, 0.75) {\Huge $\mathbf{\cdots}$};
+
+          \fill[color=pyplotc0] (3.5, 0) rectangle (5.6, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Drive}\\\scalebox{0.86}{to $D_{3/2}$}};
+          \fill[color=pyplotc3] (5.7, 0) rectangle (7.8, 1.5)
+          node[white,pos=.5,align=center,execute at begin node=\setlength{\baselineskip}{9pt}] {\scalebox{0.88}{Pump}\\\scalebox{0.86}{to $S_{1/2}$}};
+
+          \draw[-{Stealth[length=2.5mm,width=1.6mm]},line width=2]
+          (-3.6, 0) -- (8.5, 0);
+        \end{scope}
+        % Zeeman
+        \def\Zx{1.0}
+        \def\Zy{0.1}
+        % S
+        \def\Sx{0}
+        \def\Sy{0}
+        \def\Sh{1.2}
+        \def\Sdh{1.8}
+
+        % D
+        \def\Dx{2.2}
+        \def\Dy{5.7}
+
+        % Bracket
+        \def\Bx{-2.1}
+        \def\By{7.4}
+        \begin{scope}[shift={(0, 0.6)}]
+          % Bracket
+          \node[left] at (\Bx-\Zx-0.3, \By-\Zy) {\scalebox{0.9}{$[3/2]_{1/2}$}};
+          \node[above] at (\Bx, \By) {\scalebox{0.8}{$F=1$}};
+          \mytweezer.drawState2(\Bx-\Zx, \By-\Zy)
+          \mytweezer.drawState2(\Bx, \By)
+          \mytweezer.drawState2(\Bx+\Zx, \By+\Zy)
+
+          % D
+          \node[right] at (\Dx+\Zx*2 + 0.3, \Dy+\Zy*2+0.05)
+          {\scalebox{0.9}{$\mathrm{D}_{3/2}$}};
+          \node[right] at (\Dx+\Zx*2 + 0.35, \Dy-0.45) {\scalebox{0.8}{$F=2$}};
+          \mytweezer.drawState2(\Dx-\Zx*2, \Dy-\Zy*2)
+          \mytweezer.drawState2(\Dx-\Zx, \Dy-\Zy)
+          \mytweezer.drawState2(\Dx, \Dy)
+          \mytweezer.drawState2(\Dx+\Zx, \Dy+\Zy)
+          \mytweezer.drawState2(\Dx+\Zx*2, \Dy+\Zy*2)
+
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx - \Zx, \Dy - \Zy + 0.15) -- (\Bx - \Zx + 0.3, \By - \Zy - 0.4);
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx + \Zx, \Dy + \Zy + 0.15) -- (\Bx + \Zx + 0.3, \By + \Zy - 0.4);
+          \draw[pyplotc3, ->, >=stealth, line width=1.2]
+          (\Dx + \Zx * 2, \Dy + \Zy * 2 + 0.15) --
+          node[sloped,above=-0.02,pos=0.45] {\scalebox{0.8}{$935\ \mathrm{nm}$}}
+          (\Bx + \Zx * 2 + 0.3, \By + \Zy * 2 - 0.4);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx - \Zx + 0.0, \By - \Zy - 0.2) -- (\Sx - \Zx - 0.3, \Sy - \Zy + \Sdh + 0.5);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx + 0.0, \By - 0.2) -- (\Sx - 0.3, \Sy + \Sdh + 0.7);
+          \draw[cyan, ->, snakearrow, >=stealth, line width=1.2]
+          (\Bx + \Zx + 0.0, \By + \Zy - 0.2) -- (\Sx + \Zx - 0.3, \Sy + \Zy + \Sdh + 0.6);
+
+          % S
+          \node[left] at (\Sx-\Zx-0.3, \Sy+\Sh-\Zy) {\scalebox{0.9}{$\mathrm{S}_{1/2}$}};
+          \mytweezer.drawState2(\Sx, \Sy+\Sdh)
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx-\Zx, \Sy+\Sh-\Zy+0.05) -- (\Dx-\Zx, \Dy-\Zy-0.05);
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx+\Zx, \Sy+\Sh+\Zy+0.05) --
+          node[sloped,below=0,pos=0.48] {\scalebox{0.8}{$435\ \mathrm{nm}$}}
+          (\Dx+\Zx, \Dy+\Zy-0.05);
+          \mytweezer.drawState2(\Sx-\Zx, \Sy+\Sh-\Zy)
+          \mytweezer.drawState2(\Sx+\Zx, \Sy+\Sh+\Zy)
+          \draw[pyplotc0, ->, >=stealth, line width=1.2]
+          (\Sx, \Sy+\Sdh+0.05) -- (\Dx+\Zx*2, \Dy+\Zy*2-0.05);
+          \mytweezer.drawState2(\Sx, \Sy)
+          \draw[pyplotc4, <->, >=stealth, line width=1.2]
+          (\Sx, \Sy+0.05) -- node[sloped,above=0] {\scalebox{0.7}{Dress}}
+          (\Sx, \Sy+\Sdh-0.05);
+
+          \draw[rounded corners=0.3cm, line width=1.4, opacity=0.3]
+          (-5.85, -0.25) rectangle (6.3, 8.3);
+        \end{scope}
+      \end{scope}
+      \visible<2-> {
+        \node at (6.35, 5.35) {\scalebox{0.9}{Aux Reset Error}};
+        \node at (6.1, 3.4) {\includegraphics[width=4.7cm]{imgs/pump_aux_error_log.pdf}};
+        \node at (6.35, 1.05) {\scalebox{0.9}{Data Error}};
+        \node at (6.1, -1.0) {\includegraphics[width=4.7cm]{imgs/pump_data_x_error.pdf}};
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\title[MCMR with \textit{omg}]{}
+
+% With that
+{
+  \usebackgroundtemplate{
+    \begin{tikzpicture}[remember picture,overlay]
+      \begin{scope}[shift=(current page.center)]
+        \node[outer sep=0,inner sep=0] at (0, 0) {\includegraphics[width=\paperwidth]{imgs/LabPicture_bg.jpg}};
+        \node at (-1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DoE.pdf}};
+        \node at (0, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/DARPA.png}};
+        \node at (1.6, -3.5) {\includegraphics[height=0.9cm]{imgs/logos/NSF.pdf}};
+      \end{scope}
+    \end{tikzpicture}
+  }
+  \begin{frame}{}
+    \begin{center}
+      \begin{tikzpicture}
+        \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (-3.8,0.05) rectangle (3.8,0.15);
+
+        \node[align=center,below,font=\tiny] at (-3, 0)
+        {\includegraphics[height=2.1cm]{imgs/members/Chris.jpg}\\Christopher R Monroe};
+        \node[align=center,below,font=\tiny] at (0, 0)
+        {\includegraphics[height=2.1cm]{imgs/members/Alex.jpg}\\Alexander Kozhanov};
+        \node[align=center,below,font=\tiny] at (3, 0)
+        {\includegraphics[height=2.1cm]{imgs/members/Crystal.jpg}\\Crystal Noel};
+
+        \shadedraw[inner color=gray,outer color=blue!40!white,path fading = glow2 fading] (-5.8,0.05-3) rectangle (5.8,0.15-3);
+
+        \node[align=center,below,font=\tiny] at (-4.2, -3)
+        {\includegraphics[height=2.1cm]{imgs/members/Keqin.jpg}\\Keqin Yan};
+        \node[align=center,below,font=\tiny] at (-1.4, -3)
+        {\includegraphics[height=2.1cm]{imgs/members/Vivian.png}\\Vivian Zhang};
+        \node[align=center,below,font=\tiny] at (1.4, -3)
+        {\includegraphics[height=2.1cm]{imgs/members/Debo.jpg}\\Debopriyo Biswas};
+        \node[align=center,below,font=\tiny] at (4.2, -3)
+        {\includegraphics[height=2.1cm]{imgs/members/Bahaa.jpg}\\Bahaa Harraz};
+
+        \node[left,align=left,execute at begin node=\setlength{\baselineskip}{8pt}]
+        at (5, -6) {
+          \scalebox{0.8}{\textbf{Yb result}}\\
+          \scalebox{0.7}{\textbf{arXiv:2504.12544}}};
+        \node at (5.34, -6) {\includegraphics[width=0.7cm]{imgs/2504.12544.png}};
+
+        \node[left,align=left,execute at begin node=\setlength{\baselineskip}{8pt}]
+        at (5, -6.9) {
+          \scalebox{0.75}{Ba result}\\
+          \scalebox{0.7}{arXiv:2504.12538}};
+        \node at (5.34, -6.9) {\includegraphics[width=0.7cm]{imgs/2504.12538.png}};
+      \end{tikzpicture}
+    \end{center}
+  \end{frame}
+}
+
+\begin{frame}{}
+\end{frame}
+
+\end{document}
