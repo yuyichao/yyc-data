@@ -1,0 +1,122 @@
+\documentclass[aps,prx,10pt]{revtex4-2}
+\usepackage{ragged2e}
+\usepackage{xcolor}
+\usepackage{babel}
+% \usepackage{units}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage[pdftex]{graphicx}
+\usepackage[utf8x]{inputenc}
+\usepackage{wasysym}
+\usepackage{bbold}
+\usepackage{mathtools}
+\usepackage{blkarray, bigstrut}
+\usepackage{float}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{multirow}
+\usepackage{array}
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+\usepackage{longtable}
+
+\ifpdf
+  % Ensure reproducible output
+  \pdfinfoomitdate=1
+  \pdfsuppressptexinfo=-1
+  \pdftrailerid{}
+  \hypersetup{
+    pdfcreator={},
+    pdfproducer={}
+  }
+\fi
+
+\def\Hz{\mathrm{Hz}}
+\def\kHz{\mathrm{kHz}}
+\def\MHz{\mathrm{MHz}}
+\def\GHz{\mathrm{GHz}}
+
+\def\s{\mathrm{s}}
+\def\ms{\mathrm{ms}}
+\def\us{\mathrm{\mu s}}
+\def\ns{\mathrm{ns}}
+
+\begin{document}
+
+\title{Strontium references}
+
+\maketitle
+
+\section{Levels}
+\renewcommand*{\arraystretch}{1.4}
+\begin{longtable}{|r|c|c|c|c|r|c|c|}
+  \hline
+  State&$E$ (THz)&$\Gamma/2\pi$&$A_{HF}$ (MHz)&$B_{HF}$ (MHz)&Decay&$\lambda$ (nm)&$A_{ki}\ \mathrm{(s^{-1})}$\\
+  \hline
+  $5s^2\ {}^{\mathrm{1}}\!S_0$&$0$&$0$&$0$&$0$&&&\\
+  \hline
+  $5s5p\ {}^{\mathrm{3}}\!P_0$&$429.22845$&TODO&$0$&$0$&$5s^2\ {}^{\mathrm{1}}\!S_0$&TODO&TODO\\
+  \hline
+  $5s5p\ {}^{\mathrm{3}}\!P_1$&$434.82950$&$7.4586(99)\ \kHz$&TODO&TODO&$5s^2\ {}^{\mathrm{1}}\!S_0$&$689.4491(1)$&$46.864(62)\times10^3$\\
+  \hline
+  $5s5p\ {}^{\mathrm{3}}\!P_2$&$446.64768$&TODO&TODO&TODO&$5s^2\ {}^{\mathrm{1}}\!S_0$&TODO&TODO\\
+  \hline
+  \multirow{3}{*}{$5s4d\ {}^{\mathrm{3}}\!D_1$}&\multirow{3}{*}{$544.39480$}&\multirow{3}{*}{$73.82(17)\ \kHz$}&\multirow{3}{*}{TODO}&\multirow{3}{*}{TODO}&$5s5p\ {}^{\mathrm{3}}\!P_0$&$2603.127(2)$&$276.02(62)\times10^3$\\
+  \cline{6-8}
+       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_1$&$2736.198(3)$&$179.14(46)\times10^3$\\
+  \cline{6-8}
+       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_2$&$3067.019(5)$&$8.569(28)\times10^3$\\
+  \hline
+  \multirow{2}{*}{$5s4d\ {}^{\mathrm{3}}\!D_2$}&\multirow{2}{*}{$546.18573$}&\multirow{2}{*}{$67.1(17)\ \kHz$}&\multirow{2}{*}{TODO}&\multirow{2}{*}{TODO}&$5s5p\ {}^{\mathrm{3}}\!P_1$&$2692.189(3)$&$340(10)\times10^3$\\
+  \cline{6-8}
+       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_2$&$3011.831(5)$&$81.8(27)\times10^3$\\
+  \hline
+  $5s4d\ {}^{\mathrm{3}}\!D_3$&$549.19781$&$57.2(16)\ \kHz$&TODO&TODO&$5s5p\ {}^{\mathrm{3}}\!P_2$&$2923.365(5)$&$359(10)\times10^3$\\
+  \hline
+  $5s4d\ {}^{\mathrm{1}}\!D_2$&$604.07281$&$502(73)\ \Hz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s5p\ {}^{\mathrm{1}}\!P_1$&$650.50413$&$30.408(46)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s6s\ {}^{\mathrm{3}}\!S_1$&$870.56117$&$11.434(90)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s6s\ {}^{\mathrm{1}}\!S_0$&$917.11909$&$3.196(43)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!F_2$&$997.31573$&$5.94(22)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!F_3$&$1006.99459$&$5.823(81)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{1}}\!D_2$&$1014.10576$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!F_4$&$1016.87593$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s5d\ {}^{\mathrm{1}}\!D_2$&$1041.10375$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s5d\ {}^{\mathrm{3}}\!D_1$&$1049.48175$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s5d\ {}^{\mathrm{3}}\!D_2$&$1049.93360$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5s5d\ {}^{\mathrm{3}}\!D_3$&$1050.62432$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5p^2\ {}^{\mathrm{3}}\!P_0$&$1055.07369$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5p^2\ {}^{\mathrm{3}}\!P_1$&$1061.26944$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $5p^2\ {}^{\mathrm{3}}\!P_2$&$1069.49964$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!D_1$&$1087.17280$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!D_2$&$1090.69800$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!D_3$&$1096.02666$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!P_0$&$1117.98921$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!P_1$&$1118.30861$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+  $4d5p\ {}^{\mathrm{3}}\!P_2$&$1119.32359$&TODO&TODO&TODO&TODO&TODO&TODO\\
+  \hline
+\end{longtable}
+
+\bibliographystyle{apsrev4-2}
+\bibliography{strontium.bib}
+
+\end{document}
