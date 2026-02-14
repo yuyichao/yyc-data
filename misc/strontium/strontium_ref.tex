@@ -1,122 +1,179 @@
-\documentclass[aps,prx,10pt]{revtex4-2}
-\usepackage{ragged2e}
-\usepackage{xcolor}
-\usepackage{babel}
-% \usepackage{units}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{stmaryrd}
-\usepackage[pdftex]{graphicx}
-\usepackage[utf8x]{inputenc}
-\usepackage{wasysym}
-\usepackage{bbold}
-\usepackage{mathtools}
-\usepackage{blkarray, bigstrut}
-\usepackage{float}
-\usepackage[colorlinks=true]{hyperref}
-\usepackage{multirow}
+%% LyX 2.4.4 created this file.  For more info, see https://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{revtex4-2}
+\usepackage[utf8]{inputenc}
+\setcounter{secnumdepth}{3}
 \usepackage{array}
-\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 \usepackage{longtable}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose}
 
-\ifpdf
-  % Ensure reproducible output
-  \pdfinfoomitdate=1
-  \pdfsuppressptexinfo=-1
-  \pdftrailerid{}
-  \hypersetup{
-    pdfcreator={},
-    pdfproducer={}
-  }
-\fi
+\makeatletter
 
-\def\Hz{\mathrm{Hz}}
-\def\kHz{\mathrm{kHz}}
-\def\MHz{\mathrm{MHz}}
-\def\GHz{\mathrm{GHz}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
 
-\def\s{\mathrm{s}}
-\def\ms{\mathrm{ms}}
-\def\us{\mathrm{\mu s}}
-\def\ns{\mathrm{ns}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[english]{babel}
 
+\makeatother
+
+\usepackage{babel}
 \begin{document}
-
-\title{Strontium references}
-
+\title{Strontium Reference}
 \maketitle
 
 \section{Levels}
-\renewcommand*{\arraystretch}{1.4}
-\begin{longtable}{|r|c|c|c|c|r|c|c|}
-  \hline
-  State&$E$ (THz)&$\Gamma/2\pi$&$A_{HF}$ (MHz)&$B_{HF}$ (MHz)&Decay&$\lambda$ (nm)&$A_{ki}\ \mathrm{(s^{-1})}$\\
-  \hline
-  $5s^2\ {}^{\mathrm{1}}\!S_0$&$0$&$0$&$0$&$0$&&&\\
-  \hline
-  $5s5p\ {}^{\mathrm{3}}\!P_0$&$429.22845$&TODO&$0$&$0$&$5s^2\ {}^{\mathrm{1}}\!S_0$&TODO&TODO\\
-  \hline
-  $5s5p\ {}^{\mathrm{3}}\!P_1$&$434.82950$&$7.4586(99)\ \kHz$&TODO&TODO&$5s^2\ {}^{\mathrm{1}}\!S_0$&$689.4491(1)$&$46.864(62)\times10^3$\\
-  \hline
-  $5s5p\ {}^{\mathrm{3}}\!P_2$&$446.64768$&TODO&TODO&TODO&$5s^2\ {}^{\mathrm{1}}\!S_0$&TODO&TODO\\
-  \hline
-  \multirow{3}{*}{$5s4d\ {}^{\mathrm{3}}\!D_1$}&\multirow{3}{*}{$544.39480$}&\multirow{3}{*}{$73.82(17)\ \kHz$}&\multirow{3}{*}{TODO}&\multirow{3}{*}{TODO}&$5s5p\ {}^{\mathrm{3}}\!P_0$&$2603.127(2)$&$276.02(62)\times10^3$\\
-  \cline{6-8}
-       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_1$&$2736.198(3)$&$179.14(46)\times10^3$\\
-  \cline{6-8}
-       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_2$&$3067.019(5)$&$8.569(28)\times10^3$\\
-  \hline
-  \multirow{2}{*}{$5s4d\ {}^{\mathrm{3}}\!D_2$}&\multirow{2}{*}{$546.18573$}&\multirow{2}{*}{$67.1(17)\ \kHz$}&\multirow{2}{*}{TODO}&\multirow{2}{*}{TODO}&$5s5p\ {}^{\mathrm{3}}\!P_1$&$2692.189(3)$&$340(10)\times10^3$\\
-  \cline{6-8}
-       &&&&&$5s5p\ {}^{\mathrm{3}}\!P_2$&$3011.831(5)$&$81.8(27)\times10^3$\\
-  \hline
-  $5s4d\ {}^{\mathrm{3}}\!D_3$&$549.19781$&$57.2(16)\ \kHz$&TODO&TODO&$5s5p\ {}^{\mathrm{3}}\!P_2$&$2923.365(5)$&$359(10)\times10^3$\\
-  \hline
-  $5s4d\ {}^{\mathrm{1}}\!D_2$&$604.07281$&$502(73)\ \Hz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s5p\ {}^{\mathrm{1}}\!P_1$&$650.50413$&$30.408(46)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s6s\ {}^{\mathrm{3}}\!S_1$&$870.56117$&$11.434(90)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s6s\ {}^{\mathrm{1}}\!S_0$&$917.11909$&$3.196(43)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!F_2$&$997.31573$&$5.94(22)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!F_3$&$1006.99459$&$5.823(81)\ \MHz$&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{1}}\!D_2$&$1014.10576$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!F_4$&$1016.87593$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s5d\ {}^{\mathrm{1}}\!D_2$&$1041.10375$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s5d\ {}^{\mathrm{3}}\!D_1$&$1049.48175$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s5d\ {}^{\mathrm{3}}\!D_2$&$1049.93360$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5s5d\ {}^{\mathrm{3}}\!D_3$&$1050.62432$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5p^2\ {}^{\mathrm{3}}\!P_0$&$1055.07369$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5p^2\ {}^{\mathrm{3}}\!P_1$&$1061.26944$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $5p^2\ {}^{\mathrm{3}}\!P_2$&$1069.49964$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!D_1$&$1087.17280$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!D_2$&$1090.69800$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!D_3$&$1096.02666$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!P_0$&$1117.98921$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!P_1$&$1118.30861$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
-  $4d5p\ {}^{\mathrm{3}}\!P_2$&$1119.32359$&TODO&TODO&TODO&TODO&TODO&TODO\\
-  \hline
+
+\begin{longtable}[c]{|c|c|c|c|c|c|c|c|}
+\hline 
+\noalign{\vskip\doublerulesep}
+State  & $E$ (THz) & $\Gamma/2\pi$  & $A_{HF}$ (MHz)  & $B_{HF}$ (MHz)  & Decay & $\lambda$ (nm)  & $A_{ki}\textrm{(\ensuremath{s^{-1}})}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s^{2}\ {}^{1}S_{0}$  & $0$  & $0$  & $0$  & $0$  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5p\ {}^{3}P_{0}$  & $429.228062(30)$  & TODO  & $0$  & $0$  & $5s^{2}\ {}^{1}S_{0}$  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5p\ {}^{3}P_{1}$  & $434.828994(90)$  & $7.4586(99)\,\mathrm{kHz}$  & TODO  & TODO  & $5s^{2}\ {}^{1}S_{0}$  & $689.4491(1)$  & $46.864(62)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5p\ {}^{3}P_{2}$  & $446.64714(12)$  & TODO  & TODO  & TODO  & $5s^{2}\ {}^{1}S_{0}$  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{3}{*}{$5s4d\ {}^{3}D_{1}$} & \multirow{3}{*}{$544.394323(90)$} & \multirow{3}{*}{$73.82(17)\,\mathrm{kHz}$} & \multirow{3}{*}{TODO} & \multirow{3}{*}{TODO} & $5s5p\ {}^{3}P_{0}$  & $2603.127(2)$  & $276.02(62)\times10^{3}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{1}$  & $2736.198(3)$  & $179.14(46)\times10^{3}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{2}$  & $3067.019(5)$  & $8.569(28)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{2}{*}{$5s4d\ {}^{3}D_{2}$} & \multirow{2}{*}{$546.185404(90)$} & \multirow{2}{*}{$67.1(17)\mathrm{\,kHz}$} & \multirow{2}{*}{TODO} & \multirow{2}{*}{TODO} & $5s5p\ {}^{3}P_{1}$  & $2692.189(3)$  & $340(10)\times10^{3}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p^{3}P_{2}$  & $3011.831(5)$  & $81.8(27)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s4d\ {}^{3}D_{3}$  & $549.19763(12)$  & $57.2(16)\,\mathrm{kHz}$  & TODO  & TODO  & $5s5p\ {}^{3}P_{2}$  & $2923.365(5)$  & $359(10)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{3}{*}{$5s4d\ {}^{1}D_{2}$} & \multirow{3}{*}{$604.072359(90)$} & \multirow{3}{*}{$502(73)\mathrm{\,Hz}$} & \multirow{3}{*}{TODO} & \multirow{3}{*}{TODO} & $5s^{2}\ {}^{1}S_{0}$  & $496.28530$ & $44$\citep{bauschlicherRadiativeJ.Phys.B:At.Mol.Phys.1985}\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{1}$  & $1771.369(1)$ & $2.54(41)\times10^{3}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{2}$  & $1904.348(2)$ & $0.62(20)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{4}{*}{$5s5p\ {}^{1}P_{1}$} & \multirow{4}{*}{$650.50323(12)$} & \multirow{4}{*}{$30.408(46)\mathrm{\,MHz}$} & \multirow{4}{*}{TODO} & \multirow{4}{*}{TODO} & $5s^{2}\ {}^{1}S_{0}$  & $460.8624(1)$ & $191.04(29)\times10^{6}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s4d\ {}^{3}D_{1}$ & $2825.328(4)$ & $116(56)$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s4d\ {}^{3}D_{2}$ & $2873.837(4)$ & $233(77)$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s4d\ {}^{1}D_{2}$ & $6456.75(2)$ & $9.30(15)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{4}{*}{$5s6s\ {}^{3}S_{1}$} & \multirow{4}{*}{$870.56051(12)$} & \multirow{4}{*}{$11.434(90)\mathrm{\,MHz}$} & \multirow{4}{*}{TODO} & \multirow{4}{*}{TODO} & $5s5p\ {}^{3}P_{0}$  & $679.2894(2)$ & $8.345(68)\times10^{6}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{1}$  & $688.0211(2)$ & $24.47(20)\times10^{6}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{3}P_{2}$  & $707.2022(3)$ & $39.03(31)\times10^{6}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{1}P_{1}$ & $1362.338(1)$ & $9.4(16)\times10^{3}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+\multirow{2}{*}{$5s6s\ {}^{1}S_{0}$} & \multirow{2}{*}{$917.11984(48)$} & \multirow{2}{*}{$3.196(43)\mathrm{\,MHz}$} & \multirow{2}{*}{TODO} & \multirow{2}{*}{TODO} & $5s5p\ {}^{3}P_{1}$  & $621.6010(6)$ & $16(11)\times10^{3}$\tabularnewline[\doublerulesep]
+\cline{6-8}
+\noalign{\vskip\doublerulesep}
+ &  &  &  &  & $5s5p\ {}^{1}P_{1}$ & $1124.433(2)$ & $20.07(27)\times10^{6}$\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}F_{2}$  & $997.315103(90)$  & $5.94(22)\mathrm{\,MHz}$  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}F_{3}$  & $1006.99414(21)$  & $5.823(81)\mathrm{\,MHz}$  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{1}D_{2}$  & $1014.104919(90)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s6p\ {}^{3}P_{0}$  & $1014.90209(18)$ &  & $0$  & $0$  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s6p\ {}^{3}P_{1}$  & $1015.34660(18)$ &  &  &  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}F_{4}$  & $1016.87548(18)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s6p\ {}^{3}P_{2}$  & $1018.48686(12)$  &  &  &  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s6p\ {}^{1}P_{1}$  & $1022.24443(18)$  &  &  &  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5d\ {}^{1}D_{2}$  & $1041.10267(15)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5d\ {}^{3}D_{1}$  & $1049.48079(21)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5d\ {}^{3}D_{2}$  & $1049.93282(36)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5s5d\ {}^{3}D_{3}$  & $1050.62324(24)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5p^{2}\ {}^{3}P_{0}$  & $1055.07285(57)$  & TODO  & $0$  & $0$  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5p^{2}\ {}^{3}P_{1}$  & $1061.26845(15)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5p^{2}\ {}^{3}P_{2}$  & $1069.49871(24)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}D_{1}$  & $1087.17190(24)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}D_{2}$  & $1090.69731(24)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}D_{3}$  & $1096.02600(18)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d^{2}\ {}^{1}D_{2}$  & $1108.05817(15)$ &  &  &  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$5p^{2}\ {}^{1}S_{0}$  & $1114.03579(15)$ &  & $0$  & $0$  &  &  & \tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}P_{0}$  & $1117.98825(21)$  & TODO  & $0$  & $0$  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}P_{1}$  & $1118.30774(18)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
+\noalign{\vskip\doublerulesep}
+$4d5p\ {}^{3}P_{2}$  & $1119.32284(12)$  & TODO  & TODO  & TODO  & TODO  & TODO  & TODO\tabularnewline[\doublerulesep]
+\hline 
 \end{longtable}
 
-\bibliographystyle{apsrev4-2}
-\bibliography{strontium.bib}
+\bibliographystyle{apsrev4-1}
+\bibliography{strontium}
 
 \end{document}
