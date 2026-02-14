@@ -88,6 +88,8 @@
 \shortcut idx
 \color #008000
 \end_index
+\leftmargin -0.5cm
+\rightmargin -0.5cm
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -344,9 +346,10 @@ Decay
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $1.13(32)\,\mathrm{mHz}$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -391,9 +394,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $698.44570961275335(60)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -402,9 +406,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $7.1(20)\times10^{-3}$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "sansonettiWavelengthsJ.Phys.Chem.Ref.Data2010"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -451,9 +464,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-260.083(5)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "tangDetermination2025"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -462,9 +484,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-35.355(6)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -535,9 +558,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $<1.6\,\mathrm{mHz}$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "akatsukaThreestagePhys.Rev.A2021"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -546,9 +578,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-212.765(1)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "tangDetermination2025"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -557,9 +598,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $67.215(15)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -580,9 +622,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $671.2065(2)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -591,9 +634,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $<0.01$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -1081,9 +1125,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-115.3(2)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "akatsukaThreestagePhys.Rev.A2021"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1092,9 +1145,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $51(9)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -1177,9 +1231,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-5.5734$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "tangDetermination2025"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1188,9 +1251,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $55.421(6)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -1447,9 +1511,18 @@ literal "true"
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-3.4(4)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "boydHigh2007"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1458,9 +1531,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $39(4)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -1792,9 +1866,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-542.0(1)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "courtillotAccurateEur.Phys.J.D2005"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1803,9 +1886,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-0.1(5)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -3006,9 +3090,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-29.4(3)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "grundevikRadiofrequencyZPhysikA1983"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3017,9 +3110,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-13.6(20)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -4650,9 +4744,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $152.8(3)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "grundevikRadiofrequencyZPhysikA1983"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -4661,9 +4764,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $12.3(13)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -7524,9 +7628,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-156.9(3)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "akatsukaThreestagePhys.Rev.A2021"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -7535,9 +7648,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $0(30)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
