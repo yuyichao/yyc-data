@@ -686,9 +686,18 @@ literal "false"
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $139.9(2)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "bushawHyperfineZPhysD-AtomsMoleculesandClusters1993"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -697,9 +706,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $15(2)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -948,9 +958,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-78.08(5)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "bushawHyperfineZPhysD-AtomsMoleculesandClusters1993"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -959,9 +978,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $18(1)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -1133,7 +1153,7 @@ TODO
 
 \begin_inset CommandInset citation
 LatexCommand citep
-key "akatsukaThreestagePhys.Rev.A2021"
+key "bushawHyperfineZPhysD-AtomsMoleculesandClusters1993"
 literal "false"
 
 \end_inset
@@ -6027,9 +6047,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $227.3(7)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "stellmerReservoirPhys.Rev.A2014"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -6038,9 +6067,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $0(10)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -6870,9 +6900,18 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $-71.5(5)$
+\end_inset
 
-\color red
-TODO
+
+\begin_inset CommandInset citation
+LatexCommand citep
+key "stellmerReservoirPhys.Rev.A2014"
+literal "false"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -6881,9 +6920,10 @@ TODO
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $0(30)$
+\end_inset
 
-\color red
-TODO
+
 \end_layout
 
 \end_inset
@@ -7636,7 +7676,7 @@ TODO
 
 \begin_inset CommandInset citation
 LatexCommand citep
-key "akatsukaThreestagePhys.Rev.A2021"
+key "stellmerReservoirPhys.Rev.A2014"
 literal "false"
 
 \end_inset
