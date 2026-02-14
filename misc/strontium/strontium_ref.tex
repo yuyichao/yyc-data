@@ -11,7 +11,7 @@
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage[letterpaper]{geometry}
-\geometry{verbose}
+\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm}
 
 \makeatletter
 
@@ -50,11 +50,11 @@ State  & $E$ (THz) & $\Gamma/2\pi$  & $A_{HF}$ (MHz)  & $B_{HF}$ (MHz)  & Decay 
 \hline 
 $5s^{2}\ {}^{1}S_{0}$ & $0$ & $0$  & $0$  & $0$  &  &  & \tabularnewline
 \hline 
-$5s5p\ {}^{3}P_{0}$ & $429.228062(30)$ & \textcolor{red}{TODO} & $0$  & $0$  & $5s^{2}\ {}^{1}S_{0}$ & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+$5s5p\ {}^{3}P_{0}$ & $429.228062(30)$ & $1.13(32)\,\mathrm{mHz}$ & $0$  & $0$  & $5s^{2}\ {}^{1}S_{0}$ & $698.44570961275335(60)$ & $7.1(20)\times10^{-3}$\citep{sansonettiWavelengthsJ.Phys.Chem.Ref.Data2010}\tabularnewline
 \hline 
-$5s5p\ {}^{3}P_{1}$  & $434.828994(90)$ & $7.463(12)\,\mathrm{kHz}$  & \textcolor{red}{TODO} & \textcolor{red}{TODO} & $5s^{2}\ {}^{1}S_{0}$ & $689.4491(1)$  & $46.864(62)\times10^{3}$\tabularnewline
+$5s5p\ {}^{3}P_{1}$  & $434.828994(90)$ & $7.463(12)\,\mathrm{kHz}$  & $-260.083(5)$\citep{tangDetermination2025} & $-35.355(6)$ & $5s^{2}\ {}^{1}S_{0}$ & $689.4491(1)$  & $46.864(62)\times10^{3}$\tabularnewline
 \hline 
-$5s5p\ {}^{3}P_{2}$ & $446.64714(12)$ & \textcolor{red}{TODO} & \textcolor{red}{TODO} & \textcolor{red}{TODO} & $5s^{2}\ {}^{1}S_{0}$ & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+$5s5p\ {}^{3}P_{2}$ & $446.64714(12)$ & $<1.6\,\mathrm{mHz}$\citep{akatsukaThreestagePhys.Rev.A2021} & $-212.765(1)$\citep{tangDetermination2025} & $67.215(15)$ & $5s^{2}\ {}^{1}S_{0}$ & $671.2065(2)$ & $<0.01$\tabularnewline
 \hline 
 \multirow{3}{*}{$5s4d\ {}^{3}D_{1}$} & \multirow{3}{*}{$544.394323(90)$} & \multirow{3}{*}{$73.82(17)\,\mathrm{kHz}$} & \multirow{3}{*}{\textcolor{red}{TODO}} & \multirow{3}{*}{\textcolor{red}{TODO}} & $5s5p\ {}^{3}P_{0}$ & $2603.127(2)$  & $276.02(62)\times10^{3}$\tabularnewline
 \cline{6-8}
@@ -66,15 +66,15 @@ $5s5p\ {}^{3}P_{2}$ & $446.64714(12)$ & \textcolor{red}{TODO} & \textcolor{red}{
 \cline{6-8}
  &  &  &  &  & $5s5p^{3}P_{2}$ & $3011.831(5)$  & $81.8(27)\times10^{3}$\tabularnewline
 \hline 
-$5s4d\ {}^{3}D_{3}$ & $549.19763(12)$ & $57.2(16)\,\mathrm{kHz}$  & \textcolor{red}{TODO} & \textcolor{red}{TODO} & $5s5p\ {}^{3}P_{2}$ & $2923.365(5)$  & $359(10)\times10^{3}$\tabularnewline
+$5s4d\ {}^{3}D_{3}$ & $549.19763(12)$ & $57.2(16)\,\mathrm{kHz}$  & $-115.3(2)$\citep{akatsukaThreestagePhys.Rev.A2021} & $51(9)$ & $5s5p\ {}^{3}P_{2}$ & $2923.365(5)$  & $359(10)\times10^{3}$\tabularnewline
 \hline 
-\multirow{3}{*}{$5s4d\ {}^{1}D_{2}$} & \multirow{3}{*}{$604.072359(90)$} & \multirow{3}{*}{$502(73)\mathrm{\,Hz}$} & \multirow{3}{*}{\textcolor{red}{TODO}} & \multirow{3}{*}{\textcolor{red}{TODO}} & $5s^{2}\ {}^{1}S_{0}$ & $496.28530$ & $44$\citep{bauschlicherRadiativeJ.Phys.B:At.Mol.Phys.1985}\tabularnewline
+\multirow{3}{*}{$5s4d\ {}^{1}D_{2}$} & \multirow{3}{*}{$604.072359(90)$} & \multirow{3}{*}{$502(73)\mathrm{\,Hz}$} & \multirow{3}{*}{$-5.5734$\citep{tangDetermination2025}} & \multirow{3}{*}{$55.421(6)$} & $5s^{2}\ {}^{1}S_{0}$ & $496.28530$ & $44$\citep{bauschlicherRadiativeJ.Phys.B:At.Mol.Phys.1985}\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s5p\ {}^{3}P_{1}$ & $1771.369(1)$ & $2.54(41)\times10^{3}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s5p\ {}^{3}P_{2}$  & $1904.348(2)$ & $0.62(20)\times10^{3}$\tabularnewline
 \hline 
-\multirow{4}{*}{$5s5p\ {}^{1}P_{1}$} & \multirow{4}{*}{$650.50323(12)$} & \multirow{4}{*}{$30.408(46)\mathrm{\,MHz}$} & \multirow{4}{*}{\textcolor{red}{TODO}} & \multirow{4}{*}{\textcolor{red}{TODO}} & $5s^{2}\ {}^{1}S_{0}$ & $460.8624(1)$ & $191.04(29)\times10^{6}$\tabularnewline
+\multirow{4}{*}{$5s5p\ {}^{1}P_{1}$} & \multirow{4}{*}{$650.50323(12)$} & \multirow{4}{*}{$30.408(46)\mathrm{\,MHz}$} & \multirow{4}{*}{$-3.4(4)$\citep{boydHigh2007}} & \multirow{4}{*}{$39(4)$} & $5s^{2}\ {}^{1}S_{0}$ & $460.8624(1)$ & $191.04(29)\times10^{6}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s4d\ {}^{3}D_{1}$ & $2825.328(4)$ & $116(56)$\tabularnewline
 \cline{6-8}
@@ -82,7 +82,7 @@ $5s4d\ {}^{3}D_{3}$ & $549.19763(12)$ & $57.2(16)\,\mathrm{kHz}$  & \textcolor{r
 \cline{6-8}
  &  &  &  &  & $5s4d\ {}^{1}D_{2}$ & $6456.75(2)$ & $9.30(15)\times10^{3}$\tabularnewline
 \hline 
-\multirow{4}{*}{$5s6s\ {}^{3}S_{1}$} & \multirow{4}{*}{$870.56051(12)$} & \multirow{4}{*}{$11.434(90)\mathrm{\,MHz}$} & \multirow{4}{*}{\textcolor{red}{TODO}} & \multirow{4}{*}{\textcolor{red}{TODO}} & $5s5p\ {}^{3}P_{0}$ & $679.2894(2)$ & $8.345(68)\times10^{6}$\tabularnewline
+\multirow{4}{*}{$5s6s\ {}^{3}S_{1}$} & \multirow{4}{*}{$870.56051(12)$} & \multirow{4}{*}{$11.434(90)\mathrm{\,MHz}$} & \multirow{4}{*}{$-542.0(1)$\citep{courtillotAccurateEur.Phys.J.D2005}} & \multirow{4}{*}{$-0.1(5)$} & $5s5p\ {}^{3}P_{0}$ & $679.2894(2)$ & $8.345(68)\times10^{6}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s5p\ {}^{3}P_{1}$ & $688.0211(2)$ & $24.47(20)\times10^{6}$\tabularnewline
 \cline{6-8}
@@ -110,7 +110,7 @@ $5s4d\ {}^{3}D_{3}$ & $549.19763(12)$ & $57.2(16)\,\mathrm{kHz}$  & \textcolor{r
 \cline{6-8}
  &  &  &  &  & $5s4d\ {}^{1}D_{2}$ & $744.0463(4)$ & $36.3(57)\times10^{3}$\tabularnewline
 \hline 
-\multirow{5}{*}{$4d5p\ {}^{1}D_{2}$} & \multirow{5}{*}{$1014.104919(90)$} & \multirow{5}{*}{$7.47(22)\,\mathrm{MHz}$} & \multirow{5}{*}{\textcolor{red}{TODO}} & \multirow{5}{*}{\textcolor{red}{TODO}} & $5s4d\ {}^{3}D_{1}$ & $638.2493(2)$ & $6.7(12)\times10^{6}$\tabularnewline
+\multirow{5}{*}{$4d5p\ {}^{1}D_{2}$} & \multirow{5}{*}{$1014.104919(90)$} & \multirow{5}{*}{$7.47(22)\,\mathrm{MHz}$} & \multirow{5}{*}{$-29.4(3)$\citep{grundevikRadiofrequencyZPhysikA1983}} & \multirow{5}{*}{$-13.6(20)$} & $5s4d\ {}^{3}D_{1}$ & $638.2493(2)$ & $6.7(12)\times10^{6}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s4d\ {}^{3}D_{2}$ & $640.6924(2)$ & $<0.27\times10^{6}$\tabularnewline
 \cline{6-8}
@@ -148,7 +148,7 @@ $4d5p\ {}^{3}F_{4}$  & $1016.87548(18)$ & $6.034(94)\,\mathrm{MHz}$ & \textcolor
 \cline{6-8}
  &  &  &  &  & $5s6s\ {}^{3}S_{1}$ & $2026.633(2)$ & $7.07(19)\times10^{6}$\tabularnewline
 \hline 
-\multirow{6}{*}{$5s6p\ {}^{1}P_{1}$} & \multirow{6}{*}{$1022.24443(18)$} & \multirow{6}{*}{$2.38(12)\,\mathrm{MHz}$} & \multirow{6}{*}{\textcolor{red}{TODO}} & \multirow{6}{*}{\textcolor{red}{TODO}} & $5s^{2}\ {}^{1}S_{0}$ & $293.2689(1)$ & $1.88(29)\times10^{6}$\tabularnewline
+\multirow{6}{*}{$5s6p\ {}^{1}P_{1}$} & \multirow{6}{*}{$1022.24443(18)$} & \multirow{6}{*}{$2.38(12)\,\mathrm{MHz}$} & \multirow{6}{*}{$152.8(3)$\citep{grundevikRadiofrequencyZPhysikA1983}} & \multirow{6}{*}{$12.3(13)$} & $5s^{2}\ {}^{1}S_{0}$ & $293.2689(1)$ & $1.88(29)\times10^{6}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $5s4d\ {}^{3}D_{1}$ & $627.3776(3)$ & $0.31(10)\times10^{6}$\tabularnewline
 \cline{6-8}
@@ -216,7 +216,7 @@ $4d5p\ {}^{3}F_{4}$  & $1016.87548(18)$ & $6.034(94)\,\mathrm{MHz}$ & \textcolor
 \cline{6-8}
  &  &  &  &  & $5s6p\ {}^{1}P_{1}$ & $10827.4(2)$ & $7.6(17)\times10^{3}$\tabularnewline
 \hline 
-\multirow{6}{*}{$5s5d\ {}^{3}D_{3}$} & \multirow{6}{*}{$1050.62324(24)$} & \multirow{6}{*}{$9.67(32)\,\mathrm{MHz}$} & \multirow{6}{*}{\textcolor{red}{TODO}} & \multirow{6}{*}{\textcolor{red}{TODO}} & $5s5p\ {}^{3}P_{2}$ & $496.3648(2)$ & $60.6(20)\times10^{6}$\tabularnewline
+\multirow{6}{*}{$5s5d\ {}^{3}D_{3}$} & \multirow{6}{*}{$1050.62324(24)$} & \multirow{6}{*}{$9.67(32)\,\mathrm{MHz}$} & \multirow{6}{*}{$-156.9(3)$\citep{akatsukaThreestagePhys.Rev.A2021}} & \multirow{6}{*}{$0(30)$} & $5s5p\ {}^{3}P_{2}$ & $496.3648(2)$ & $60.6(20)\times10^{6}$\tabularnewline
 \cline{6-8}
  &  &  &  &  & $4d5p\ {}^{3}F_{2}$ & $5623.77(3)$ & $0.49(13)\times10^{3}$\tabularnewline
 \cline{6-8}
@@ -358,13 +358,75 @@ $4d5p\ {}^{3}F_{4}$  & $1016.87548(18)$ & $6.034(94)\,\mathrm{MHz}$ & \textcolor
 \cline{6-8}
  &  &  &  &  & $4d5p\ {}^{3}D_{3}$ & $24915.9(5)$ & $3.54(29)$\tabularnewline
 \hline 
-$5p^{2}\ {}^{1}S_{0}$  & $1114.03579(15)$ & $2.89(11)\,\mathrm{MHz}$ & $0$  & $0$  &  & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+\multirow{5}{*}{$5p^{2}\ {}^{1}S_{0}$} & \multirow{5}{*}{$1114.03579(15)$} & \multirow{5}{*}{$2.89(11)\,\mathrm{MHz}$} & \multirow{5}{*}{$0$} & \multirow{5}{*}{$0$} & $5s5p\ {}^{3}P_{1}$ & $441.3861(1)$ & $2.15(31)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5p\ {}^{1}P_{1}$ & $646.7560(3)$ & $13.75(64)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6p\ {}^{3}P_{1}$ & $3037.744(7)$ & $243(68)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6p\ {}^{1}P_{1}$ & $3266.021(8)$ & $2.004(77)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $4d5p\ {}^{3}D_{1}$ & $11159.7(1)$ & $531(46)$\tabularnewline
 \hline 
-$4d5p\ {}^{3}P_{0}$  & $1117.98825(21)$ & $13.78(27)\,\mathrm{MHz}$ & $0$  & $0$  &  & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+\multirow{4}{*}{$4d5p\ {}^{3}P_{0}$} & \multirow{4}{*}{$1117.98825(21)$} & \multirow{4}{*}{$13.78(27)\,\mathrm{MHz}$} & \multirow{4}{*}{$0$} & \multirow{4}{*}{$0$} & $5s4d\ {}^{3}D_{1}$ & $522.6563(2)$ & $86.0(17)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6s\ {}^{3}S_{1}$ & $1211.636(1)$ & $0.40(13)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{1}$ & $4376.05(2)$ & $0.210(10)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{1}$ & $5285.50(2)$ & $1.7(15)\times10^{3}$\tabularnewline
 \hline 
-$4d5p\ {}^{3}P_{1}$  & $1118.30774(18)$ & $13.73(19)\,\mathrm{MHz}$ & \textcolor{red}{TODO} & \textcolor{red}{TODO} &  & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+\multirow{14}{*}{$4d5p\ {}^{3}P_{1}$} & \multirow{14}{*}{$1118.30774(18)$} & \multirow{14}{*}{$13.73(19)\,\mathrm{MHz}$} & \multirow{14}{*}{\textcolor{red}{TODO}} & \multirow{14}{*}{\textcolor{red}{TODO}} & $5s^{2}\ {}^{1}S_{0}$ & $268.07689(4)$ & $121(63)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{3}D_{1}$ & $522.3653(2)$ & $25.5(10)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{3}D_{2}$ & $524.0006(2)$ & $60.02(63)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{1}D_{2}$ & $582.9868(2)$ & $12.5(67)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6s\ {}^{3}S_{1}$ & $1210.074(1)$ & $0.40(13)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6s\ {}^{1}S_{0}$ & $1490.112(4)$ & $16.2(41)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{1}D_{2}$ & $3883.07(1)$ & $4.16(28)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{1}$ & $4355.74(2)$ & $54.4(23)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{2}$ & $4384.54(3)$ & $152.6(76)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{0}$ & $4740.93(4)$ & $1.53(74)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{1}$ & $5255.89(2)$ & $0.69(40)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{2}$ & $6142.15(4)$ & $0.72(56)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $4d^{2}\ {}^{1}D_{2}$ & $29249.3(7)$ & $1.99(45)$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{1}S_{0}$ & $70177(4)$ & $0.310(36)$\tabularnewline
 \hline 
-$4d5p\ {}^{3}P_{2}$  & $1119.32284(12)$ & $13.61(17)\,\mathrm{MHz}$ & \textcolor{red}{TODO} & \textcolor{red}{TODO} &  & \textcolor{red}{TODO} & \textcolor{red}{TODO}\tabularnewline
+\multirow{12}{*}{$4d5p\ {}^{3}P_{2}$} & \multirow{12}{*}{$1119.32284(12)$} & \multirow{12}{*}{$13.61(17)\,\mathrm{MHz}$} & \multirow{12}{*}{\textcolor{red}{TODO}} & \multirow{12}{*}{\textcolor{red}{TODO}} & $5s4d\ {}^{3}D_{1}$ & $521.4430(1)$ & $1.41(14)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{3}D_{2}$ & $523.0725(1)$ & $17.01(95)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{3}D_{3}$ & $525.8362(2)$ & $66.10(46)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s4d\ {}^{1}D_{2}$ & $581.8383(2)$ & $363(30)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s6s\ {}^{3}S_{1}$ & $1205.1361(8)$ & $0.40(12)\times10^{6}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{1}D_{2}$ & $3832.675(9)$ & $<5.0$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{1}$ & $4292.43(1)$ & $2.30(13)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{2}$ & $4320.40(2)$ & $34.2(12)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5s5d\ {}^{3}D_{3}$ & $4363.82(2)$ & $173.7(79)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{1}$ & $5163.99(2)$ & $1.39(42)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $5p^{2}\ {}^{3}P_{2}$ & $6017.01(3)$ & $1.69(90)\times10^{3}$\tabularnewline
+\cline{6-8}
+ &  &  &  &  & $4d^{2}\ {}^{1}D_{2}$ & $26613.5(5)$ & $1.42(69)$\tabularnewline
 \hline 
 \end{longtable}
 
