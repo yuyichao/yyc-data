@@ -254,8 +254,8 @@ mutable struct SeqModel{M,S}
             return
         end
         @variable(m, 0 .<= amp[i=1:N] .<= 1000)
-        @variable(m, det[i=1:N])
-        @variable(m, 0.1 .<= t[i=1:N] .<= 2)
+        @variable(m, -9000 .<= det[i=1:N] .<= 12000)
+        @variable(m, 0.1 .<= t[i=1:N] .<= 10)
         register(m, :fidelity, 3N, res_func, grad_func, autodiff=false)
         return new{typeof(m),typeof(ps)}(m, ps, amp, det, t, nothing, nothing)
     end
