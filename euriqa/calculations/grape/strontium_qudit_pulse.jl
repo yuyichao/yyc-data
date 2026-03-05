@@ -226,7 +226,8 @@ function update_params!(ps::QuditSeq{N}, params) where N
     ps.res = NaN
     TS.set_params!(ps.s, ps.params)
     op = TS.compute(ps.s, ps.op_buff)
-    ps.res = convert_res_grads(op, ps.op_buff, ps.grads)
+    res = convert_res_grads(op, ps.op_buff, ps.grads)
+    ps.res = res
     return
 end
 
@@ -252,9 +253,9 @@ mutable struct SeqModel{M,S}
             g .= ps.grads
             return
         end
-        @variable(m, amp[i=1:N])
+        @variable(m, 0 .<= amp[i=1:N] .<= 1000)
         @variable(m, det[i=1:N])
-        @variable(m, t[i=1:N])
+        @variable(m, 0.1 .<= t[i=1:N] .<= 2)
         register(m, :fidelity, 3N, res_func, grad_func, autodiff=false)
         return new{typeof(m),typeof(ps)}(m, ps, amp, det, t, nothing, nothing)
     end
