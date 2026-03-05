@@ -181,3 +181,50 @@ function update_params!(ps::QuditSeq{N}, params) where N
     ps.res = convert_res_grads(op, ps.op_buff, ps.grads)
     return
 end
+
+mutable struct SeqModel{M,S}
+    const m::M
+    const sys::S
+    const fid_args::Vector{Any}
+    const args::Vector{VariableRef}
+    extra_cost::Any
+    res::Any
+    obj::Any
+    function SeqModel(ps::QuditSeq{N}; m=nothing) where N
+        if m === nothing
+            m = Model(NLopt.Optimizer)
+            set_attribute(m, "algorithm", :LD_SLSQP)
+        end
+        function res_func(params...)
+            update_params!(ps, params)
+            return ps.res
+        end
+        function grad_func(g, params...)
+            update_params!(ps, params)
+            g .= ps.grads
+            return
+        end
+        register(m, :fidelity, 2N, res_func, grad_func, autodiff=false)
+        return new{typeof(m),typeof(ps)}(m, ps, [], [], 1, nothing, nothing)
+    end
+end
+
+function finalize!(model::SeqModel)
+    m = model.m
+    res = @NLexpression(m, fidelity(model.fid_args...))
+    obj = @NLexpression(m, 1e-10 + res)
+    obj = @NLexpression(m, obj * model.extra_cost)
+    @NLobjective(m, Min, obj)
+    model.res = res
+    model.obj = obj
+    return
+end
+
+function optimize_pulse!(model::SeqModel, init_params)
+    for (var, val) in zip(model.args, init_params)
+        set_start_value(var, val)
+    end
+    JuMP.optimize!(model.m)
+    return (value(model.obj), value(model.res),
+            value.(model.args), Float64.(value.(model.fid_args)))
+end
