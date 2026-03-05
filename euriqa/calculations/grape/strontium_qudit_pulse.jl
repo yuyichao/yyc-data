@@ -9,6 +9,7 @@ using AMO
 using AMO: Atomic
 
 using LinearAlgebra
+using StaticArrays
 
 const OPType = Matrix{ComplexF64}
 
@@ -140,4 +141,43 @@ end
 @inline function convert_res_grads(op, op_grads, grads)
     grads .= convert_grad.(Ref(op), op_grads)
     return convert_res(op)
+end
+
+mutable struct QuditSeq{N,S,P,OB}
+    const s::S # Sequence
+    const params::P # Input parameters
+    res::Float64 # Output result
+    const grads::P # Output gradients
+
+    const op_buff::OB
+
+    function QuditSeq{N}(pol, B) where N
+        ops = ntuple(_->Drive(pol, B), Val(N + 1))
+        s = Sequence{OPType}(ops)
+        params = MVector{2N,Float64}(undef)
+        grads = MVector{2N,Float64}(undef)
+        op_buff = Vector{OPType}(undef, 2N)
+        return new{N,typeof(s),typeof(params),typeof(op_buff)}(
+            s, params, NaN, grads, op_buff)
+    end
+end
+
+function update_params!(ps::QuditSeq{N}, params) where N
+    @assert length(params) == 2N
+    params_ary = ps.params
+    has_diff = false
+    @inbounds @simd ivdep for i in 1:2N
+        p0 = params_ary[i]
+        p1 = params[i]
+        has_diff |= p0 != p1
+        params_ary[i] = p1
+    end
+    if !isnan(ps.res) && !has_diff
+        return
+    end
+    ps.res = NaN
+    set_params(ps.s, ps.params)
+    op = compute(ps.s, ps.op_buff)
+    ps.res = convert_res_grads(op, ps.op_buff, ps.grads)
+    return
 end
