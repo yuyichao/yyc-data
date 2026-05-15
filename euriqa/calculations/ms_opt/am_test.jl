@@ -39,11 +39,13 @@ end
 
 # Objective function for optimization
 function _objfunc(vals)
-    dis = vals[1]
-    disδ = vals[2]
-    area = vals[3]
-    areaδ = vals[4]
-    τ = vals[5]
+    NModes = length(vals) ÷ 3
+    @assert length(vals) == NModes * 3 + 1
+
+    dis = sum(vals[1:NModes])
+    disδ = sum(vals[NModes + 1:NModes * 2])
+    area = sum(abs.(vals[NModes * 2 + 1:NModes * 3]))
+    τ = vals[end]
 
     return (5 * dis + disδ / 100 + 1e-5) / abs(area) * τ
 end
@@ -63,11 +65,15 @@ end
 function setup_model(nseg, modes)
     objfunc = Opts.autodiff(_objfunc)
     buf_opt = SL.ComputeBuffer{nseg,Float64}(Val(SS.mask_allδ), Val(SS.mask_allδ))
-    # amp_funcs = amp_base_funcs(nseg)
     amp_funcs = get_am_cbs(nseg)
+
+    nmodes = length(modes.modes)
+    dis_args = ntuple(i->(:dis2, i), nmodes)
+    disδ_args = ntuple(i->(:disδ2, i), nmodes)
+    area_args = ntuple(i->(:area, i), nmodes)
+
     nlmodel = Seq.Objective(SL.pmask_full,
-        ((:dis2, 0), (:disδ2, 0), (:area, 0),
-            (:areaδ, 0), (:τ, 0)),
+        (dis_args..., disδ_args..., area_args..., (:τ, 0)),
         objfunc, modes, buf_opt,
         freq=Seq.FreqSpec(false, sym=true),
         amp=Seq.AmpSpec(cb=amp_funcs, sym=true))

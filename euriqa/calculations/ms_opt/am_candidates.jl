@@ -8,6 +8,8 @@ using AMO.Utils: ThreadObjectPool, eachobj
 
 using Base.Threads
 
+using GoldGates
+
 struct Candidate
     param::Vector{Float64}
     props::Union{Nothing,Seq.SolutionProperties}
@@ -63,6 +65,7 @@ struct PreOptimizer{NSeg,PreObj,Sum}
                                     dis_weights=fill(1.0, nions),
                                     disδ_weights=fill(disδ_weight, nions),
                                     area_weights=zeros(nions))
+
         nargs = Seq.nparams(pre_obj)
         pre_tracker = Opts.NLVarTracker(nargs)
         for Ω in pre_obj.param.Ωs
@@ -163,19 +166,17 @@ function opt_all_rounds!(pool::ThreadObjectPool{PreOpt}, nrounds,
     return candidates
 end
 
-include("ion13-params.jl")
-
-# const prefix = ARGS[1]
-# const nrep = parse(Int, ARGS[2])
-
-# meta = Dict("amp_ratio"=>amp_ratio, "nseg"=>nseg)
-# _meta, candidates = load_candidates_dir(dirname(prefix))
-# println("Loaded $(length(candidates))")
-# @assert _meta === nothing || _meta == meta
-const pre_pool = ThreadObjectPool() do
-    return PreOptimizer{30}(2π .* fs;
-                            tmin=150, tmax=250, ntimes=11,
-                            ωmin=2π * 2.22, ωmax=2π * 2.5)
+params_file = "072125_goldparams_13ions.json"
+sysparams = open(params_file) do io
+    read(io, GoldGates.SystemParams; format=:json)
 end
-candidates = @time opt_all_rounds!(pre_pool, 100, Candidate[])
+
+ωs = 2π .* sysparams.modes.radial1
+
+const pre_pool = ThreadObjectPool() do
+    return PreOptimizer{50}(ωs;
+                            tmin=50, tmax=150, ntimes=3,
+                            ωmin=ωs[1], ωmax=ωs[2])
+end
+candidates = @time opt_all_rounds!(pre_pool, 400, Candidate[])
 @show length(candidates)
