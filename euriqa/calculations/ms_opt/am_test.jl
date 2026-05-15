@@ -1,12 +1,12 @@
 ion1 = -1
 ion2 = 1
 nions = 13
-nseg = 30
+nseg = 50
 
 # Optimizer settings
-pitime = 10  # us, corresponds to max rabi frequency per base function
-τmin = 3    # min segment length in us
-τmax = 10   # max segment length in us
+pitime = 3.5  # us, corresponds to max rabi frequency per base function
+τmin = 50 / nseg    # min segment length in us
+τmax = 150 / nseg   # max segment length in us
 maxtime = 10  # max seconds to run optimization
 min_mode_index = 1  # lower bound for detune during gate
 max_mode_index = min_mode_index + 1  # max bound for detune during gate
@@ -37,31 +37,6 @@ function get_am_cbs(NSeg)
                   end, NSeg - 1)
 end
 
-function amp_base_funcs(n::Integer; atol::Real = 1e-12)
-    @assert n ≥ 1 "n must be at least 1"
-    m = n + 1
-    grid = [((i - 1) / (n / 2) - 1) for i in 1:m]
-    fs_vec = [
-        let k = k, grid = grid, m = m, atol = atol
-            x -> begin
-                exclude = k - 1
-                lo = 1 + exclude
-                hi = m - exclude
-                if lo > hi
-                    return 0.0
-                end
-                for j in lo:hi
-                    if isapprox(x, grid[j]; atol = atol)
-                        return 1.0
-                    end
-                end
-                return 0.0
-            end
-        end for k in 1:cld(n+1, 2)
-    ]
-    return tuple(fs_vec...)
-end
-
 # Objective function for optimization
 function _objfunc(vals)
     dis = vals[1]
@@ -70,7 +45,7 @@ function _objfunc(vals)
     areaδ = vals[4]
     τ = vals[5]
 
-    return 5 * dis + disδ / 100 + (abs(area) - π / 2)^2 * 100
+    return (5 * dis + disδ / 100 + 1e-5) / abs(area) * τ
 end
 
 function setup_modes(sysparams, ion1, ion2, nions)
@@ -100,7 +75,7 @@ function setup_model(nseg, modes)
 end
 
 function setup_optimizer(nlmodel, sysparams; pitime=30, τmin=5, τmax=50, maxtime=10, min_mode_index=1, max_mode_index=3)
-    Ωmax = π / (2 * pitime) * 3
+    Ωmax = π / (2 * pitime)
     ωmin = 2π * sysparams.modes.radial1[min_mode_index]
     ωmax = 2π * sysparams.modes.radial1[max_mode_index]
 
@@ -160,7 +135,6 @@ function run_optimization!(opt, tracker, nlmodel; threshold=-Inf,
                 dis = nlmodel(Val((:dis2, 0)), params),
                 disδ = nlmodel(Val((:disδ2, 0)), params),
                 area = area,
-                areaε = abs(area) - π / 2,
                 areaδ = nlmodel(Val((:areaδ, 0)), params),
                 total_t = nlmodel(Val((:τ, 0)), params),
                 # Ωmax = sum(params[Ω] for Ω in nlmodel.param.Ωs),
