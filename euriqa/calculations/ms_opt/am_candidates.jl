@@ -144,7 +144,7 @@ function opt_all_rounds!(@specialize(cb), pool::ThreadObjectPool{PreOpt},
     nions = length(o0.ωs)
     ntimes = o0.ntimes
     put!(pool, o0)
-    @threads :greedy for (mode_idx, time_idx) in Iterators.product(1:nions, 1:ntimes)
+    @threads :greedy for (mode_idx, time_idx) in Iterators.product(1:2, 1:ntimes)
         o = get(pool)
         set_mode!(o, mode_idx)
         set_time_range!(o, τs[time_idx], τs[time_idx + 1])

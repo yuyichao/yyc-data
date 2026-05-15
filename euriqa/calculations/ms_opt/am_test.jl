@@ -12,13 +12,14 @@ min_mode_index = 1  # lower bound for detune during gate
 max_mode_index = min_mode_index + 1  # max bound for detune during gate
 params_file = "072125_goldparams_13ions.json"
 println("Gate time between $(τmin * nseg) and $(τmax * nseg) μs")
-println("Lower bound on pi time required: $(pitime/cld(nseg+1, 2)) μs")
+println("Lower bound on pi time required: $(pitime) μs")
 
 using GoldGates
 using MSSim: Optimizers as Opts, SegSeq as SS, SymLinear as SL, Sequence as Seq, Utils as U
 using NLopt
 using Statistics
 using JSON
+using StaticArrays
 
 function get_am_cbs(NSeg)
     return ntuple(i -> begin
@@ -62,22 +63,56 @@ function setup_modes(sysparams, ion1, ion2, nions)
     return modes
 end
 
-function setup_model(nseg, modes)
-    objfunc = Opts.autodiff(_objfunc)
-    buf_opt = SL.ComputeBuffer{nseg,Float64}(Val(SS.mask_allδ), Val(SS.mask_allδ))
-    amp_funcs = get_am_cbs(nseg)
+struct AvgAreaObjCallback{NModes}
+    dis_weight::Float64
+    disδ_weight::Float64
+    area_weights::MVector{NModes,Float64}
+    function AvgAreaObjCallback(NModes, dis_weight, disδ_weight, area_weights)
+        cb = new{NModes}(dis_weight, disδ_weight, MVector{NModes,Float64}(undef))
+        cb.area_weights .= area_weights
+        return cb
+    end
+end
 
+function (obj::AvgAreaObjCallback{NModes})(vals) where NModes
+    @assert length(vals) == NModes * 3 + 1
+    weights = obj.area_weights
+    @inbounds begin
+        v1 = muladd(vals[1], obj.dis_weight, vals[1 + NModes] * obj.disδ_weight)
+        v2 = abs(vals[1 + NModes * 2]) * weights[1]
+    end
+    @inbounds @simd ivdep for i in 2:NModes
+        v1 = muladd(vals[i], obj.dis_weight, muladd(vals[i + NModes], obj.disδ_weight, v1))
+        v2 = muladd(abs(vals[i + NModes * 2]), weights[i], v2)
+    end
+    v1 = v1 + 1e-5
+    return v1 / v2 * vals[end]
+end
+
+function avg_area_obj(nseg, modes, pmask;
+                      freq=Seq.FreqSpec(), amp=Seq.AmpSpec(),
+                      dis_weight=5, disδ_weight=0.01)
     nmodes = length(modes.modes)
     dis_args = ntuple(i->(:dis2, i), nmodes)
     disδ_args = ntuple(i->(:disδ2, i), nmodes)
     area_args = ntuple(i->(:area, i), nmodes)
 
-    nlmodel = Seq.Objective(SL.pmask_full,
-        (dis_args..., disδ_args..., area_args..., (:τ, 0)),
-        objfunc, modes, buf_opt,
-        freq=Seq.FreqSpec(false, sym=true),
-        amp=Seq.AmpSpec(cb=amp_funcs, sym=true))
-    return nlmodel
+    mask_dis_area = SS.ValueMask(true, true, true, false, true, false)
+    buf = SL.ComputeBuffer{nseg,Float64}(Val(SS.mask_allδ), Val(SS.mask_allδ))
+
+    area_weights = zeros(nmodes)
+    area_weights[1] = 1
+    area_weights[2] = 1
+    return Seq.Objective(pmask, (dis_args..., disδ_args..., area_args..., (:τ, 0)),
+                         Opts.autodiff(AvgAreaObjCallback(nmodes, dis_weight,
+                                                          disδ_weight, area_weights)),
+                         modes, buf, freq=freq, amp=amp)
+end
+
+function setup_model(nseg, modes)
+    return avg_area_obj(nseg, modes, SL.pmask_full,
+                        freq=Seq.FreqSpec(false, sym=true),
+                        amp=Seq.AmpSpec(cb=get_am_cbs(nseg), sym=false))
 end
 
 function setup_optimizer(nlmodel, sysparams; pitime=30, τmin=5, τmax=50, maxtime=10, min_mode_index=1, max_mode_index=3)
