@@ -2,15 +2,14 @@ ion1 = -1
 ion2 = 1
 nions = 13
 nseg = 30
-file_suffix = "v1"
 
 # Optimizer settings
 pitime = 10  # us, corresponds to max rabi frequency per base function
-τmin = 5    # min segment length in us
-τmax = 15   # max segment length in us
+τmin = 3    # min segment length in us
+τmax = 10   # max segment length in us
 maxtime = 10  # max seconds to run optimization
-min_mode_index = 1  # lower bound for detune during gate 
-max_mode_index = min_mode_index + 1  # max bound for detune during gate 
+min_mode_index = 1  # lower bound for detune during gate
+max_mode_index = min_mode_index + 1  # max bound for detune during gate
 params_file = "072125_goldparams_13ions.json"
 println("Gate time between $(τmin * nseg) and $(τmax * nseg) μs")
 println("Lower bound on pi time required: $(pitime/cld(nseg+1, 2)) μs")
@@ -19,14 +18,24 @@ using GoldGates
 using MSSim: Optimizers as Opts, SegSeq as SS, SymLinear as SL, Sequence as Seq, Utils as U
 using NLopt
 using Statistics
-using PyPlot
 using JSON
 
-using PyPlot
-using MSSim: Sequence as Seq
-using NLopt
-using JSON
-using Printf
+function get_am_cbs(NSeg)
+    return ntuple(i -> begin
+                      prev = (i - 1) / (NSeg / 2) - 1
+                      mid = i / (NSeg / 2) - 1
+                      next = (i + 1) / (NSeg / 2) - 1
+                      function (x)
+                          if x < prev || x > next
+                              return 0.0
+                          elseif x < mid
+                              return (x - prev) / (mid - prev)
+                          else
+                              return (next - x) / (next - mid)
+                          end
+                      end
+                  end, NSeg - 1)
+end
 
 function amp_base_funcs(n::Integer; atol::Real = 1e-12)
     @assert n ≥ 1 "n must be at least 1"
@@ -61,7 +70,7 @@ function _objfunc(vals)
     areaδ = vals[4]
     τ = vals[5]
 
-    return 5 * dis + disδ / 100 + (abs(area) - π / 2)^2 * 100 + (areaδ / 1e4)^2
+    return 5 * dis + disδ / 100 + (abs(area) - π / 2)^2 * 100
 end
 
 function setup_modes(sysparams, ion1, ion2, nions)
@@ -79,7 +88,8 @@ end
 function setup_model(nseg, modes)
     objfunc = Opts.autodiff(_objfunc)
     buf_opt = SL.ComputeBuffer{nseg,Float64}(Val(SS.mask_allδ), Val(SS.mask_allδ))
-    amp_funcs = amp_base_funcs(nseg)
+    # amp_funcs = amp_base_funcs(nseg)
+    amp_funcs = get_am_cbs(nseg)
     nlmodel = Seq.Objective(SL.pmask_full,
         ((:dis2, 0), (:disδ2, 0), (:area, 0),
             (:areaδ, 0), (:τ, 0)),
@@ -90,14 +100,14 @@ function setup_model(nseg, modes)
 end
 
 function setup_optimizer(nlmodel, sysparams; pitime=30, τmin=5, τmax=50, maxtime=10, min_mode_index=1, max_mode_index=3)
-    Ωmax = π / (2 * pitime)
+    Ωmax = π / (2 * pitime) * 3
     ωmin = 2π * sysparams.modes.radial1[min_mode_index]
     ωmax = 2π * sysparams.modes.radial1[max_mode_index]
 
     nargs = Seq.nparams(nlmodel)
     tracker = Opts.NLVarTracker(nargs)
     for Ω in nlmodel.param.Ωs
-        Opts.set_bound!(tracker, Ω, 0, Ωmax)
+        Opts.set_bound!(tracker, Ω, -Ωmax, Ωmax)
     end
     Opts.set_bound!(tracker, nlmodel.param.τ, τmin, τmax)
     for ω in nlmodel.param.ωs
@@ -153,7 +163,8 @@ function run_optimization!(opt, tracker, nlmodel; threshold=-Inf,
                 areaε = abs(area) - π / 2,
                 areaδ = nlmodel(Val((:areaδ, 0)), params),
                 total_t = nlmodel(Val((:τ, 0)), params),
-                Ωmax = params[nlmodel.param.Ωs[1]],
+                # Ωmax = sum(params[Ω] for Ω in nlmodel.param.Ωs),
+                Ωmax = maximum(abs(params[Ω]) for Ω in nlmodel.param.Ωs),
             )
             println(best_status)
             best_params = params

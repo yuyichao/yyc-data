@@ -173,9 +173,9 @@ include("ion13-params.jl")
 # println("Loaded $(length(candidates))")
 # @assert _meta === nothing || _meta == meta
 const pre_pool = ThreadObjectPool() do
-    return PreOptimizer{nseg}(2π .* fs;
-                              tmin=350, tmax=1050, ntimes=11,
-                              ωmin=2π * 2.22, ωmax=2π * 2.5)
+    return PreOptimizer{30}(2π .* fs;
+                            tmin=150, tmax=250, ntimes=11,
+                            ωmin=2π * 2.22, ωmax=2π * 2.5)
 end
 candidates = @time opt_all_rounds!(pre_pool, 100, Candidate[])
 @show length(candidates)
