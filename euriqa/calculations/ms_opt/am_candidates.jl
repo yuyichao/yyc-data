@@ -1,6 +1,7 @@
 #
 
-import MSSim: Optimizers as Opts, SegSeq as SS, SymLinear as SL, Sequence as Seq, Utils as U
+include("am_shared.jl")
+
 
 using NLopt
 
@@ -13,23 +14,6 @@ using GoldGates
 struct Candidate
     param::Vector{Float64}
     props::Union{Nothing,Seq.SolutionProperties}
-end
-
-function get_am_cbs(NSeg)
-    return ntuple(i -> begin
-                      prev = (i - 1) / (NSeg / 2) - 1
-                      mid = i / (NSeg / 2) - 1
-                      next = (i + 1) / (NSeg / 2) - 1
-                      function (x)
-                          if x < prev || x > next
-                              return 0.0
-                          elseif x < mid
-                              return (x - prev) / (mid - prev)
-                          else
-                              return (next - x) / (next - mid)
-                          end
-                      end
-                  end, NSeg - 1)
 end
 
 struct PreOptimizer{NSeg,PreObj,Sum}
@@ -57,14 +41,11 @@ struct PreOptimizer{NSeg,PreObj,Sum}
             push!(modes, ω)
         end
 
-        freq_spec = Seq.FreqSpec(false, sym=false)
+        freq_spec = Seq.FreqSpec(false, sym=true)
         amp_spec = Seq.AmpSpec(cb=get_am_cbs(NSeg), sym=false)
 
-        pre_obj = Opts.abs_area_obj(NSeg, modes, SL.pmask_tfm,
-                                    freq=freq_spec, amp=amp_spec,
-                                    dis_weights=fill(1.0, nions),
-                                    disδ_weights=fill(disδ_weight, nions),
-                                    area_weights=zeros(nions))
+        pre_obj = avg_area_obj(NSeg, modes, SL.pmask_tfm,
+                               freq=freq_spec, amp=amp_spec)
 
         nargs = Seq.nparams(pre_obj)
         pre_tracker = Opts.NLVarTracker(nargs)
@@ -123,15 +104,6 @@ function opt_one!(o::PreOptimizer)
     return false
 end
 
-function set_mode!(o::PreOptimizer, mode_idx)
-    nions = length(o.ωs)
-    @assert 1 <= mode_idx <= nions
-    area_weights = o.pre_obj.obj.area_weights
-    for i in 1:nions
-        area_weights[i] = i == mode_idx
-    end
-end
-
 function set_time_range!(o::PreOptimizer, τmin, τmax)
     Opts.set_bound!(o.pre_tracker, o.pre_obj.param.τ, τmin, τmax)
     update_bounds!(o)
@@ -144,9 +116,8 @@ function opt_all_rounds!(@specialize(cb), pool::ThreadObjectPool{PreOpt},
     nions = length(o0.ωs)
     ntimes = o0.ntimes
     put!(pool, o0)
-    @threads :greedy for (mode_idx, time_idx) in Iterators.product(1:2, 1:ntimes)
+    @threads :greedy for time_idx in 1:ntimes
         o = get(pool)
-        set_mode!(o, mode_idx)
         set_time_range!(o, τs[time_idx], τs[time_idx + 1])
         for _ in 1:nrounds
             opt_one!(o)
@@ -175,7 +146,7 @@ end
 
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
-                            tmin=50, tmax=150, ntimes=3,
+                            tmin=50, tmax=150, ntimes=1,
                             ωmin=ωs[1], ωmax=ωs[2])
 end
 candidates = @time opt_all_rounds!(pre_pool, 400, Candidate[])
