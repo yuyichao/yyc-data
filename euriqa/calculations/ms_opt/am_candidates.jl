@@ -44,7 +44,7 @@ struct PreOptimizer{NSeg,PreObj,Sum}
         freq_spec = Seq.FreqSpec(false, sym=true)
         amp_spec = Seq.AmpSpec(cb=get_am_cbs(NSeg), sym=false)
 
-        pre_obj = avg_area_obj(NSeg, modes, SL.pmask_tfm,
+        pre_obj = avg_area_obj(NSeg, modes, SL.pmask_full,
                                freq=freq_spec, amp=amp_spec)
 
         nargs = Seq.nparams(pre_obj)

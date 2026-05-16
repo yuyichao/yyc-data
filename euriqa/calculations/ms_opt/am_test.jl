@@ -23,27 +23,12 @@ using NLopt
 using Statistics
 using JSON
 
-# Objective function for optimization
-function _objfunc(vals)
-    NModes = length(vals) ÷ 3
-    @assert length(vals) == NModes * 3 + 1
-
-    dis = sum(vals[1:NModes])
-    disδ = sum(vals[NModes + 1:NModes * 2])
-    area = sum(abs.(vals[NModes * 2 + 1:NModes * 3]))
-    τ = vals[end]
-
-    return (5 * dis + disδ / 100 + 1e-5) / abs(area) * τ
-end
-
 function setup_modes(sysparams, ion1, ion2, nions)
     modes = Seq.Modes()
     idx1 = ion1 + (nions + 1) ÷ 2
     idx2 = ion2 + (nions + 1) ÷ 2
     for i in 1:nions
-        push!(modes,
-            2π * sysparams.modes.radial1[i],
-            sysparams.participation_factors[i][idx1] * sysparams.participation_factors[i][idx2] * sysparams.lamb_dicke_parameters[i]^2)
+        push!(modes, 2π * sysparams.modes.radial1[i])
     end
     return modes
 end
@@ -54,15 +39,14 @@ function setup_model(nseg, modes)
                         amp=Seq.AmpSpec(cb=get_am_cbs(nseg), sym=false))
 end
 
-function setup_optimizer(nlmodel, sysparams; pitime=30, τmin=5, τmax=50, maxtime=10, min_mode_index=1, max_mode_index=3)
-    Ωmax = π / (2 * pitime)
+function setup_optimizer(nlmodel, sysparams; τmin=5, τmax=50, maxtime=10, min_mode_index=1, max_mode_index=3)
     ωmin = 2π * sysparams.modes.radial1[min_mode_index]
     ωmax = 2π * sysparams.modes.radial1[max_mode_index]
 
     nargs = Seq.nparams(nlmodel)
     tracker = Opts.NLVarTracker(nargs)
     for Ω in nlmodel.param.Ωs
-        Opts.set_bound!(tracker, Ω, -Ωmax, Ωmax)
+        Opts.set_bound!(tracker, Ω, -1, 1)
     end
     Opts.set_bound!(tracker, nlmodel.param.τ, τmin, τmax)
     for ω in nlmodel.param.ωs
@@ -78,31 +62,14 @@ function setup_optimizer(nlmodel, sysparams; pitime=30, τmin=5, τmax=50, maxti
     return opt, tracker
 end
 
-function perturb_params(params, tracker, scale)
-    result = copy(params)
-    lb = Opts.lower_bounds(tracker)
-    ub = Opts.upper_bounds(tracker)
-    for i in eachindex(result)
-        r = (ub[i] - lb[i]) * scale
-        result[i] = clamp(params[i] + randn() * r, lb[i], ub[i])
-    end
-    return result
-end
-
 function run_optimization!(opt, tracker, nlmodel; threshold=-Inf,
                            initial_params=nothing, perturbation=0.05)
-    iterations = initial_params === nothing ? 500 : 50
+    iterations = 100
     best_obj = Inf
     best_params = nothing
 
     @time for i in 1:iterations
-        if initial_params === nothing
-            start_params = Opts.init_vars!(tracker)
-        elseif i == 1
-            start_params = copy(initial_params)
-        else
-            start_params = perturb_params(initial_params, tracker, perturbation)
-        end
+        start_params = Opts.init_vars!(tracker)
         obj, params, ret = NLopt.optimize(opt, start_params)
         if getfield(NLopt, ret) < 0
             continue
@@ -117,7 +84,6 @@ function run_optimization!(opt, tracker, nlmodel; threshold=-Inf,
                 area = area,
                 areaδ = nlmodel(Val((:areaδ, 0)), params),
                 total_t = nlmodel(Val((:τ, 0)), params),
-                # Ωmax = sum(params[Ω] for Ω in nlmodel.param.Ωs),
                 Ωmax = maximum(abs(params[Ω]) for Ω in nlmodel.param.Ωs),
             )
             println(best_status)
@@ -137,6 +103,6 @@ end
 
 modes = setup_modes(sysparams, ion1, ion2, nions)
 nlmodel = setup_model(nseg, modes)
-opt, tracker = setup_optimizer(nlmodel, sysparams; pitime, τmin, τmax, maxtime, min_mode_index, max_mode_index)
+opt, tracker = setup_optimizer(nlmodel, sysparams; τmin, τmax, maxtime, min_mode_index, max_mode_index)
 
 best_params, best_obj = run_optimization!(opt, tracker, nlmodel)
