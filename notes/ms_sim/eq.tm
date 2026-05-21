@@ -194,8 +194,8 @@
   <\eqnarray>
     <tformat|<table|<row|<cell|\<gamma\><rsub|k><rsup|n>>|<cell|=>|<cell|o<rsub|1>o<rsub|2><frac|1-cos<around*|(|d<rsub|
     >|)>|d<rsup|2><rsub|>>+o<rsub|1>*o<rprime|'><rsub|2><frac|d-sin<around*|(|d|)>|d<rsup|3><rsub|>>>>|<row|<cell|>|<cell|>|<cell|+o<rsub|1><rprime|'>o<rsub|2><frac|sin<around*|(|d<rsub|>|)>-d<rsub|>cos<around*|(|d<rsub|>|)>|d<rsup|3><rsub|>>>>|<row|<cell|>|<cell|>|<cell|+o<rsub|1><rprime|'>o<rprime|'><rsub|2><frac|d<rsup|2>/2+1-cos<around*|(|d|)>-d*sin<around*|(|d|)>|d<rsup|4>>>>|<row|<cell|>|<cell|>|<cell|+i*o<rsub|1>o<rsub|2><frac|d-sin<around*|(|d|)>|d<rsup|2>>+i<rsub|>o<rsub|1>o<rprime|'><rsub|2><frac|d<rsup|2>/2+cos<around*|(|d|)>-1|d<rsup|3>>>>|<row|<cell|>|<cell|>|<cell|+i*o<rsub|1><rprime|'>o<rsub|2>
-    <frac|d<rsup|2>/2-cos<around*|(|d<rsub|>|)>-
-    d<rsub|>sin<around*|(|d|)>+1|d<rsup|3>>>>|<row|<cell|>|<cell|>|<cell|+i*o<rsub|1><rprime|'>o<rprime|'><rsub|2><frac|d<rsup|3>/3+
+    <frac|d<rsup|2>/2+1-cos<around*|(|d<rsub|>|)>-
+    d<rsub|>sin<around*|(|d|)>|d<rsup|3>>>>|<row|<cell|>|<cell|>|<cell|+i*o<rsub|1><rprime|'>o<rprime|'><rsub|2><frac|d<rsup|3>/3+
     d<rsub|>cos<around*|(|d|)>-sin<around*|(|d|)>|d<rsup|4>>>>>>
   </eqnarray>
 
