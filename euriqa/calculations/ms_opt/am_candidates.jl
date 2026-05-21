@@ -34,7 +34,7 @@ struct PreOptimizer{NSeg,PreObj,Sum}
     candidates::Vector{Candidate}
 
     function PreOptimizer{NSeg}(ωs; tmin, tmax, ntimes=11, ωmin, ωmax,
-                                maxiter=2500, disδ_weight=0.0) where NSeg
+                                maxiter=2500, disδ_weight=0.01) where NSeg
         nions = length(ωs)
         modes = Seq.Modes()
         for ω in ωs
@@ -45,7 +45,7 @@ struct PreOptimizer{NSeg,PreObj,Sum}
         amp_spec = Seq.AmpSpec(cb=get_am_cbs(NSeg), sym=false)
 
         pre_obj = avg_area_obj(NSeg, modes, SL.pmask_full,
-                               freq=freq_spec, amp=amp_spec)
+                               freq=freq_spec, amp=amp_spec, disδ_weight=disδ_weight)
 
         nargs = Seq.nparams(pre_obj)
         pre_tracker = Opts.NLVarTracker(nargs)
@@ -97,7 +97,7 @@ function opt_one!(o::PreOptimizer)
         max_area = max(max_area, abs(props.area[i]))
     end
     @show objval, dis, disδ, max_area
-    if dis < 1e-4 * nions && max_area >= 10
+    if dis < 1e-4 * nions && max_area >= 5
         push!(o.candidates, Candidate(copy(args), props))
         return true
     end
@@ -147,7 +147,7 @@ end
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
                             tmin=50, tmax=150, ntimes=1,
-                            ωmin=ωs[1], ωmax=ωs[2])
+                            ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
-candidates = @time opt_all_rounds!(pre_pool, 400, Candidate[])
+candidates = @time opt_all_rounds!(pre_pool, 1000, Candidate[])
 @show length(candidates)
