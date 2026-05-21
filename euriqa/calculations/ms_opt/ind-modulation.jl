@@ -33,10 +33,13 @@ struct SegData2{T}
     area::T
 end
 
-@inline function compute_values2(τ::_T, Ω1, Ω1′, Ω2, Ω2′, φ, δ)
+Base.zero(::Type{SegData2{T}}) where T = SegData2{T}(zero(T), zero(Complex{T}),
+                                                     zero(Complex{T}), zero(T))
+
+@inline function compute_values2(τ::_T, Ω1, Ω1′, Ω2, Ω2′, φ, δ) where _T
     T = float(_T)
     CT = Complex{T}
-    SDV = SegData2(T)
+    SDV = SegData2{T}
 
     @inline begin
         d = δ * τ
@@ -48,37 +51,48 @@ end
         sφ, cφ = U.fast_sincos(φ)
         phase0 = complex(cφ, sφ)
         phase0_τ = phase0 * τ
-        V = SL.@gen_trig_ratios(d, s, c, sin_c1, sin_c2, sin_f1, cos_f1, cos_f3)
+        V = SL.SegInt.@gen_trig_ratios(d, s, c, sin_c1, sin_c2, sin_f1, cos_f1, cos_f3)
 
-        dis1 = U.mul(phase0, SL.displacement_kernel(o1, o1′, d, s, c, V))
-        dis2 = U.mul(phase0, SL.displacement_kernel(o2, o2′, d, s, c, V))
+        dis1 = U.mul(phase0, SL.SegInt.displacement_kernel(o1, o1′, d, s, c, V))
+        dis2 = U.mul(phase0, SL.SegInt.displacement_kernel(o2, o2′, d, s, c, V))
         area = enclosed_area2_kernel(o1, o1′, o2, o2′, d, s, c, V)
         res = SDV(τ, dis1, dis2, area)
     end
     return res
 end
 
-function compute_area2_single_mode(segments::AbstractVector{SegData2{T}}) where {T}
-    nseg = length(segments)
+@inline function add_segment(cum::SegData2{T}, seg::SegData2{T}) where T
+    return SegData2{T}(cum.τ + seg.τ,
+                       cum.dis1 + seg.dis1,
+                       cum.dis2 + seg.dis2,
+                       cum.area + muladd(real(cum.dis2), imag(seg.dis1),
+                                         muladd(-imag(cum.dis2), real(seg.dis1),
+                                                seg.area)))
+end
 
-    p_τ = zero(T)
-    p_dis1 = complex(zero(T))
-    p_dis2 = complex(zero(T))
-    p_area = zero(T)
+@inline function compute_area2(args, ωm)
+    T = eltype(args)
+    ωm = T(ωm)
+
+    narg = length(args)
+    nseg = narg ÷ 7
+    @assert narg == nseg * 7
+
+    φm = zero(T)
+    res = zero(SegData2{T})
+
     @inbounds for i in 1:nseg
-        seg = segments[i]
+        τ = args[i * 7 - 6]
+        Ω1 = args[i * 7 - 5]
+        Ω1′ = args[i * 7 - 4]
+        Ω2 = args[i * 7 - 3]
+        Ω2′ = args[i * 7 - 2]
+        φ = args[i * 7 - 1] - φm
+        δ = args[i * 7] - ωm
 
-        np_τ = p_τ + seg.τ
-        np_dis1 = p_dis1 + seg.dis1
-        np_dis2 = p_dis2 + seg.dis2
-        np_area = p_area + muladd(real(p_dis2), imag(seg.dis1),
-                                  muladd(-imag(p_dis2), real(seg.dis1), seg.area))
+        φm = muladd(ωm, τ, φm)
 
-        p_τ = np_τ
-        p_dis1 = np_dis1
-        p_dis2 = np_dis2
-        p_area = np_area
+        res = add_segment(res, compute_values2(τ, Ω1, Ω1′, Ω2, Ω2′, φ, δ))
     end
-
-    return SegData2{T}(p_τ, p_dis1, p_dis2, p_area)
+    return res.area
 end
