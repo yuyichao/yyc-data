@@ -286,3 +286,85 @@ function optimize_pulse!(model::SeqModel, init_amps, init_dets, init_ts)
     return (value(model.obj), value(model.res),
             value.(model.amp_args), value.(model.det_args), value.(model.t_args))
 end
+
+mutable struct RamanKernel
+    const G::Matrix{ComplexF64}
+    const Cs::NTuple{30,Tuple{Matrix{ComplexF64},Float64}}
+
+    const iH_buff::Matrix{ComplexF64}
+    const iHt_buff::Matrix{ComplexF64}
+    const buff2::Matrix{ComplexF64}
+
+    function RamanKernel(pol, B)
+        G = ground_matrix(B)
+        E = excited_matrix(B)
+        C = couple_matrix(pol)
+
+        evals, evecs = eigen(E)
+        Cs = ntuple(Val(30)) do i
+            evec = @view(evecs[:, i])
+            gvec = C * evec
+            return gvec * gvec', evals[i]
+        end
+
+        return new(G, Cs, zeros(ComplexF64, 10, 10),
+                   zeros(ComplexF64, 10, 10) , zeros(ComplexF64, 20, 20))
+    end
+end
+
+function compute_values!(kern::RamanKernel, amp, det, t, res, grad_amp, grad_det, grad_t)
+end
+
+function compute_values!(kern::RamanKernel, amp, det, t, res, grad_amp, grad_det, grad_t)
+
+
+    sz_g = kern.sz_g
+    sz_e = kern.sz_e
+    sz = sz_g + sz_e
+
+    base = kern.base
+    amp_term = kern.amp_term
+
+    iH = kern.iH_buff
+    @inbounds for j in 1:sz_g
+        for i in 1:sz_g
+            iH[i, j] = base[i, j]
+        end
+        for i in sz_g + 1:sz
+            iH[i, j] = amp_term[i, j] * amp
+        end
+    end
+    @inbounds for j in sz_g + 1:sz
+        for i in 1:sz_g
+            iH[i, j] = amp_term[i, j] * amp
+        end
+        for i in sz_g + 1:sz
+            iH[i, j] = base[i, j]
+        end
+        iH[j, j] += complex(0, det)
+    end
+
+    iHt = kern.iHt_buff
+    iHt .= iH .* t
+
+    buff2 = kern.buff2
+
+    buff2[1:sz, 1:sz] .= iHt
+    buff2[sz + 1:sz * 2, sz + 1:sz * 2] .= iHt
+    buff2[1:sz, sz + 1:sz * 2] .= amp_term .* t
+    buff2 = LinearAlgebra.exp!(buff2)
+    grad_amp .= @view(buff2[1:sz, sz + 1:sz * 2])
+
+    buff2[1:sz, 1:sz] .= iHt
+    buff2[sz + 1:sz * 2, sz + 1:sz * 2] .= iHt
+    buff2[1:sz, sz + 1:sz * 2] .= 0
+    @inbounds for j in sz_g + 1:sz
+        buff2[j, sz + j] = complex(0, t)
+    end
+    buff2 = LinearAlgebra.exp!(buff2)
+    grad_det .= @view(buff2[1:sz, sz + 1:sz * 2])
+
+    res .= @view(buff2[1:sz, 1:sz])
+    mul!(grad_t, iH, res)
+    return
+end
