@@ -250,10 +250,10 @@ end
 
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
-                            tmin=100, tmax=150, ntimes=1,
+                            tmin=100, tmax=150, ntimes=5,
                             ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
-candidates = @time opt_all_rounds!(pre_pool, 100, Candidate[])
+candidates = @time opt_all_rounds!(pre_pool, 2000, Candidate[])
 @show length(candidates)
 
 open("$(prefix).binpb", "w") do io
