@@ -139,7 +139,7 @@ function compute_area2_am(dτ1, dτ2, ω, ωm, Ω1s, Ω2s)
     tstart = 0.0
     tend = min(s1.tend, s2.tend)
 
-    while s1.i <= s1.nΩ && s2.i <= s2.nΩ
+    while s1.i <= s1.nΩ || s2.i <= s2.nΩ
         τ = tend - tstart
         state = add_segment(state, τ, s1.Ω, s1.Ω′, s2.Ω, s2.Ω′, ω * tstart, ω, ωm)
         next_step(s1, dτ1, Ω1s, tstart, tend)
