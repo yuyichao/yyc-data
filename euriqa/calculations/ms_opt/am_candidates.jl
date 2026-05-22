@@ -97,7 +97,7 @@ function opt_one!(o::PreOptimizer)
         max_area = max(max_area, abs(props.area[i]))
     end
     @show objval, dis, disδ, max_area
-    if dis < 1e-4 * nions && max_area >= 5
+    if dis < 1e-4 * nions && max_area >= 30
         push!(o.candidates, Candidate(copy(args), props))
         return true
     end
@@ -146,7 +146,7 @@ end
 
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
-                            tmin=50, tmax=150, ntimes=1,
+                            tmin=100, tmax=150, ntimes=1,
                             ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
 candidates = @time opt_all_rounds!(pre_pool, 1000, Candidate[])
