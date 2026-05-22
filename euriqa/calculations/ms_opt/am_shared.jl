@@ -86,6 +86,7 @@ end
 
 module CandidateSerialization
 
+import MSSim: Sequence as Seq
 import ..Candidate, ..Candidates
 
 import ProtoBuf as PB
@@ -107,14 +108,14 @@ function PB.decode(d::PB.AbstractProtoDecoder, ::Type{<:Candidate})
         elseif field_number == 2
             ω = PB.decode(d, Float64)
         elseif field_number == 3
-            PB.decode!(d, wire_type, param)
+            PB.decode!(d, wire_type, Ωs)
         elseif field_number == 4
             PB.decode!(d, props)
         else
             PB.skip(d, wire_type)
         end
     end
-    return Candidate(τ, ω, Ωs, props[])
+    return Candidate(τ, ω, Ωs[], props[])
 end
 
 function PB.encode(e::PB.AbstractProtoEncoder, x::Candidate)
