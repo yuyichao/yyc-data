@@ -12,8 +12,16 @@ using Base.Threads
 using GoldGates
 
 struct Candidate
-    param::Vector{Float64}
+    τ::Float64
+    ω::Float64
+    Ωs::Vector{Float64}
     props::Union{Nothing,Seq.SolutionProperties}
+    function Candidate(args, param, props)
+        @assert length(param.ωs) == 1
+        @assert length(args) == length(param.Ωs) + 2
+        return new(args[param.τ], args[param.ωs[1]],
+                   [args[Ω] for Ω in param.Ωs], props)
+    end
 end
 
 struct PreOptimizer{NSeg,PreObj,Sum}
@@ -96,9 +104,9 @@ function opt_one!(o::PreOptimizer)
         disδ += abs2(props.disδ[i])
         max_area = max(max_area, abs(props.area[i]))
     end
-    @show objval, dis, disδ, max_area
     if dis < 1e-4 * nions && max_area >= 30
-        push!(o.candidates, Candidate(copy(args), props))
+        @show objval, dis, disδ, max_area
+        push!(o.candidates, Candidate(args, o.pre_obj.param, props))
         return true
     end
     return false
@@ -149,5 +157,5 @@ const pre_pool = ThreadObjectPool() do
                             tmin=100, tmax=150, ntimes=1,
                             ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
-candidates = @time opt_all_rounds!(pre_pool, 1000, Candidate[])
+candidates = @time opt_all_rounds!(pre_pool, 100, Candidate[])
 @show length(candidates)
