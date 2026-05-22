@@ -70,29 +70,83 @@ end
                                                 seg.area)))
 end
 
-@inline function compute_area2(args, ωm)
-    T = eltype(args)
-    ωm = T(ωm)
+struct AreaModeState{T}
+    φm::T
+    res::SegData2{T}
+end
+Base.zero(::Type{AreaModeState{T}}) where T = AreaModeState{T}(zero(T), zero(SegData2{T}))
 
-    narg = length(args)
-    nseg = narg ÷ 7
-    @assert narg == nseg * 7
+@inline function add_segment(state::AreaModeState{T}, τ, Ω1, Ω1′, Ω2, Ω2′, φ, δ, ωm) where T
+    φm = state.φm
+    res = state.res
 
-    φm = zero(T)
-    res = zero(SegData2{T})
+    φ -= φm
+    δ -= ωm
 
-    @inbounds for i in 1:nseg
-        τ = args[i * 7 - 6]
-        Ω1 = args[i * 7 - 5]
-        Ω1′ = args[i * 7 - 4]
-        Ω2 = args[i * 7 - 3]
-        Ω2′ = args[i * 7 - 2]
-        φ = args[i * 7 - 1] - φm
-        δ = args[i * 7] - ωm
+    φm = muladd(ωm, τ, φm)
 
-        φm = muladd(ωm, τ, φm)
+    res = add_segment(res, compute_values2(τ, Ω1, Ω1′, Ω2, Ω2′, φ, δ))
 
-        res = add_segment(res, compute_values2(τ, Ω1, Ω1′, Ω2, Ω2′, φ, δ))
+    return AreaModeState{T}(φm, res)
+end
+
+mutable struct SeqStatus{T}
+    i::Int # pointing to end/next start
+    const nΩ::Int
+    tend::T
+    Ω::T
+    Ωe::T
+    Ω′::T
+
+    function SeqStatus{T}(dτ, Ωs) where T
+        Ω = Ωs[1]
+        Ωe = Ωs[2]
+        return new{T}(2, length(Ωs), dτ, Ω, Ωe, (Ωe - Ω) / dτ)
     end
-    return res.area
+end
+
+@inline function next_step(s::SeqStatus{T}, dτ, Ωs, tstart, tend) where T
+    if s.i > s.nΩ
+        # Sequence already finished
+        return
+    end
+    if tend < s.tend
+        # Step on-going
+        s.Ω = muladd(s.Ω′, tend - tstart, s.Ω)
+        return
+    end
+    if s.i == s.nΩ
+        # Sequence finishing
+        s.tend = Inf
+        s.Ω = 0.0
+        s.Ωe = 0.0
+        s.Ω′ = 0.0
+    else
+        s.tend = s.i * dτ
+        s.Ω = s.Ωe
+        s.Ωe = Ωs[s.i + 1]
+        s.Ω′ = (s.Ωe - s.Ω) / dτ
+    end
+    s.i += 1
+    return
+end
+
+function compute_area2_am(dτ1, dτ2, ω, ωm, Ω1s, Ω2s)
+    state = zero(AreaModeState{Float64})
+    s1 = SeqStatus{Float64}(dτ1, Ω1s)
+    s2 = SeqStatus{Float64}(dτ2, Ω2s)
+
+    tstart = 0.0
+    tend = min(s1.tend, s2.tend)
+
+    while s1.i <= s1.nΩ && s2.i <= s2.nΩ
+        τ = tend - tstart
+        state = add_segment(state, τ, s1.Ω, s1.Ω′, s2.Ω, s2.Ω′, ω * tstart, ω, ωm)
+        next_step(s1, dτ1, Ω1s, tstart, tend)
+        next_step(s2, dτ2, Ω2s, tstart, tend)
+        tstart = tend
+        tend = min(s1.tend, s2.tend)
+    end
+
+    return state.res.area
 end
