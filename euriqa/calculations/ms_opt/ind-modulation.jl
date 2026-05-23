@@ -2,28 +2,28 @@
 
 using MSSim: Utils as U, SegSeq as SS, SymLinear as SL
 
-const rf_vv = U.cos_f1
-const rf_vd = U.sin_f1
-const rf_dv = U.TrigRatio{true,3,(),(1,),(-1,)}()
-const rf_dd = U.cos_f3
+# const rf_vv = U.cos_f1
+# const rf_vd = U.sin_f1
+# const rf_dv = U.TrigRatio{true,3,(),(1,),(-1,)}()
+# const rf_dd = U.cos_f3
 
-# const if_vv = U.TrigRatio{true,2,(1,),(-1,),()}()
-# const if_vd = U.TrigRatio{false,3,(-1,1//2),(),(1,)}()
-# const if_dv = U.TrigRatio{false,3,(1,1//2),(-1,),(-1,)}()
-# const if_dd = U.sin_f3
+const if_vv = U.TrigRatio{true,2,(1,),(-1,),()}()
+const if_vd = U.TrigRatio{false,3,(-1,1//2),(),(1,)}()
+const if_dv = U.TrigRatio{false,3,(1,1//2),(-1,),(-1,)}()
+const if_dd = U.sin_f3
 
 @inline function enclosed_area2_kernel(o1, o1′, o2, o2′, d, s, c, V)
-    c_vv = V.C1
-    c_vd = V.S1
-    c_dv = @inline rf_dv(d, s, c)
-    c_dd = V.C3
+    c_vv = @inline if_vv(d, s, c)
+    c_vd = @inline if_vd(d, s, c)
+    c_dv = @inline if_dv(d, s, c)
+    c_dd = V.S3
 
     vv = o1 * o2
     vd = o1 * o2′
     dv = o1′ * o2
     dd = o1′ * o2′
 
-    return muladd(c_vv,  vv, muladd(c_vd, vd, muladd(c_dv, dv, c_dd * dd)))
+    return muladd(c_vv, vv, muladd(c_vd, vd, muladd(c_dv, dv, c_dd * dd)))
 end
 
 struct SegData2{T}
@@ -51,7 +51,7 @@ Base.zero(::Type{SegData2{T}}) where T = SegData2{T}(zero(T), zero(Complex{T}),
         sφ, cφ = U.fast_sincos(φ)
         phase0 = complex(cφ, sφ)
         phase0_τ = phase0 * τ
-        V = SL.SegInt.@gen_trig_ratios(d, s, c, sin_c1, sin_c2, sin_f1, cos_f1, cos_f3)
+        V = SL.SegInt.@gen_trig_ratios(d, s, c, sin_c1, sin_c2, cos_f1, sin_f3)
 
         dis1 = U.mul(phase0, SL.SegInt.displacement_kernel(o1, o1′, d, s, c, V))
         dis2 = U.mul(phase0, SL.SegInt.displacement_kernel(o2, o2′, d, s, c, V))
