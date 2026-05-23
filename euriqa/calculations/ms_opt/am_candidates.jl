@@ -187,10 +187,10 @@ end
 
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
-                            tmin=100, tmax=150, ntimes=10,
+                            tmin=100, tmax=150, ntimes=20,
                             ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
-candidates = @time opt_all_rounds!(pre_pool, 2000, candidates)
+candidates = @time opt_all_rounds!(pre_pool, 10000, candidates)
 @show length(candidates)
 
 filter_candidates!(candidates)
