@@ -133,6 +133,38 @@ function opt_all_rounds!(pool::ThreadObjectPool{PreOpt}, nrounds,
     return candidates
 end
 
+function check_candidate(c1, c2)
+    if !(0.95 < c1.τ / c2.τ < 1.05)
+        return true
+    end
+    d1 = sum(Ω^2 for Ω in c1.Ωs)
+    d2 = sum(Ω^2 for Ω in c2.Ωs)
+    d12 = sum(Ω1 * Ω2 for (Ω1, Ω2) in zip(c1.Ωs, c2.Ωs))
+    if abs2(d12) > d1 * d2 * 0.95
+        return false
+    end
+    return true
+end
+
+function filter_candidates!(candidates)
+    i = 1
+    while i <= length(candidates)
+        newc = candidates[i]
+        keep = true
+        for j in 1:i - 1
+            if !check_candidate(candidates[j], newc)
+                keep = false
+                break
+            end
+        end
+        if keep
+            i = i + 1
+        else
+            deleteat!(candidates, i)
+        end
+    end
+end
+
 const prefix = ARGS[1]
 
 params_file = "072125_goldparams_13ions.json"
@@ -142,15 +174,29 @@ end
 
 ωs = 2π .* sysparams.modes.radial1
 
+candidates_file = "$(prefix).binpb"
+if isfile(candidates_file)
+    candidates = open(candidates_file) do io
+        decoder = PB.ProtoDecoder(io)
+        candidates = PB.decode(decoder, Candidates)
+        return candidates.candidates
+    end
+else
+    candidates = Candidate[]
+end
+
 const pre_pool = ThreadObjectPool() do
     return PreOptimizer{50}(ωs;
-                            tmin=100, tmax=150, ntimes=5,
+                            tmin=100, tmax=150, ntimes=10,
                             ωmin=(ωs[1] + ωs[2]) / 2, ωmax=(ωs[1] + ωs[2]) / 2)
 end
-candidates = @time opt_all_rounds!(pre_pool, 2000, Candidate[])
+candidates = @time opt_all_rounds!(pre_pool, 2000, candidates)
 @show length(candidates)
 
-open("$(prefix).binpb", "w") do io
+filter_candidates!(candidates)
+@show length(candidates)
+
+open(candidates_file, "w") do io
     encoder = PB.ProtoEncoder(io)
     PB.encode(encoder, Candidates(candidates, ""))
 end
