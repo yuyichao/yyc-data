@@ -92,7 +92,7 @@ function opt_one!(o::PreOptimizer)
         disδ += abs2(props.disδ[i])
         max_area = max(max_area, abs(props.area[i]))
     end
-    if dis < 1e-4 * nions && max_area >= 30
+    if dis < 1e-4 * nions && max_area >= 100
         @show objval, dis, disδ, max_area
         push!(o.candidates, Candidate(args, o.pre_obj.param, props))
         return true
