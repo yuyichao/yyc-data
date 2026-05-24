@@ -27,6 +27,14 @@
     </macro>>
   </hide-preamble>
 
+  <\eqnarray>
+    <tformat|<table|<row|<cell|H<rsub|MS>>|<cell|=>|<cell|<big|sum><rsub|j=1,2><big|sum><rsub|k>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t|)>>|)>\<sigma\><rsub|x><rsup|j>>>|<row|<cell|<around*|[|H<rsub|MS><around*|(|t<rsub|1>|)>,H<rsub|MS><around*|(|t<rsub|2>|)>|]>>|<cell|=>|<cell|<around*|[|<big|sum><rsub|j=1,2><big|sum><rsub|k>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|1>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>|)>\<sigma\><rsub|x><rsup|j>,<big|sum><rsub|j=1,2><big|sum><rsub|k>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|2>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>|)>\<sigma\><rsub|x><rsup|j>|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k><around*|[|<big|sum><rsub|j=1,2>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|1>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>|)>\<sigma\><rsub|x><rsup|j>,<big|sum><rsub|j=1,2>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|2>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>|)>\<sigma\><rsub|x><rsup|j>|]>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|k><around*|[|<big|sum><rsub|j=1,2>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|1>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|1>|)>>|)>\<sigma\><rsub|x><rsup|j>,<big|sum><rsub|j=1,2>\<eta\><rsub|j<rsub|>k><frac|\<Omega\><rsub|j><around*|(|t<rsub|2>|)>|2><around*|(|a<rsub|k>e<rsup|-i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>+a<rsub|k><rsup|\<dagger\>>e<rsup|i\<theta\><rsub|j<rsub|>k><around*|(|t<rsub|2>|)>>|)>\<sigma\><rsub|x><rsup|j>|]>>>|<row|<cell|>|<cell|>|<cell|>>>>
+  </eqnarray>
+
+  \;
+
+  \;
+
   Area term when the two ions experience different amplitude modulations
 
   <\eqnarray*>
@@ -200,6 +208,56 @@
   </eqnarray>
 
   which agrees with the previous result.
+
+  \;
+
+  If <with|mode|math|o<rsub|1>=o<rsub|2>=o> and
+  <with|mode|math|o<rsub|1><rprime|'>=o<rprime|'><rsub|2>=o<rprime|'>>
+
+  <\eqnarray>
+    <tformat|<table|<row|<cell|\<gamma\><rsub|k><rsup|n>>|<cell|=>|<cell|<around*|(|o<rsup|2>+o<rsub|>o<rprime|'><rsub|>|)><frac|1-cos<around*|(|d<rsub|
+    >|)>|d<rsup|2><rsub|>>>>|<row|<cell|>|<cell|>|<cell|+o<rsub|><rprime|'><rsup|2><frac|d<rsup|2>/2+1-cos<around*|(|d|)>-d*sin<around*|(|d|)>|d<rsup|4>>>>|<row|<cell|>|<cell|>|<cell|+i<rsub|><around*|(|o<rsup|2>+o<rsub|>o<rprime|'>|)><frac|d-sin<around*|(|d|)>|d<rsup|2>>>>|<row|<cell|>|<cell|>|<cell|+i*o<rsub|1><rprime|'>o<rprime|'><rsub|2><frac|d<rsup|3>/3+
+    d<rsub|>cos<around*|(|d|)>-sin<around*|(|d|)>|d<rsup|4>>>>>>
+  </eqnarray>
+
+  \;
+
+  Total modes: <math|N>
+
+  Total solution count: <math|M>
+
+  Lamb Dickie parameter for mode <with|mode|math|i> and ion
+  <with|mode|math|j>: <math|<with|mode|math|\<eta\><rsub|<rsub|>j><rsup|i>>>
+
+  Amplitude for solution <math|i> on ion <math|j>: <math|a<rsub|j><rsup|i>>
+
+  Area between solution <math|j> and <math|k> on mode <math|i>:
+  <math|A<rsup|i><rsub|j<rsub|>k>> (and we have
+  <math|A<rsub|j<rsub|>k><rsup|i>=A<rsub|k<rsub|>j><rsup|i>>)
+
+  Area between ion <math|i> and <math|j> (<math|i\<neq\>j>):
+
+  <\eqnarray>
+    <tformat|<table|<row|<cell|B<rsub|i<rsub|>j>>|<cell|=>|<cell|<big|sum><rsub|k=1><rsup|N><big|sum><rsub|l,m=1><rsup|M>\<eta\><rsup|k><rsub|i>\<eta\><rsub|j><rsup|k>a<rsup|l><rsub|i>A<rsub|l<rsub|>m><rsup|k>a<rsub|j><rsup|m>>>>>
+  </eqnarray>
+
+  Define for solution <math|i>, ion <math|j> and mode <math|k>
+
+  <\eqnarray>
+    <tformat|<table|<row|<cell|b<rsub|i<rsub|>j><rsup|k>>|<cell|=>|<cell|<big|sum><rsub|l=1><rsup|M>A<rsup|k><rsub|i<rsub|>l>a<rsup|l><rsub|j>>>>>
+  </eqnarray>
+
+  We have
+
+  <\eqnarray>
+    <tformat|<table|<row|<cell|B<rsub|i<rsub|>j>>|<cell|=>|<cell|<big|sum><rsub|k=1><rsup|N><big|sum><rsub|l=1><rsup|M>\<eta\><rsup|k><rsub|i>\<eta\><rsub|j><rsup|k>a<rsup|l><rsub|i>b<rsub|l<rsub|>j><rsup|k>>>>>
+  </eqnarray>
+
+  For derivatives
+
+  <\eqnarray>
+    <tformat|<table|<row|<cell|<frac|\<partial\>B<rsub|i<rsub|>j>|\<partial\>a<rsub|k><rsup|l>>>|<cell|=>|<cell|<big|sum><rsub|m=1><rsup|N><big|sum><rsub|n,o=1><rsup|M>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>A<rsub|n<rsub|>o><rsup|m>a<rsub|j><rsup|o>\<delta\><rsup|n><rsub|l>\<delta\><rsup|i><rsub|k>+<big|sum><rsub|m=1><rsup|N><big|sum><rsub|n,o=1><rsup|M>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>a<rsup|n><rsub|i>A<rsub|n<rsub|>o><rsup|m>\<delta\><rsub|l><rsup|o>\<delta\><rsup|j><rsub|k>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|m=1><rsup|N><big|sum><rsub|n=1><rsup|M>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>A<rsub|l<rsub|>n><rsup|m>a<rsub|j><rsup|n>\<delta\><rsup|i><rsub|k>+<big|sum><rsub|m=1><rsup|N><big|sum><rsub|n=1><rsup|M>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>a<rsup|n><rsub|i>A<rsub|n<rsub|>l><rsup|m>\<delta\><rsup|j><rsub|k>>>|<row|<cell|>|<cell|=>|<cell|<big|sum><rsub|m=1><rsup|N>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m><around*|(|b<rsup|m><rsub|l<rsub|>j>\<delta\><rsup|i><rsub|k>+b<rsup|m><rsub|l<rsub|>i>\<delta\><rsup|j><rsub|k>|)>>>|<row|<cell|<frac|\<partial\>B<rsub|i<rsub|>j>|\<partial\>a<rsub|i><rsup|l>>>|<cell|=>|<cell|<big|sum><rsub|m=1><rsup|N>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>b<rsup|m><rsub|l<rsub|>j>>>|<row|<cell|<frac|\<partial\>B<rsub|i<rsub|>j>|\<partial\>a<rsub|j><rsup|l>>>|<cell|=>|<cell|<big|sum><rsub|m=1><rsup|N>\<eta\><rsup|m><rsub|i>\<eta\><rsub|j><rsup|m>b<rsup|m><rsub|l<rsub|>i>>>>>
+  </eqnarray>
 </body>
 
 <\initial>
