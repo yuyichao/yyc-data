@@ -184,30 +184,17 @@ function get_objective(kernel, tgt)
     end
 end
 
-function get_opt(k::AreaKernel, tgt, tracker::Opts.NLVarTracker; maxtime=10)
+function get_opt(k::AreaKernel, tgt, tracker::Opts.NLVarTracker; maxtime=10, xtol=1e-6)
     lb = Opts.lower_bounds(tracker)
     ub = Opts.upper_bounds(tracker)
     opt = NLopt.Opt(:LD_CCSAQ, length(lb))
     NLopt.maxtime!(opt, maxtime)
+    NLopt.xtol_rel!(opt, xtol)
     NLopt.lower_bounds!(opt, lb)
     NLopt.upper_bounds!(opt, ub)
     NLopt.min_objective!(opt, get_objective(k, tgt))
     return opt
 end
-
-const NIons = 13
-const tgt_scale = 0.1
-const tgt = zeros(13, 13)
-for i in 1:NIons - 3
-    tgt[i + 3, i] = tgt[i, i + 3] = tgt_scale * (((i % 4) in (1, 2)) ? 1 : 2)
-end
-for i in 1:8:NIons
-    tgt[i + 2, i + 3] = tgt[i + 3, i + 2] = tgt[i, i + 1] = tgt[i + 1, i] = tgt_scale * 0.5
-end
-
-const kernel = AreaKernel(candidates, sysparams)
-const tracker = get_tracker(kernel, 0.3)
-const opt = get_opt(kernel, tgt, tracker)
 
 function opt_one!(opt, tracker, args_buff)
     objval, args, ret = NLopt.optimize!(opt, Opts.init_vars!(tracker, args_buff))
@@ -235,3 +222,17 @@ function opt_rep(opt, tracker, n)
     end
     return best_val, best_args
 end
+
+const NIons = 13
+const tgt_scale = 0.1
+const tgt = zeros(13, 13)
+for i in 1:NIons - 3
+    tgt[i + 3, i] = tgt[i, i + 3] = tgt_scale * (((i % 4) in (1, 2)) ? 1 : 2)
+end
+for i in 1:8:NIons
+    tgt[i + 2, i + 3] = tgt[i + 3, i + 2] = tgt[i, i + 1] = tgt[i + 1, i] = tgt_scale * 0.5
+end
+
+const kernel = AreaKernel(candidates, sysparams)
+const tracker = get_tracker(kernel, 0.3)
+const opt = get_opt(kernel, tgt, tracker)
