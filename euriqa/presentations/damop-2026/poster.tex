@@ -202,13 +202,63 @@
   \begin{columns}[t]
     \begin{column}{\sepwid}\end{column} % Empty spacer column
     \begin{column}{\colonewid} % The first column
-      % First column
-      \begin{block}{}
+      %% First column
+      \begin{block}{Hardware}
         \begin{center}
+          \begin{subblock}{Optical control}
+            \begin{columns}
+              \column{14cm}
+              \begin{itemize}
+              \item Global state preparation and detection with $370$~nm
+              \item Global repump with $935$~nm
+              \item Individually addressible Raman with $355$~nm
+              \item Global $435$~nm coupling to D$_{3/2}$ states for cooling and shelving
+              \item (Planned) Global $411$~nm and $3.4$~$\mu$m for accessing D$_{5/2}$
+                and F$_{7/2}$ states
+              \end{itemize}
+              \column{17.5cm}
+              \begin{tikzpicture}
+                \node at (0, 0) {\includegraphics[width=17.5cm]{imgs/LabPicture}};
+                \node at (-6.7, 6) {\includegraphics[width=4cm]{imgs/logos/L3Harris}};
+              \end{tikzpicture}
+            \end{columns}
+          \end{subblock}
+          \vspace{2.5cm}
+          \begin{subblock}{Phoenix surface trap}
+            \begin{columns}
+              \column{16cm}
+              \includegraphics[width=15.5cm]{imgs/Phoenix}
+              \column{16cm}
+              \begin{center}
+                \includegraphics[width=7cm]{imgs/logos/Sandia}
+              \end{center}
+              \begin{itemize}
+              \item Separate loading and quantum region
+              \item Fine control of ion position
+              \item Low heating rate
+              \end{itemize}
+            \end{columns}
+          \end{subblock}
         \end{center}
       \end{block}
-      \begin{block}{}
+      \vspace{0.5cm}
+      \begin{block}{System Performance}
         \begin{center}
+          \begin{subblock}{Phoenix surface trap}
+            \begin{columns}
+              \column{16cm}
+              \includegraphics[width=15.5cm]{imgs/Phoenix}
+              \column{16cm}
+              \begin{center}
+                \includegraphics[width=7cm]{imgs/logos/Sandia}
+              \end{center}
+              \begin{itemize}
+              \item Separate loading and quantum region
+              \item Fine control of ion position
+              \item Low heating rate
+              \end{itemize}
+            \end{columns}
+          \end{subblock}
         \end{center}
       \end{block}
     \end{column} % End of the first column
@@ -219,12 +269,23 @@
       \end{center}
     \end{column} % Empty spacer column
 
-    \begin{column}{\coltwowid}
-      \begin{block}{}
+    \begin{column}{\coltwowid} % The second column
+      %% Second column
+      \begin{block}{Quantum simulation in 1D ion chains}
+        % * Detune from all modes
+        % * scales with distance
+        % * Figure with coupling strength
         \begin{center}
+          \begin{tikzpicture}
+          \end{tikzpicture}
         \end{center}
       \end{block}
-      \begin{block}{}
+      \vspace{0.5cm}
+      \begin{block}{Engineering efficient arbitrary interaction}
+        % * Individual modulation
+        % * Can make full efficient use of coupling strength
+        % * Limitation: faster modulation can lead to closure issue
+        % * Still limited to short range interaction
         \begin{center}
         \end{center}
       \end{block}
@@ -237,9 +298,18 @@
     \end{column} % Empty spacer column
 
     \begin{column}{\colthreewid} % The third column
-      \begin{block}{}
+      %% Third column
+      \begin{block}{Beyond 1D interaction}
+        % * Requires closer detuning
+        % * Multi-qubit/parallel MS gate
+        % * Speed up computation by precomputing a set of solutions
+        % * Efficient computation by adding multiple waveforms together.
       \end{block}
-      \begin{block}{}
+      \vspace{0.5cm}
+      \begin{block}{Outlook}
+        % * Interaction phase
+        % * Adiabatic ramp
+        % * Optimum troterization
       \end{block}
     \end{column} % End of the third column
   \end{columns} % End of all the columns in the poster
