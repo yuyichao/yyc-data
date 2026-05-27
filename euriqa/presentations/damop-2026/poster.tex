@@ -12,6 +12,8 @@
 \setbeamercolor{block alerted body}{fg=black,bg=dblue!10} % Colors of the body of highlighted blocks
 % Many more colors are available for use in beamerthemeconfposter.sty
 
+\usepackage{fixcmex}
+
 \usepackage[skins]{tcolorbox}
 % a "sub-block" (plain block-within-block (second-level header))
 \newenvironment{subblock}[1]{
@@ -246,15 +248,16 @@
         \begin{center}
           \begin{subblock}{Single qubit gates}
             \begin{columns}
-              \column{16cm}
-              \includegraphics[width=15cm]{imgs/rb_fit}
-              \column{16cm}
+              \column{13cm}
+              \includegraphics[width=12cm]{imgs/rb_fit}
+              \column{18cm}
               \begin{itemize}
               \item Robust SK1 composite pulse
-              \item Random benchmark
+              \item Fidelity measured with random benchmark ($99.8(12)\ \%$)
               \end{itemize}
             \end{columns}
           \end{subblock}
+          \vspace{0.4cm}
           \begin{subblock}{Two qubit gates}
             \begin{columns}
               \column{16cm}
@@ -263,17 +266,21 @@
               \includegraphics[width=16cm]{imgs/ms_fidelity2}
             \end{columns}
           \end{subblock}
-          \begin{subblock}{Axial temperature}
+          \vspace{0.4cm}
+          \begin{subblock}{Effect of axial temperature}
             \begin{columns}
               \column{16cm}
-              % TODO
-              % \includegraphics[width=16cm]{imgs/}
+              \includegraphics[width=16cm]{imgs/axial-temp}
               \column{16cm}
               \begin{itemize}
               \item Observed slow amplitude drift
               \item Consistent with axial temperature
               \item Could be improved with axial cooling
               \end{itemize}
+              \vspace{1cm}
+              \begin{flushright}
+                \footnotesize{PRXQ 3, 010334 (2022)}
+              \end{flushright}
             \end{columns}
           \end{subblock}
         \end{center}
@@ -289,13 +296,37 @@
     \begin{column}{\coltwowid} % The second column
       %% Second column
       \begin{block}{Quantum simulation in 1D ion chains}
-        % * Detune from all modes
-        % * scales with distance
-        % * Figure with coupling strength
         \begin{center}
+          \begin{columns}
+            \column{30cm}
+            \begin{itemize}
+            \item Interaction via shared motional modes
+            \item Use a large detuning from motional frequency
+              to reduce the need for motional closure
+            \item Short range Ising interaction
+            \end{itemize}
+          \end{columns}
+          \begin{align*}
+            H=&\sum_{i,j}J_{ij}\sigma_x^{i}\sigma_x^{j}&\left|J_{ij}\right|\propto&\ \frac{1}{\left|i-j\right|^\alpha}
+          \end{align*}
           \begin{tikzpicture}
-            \node at (-8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_com}};
-            \node at (8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_zigzag}};
+            \begin{scope}[shift={(0.75, 1)}]
+              \draw[line width=1.6] (0, 2) -- (0, 4.5) node[above] {\scriptsize Carrier};
+              \foreach \x in {2.29049, 2.31223, 2.33447, 2.3566, 2.37964, 2.40187, 2.42345, 2.44437, 2.46325, 2.48068, 2.49643, 2.50981, 2.51649} {
+                \draw[color=pyplotc0,line width=1.2] (\x * 12.5 - 17, 2) -- (\x * 12.5 - 17, 4);
+                \draw[color=pyplotc3,line width=1.2] (-\x * 12.5 + 17, 2) -- (-\x * 12.5 + 17, 4);
+              };
+              \draw[->,>=stealth,line width=4,color=pyplotc1!70!black] (15, 2) -- (15, 4.8) node[above] {\scriptsize Near COM};
+              \draw[->,>=stealth,line width=4,color=pyplotc1!70!black] (-15, 2) -- (-15, 4.8);
+              \draw[->,>=stealth,line width=4,color=pyplotc2!70!black] (11, 2) -- (11, 4.8) node[above] {\scriptsize Near zig-zag};
+              \draw[->,>=stealth,line width=4,color=pyplotc2!70!black] (-11, 2) -- (-11, 4.8);
+              \draw[line width=3] (-15.5, 2) -- (15.5, 2);
+            \end{scope}
+
+            \node[above=0] at (-8 + 0.75, 0) {\textcolor{pyplotc2!70!black}{\small Coupling near zig-zag mode}};
+            \node[above=0] at (8 + 0.75, 0) {\textcolor{pyplotc1!70!black}{\small Coupling near COM mode}};
+            \node[below=-0.5] at (-8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_zigzag}};
+            \node[below=-0.5] at (8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_com}};
           \end{tikzpicture}
         \end{center}
       \end{block}
@@ -306,6 +337,19 @@
         % * Limitation: faster modulation can lead to closure issue
         % * Still limited to short range interaction
         \begin{center}
+          \begin{columns}
+            \column{30cm}
+            \begin{itemize}
+            \item Arbitrary interaction can be implemented with trotterization,\\
+              i.e. apply each term in Hamiltonian in separate steps.
+            \item For quantum smulation style Ising interaction,\\
+              this can be generalized to amplitude modulation.
+            \item By turning on all interactions simultaneously,
+              different terms can be realized in parallel,
+              allowing more efficient implementation of target Hamiltonian.
+            \item Numerically optimized sequence can reach $\approx70\ \%$ of the ``speed limit'' set by the slowest physical coupling.
+            \end{itemize}
+          \end{columns}
         \end{center}
       \end{block}
     \end{column} % End of the second column
