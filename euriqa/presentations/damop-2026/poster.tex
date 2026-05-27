@@ -244,18 +244,35 @@
       \vspace{0.5cm}
       \begin{block}{System Performance}
         \begin{center}
-          \begin{subblock}{Phoenix surface trap}
+          \begin{subblock}{Single qubit gates}
             \begin{columns}
               \column{16cm}
-              \includegraphics[width=15.5cm]{imgs/Phoenix}
+              \includegraphics[width=15cm]{imgs/rb_fit}
               \column{16cm}
-              \begin{center}
-                \includegraphics[width=7cm]{imgs/logos/Sandia}
-              \end{center}
               \begin{itemize}
-              \item Separate loading and quantum region
-              \item Fine control of ion position
-              \item Low heating rate
+              \item Robust SK1 composite pulse
+              \item Random benchmark
+              \end{itemize}
+            \end{columns}
+          \end{subblock}
+          \begin{subblock}{Two qubit gates}
+            \begin{columns}
+              \column{16cm}
+              \includegraphics[width=16cm]{imgs/ms_fidelity1}
+              \column{16cm}
+              \includegraphics[width=16cm]{imgs/ms_fidelity2}
+            \end{columns}
+          \end{subblock}
+          \begin{subblock}{Axial temperature}
+            \begin{columns}
+              \column{16cm}
+              % TODO
+              % \includegraphics[width=16cm]{imgs/}
+              \column{16cm}
+              \begin{itemize}
+              \item Observed slow amplitude drift
+              \item Consistent with axial temperature
+              \item Could be improved with axial cooling
               \end{itemize}
             \end{columns}
           \end{subblock}
@@ -277,6 +294,8 @@
         % * Figure with coupling strength
         \begin{center}
           \begin{tikzpicture}
+            \node at (-8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_com}};
+            \node at (8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_zigzag}};
           \end{tikzpicture}
         \end{center}
       \end{block}
