@@ -350,6 +350,43 @@
             \item Numerically optimized sequence can reach $\approx70\ \%$ of the ``speed limit'' set by the slowest physical coupling.
             \end{itemize}
           \end{columns}
+          \begin{tikzpicture}
+            \node at (-8, 0) {\includegraphics[width=18cm]{imgs/qsim_waveform_ring}};
+            \node at (9, 4) {\includegraphics[width=15cm]{imgs/qsim_coupling_ring}};
+            \begin{scope}[shift={(9.5, -8)}]
+              \node at (-6.2, 0) {\Large $\cdots$};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N) at (-4.6, -1) {};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N0) at (-4.6, 1) {\scriptsize 0};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N1) at (-2.6, -1) {\scriptsize 1};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N2) at (-2.6, 1) {\scriptsize 2};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N3) at (-1, -2.6) {\scriptsize 3};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N4) at (-1, 2.6) {\scriptsize 4};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N5) at (1, -2.6) {\scriptsize 5};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N6) at (1, 2.6) {\scriptsize 6};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N7) at (2.6, -1) {\scriptsize 7};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N8) at (2.6, 1) {\scriptsize 8};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N9) at (4.6, -1) {\scriptsize 9};
+              \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N10) at (4.6, 1) {\scriptsize 10};
+              \draw[line width=6, color=red!80!white] (N) -- (N1);
+              \draw[line width=6, color=red!80!white] (N0) -- (N2);
+              \draw[line width=6, color=red!80!white] (N3) -- (N5);
+              \draw[line width=6, color=red!80!white] (N4) -- (N6);
+              \draw[line width=6, color=red!80!white] (N7) -- (N9);
+              \draw[line width=6, color=red!80!white] (N8) -- (N10);
+
+              \draw[line width=8, color=pyplotc3!80!black] (N1) -- (N3);
+              \draw[line width=8, color=pyplotc3!80!black] (N2) -- (N4);
+              \draw[line width=8, color=pyplotc3!80!black] (N5) -- (N7);
+              \draw[line width=8, color=pyplotc3!80!black] (N6) -- (N8);
+
+              \draw[line width=5, color=red!50!white] (N) -- (N0);
+              \draw[line width=5, color=red!50!white] (N1) -- (N2);
+              \draw[line width=5, color=red!50!white] (N7) -- (N8);
+              \draw[line width=5, color=red!50!white] (N9) -- (N10);
+
+              \node at (6.5, 0) {\Large $\cdots$};
+            \end{scope}
+          \end{tikzpicture}
         \end{center}
       \end{block}
     \end{column} % End of the second column
