@@ -403,7 +403,7 @@
             \begin{itemize}
             \item Limitation of quantum simulation type interaction,
               \begin{itemize}
-              \item Short interaction range.\\
+              \item Weak and short interaction range.\\
                 Smaller detuning from motional modes
                 is needed for stronger and longer-ranged interaction.
               \item Fast modulation of amplitude can lead to closure error
@@ -411,7 +411,9 @@
             \item Overcoming these limitations requires
               explicit management of mode closure.
             \item Equivalent to multi-qubit parallel M{\o}lmer-S{\o}rensen gate.
-            \item Numerically optimized using linear combinations of precomputed solutions.
+            \item For optimization efficiency, the solution is constructed from
+              a linear combinations of precomputed solutions,
+              each already guarantee robust motional mode closure.
             \end{itemize}
           \end{columns}
           \vspace{0.5cm}
@@ -441,13 +443,69 @@
           \begin{columns}
             \column{30cm}
             \begin{itemize}
-            \item Optimize for lower maximum laser power
-            \item Shorter gate sequence
-            \item Efficient implementation of small gate angles
-            \item Non-commuting terms, e.g. realizing flux
-            \item Time dependent Hamiltonian
+            \item Calibration procedure
+            \item Optimize for lower maximum laser power.
+            \item Shorter gate sequence.
+            \item Efficient implementation of small gate angles.\\
+              Gate angle scales superlinearly with gate duration
+              so longer gate sequency can more easily achieve a higher angle per time.
+            \item Non-commuting terms, e.g. realizing flux.
+            \item Time dependent Hamiltonian, e.g. adiabatic evolution.
             \end{itemize}
           \end{columns}
+          \vspace{1.5cm}
+          \begin{tikzpicture}[scale=1.28]
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N0) at (-5, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N1) at (-5, 1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N2) at (-3, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N3) at (-3, 1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N4) at (-1, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N5) at (-1, 1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N6) at (1, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N7) at (1, 1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N8) at (3, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N9) at (3, 1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N10) at (5, -1) {};
+            \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N11) at (5, 1) {};
+            \draw[line width=6, color=pyplotc3] (N0) -- (N2);
+            \draw[line width=6, color=pyplotc3] (N1) -- (N3);
+            \draw[line width=6, color=pyplotc3] (N2) -- (N4);
+            \draw[line width=6, color=pyplotc3] (N3) -- (N5);
+            \draw[line width=6, color=pyplotc3] (N4) -- (N6);
+            \draw[line width=6, color=pyplotc3] (N5) -- (N7);
+            \draw[line width=6, color=pyplotc3] (N6) -- (N8);
+            \draw[line width=6, color=pyplotc3] (N7) -- (N9);
+            \draw[line width=6, color=pyplotc3] (N8) -- (N10);
+            \draw[line width=6, color=pyplotc3] (N9) -- (N11);
+
+            \draw[line width=5, color=pyplotc4] (N0) -- (N1);
+            \draw[line width=5, color=pyplotc4] (N2) -- (N3);
+            \draw[line width=5, color=pyplotc4] (N4) -- (N5);
+            \draw[line width=5, color=pyplotc4] (N6) -- (N7);
+            \draw[line width=5, color=pyplotc4] (N8) -- (N9);
+            \draw[line width=5, color=pyplotc4] (N10) -- (N11);
+
+            \begin{scope}[shift={(-4, 0)}]
+              \node at (0, 0) {$\mathbf{\Phi}$};
+              \draw[->,>=stealth,line width=3.5] (0.7, 0) arc (0:330:0.7);
+            \end{scope}
+            \begin{scope}[shift={(-2, 0)}]
+              \node at (0, 0) {$\mathbf{\Phi}$};
+              \draw[->,>=stealth,line width=3.5] (0.7, 0) arc (0:330:0.7);
+            \end{scope}
+            \begin{scope}[shift={(0, 0)}]
+              \node at (0, 0) {$\mathbf{\Phi}$};
+              \draw[->,>=stealth,line width=3.5] (0.7, 0) arc (0:330:0.7);
+            \end{scope}
+            \begin{scope}[shift={(2, 0)}]
+              \node at (0, 0) {$\mathbf{\Phi}$};
+              \draw[->,>=stealth,line width=3.5] (0.7, 0) arc (0:330:0.7);
+            \end{scope}
+            \begin{scope}[shift={(4, 0)}]
+              \node at (0, 0) {$\mathbf{\Phi}$};
+              \draw[->,>=stealth,line width=3.5] (0.7, 0) arc (0:330:0.7);
+            \end{scope}
+          \end{tikzpicture}
         \end{center}
       \end{block}
     \end{column} % End of the third column
