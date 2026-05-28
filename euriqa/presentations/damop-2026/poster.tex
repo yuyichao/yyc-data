@@ -311,7 +311,7 @@
           \end{align*}
           \begin{tikzpicture}
             \begin{scope}[shift={(0.75, 1)}]
-              \draw[line width=1.6] (0, 2) -- (0, 4.5) node[above] {\scriptsize Carrier};
+              \draw[line width=1.6] (0, 2) -- (0, 4.5) node[above] {\scriptsize\textbf{Carrier}};
               \foreach \x in {2.29049, 2.31223, 2.33447, 2.3566, 2.37964, 2.40187, 2.42345, 2.44437, 2.46325, 2.48068, 2.49643, 2.50981, 2.51649} {
                 \draw[color=pyplotc0,line width=1.2] (\x * 12.5 - 17, 2) -- (\x * 12.5 - 17, 4);
                 \draw[color=pyplotc3,line width=1.2] (-\x * 12.5 + 17, 2) -- (-\x * 12.5 + 17, 4);
@@ -325,8 +325,8 @@
 
             \node[above=0] at (-8 + 0.75, 0) {\textcolor{pyplotc2!70!black}{\small Coupling near zig-zag mode}};
             \node[above=0] at (8 + 0.75, 0) {\textcolor{pyplotc1!70!black}{\small Coupling near COM mode}};
-            \node[below=-0.5] at (-8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_zigzag}};
-            \node[below=-0.5] at (8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_com}};
+            \node[below=-0.8] at (-8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_zigzag}};
+            \node[below=-0.8] at (8, 0) {\includegraphics[width=16cm]{imgs/qsim_coupling_com}};
           \end{tikzpicture}
         \end{center}
       \end{block}
@@ -348,8 +348,9 @@
           \end{columns}
           \begin{tikzpicture}
             \node at (-8, 0) {\includegraphics[width=18cm]{imgs/qsim_waveform_ring}};
-            \node at (9, 4) {\includegraphics[width=15cm]{imgs/qsim_coupling_ring}};
-            \begin{scope}[shift={(9.5, -8)}]
+            \node[above] at (9+0.75, 9.8) {\small Target coupling};
+            \node[below=-0.8] at (9, 9.8) {\includegraphics[width=15cm]{imgs/qsim_coupling_ring}};
+            \begin{scope}[shift={(9.5, -8.5)}]
               \node at (-6.2, 0) {\Large $\cdots$};
               \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N) at (-4.6, -1) {};
               \node[draw,circle,inner sep=0pt,minimum size=1cm,line width=2] (N0) at (-4.6, 1) {\scriptsize 0};
@@ -413,6 +414,24 @@
             \item Numerically optimized using linear combinations of precomputed solutions.
             \end{itemize}
           \end{columns}
+          \begin{tikzpicture}
+            \begin{scope}[shift={(0.75, 1)}]
+              \draw[line width=1.6] (0, 2) -- (0, 4.5) node[above] {\scriptsize\textbf{Carrier}};
+              \foreach \x in {2.29049, 2.31223, 2.33447, 2.3566, 2.37964, 2.40187, 2.42345, 2.44437, 2.46325, 2.48068, 2.49643, 2.50981, 2.51649} {
+                \draw[color=pyplotc0,line width=1.2] (\x * 12.5 - 17, 2) -- (\x * 12.5 - 17, 4);
+                \draw[color=pyplotc3,line width=1.2] (-\x * 12.5 + 17, 2) -- (-\x * 12.5 + 17, 4);
+              };
+              \draw[->,>=stealth,line width=3.2,color=pyplotc4] (11.76, 2) -- (11.76, 4.8) node[above] {\scriptsize Multi-qubit gate};
+              \draw[->,>=stealth,line width=3.2,color=pyplotc4] (-11.76, 2) -- (-11.76, 4.8);
+              \draw[line width=3] (-15.5, 2) -- (15.5, 2);
+            \end{scope}
+
+            \node[below=-0.8] at (-8, -0.5) {\includegraphics[width=20cm]{imgs/am_waveform_checker}};
+            \node[above] at (10 + 0.7, 0.5) {\small Precomputed solutions};
+            \node[below=-0.8] at (10, 0.5) {\includegraphics[width=16cm]{imgs/am_candidates}};
+            \node[above] at (10.3 + 0.5, -12.5) {\small Target coupling};
+            \node[below=-0.8] at (10.3, -12.5) {\includegraphics[width=14cm]{imgs/am_coupling_checker}};
+          \end{tikzpicture}
         \end{center}
       \end{block}
       \vspace{0.5cm}
