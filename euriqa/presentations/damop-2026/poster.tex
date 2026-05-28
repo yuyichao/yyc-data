@@ -414,8 +414,9 @@
             \item Numerically optimized using linear combinations of precomputed solutions.
             \end{itemize}
           \end{columns}
+          \vspace{0.5cm}
           \begin{tikzpicture}
-            \begin{scope}[shift={(0.75, 1)}]
+            \begin{scope}[shift={(0.75, 1.3)}]
               \draw[line width=1.6] (0, 2) -- (0, 4.5) node[above] {\scriptsize\textbf{Carrier}};
               \foreach \x in {2.29049, 2.31223, 2.33447, 2.3566, 2.37964, 2.40187, 2.42345, 2.44437, 2.46325, 2.48068, 2.49643, 2.50981, 2.51649} {
                 \draw[color=pyplotc0,line width=1.2] (\x * 12.5 - 17, 2) -- (\x * 12.5 - 17, 4);
@@ -434,12 +435,20 @@
           \end{tikzpicture}
         \end{center}
       \end{block}
-      \vspace{0.5cm}
+      \vspace{0.8cm}
       \begin{block}{Outlook/future work}
-        % * Smaller angles
-        % * Interaction phase
-        % * Adiabatic ramp
-        % * Optimum troterization
+        \begin{center}
+          \begin{columns}
+            \column{30cm}
+            \begin{itemize}
+            \item Optimize for lower maximum laser power
+            \item Shorter gate sequence
+            \item Efficient implementation of small gate angles
+            \item Non-commuting terms, e.g. realizing flux
+            \item Time dependent Hamiltonian
+            \end{itemize}
+          \end{columns}
+        \end{center}
       \end{block}
     \end{column} % End of the third column
   \end{columns} % End of all the columns in the poster
