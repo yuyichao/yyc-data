@@ -223,16 +223,71 @@ function opt_rep(opt, tracker, n)
     return best_val, best_args
 end
 
+function eval_cand(c, t)
+    tr = t / c.τ
+    i = floor(Int, tr) + 1
+    if i < 1 || i >= length(c.Ωs)
+        return 0.0
+    end
+    Ω1 = c.Ωs[i]
+    Ω2 = c.Ωs[i + 1]
+    frac = tr - i + 1
+    return Ω1 * (1 - frac) + Ω2 * frac
+end
+
+function combine_candidates(cands, weights)
+    ts = [0.0]
+    nts = 1
+    for c in cands
+        n = length(c.Ωs) - 1
+        new_nts = nts + n
+        resize!(ts, new_nts)
+        ts[nts + 1:new_nts] .= (1:n) .* c.τ
+        nts = new_nts
+    end
+    sort!(ts)
+    vals = zeros(nts)
+    for (ci, c) in enumerate(cands)
+        w = weights[ci]
+        for (i, t) in enumerate(ts)
+            vals[i] += w * eval_cand(c, t)
+        end
+    end
+    return ts, vals
+end
+
 const NIons = 13
 const tgt_scale = 0.1
 const tgt = zeros(13, 13)
-for i in 1:NIons - 3
-    tgt[i + 3, i] = tgt[i, i + 3] = tgt_scale * (((i % 4) in (1, 2)) ? 1 : 2)
+for i in 2:NIons - 1
+    for j in 2:NIons - 1
+        if (i + j) % 2 != 0
+            tgt[i, j] = 1 * tgt_scale
+        end
+    end
 end
-for i in 1:8:NIons
-    tgt[i + 2, i + 3] = tgt[i + 3, i + 2] = tgt[i, i + 1] = tgt[i + 1, i] = tgt_scale * 0.5
-end
+# for i in 1:NIons - 3
+#     tgt[i + 3, i] = tgt[i, i + 3] = tgt_scale * (((i % 4) in (1, 2)) ? 1 : 2)
+# end
+# for i in 1:8:NIons
+#     tgt[i + 2, i + 3] = tgt[i + 3, i + 2] = tgt[i, i + 1] = tgt[i + 1, i] = tgt_scale * 0.5
+# end
 
 const kernel = AreaKernel(candidates, sysparams)
-const tracker = get_tracker(kernel, 0.3)
+const tracker = get_tracker(kernel, 0.02)
 const opt = get_opt(kernel, tgt, tracker)
+
+# val, args = opt_rep(opt, tracker, 10)
+
+# using NaCsPlot
+# using PyPlot
+
+for n in 1:11
+    sub_args = @view args[kernel.ncands * n + 1:kernel.ncands * n + kernel.ncands]
+    ts, vs = combine_candidates(candidates, sub_args)
+    @show maximum(abs.(vs))
+    plot(ts, vs .+ (n - 1) * 2)
+end
+# yticks((0:10) .* 2)
+# grid()
+# show()
