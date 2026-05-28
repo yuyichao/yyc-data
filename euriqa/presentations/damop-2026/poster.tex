@@ -332,10 +332,6 @@
       \end{block}
       \vspace{0.5cm}
       \begin{block}{Engineering efficient arbitrary interaction}
-        % * Individual modulation
-        % * Can make full efficient use of coupling strength
-        % * Limitation: faster modulation can lead to closure issue
-        % * Still limited to short range interaction
         \begin{center}
           \begin{columns}
             \column{30cm}
@@ -400,13 +396,28 @@
     \begin{column}{\colthreewid} % The third column
       %% Third column
       \begin{block}{Beyond 1D interaction}
-        % * Requires closer detuning
-        % * Multi-qubit/parallel MS gate
-        % * Speed up computation by precomputing a set of solutions
-        % * Efficient computation by adding multiple waveforms together.
+        \begin{center}
+          \begin{columns}
+            \column{30cm}
+            \begin{itemize}
+            \item Limitation of quantum simulation type interaction,
+              \begin{itemize}
+              \item Short interaction range.\\
+                Smaller detuning from motional modes
+                is needed for stronger and longer-ranged interaction.
+              \item Fast modulation of amplitude can lead to closure error
+              \end{itemize}
+            \item Overcoming these limitations requires
+              explicit management of mode closure.
+            \item Equivalent to multi-qubit parallel M{\o}lmer-S{\o}rensen gate.
+            \item Numerically optimized using linear combinations of precomputed solutions.
+            \end{itemize}
+          \end{columns}
+        \end{center}
       \end{block}
       \vspace{0.5cm}
-      \begin{block}{Outlook}
+      \begin{block}{Outlook/future work}
+        % * Smaller angles
         % * Interaction phase
         % * Adiabatic ramp
         % * Optimum troterization
