@@ -8,7 +8,7 @@ using YAML
 using NaCsPlot
 using PyPlot
 
-for f in readdir(joinpath(@__DIR__, "data"), join=true)
+for f in readdir(joinpath(@__DIR__, "data/throughput"), join=true)
     for d in YAML.load_file(f)
         add_item!(d)
     end
