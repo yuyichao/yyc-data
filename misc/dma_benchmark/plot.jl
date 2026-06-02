@@ -125,7 +125,7 @@ for i in 1:4
     xlabel("Block size (B)")
     ylabel("Throughput (B/ns)")
     legend(fontsize=11, ncol=2, loc="lower right")
-    title("Pipe $i blocks (fast)")
+    title("Pipe $i blocks (fast prep)")
 
     subplot(4, 2, i * 2)
     for k in ("HP DDR", "HP OCM",
@@ -145,7 +145,7 @@ for i in 1:4
     xlabel("Block size (B)")
     ylabel("Throughput (B/ns)")
     legend(fontsize=11, ncol=2, loc="lower right")
-    title("Pipe $i blocks (slow)")
+    title("Pipe $i blocks (slow prep)")
 end
 tight_layout()
 NaCsPlot.maybe_save("$(prefix)_dma_pipe")
