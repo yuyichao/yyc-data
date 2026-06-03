@@ -21,15 +21,15 @@ struct Collector
     Collector() = new(Int[], Float64[])
 end
 
-struct Line
-    collectors::Dict{Int,Collector}
+struct Line{C}
+    collectors::Dict{Int,C}
     sizes::Vector{Int}
     vals::Vector{Float64}
     uncs::Vector{Float64}
-    Line() = new(Dict{Int,Collector}(), Int[], Float64[], Float64[])
+    Line{C}() where C = new{C}(Dict{Int,C}(), Int[], Float64[], Float64[])
 end
 
-function add_point!(l::Line, size, rep, v)
+function add_point!(l::Line{Collector}, size, rep, v)
     c = get!(Collector, l.collectors, size)
     push!(c.reps, rep)
     push!(c.vals, v)
@@ -51,18 +51,18 @@ function get_data(l::Line)
     return l.sizes, l.vals, l.uncs
 end
 
-struct LineGroup
-    lines::Dict{String,Line}
-    LineGroup() = new(Dict{String,Line}())
+struct LineGroup{C}
+    lines::Dict{String,Line{C}}
+    LineGroup{C}() where C = new{C}(Dict{String,Line{C}}())
 end
 
-function add_test_results!(lg, result, size, rep, conds)
+function add_test_results!(lg::LineGroup{C}, result, size, rep, conds) where C
     if isa(result, Dict)
         for (k, v) in result
             add_test_results!(lg, v, size, rep, (conds..., k))
         end
     else
-        add_point!(get!(Line, lg.lines, join(conds, " ")), size, rep, result)
+        add_point!(get!(Line{C}, lg.lines, join(conds, " ")), size, rep, result)
     end
 end
 
@@ -80,7 +80,7 @@ function check_crc32c(result, size, rep, conds)
     end
 end
 
-function add_results!(all_lines, results, size, rep, nbuff)
+function add_results!(all_lines::Dict{<:Any,LineGroup{C}}, results, size, rep, nbuff) where C
     for (k, v) in results
         if k == "crc32c"
             check_crc32c(v, size, rep, ())
@@ -91,7 +91,7 @@ function add_results!(all_lines, results, size, rep, nbuff)
         else
             test = (k, nbuff)
         end
-        lg = get!(LineGroup, all_lines, test)
+        lg = get!(LineGroup{C}, all_lines, test)
         add_test_results!(lg, v, size, rep, ())
     end
 end
