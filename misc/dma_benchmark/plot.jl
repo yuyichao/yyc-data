@@ -8,9 +8,11 @@ using YAML
 using NaCsPlot
 using PyPlot
 
+const all_lines = Dict{Any,LineGroup}()
+
 for f in readdir(joinpath(@__DIR__, "data/throughput"), join=true)
     for d in YAML.load_file(f)
-        add_item!(d)
+        add_item!(all_lines, d)
     end
 end
 

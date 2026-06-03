@@ -56,8 +56,6 @@ struct LineGroup
     LineGroup() = new(Dict{String,Line}())
 end
 
-const all_lines = Dict{Any,LineGroup}()
-
 function add_test_results!(lg, result, size, rep, conds)
     if isa(result, Dict)
         for (k, v) in result
@@ -82,7 +80,7 @@ function check_crc32c(result, size, rep, conds)
     end
 end
 
-function add_results!(results, size, rep, nbuff)
+function add_results!(all_lines, results, size, rep, nbuff)
     for (k, v) in results
         if k == "crc32c"
             check_crc32c(v, size, rep, ())
@@ -98,6 +96,6 @@ function add_results!(results, size, rep, nbuff)
     end
 end
 
-function add_item!(item)
-    add_results!(item["results"], item["size"], item["rep"], get(item, "nbuff", nothing))
+function add_item!(all_lines, item)
+    add_results!(all_lines, item["results"], item["size"], item["rep"], get(item, "nbuff", nothing))
 end
