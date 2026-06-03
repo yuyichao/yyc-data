@@ -38,7 +38,7 @@ for (i, k) in enumerate(("HP DDR", "HP DDR_WC", "HP OCM", "HP OCM_WC",
         min_val = min(vals[1], min_val)
         max_val = max(vals[end], max_val)
         freqs = [freq[val] for val in vals]
-        bar(vals .+ ((i - 1) / (n_nbuff - 1) - 0.5) * 0.9, freqs ./ sum(freqs), width=1.8 / n_nbuff, color=cm(nbuff / max_nbuff), alpha=0.8)
+        bar(vals .+ ((i - 1) / (n_nbuff - 1) - 0.5) * 0.8, freqs ./ sum(freqs), width=4 / n_nbuff, color=cm(nbuff / max_nbuff), alpha=0.8)
     end
     grid()
     xlim([min_val - 0.49, max_val + 0.49])
