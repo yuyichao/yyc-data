@@ -14,7 +14,7 @@ sysparams = open(params_file) do io
     read(io, GoldGates.SystemParams; format=:json)
 end
 
-candidates_file = "data_am/am_candidates_20260522.binpb"
+candidates_file = "data_am3/am_candidates_20260615.binpb"
 candidates = open(candidates_file) do io
     decoder = PB.ProtoDecoder(io)
     candidates = PB.decode(decoder, Candidates)
@@ -261,8 +261,8 @@ const tgt_scale = 0.1
 const tgt = zeros(13, 13)
 for i in 2:NIons - 1
     for j in 2:NIons - 1
-        if (i + j) % 2 != 0
-            tgt[i, j] = 1 * tgt_scale
+        if abs(i - j) <= 2 && i != j
+            tgt[i, j] = 0.1 * tgt_scale
         end
     end
 end
@@ -277,10 +277,10 @@ const kernel = AreaKernel(candidates, sysparams)
 const tracker = get_tracker(kernel, 0.02)
 const opt = get_opt(kernel, tgt, tracker)
 
-# val, args = opt_rep(opt, tracker, 10)
+val, args = opt_rep(opt, tracker, 10)
 
-# using NaCsPlot
-# using PyPlot
+using NaCsPlot
+using PyPlot
 
 for n in 1:11
     sub_args = @view args[kernel.ncands * n + 1:kernel.ncands * n + kernel.ncands]
