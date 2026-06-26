@@ -92,7 +92,7 @@ function opt_one!(o::PreOptimizer)
         disδ += abs2(props.disδ[i])
         max_area = max(max_area, abs(props.area[i]))
     end
-    if dis < 1e-5 * nions && max_area >= 500
+    if dis < 1e-5 * nions && max_area >= 300
         @show objval, dis, disδ, max_area
         push!(o.candidates, Candidate(args, o.pre_obj.param, props))
         return true
@@ -185,10 +185,12 @@ else
     candidates = Candidate[]
 end
 
+@show length(candidates)
+
 const pre_pool = ThreadObjectPool() do
     ωtgt = ωs[1] - 2π * 0.010
     t = 200
-    return PreOptimizer{200}(ωs;
+    return PreOptimizer{400}(ωs;
                              tmin=t, tmax=t, ntimes=96,
                              ωmin=ωtgt, ωmax=ωtgt)
 end
