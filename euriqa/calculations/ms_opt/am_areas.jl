@@ -274,7 +274,7 @@ end
 # end
 
 const kernel = AreaKernel(candidates, sysparams)
-const tracker = get_tracker(kernel, 0.1)
+const tracker = get_tracker(kernel, 0.2)
 const opt = get_opt(kernel, tgt, tracker)
 
 val, args = opt_rep(opt, tracker, 10)
@@ -286,7 +286,7 @@ for n in 1:11
     sub_args = @view args[kernel.ncands * n + 1:kernel.ncands * n + kernel.ncands]
     ts, vs = combine_candidates(candidates, sub_args)
     @show maximum(abs.(vs))
-    plot(ts, vs .+ (n - 1) * 2)
+    plot(ts, vs .+ (n - 1) * 0.5)
 end
 # yticks((0:10) .* 2)
 # grid()
