@@ -14,7 +14,7 @@ sysparams = open(params_file) do io
     read(io, GoldGates.SystemParams; format=:json)
 end
 
-candidates_file = "data_am2/am_candidates_20260625_4.binpb"
+candidates_file = "data_am2/am_candidates_20260625.binpb"
 candidates = open(candidates_file) do io
     decoder = PB.ProtoDecoder(io)
     candidates = PB.decode(decoder, Candidates)
