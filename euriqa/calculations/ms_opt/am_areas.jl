@@ -14,7 +14,7 @@ sysparams = open(params_file) do io
     read(io, GoldGates.SystemParams; format=:json)
 end
 
-candidates_file = "data_am2/am_candidates_20260625.binpb"
+candidates_file = "data_am2/am_candidates_20260625_4.binpb"
 candidates = open(candidates_file) do io
     decoder = PB.ProtoDecoder(io)
     candidates = PB.decode(decoder, Candidates)
@@ -274,7 +274,7 @@ end
 # end
 
 const kernel = AreaKernel(candidates, sysparams)
-const tracker = get_tracker(kernel, 0.02)
+const tracker = get_tracker(kernel, 0.1)
 const opt = get_opt(kernel, tgt, tracker)
 
 val, args = opt_rep(opt, tracker, 10)
