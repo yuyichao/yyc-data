@@ -1,6 +1,7 @@
 #
 
 include("am_shared.jl")
+include("ind-modulation.jl")
 
 smooth_spec(nseg; width, seg_samples) =
     Seq.ModSpec{nseg * seg_samples}(amp=Seq.AmpSpec(cb=get_smooth_am_cbs(nseg, width), sym=false))
@@ -40,4 +41,23 @@ function constraint_matrix(spec::Seq.ModSpec{_nseg}, τ, δ, ωms; seg_samples) 
         end
     end
     return res
+end
+
+function area2_matrix(spec::Seq.ModSpec{_nseg}, τ, δ, ωm; width, seg_samples) where _nseg
+    namps = length(spec.Ωs)
+    areas = Matrix{Float64}(undef, namps, namps)
+    @inbounds for i in 1:namps
+        a1 = spec.amps[i]
+        for j in 1:namps
+            a2 = spec.amps[j]
+            areas[j, i] = compute_area2_am(τ / seg_samples, τ / seg_samples,
+                                           δ, ωm, a1, a2)
+        end
+    end
+    @inbounds for i in 1:namps
+        for j in 1:i - 1
+            areas[j, i] = areas[i, j] = (areas[j, i] + areas[i, j]) / 2
+        end
+    end
+    return areas
 end
