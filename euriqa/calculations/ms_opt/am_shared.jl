@@ -20,6 +20,18 @@ function get_am_cbs(NSeg)
                   end, NSeg - 1)
 end
 
+get_smooth_am_cbs(nseg, width) = ntuple(nseg - width * 2 + 1) do i
+    lb = (i - 1) / nseg
+    ub = lb + 2 * width / nseg
+    return function (x)
+        if x <= lb || x >= ub
+            return 0.0
+        end
+        x = (x - lb) * (ub - lb)
+        return sinpi(x)^2
+    end
+end
+
 struct AvgAreaObjCallback{NModes}
     dis_weight::Float64
     disδ_weight::Float64
