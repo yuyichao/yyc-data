@@ -3,6 +3,8 @@
 using StaticArrays
 using Static
 using LinearAlgebra
+using NLopt
+using MSSim: Optimizers as Opts
 
 @inline function rot(sθ, cθ, sϕ, cϕ)
     sϕ, cϕ = (sϕ, cϕ) .* sθ
@@ -26,11 +28,10 @@ struct InfidFullData{N,has_grad,N2,TGR}
     pend::ComplexF64
     pend2::ComplexF64
     dt::Float64
-    @inline function InfidFullData(Ωs, ϕs, t_gate, ::Val{has_grad}) where has_grad
+    @inline function InfidFullData(Ωs, ϕs, dt, ::Val{has_grad}) where has_grad
         N = length(Ωs)
         N2 = N + 1
         @assert length(ϕs) == N2
-        dt = t_gate / N
         U01 = MVector{N,SM2{ComplexF64}}(undef)
         U11 = MVector{N,SM2{ComplexF64}}(undef)
         R01 = MVector{N2,SVector{2,ComplexF64}}(undef)
@@ -225,28 +226,103 @@ end
     return J
 end
 
-function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
+@inline function infid_full_wgrad(Ωs, dt, ϕs, lam_rob, lam_leak, lam_dark, grads)
     N = length(Ωs)
     @assert length(ϕs) == N + 1
     if isempty(grads)
-        return infid_full_wgrad(InfidFullData(Ωs, ϕs, t_gate, Val(false)),
+        return infid_full_wgrad(InfidFullData(Ωs, ϕs, dt, Val(false)),
                                 lam_rob, lam_leak, lam_dark, ())
     else
-        return infid_full_wgrad(InfidFullData(Ωs, ϕs, t_gate, Val(true)),
+        return infid_full_wgrad(InfidFullData(Ωs, ϕs, dt, Val(true)),
                                 lam_rob, lam_leak, lam_dark, grads)
     end
 end
 
-function get_infid_full_cb(Ωs, t_gate, lam_rob, lam_leak, lam_dark)
-    return function infid_full_cb(ϕs, grads)
-        return infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
+@inline function infid_full_fm(Ωs, dt, ωs, lam_rob, lam_leak, lam_dark, grads)
+    N = length(Ωs)
+    @assert length(ωs) == N
+    ϕs = MVector{N + 1,Float64}(undef)
+    ϕgrads = MVector{N + 1,Float64}(undef)
+    @inbounds ϕs[1] = 0
+    ϕ = 0.0
+    @inbounds for i in 1:N
+        ϕ = muladd(dt, ωs[i], ϕ)
+        ϕs[i + 1] = ϕ
     end
+    infid = infid_full_wgrad(Ωs, dt, ϕs, lam_rob, lam_leak, lam_dark, ϕgrads)
+    if !isempty(grads)
+        g = 0.0
+        for i in N:-1:1
+            g = muladd(ϕgrads[i + 1], dt, g)
+            grads[i] = g
+        end
+    end
+    return infid
+end
+
+function get_infid_full_cb(Ωs, t_gate, lam_rob, lam_leak, lam_dark)
+    dt = t_gate / length(Ωs)
+    return function infid_full_cb(ϕs, grads)
+        return infid_full_wgrad(Ωs, dt, ϕs, lam_rob, lam_leak, lam_dark, grads)
+    end
+end
+
+function get_infid_full_fm_cb(Ωs, t_gate, lam_rob, lam_leak, lam_dark)
+    dt = t_gate / length(Ωs)
+    return function infid_full_cb(ωs, grads)
+        return infid_full_fm(Ωs, dt, ωs, lam_rob, lam_leak, lam_dark, grads)
+    end
+end
+
+function get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
+                 maxtime=10, xtol=1e-6, minω=-2π * 10, maxω=2π * 10)
+    N = length(Ωs)
+    tracker = Opts.NLVarTracker(N)
+    opt = NLopt.Opt(:LD_CCSAQ, N)
+
+    for i in 1:N
+        Opts.set_bound!(tracker, i, minω, maxω)
+    end
+
+    NLopt.maxtime!(opt, maxtime)
+    NLopt.xtol_rel!(opt, xtol)
+    NLopt.lower_bounds!(opt, Opts.lower_bounds(tracker))
+    NLopt.upper_bounds!(opt, Opts.upper_bounds(tracker))
+    cb = get_infid_full_fm_cb(Ωs, t_gate, static(lam_rob),
+                              static(lam_leak), static(lam_dark))
+    NLopt.min_objective!(opt, cb)
+    return opt, tracker, cb
+end
+function opt_one!(opt, tracker, args_buff)
+    objval, args, ret = NLopt.optimize!(opt, Opts.init_vars!(tracker, args_buff))
+    if getfield(NLopt, ret)::NLopt.Result < 0
+        return
+    end
+    return objval, args
+end
+
+const num_slices = 100
+const opt, tracker, opt_cb = get_opt(@SVector(fill(2π * 2.5, num_slices)), 1.0, 1, 1, 1)
+
+function opt_n!(opt, tracker, n)
+    args_buff = Vector{Float64}(undef, num_slices)
+    best_obj = 1.0
+    best_args = Vector{Float64}(undef, num_slices)
+    for i in 1:n
+        obj, args = opt_one!(opt, tracker, args_buff)
+        if obj < best_obj
+            @show obj
+            best_obj = obj
+            best_args .= args
+        end
+    end
+    return best_obj, best_args
 end
 
 # Ωs = @SVector [0.8120548277768912, 0.6600756672118772, 0.8834624513620218, 0.3784616113155762, 0.718592585456476, 0.2157486028591974, 0.4759595586914189, 0.8853953650900385, 0.38569591634297806, 0.5425073635198567, 0.4547036110530509, 0.36524492058833724, 0.9336343529283576, 0.5417206805604657, 0.4264683528030687, 0.7436124287466458, 0.9003200753748883, 0.6194226364448447, 0.8905048715742345, 0.41242634095552677, 0.8327270563601665, 0.7028116134210601, 0.10351802031716417, 0.6708798796477251, 0.4878743133421236, 0.1326162534712254, 0.2905364957596993, 0.7116240123204844, 0.9291825808455354, 0.032078975375203655, 0.2286254558149481, 0.25430294718459723]
 # ϕs = @SVector [0.9778373273164378, 0.06357512151726186, 0.9558640651034589, 0.6471022152045088, 0.12347033934226914, 0.022044412236653654, 0.9058383482270784, 0.7628439979061399, 0.2447784047455075, 0.4631491990304336, 0.17609449014012069, 0.05016441975120223, 0.8191325108006975, 0.01312912412594236, 0.7116411798906169, 0.18799971307390095, 0.47137853828664955, 0.8909624415832684, 0.40548870824966243, 0.849193421455286, 0.6495156770548955, 0.21323705504676804, 0.21681191098550467, 0.8758800971626411, 0.5416163718880839, 0.6805477197934157, 0.9305298996463732, 0.6558294963939725, 0.08138627788491504, 0.8996129066308572, 0.654624115568562, 0.81096160781888, 0.8738053956553339]
 # infid_grads = MVector{33, Float64}(undef)
-# infid = infid_full_wgrad(Ωs, 2.3, ϕs, 0.1, 0.2, 0.3, infid_grads)
+# infid = infid_full_wgrad(Ωs, 2.3 / 32, ϕs, 0.1, 0.2, 0.3, infid_grads)
 
 # using Test
 # @test infid ≈ 1.03535111363171 atol=1e-7
