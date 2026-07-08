@@ -14,6 +14,145 @@ end
                      complex(-cϕ, sϕ) 0]
 end
 
+const SM2{T} = SMatrix{2, 2, T, 4}
+struct InfidFullData{N,N2,TGR}
+    U01::MVector{N,SM2{ComplexF64}}
+    U11::MVector{N,SM2{ComplexF64}}
+    R01::MVector{N2,SVector{2,ComplexF64}}
+    R11::MVector{N2,SVector{2,ComplexF64}}
+    gR01::TGR
+    gR11::TGR
+    pend::ComplexF64
+    pend2::ComplexF64
+    dt::Float64
+    @inline function InfidFullData(Ωs, ϕs, t_gate, ::Val{has_grad}) where has_grad
+        N = length(Ωs)
+        N2 = N + 1
+        @assert length(ϕs) == N2
+        dt = t_gate / N
+        U01 = MVector{N,SM2{ComplexF64}}(undef)
+        U11 = MVector{N,SM2{ComplexF64}}(undef)
+        R01 = MVector{N2,SVector{2,ComplexF64}}(undef)
+        R11 = MVector{N2,SVector{2,ComplexF64}}(undef)
+        if has_grad
+            gR01 = MVector{N,SVector{2,ComplexF64}}(undef)
+            gR11 = MVector{N,SVector{2,ComplexF64}}(undef)
+        else
+            gR01 = ()
+            gR11 = ()
+        end
+        TGR = typeof(gR01)
+
+        r01 = @SVector ComplexF64[1, 0]
+        r11 = @SVector ComplexF64[1, 0]
+        @inbounds begin
+            R01[1] = r01
+            R11[1] = r11
+        end
+        @inbounds for i in 1:N
+            Ω = Ωs[i]
+            θ = Ω * dt
+            s01, c01 = sincos(θ / 2)
+            s11, c11 = sincos(θ / sqrt(2))
+            sϕ, cϕ = sincos(ϕs[i])
+            u01 = rot(s01, c01, sϕ, cϕ)
+            u11 = rot(s11, c11, sϕ, cϕ)
+            if has_grad
+                g01 = rot_grad(s01, sϕ, cϕ)
+                g11 = rot_grad(s11, sϕ, cϕ)
+                gR01[i] = g01 * R01[i]
+                gR11[i] = g11 * R11[i]
+            end
+            U01[i] = u01
+            U11[i] = u11
+
+            r01 = u01 * r01
+            r11 = u11 * r11
+            R01[i + 1] = r01
+            R11[i + 1] = r11
+        end
+        pend = @inbounds cis(ϕs[N + 1])
+        pend2 = pend^2
+        return new{N,N2,TGR}(U01, U11, R01, R11, gR01, gR11, pend, pend2, dt)
+    end
+end
+
+@inline function rydberg_time_wgrad(Us, Rs, gRs, dt, grads)
+    N = length(Us)
+    tau = 0.0
+    @inbounds for i in 2:N + 1
+        tau += abs2(Rs[i][2])
+    end
+    tau *= dt
+    if !isempty(grads)
+        e0 = @SVector [1, 0]
+        w = @inbounds Rs[N + 1][1] * e0
+        @inbounds for j in N:-1:1
+            grads[j] = -2 * dt * real(w' * gRs[j])
+            w = muladd.(Rs[j][1], e0, Us[j]' * w)
+        end
+    end
+    return tau
+end
+
+@inline function infid_sqrtCZ_robust_wgrad(d::InfidFullData{N}, lam, infid_grads) where N
+    dt = d.dt
+    l0 = @SVector ComplexF64[1, 0]
+    left01 = MVector{N,typeof(l0)}(undef)
+    left11 = MVector{N,typeof(l0)}(undef)
+    @inbounds begin
+        left01[1] = l0
+        left11[1] = l0
+    end
+    @inbounds @simd for i in 1:N - 1
+        j = N + 1 - i
+        left01[i + 1] = transpose(d.U01[j]) * left01[i]
+        left11[i + 1] = transpose(d.U11[j]) * left11[i]
+    end
+    @inbounds begin
+        fid_01 = transpose(left01[2]) * d.R01[N] * d.pend
+        fid_11 = transpose(left11[2]) * d.R11[N] * d.pend2
+    end
+
+    A = 1 + 2 * fid_01 - im * fid_11
+
+    infid = 1 - abs2(A) * 0.0625
+
+    if isempty(infid_grads)
+        tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt, ())
+        tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt, ())
+        d = muladd(-2, tau01, tau11)
+        return muladd(lam, abs2(d), infid)
+    end
+
+    g01 = MVector{N + 1,ComplexF64}(undef)
+    g11 = MVector{N + 1,ComplexF64}(undef)
+
+    @inbounds @simd for i in 1:N
+        g01[i] = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
+        g11[i] = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
+    end
+    @inbounds begin
+        g01[end] = im * fid_01
+        g11[end] = 2im * fid_11
+    end
+    @inbounds @simd for i in 1:N + 1
+        infid_grads[i] = -0.125 * real(A' * (2 * g01[i] - im * g11[i]))
+    end
+    dtau01 = MVector{N, Float64}(undef)
+    dtau11 = MVector{N, Float64}(undef)
+    tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt, dtau01)
+    tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt, dtau11)
+
+    d = muladd(-2, tau01, tau11)
+    # robustness has no Z-phase gradient
+    @inbounds @simd for i in 1:N
+        infid_grads[i] = muladd(2 * lam * d, muladd(-2, dtau01[i], dtau11[i]),
+                                infid_grads[i])
+    end
+    return muladd(lam, abs2(d), infid)
+end
+
 @inline function rot_01(θ, ϕ)
     s, c = sincos(θ / 2)
     sp, cp = sincos(ϕ) .* s
@@ -30,108 +169,6 @@ end
 
 @inline rot_11(θ, ϕ) = rot_01(sqrt(2) * θ, ϕ)
 @inline rot_11_grad(θ, ϕ) = rot_01_grad(sqrt(2) * θ, ϕ)
-
-
-@inline function rydberg_time_wgrad(scθ, scϕ, dt, grads)
-    N = length(scθ.s)
-    U = @inline ntuple(@inline(i->rot(scθ.s[i], scθ.c[i], scϕ.s[i], scϕ.c[i])), Val(N))
-    R0 = @SVector ComplexF64[1, 0]
-    Rs = MVector{N+1,typeof(R0)}(undef)
-    @inbounds Rs[1] = R0
-    R = R0
-    tau = 0.0
-    @inbounds for i in 1:N
-        R = U[i] * R
-        Rs[i + 1] = R
-        tau += abs2(R[2])
-    end
-    tau *= dt
-    if !isempty(grads)
-        e0 = @SVector [1, 0]
-        w = @inbounds Rs[N + 1][1] * e0
-        @inbounds for j in N:-1:1
-            rg = rot_grad(scθ.s[j], scϕ.s[j], scϕ.c[j])
-            grads[j] = -2 * dt * real(w' * rg * Rs[j])
-            w = muladd.(Rs[j][1], e0, U[j]' * w)
-        end
-    end
-    return tau
-end
-
-@inline function infid_sqrtCZ_robust_wgrad(scθ01, scθ11, scϕ, dt, lam, infid_grads)
-    N = length(scθ01.s)
-    rl0 = @SVector ComplexF64[1, 0]
-    right01 = MVector{N,typeof(rl0)}(undef)
-    right11 = MVector{N,typeof(rl0)}(undef)
-    left01 = MVector{N,typeof(rl0)}(undef)
-    left11 = MVector{N,typeof(rl0)}(undef)
-    @inbounds begin
-        right01[1] = rl0
-        right11[1] = rl0
-        left01[1] = rl0
-        left11[1] = rl0
-    end
-    @inbounds @simd for i in 1:N - 1
-        r01 = rot(scθ01.s[i], scθ01.c[i], scϕ.s[i], scϕ.c[i])
-        r11 = rot(scθ11.s[i], scθ11.c[i], scϕ.s[i], scϕ.c[i])
-        right01[i + 1] = r01 * right01[i]
-        right11[i + 1] = r11 * right11[i]
-    end
-    @inbounds @simd for i in 1:N - 1
-        j = N + 1 - i
-        r01 = rot(scθ01.s[j], scθ01.c[j], scϕ.s[j], scϕ.c[j])
-        r11 = rot(scθ11.s[j], scθ11.c[j], scϕ.s[j], scϕ.c[j])
-        left01[i + 1] = transpose(r01) * left01[i]
-        left11[i + 1] = transpose(r11) * left11[i]
-    end
-    @inbounds begin
-        pend = complex(scϕ.c[end], scϕ.s[end])
-        pend2 = pend^2
-
-        fid_01 = transpose(left01[2]) * right01[end] * pend
-        fid_11 = transpose(left11[2]) * right11[end] * pend2
-    end
-
-    A = 1 + 2 * fid_01 - im * fid_11
-
-    infid = 1 - abs2(A) * 0.0625
-
-    if isempty(infid_grads)
-        tau01 = rydberg_time_wgrad(scθ01, scϕ, dt, ())
-        tau11 = rydberg_time_wgrad(scθ11, scϕ, dt, ())
-        d = muladd(-2, tau01, tau11)
-        return muladd(lam, abs2(d), infid)
-    end
-
-    g01 = MVector{N + 1,ComplexF64}(undef)
-    g11 = MVector{N + 1,ComplexF64}(undef)
-
-    @inbounds @simd for i in 1:N
-        rg01 = rot_grad(scθ01.s[i], scϕ.s[i], scϕ.c[i])
-        rg11 = rot_grad(scθ11.s[i], scϕ.s[i], scϕ.c[i])
-        g01[i] = (transpose(left01[N + 1 - i]) * rg01 * right01[i]) * pend
-        g11[i] = (transpose(left11[N + 1 - i]) * rg11 * right11[i]) * pend2
-    end
-    @inbounds begin
-        g01[end] = im * fid_01
-        g11[end] = 2im * fid_11
-    end
-    @inbounds @simd for i in 1:N + 1
-        infid_grads[i] = -0.125 * real(A' * (2 * g01[i] - im * g11[i]))
-    end
-    dtau01 = MVector{N, Float64}(undef)
-    dtau11 = MVector{N, Float64}(undef)
-    tau01 = rydberg_time_wgrad(scθ01, scϕ, dt, dtau01)
-    tau11 = rydberg_time_wgrad(scθ11, scϕ, dt, dtau11)
-
-    d = muladd(-2, tau01, tau11)
-    # robustness has no Z-phase gradient
-    @inbounds @simd for i in 1:N
-        infid_grads[i] = muladd(2 * lam * d, muladd(-2, dtau01[i], dtau11[i]),
-                                infid_grads[i])
-    end
-    return muladd(lam, abs2(d), infid)
-end
 
 function leak_amp_wgrad(θ_list, pm, @specialize(rot), @specialize(rot_grad),
                         dt, grads)
@@ -189,12 +226,19 @@ end
 function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
     N = length(Ωs)
     @assert length(ϕs) == N + 1
+    d = InfidFullData(Ωs, ϕs, t_gate, Val(!isempty(grads)))
+    J = infid_sqrtCZ_robust_wgrad(d, lam_rob, grads)
+
+
     dt = t_gate / N
+
 
     scθ01 = (s = MVector{N,Float64}(undef),
               c = MVector{N,Float64}(undef))
     scθ11 = (s = MVector{N,Float64}(undef),
               c = MVector{N,Float64}(undef))
+    scϕ = (s = MVector{N + 1,Float64}(undef),
+           c = MVector{N + 1,Float64}(undef))
     @inbounds for i in 1:N
         Ω = Ωs[i]
         θ = Ω * dt
@@ -204,15 +248,14 @@ function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
         scθ01.c[i] = c01
         scθ11.s[i] = s11
         scθ11.c[i] = c11
+        sϕ, cϕ = sincos(ϕs[i])
+        scϕ.s[i], scϕ.c[i] = sϕ, cϕ
     end
 
-    scϕ = (s = MVector{N + 1,Float64}(undef),
-           c = MVector{N + 1,Float64}(undef))
-    @inbounds for i in 1:N + 1
-        scϕ.s[i], scϕ.c[i] = sincos(ϕs[i])
+    @inbounds begin
+        scϕ.s[N + 1], scϕ.c[N + 1] = sincos(ϕs[N + 1])
     end
 
-    J = infid_sqrtCZ_robust_wgrad(scθ01, scθ11, scϕ, dt, lam_rob, grads)
     θs = Ωs .* dt
     pm = ϕs
     if isempty(grads)
