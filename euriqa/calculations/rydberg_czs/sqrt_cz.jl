@@ -177,8 +177,8 @@ end
                        0.5 0]
         w = @inbounds S2 * Rs[end]
         @inbounds for j in N:-1:1
-            g = 2 * dt * (transpose(w) * gRs[j])
-            grads[j] = muladd(gβ * 2, real(I' * g), grads[j])
+            g = transpose(w) * gRs[j]
+            grads[j] = muladd(4 * gβ * dt, real(I' * g), grads[j])
             w = S2 * Rs[j] .+ transpose(Us[j]) * w
         end
     end
