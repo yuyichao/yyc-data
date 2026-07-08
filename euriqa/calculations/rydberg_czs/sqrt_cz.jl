@@ -170,28 +170,21 @@ end
 @inline rot_11(θ, ϕ) = rot_01(sqrt(2) * θ, ϕ)
 @inline rot_11_grad(θ, ϕ) = rot_01_grad(sqrt(2) * θ, ϕ)
 
-function leak_amp_wgrad(θ_list, pm, @specialize(rot), @specialize(rot_grad),
-                        dt, grads)
-    N = length(θ_list)
-    S2 = @SMatrix [0 0.5;
-                   0.5 0]
-    U = @inline ntuple(@inline(i->rot(θ_list[i], pm[i])), Val(N))
-    R0 = @SVector ComplexF64[1, 0]
-    Rs = MVector{N+1,typeof(R0)}(undef)
-    @inbounds Rs[1] = R0
-    R = R0
+@inline function leak_amp_wgrad(Us, Rs, gRs, dt, grads)
+    N = length(Us)
     I = 0.0im
-    @inbounds for i in 1:N
-        R = U[i] * R
-        Rs[i + 1] = R
+    @inbounds for i in 2:N + 1
+        R = Rs[i]
         I = muladd(R[1], R[2], I)
     end
     I *= dt
-    if !isempty(grads)
+    if grads !== ()
+        S2 = @SMatrix [0 0.5
+                       0.5 0]
         w = @inbounds S2 * Rs[end]
         @inbounds for j in N:-1:1
-            grads[j] = 2 * dt * (transpose(w) * rot_grad(θ_list[j], pm[j]) * Rs[j])
-            w = S2 * Rs[j] .+ transpose(U[j]) * w
+            grads[j] = 2 * dt * (transpose(w) * gRs[j])
+            w = S2 * Rs[j] .+ transpose(Us[j]) * w
         end
     end
     return I
@@ -229,32 +222,7 @@ function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
     d = InfidFullData(Ωs, ϕs, t_gate, Val(!isempty(grads)))
     J = infid_sqrtCZ_robust_wgrad(d, lam_rob, grads)
 
-
     dt = t_gate / N
-
-
-    scθ01 = (s = MVector{N,Float64}(undef),
-              c = MVector{N,Float64}(undef))
-    scθ11 = (s = MVector{N,Float64}(undef),
-              c = MVector{N,Float64}(undef))
-    scϕ = (s = MVector{N + 1,Float64}(undef),
-           c = MVector{N + 1,Float64}(undef))
-    @inbounds for i in 1:N
-        Ω = Ωs[i]
-        θ = Ω * dt
-        s01, c01 = sincos(θ / 2)
-        s11, c11 = sincos(θ / sqrt(2))
-        scθ01.s[i] = s01
-        scθ01.c[i] = c01
-        scθ11.s[i] = s11
-        scθ11.c[i] = c11
-        sϕ, cϕ = sincos(ϕs[i])
-        scϕ.s[i], scϕ.c[i] = sϕ, cϕ
-    end
-
-    @inbounds begin
-        scϕ.s[N + 1], scϕ.c[N + 1] = sincos(ϕs[N + 1])
-    end
 
     θs = Ωs .* dt
     pm = ϕs
@@ -267,8 +235,8 @@ function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
         dI11 = MVector{N, ComplexF64}(undef)
         dId11 = MVector{N, ComplexF64}(undef)
     end
-    I01 = leak_amp_wgrad(θs, pm, rot_01, rot_01_grad, dt, dI01)
-    I11 = leak_amp_wgrad(θs, pm, rot_11, rot_11_grad, dt, dI11)
+    I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, dI01)
+    I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dI11)
     Id11 = darkleak_amp_wgrad(θs, pm, rot_11, rot_11_grad, dt, dId11)
     J = muladd(lam_leak, muladd(2, abs2(I01), abs2(I11)), muladd(lam_dark, abs2(Id11), J))
     if !isempty(grads)
