@@ -164,7 +164,7 @@ end
     return infid
 end
 
-@inline function leak_amp_wgrad(Us, Rs, gRs, dt, grads)
+@inline function leak_amp_wgrad(Us, Rs, gRs, dt, grads, gβ, ::Val{has_grad}) where has_grad
     N = length(Us)
     I = 0.0im
     @inbounds for i in 2:N + 1
@@ -172,16 +172,17 @@ end
         I = muladd(R[1], R[2], I)
     end
     I *= dt
-    if grads !== ()
+    if has_grad
         S2 = @SMatrix [0 0.5
                        0.5 0]
         w = @inbounds S2 * Rs[end]
         @inbounds for j in N:-1:1
-            grads[j] = 2 * dt * (transpose(w) * gRs[j])
+            g = 2 * dt * (transpose(w) * gRs[j])
+            grads[j] = muladd(gβ * 2, real(I' * g), grads[j])
             w = S2 * Rs[j] .+ transpose(Us[j]) * w
         end
     end
-    return I
+    return abs2(I)
 end
 
 @inline function darkleak_amp_wgrad(Us, Rs, gRs, dt, grads)
@@ -207,21 +208,17 @@ end
     dt = d.dt
     J = infid_sqrtCZ_robust_wgrad(d, lam_rob, grads)
     if !has_grad
-        dI01 = ()
-        dI11 = ()
         dId11 = ()
     else
-        dI01 = MVector{N, ComplexF64}(undef)
-        dI11 = MVector{N, ComplexF64}(undef)
         dId11 = MVector{N, ComplexF64}(undef)
     end
-    I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, dI01)
-    I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dI11)
+    I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, grads, 2 * lam_leak, Val(has_grad))
+    I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, grads, lam_leak, Val(has_grad))
     Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dId11)
-    J = muladd(lam_leak, muladd(2, abs2(I01), abs2(I11)), muladd(lam_dark, abs2(Id11), J))
+    J = muladd(lam_leak, muladd(2, I01, I11), muladd(lam_dark, abs2(Id11), J))
     if !isempty(grads)
         @inbounds for i in 1:N
-            grads[i] += lam_leak * (4 * real(I01' * dI01[i]) + 2 * real(I11' * dI11[i])) + lam_dark * 2 * real(Id11' * dId11[i])
+            grads[i] += lam_dark * 2 * real(Id11' * dId11[i])
         end
     end
     return J
