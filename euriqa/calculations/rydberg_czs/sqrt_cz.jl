@@ -125,19 +125,15 @@ end
         return muladd(lam, abs2(d), infid)
     end
 
-    g01 = MVector{N + 1,ComplexF64}(undef)
-    g11 = MVector{N + 1,ComplexF64}(undef)
-
     @inbounds @simd for i in 1:N
-        g01[i] = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
-        g11[i] = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
+        g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
+        g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
+        infid_grads[i] = -0.125 * real(A' * (2 * g01 - im * g11))
     end
     @inbounds begin
-        g01[end] = im * fid_01
-        g11[end] = 2im * fid_11
-    end
-    @inbounds @simd for i in 1:N + 1
-        infid_grads[i] = -0.125 * real(A' * (2 * g01[i] - im * g11[i]))
+        g01 = im * fid_01
+        g11 = 2im * fid_11
+        infid_grads[N + 1] = -0.125 * real(A' * (2 * g01 - im * g11))
     end
     dtau01 = MVector{N, Float64}(undef)
     dtau11 = MVector{N, Float64}(undef)
