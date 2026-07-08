@@ -173,19 +173,20 @@ end
     end
     I *= dt
     if has_grad
-        S2 = @SMatrix [0 0.5
-                       0.5 0]
-        w = @inbounds S2 * Rs[end]
+        function S2(R)
+            @SVector [R[2], R[1]]
+        end
+        w = @inbounds S2(Rs[end]) .* 0.5
         @inbounds for j in N:-1:1
             g = transpose(w) * gRs[j]
             grads[j] = muladd(4 * gβ * dt, real(I' * g), grads[j])
-            w = S2 * Rs[j] .+ transpose(Us[j]) * w
+            w = muladd.(S2(Rs[j]), 0.5, transpose(Us[j]) * w)
         end
     end
     return abs2(I)
 end
 
-@inline function darkleak_amp_wgrad(Us, Rs, gRs, dt, grads)
+@inline function darkleak_amp_wgrad(Us, Rs, gRs, dt, grads, gβ, ::Val{has_grad}) where has_grad
     N = length(Us)
     I = 0.0im
     @inbounds for i in 2:N + 1
@@ -193,14 +194,15 @@ end
     end
     I *= dt
     if grads !== ()
-        e1 = @SVector [0, 1]
+        e1 = @SVector [false, true]
         w = @SVector ComplexF64[0, 1]
         @inbounds for j in N:-1:1
-            grads[j] = dt * (transpose(w) * gRs[j])
+            g = transpose(w) * gRs[j]
+            grads[j] = muladd(2 * gβ * dt, real(I' * g), grads[j])
             w = e1 .+ transpose(Us[j]) * w
         end
     end
-    return I
+    return abs2(I)
 end
 
 @inline function infid_full_wgrad(d::InfidFullData{N,has_grad},
@@ -213,18 +215,8 @@ end
         J = muladd(lam_leak, muladd(2, I01, I11), J)
     end
     if lam_dark > 0
-        if !has_grad
-            dId11 = ()
-        else
-            dId11 = MVector{N, ComplexF64}(undef)
-        end
-        Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dId11)
-        J = muladd(lam_dark, abs2(Id11), J)
-        if !isempty(grads)
-            @inbounds for i in 1:N
-                grads[i] += lam_dark * 2 * real(Id11' * dId11[i])
-            end
-        end
+        Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, grads, lam_dark, Val(has_grad))
+        J = muladd(lam_dark, Id11, J)
     end
     return J
 end
