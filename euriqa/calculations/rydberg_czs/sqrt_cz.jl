@@ -53,16 +53,14 @@ struct InfidFullData{N,has_grad,N2,TGR}
         @inbounds for i in 1:N
             Ω = Ωs[i]
             θ = Ω * dt
-            s01, c01 = sincos(θ / 2)
-            s11, c11 = sincos(θ / sqrt(2))
-            sϕ, cϕ = sincos(ϕs[i])
+            s01, c01 = @fastmath sincos(θ / 2)
+            s11, c11 = @fastmath sincos(θ / sqrt(2))
+            sϕ, cϕ = @fastmath sincos(ϕs[i])
             u01 = rot(s01, c01, sϕ, cϕ)
             u11 = rot(s11, c11, sϕ, cϕ)
             if has_grad
-                g01 = rot_grad(s01, sϕ, cϕ)
-                g11 = rot_grad(s11, sϕ, cϕ)
-                gR01[i] = g01 * R01[i]
-                gR11[i] = g11 * R11[i]
+                gR01[i] = rot_grad(s01, sϕ, cϕ) * r01
+                gR11[i] = rot_grad(s11, sϕ, cϕ) * r11
             end
             U01[i] = u01
             U11[i] = u11
