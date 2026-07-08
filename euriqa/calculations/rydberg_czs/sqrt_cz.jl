@@ -127,7 +127,7 @@ end
     infid = 1 - abs2(A) * 0.0625
 
     if !has_grad
-        if lam != 0
+        if lam > 0
             tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
                                        (), static(false), static(false))
             tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt,
@@ -148,7 +148,7 @@ end
         g11 = 2im * fid_11
         infid_grads[N + 1] = -0.125 * real(A' * (2 * g01 - im * g11))
     end
-    if lam != 0
+    if lam > 0
         dd = MVector{N, Float64}(undef)
         tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
                                    dd, static(false), static(-2))
@@ -207,18 +207,23 @@ end
                                   lam_rob, lam_leak, lam_dark, grads) where {N,has_grad}
     dt = d.dt
     J = infid_sqrtCZ_robust_wgrad(d, lam_rob, grads)
-    if !has_grad
-        dId11 = ()
-    else
-        dId11 = MVector{N, ComplexF64}(undef)
+    if lam_leak > 0
+        I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, grads, 2 * lam_leak, Val(has_grad))
+        I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, grads, lam_leak, Val(has_grad))
+        J = muladd(lam_leak, muladd(2, I01, I11), J)
     end
-    I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, grads, 2 * lam_leak, Val(has_grad))
-    I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, grads, lam_leak, Val(has_grad))
-    Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dId11)
-    J = muladd(lam_leak, muladd(2, I01, I11), muladd(lam_dark, abs2(Id11), J))
-    if !isempty(grads)
-        @inbounds for i in 1:N
-            grads[i] += lam_dark * 2 * real(Id11' * dId11[i])
+    if lam_dark > 0
+        if !has_grad
+            dId11 = ()
+        else
+            dId11 = MVector{N, ComplexF64}(undef)
+        end
+        Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dId11)
+        J = muladd(lam_dark, abs2(Id11), J)
+        if !isempty(grads)
+            @inbounds for i in 1:N
+                grads[i] += lam_dark * 2 * real(Id11' * dId11[i])
+            end
         end
     end
     return J
