@@ -136,28 +136,34 @@ end
         return infid
     end
 
-    @inbounds @simd for i in 1:N
-        g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
-        g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
-        infid_grads[i] = -0.125 * real(A' * (2 * g01 - im * g11))
+    if lam > 0
+        tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
+                                   infid_grads, static(false), static(-2))
+        tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt,
+                                   infid_grads, static(true), static(true))
+        tau = muladd(-2, tau01, tau11)
+
+        @inbounds @simd for i in 1:N
+            g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
+            g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
+            g11 = complex(imag(g11), -real(g11))
+            dtau = infid_grads[i]
+            infid_grads[i] = muladd(2 * lam * tau, dtau,
+                                    -0.125 * real(A' * muladd(2, g01, g11)))
+        end
+        infid = muladd(lam, abs2(tau), infid)
+    else
+        @inbounds @simd for i in 1:N
+            g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
+            g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
+            g11 = complex(imag(g11), -real(g11))
+            infid_grads[i] = -0.125 * real(A' * muladd(2, g01, g11))
+        end
     end
     @inbounds begin
         g01 = im * fid_01
         g11 = 2im * fid_11
         infid_grads[N + 1] = -0.125 * real(A' * (2 * g01 - im * g11))
-    end
-    if lam > 0
-        dd = MVector{N, Float64}(undef)
-        tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
-                                   dd, static(false), static(-2))
-        tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt,
-                                   dd, static(true), static(true))
-        d = muladd(-2, tau01, tau11)
-        # robustness has no Z-phase gradient
-        @inbounds @simd for i in 1:N
-            infid_grads[i] = muladd(2 * lam * d, dd[i], infid_grads[i])
-        end
-        infid = muladd(lam, abs2(d), infid)
     end
     return infid
 end
