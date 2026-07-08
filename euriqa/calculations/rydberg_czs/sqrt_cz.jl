@@ -110,7 +110,7 @@ end
         left01[1] = l0
         left11[1] = l0
     end
-    @inbounds @simd for i in 1:N - 1
+    @inbounds for i in 1:N - 1
         j = N + 1 - i
         left01[i + 1] = transpose(d.U01[j]) * left01[i]
         left11[i + 1] = transpose(d.U11[j]) * left11[i]
@@ -143,7 +143,7 @@ end
                                    infid_grads, static(true), static(true))
         tau = muladd(-2, tau01, tau11)
 
-        @inbounds @simd for i in 1:N
+        @inbounds for i in 1:N
             g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
             g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
             g11 = complex(imag(g11), -real(g11))
@@ -153,7 +153,7 @@ end
         end
         infid = muladd(lam, abs2(tau), infid)
     else
-        @inbounds @simd for i in 1:N
+        @inbounds for i in 1:N
             g01 = (transpose(left01[N + 1 - i]) * d.gR01[i]) * d.pend
             g11 = (transpose(left11[N + 1 - i]) * d.gR11[i]) * d.pend2
             g11 = complex(imag(g11), -real(g11))
