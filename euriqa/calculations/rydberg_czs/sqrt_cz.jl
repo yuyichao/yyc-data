@@ -11,10 +11,10 @@ using MSSim: Optimizers as Opts
     return @SMatrix [cθ complex(sϕ, -cϕ)
                      complex(-sϕ, -cϕ) cθ]
 end
-@inline function rot_grad(sθ, sϕ, cϕ)
+@inline function rot_grad(sθ, sϕ, cϕ, r)
     sϕ, cϕ = (sϕ, cϕ) .* sθ
-    return @SMatrix [0 complex(cϕ, sϕ)
-                     complex(-cϕ, sϕ) 0]
+    return @inbounds @SVector [complex(cϕ, sϕ) * r[2],
+                               complex(-cϕ, sϕ) * r[1]]
 end
 
 const SM2{T} = SMatrix{2, 2, T, 4}
@@ -31,7 +31,6 @@ struct InfidFullData{N,has_grad,N2,TGR}
     @inline function InfidFullData(Ωs, ϕs, dt, ::Val{has_grad}) where has_grad
         N = length(Ωs)
         N2 = N + 1
-        @assert length(ϕs) == N2
         U01 = MVector{N,SM2{ComplexF64}}(undef)
         U11 = MVector{N,SM2{ComplexF64}}(undef)
         R01 = MVector{N2,SVector{2,ComplexF64}}(undef)
@@ -60,8 +59,8 @@ struct InfidFullData{N,has_grad,N2,TGR}
             u01 = rot(s01, c01, sϕ, cϕ)
             u11 = rot(s11, c11, sϕ, cϕ)
             if has_grad
-                gR01[i] = rot_grad(s01, sϕ, cϕ) * r01
-                gR11[i] = rot_grad(s11, sϕ, cϕ) * r11
+                gR01[i] = rot_grad(s01, sϕ, cϕ, r01)
+                gR11[i] = rot_grad(s11, sϕ, cϕ, r11)
             end
             U01[i] = u01
             U11[i] = u11
