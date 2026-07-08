@@ -15,7 +15,7 @@ end
 end
 
 const SM2{T} = SMatrix{2, 2, T, 4}
-struct InfidFullData{N,N2,TGR}
+struct InfidFullData{N,has_grad,N2,TGR}
     U01::MVector{N,SM2{ComplexF64}}
     U11::MVector{N,SM2{ComplexF64}}
     R01::MVector{N2,SVector{2,ComplexF64}}
@@ -73,7 +73,7 @@ struct InfidFullData{N,N2,TGR}
         end
         pend = @inbounds cis(ϕs[N + 1])
         pend2 = pend^2
-        return new{N,N2,TGR}(U01, U11, R01, R11, gR01, gR11, pend, pend2, dt)
+        return new{N,has_grad,N2,TGR}(U01, U11, R01, R11, gR01, gR11, pend, pend2, dt)
     end
 end
 
@@ -84,7 +84,7 @@ end
         tau += abs2(Rs[i][2])
     end
     tau *= dt
-    if !isempty(grads)
+    if grads !== ()
         e0 = @SVector [1, 0]
         w = @inbounds Rs[N + 1][1] * e0
         @inbounds for j in N:-1:1
@@ -95,7 +95,7 @@ end
     return tau
 end
 
-@inline function infid_sqrtCZ_robust_wgrad(d::InfidFullData{N}, lam, infid_grads) where N
+@inline function infid_sqrtCZ_robust_wgrad(d::InfidFullData{N,has_grad}, lam, infid_grads) where {N,has_grad}
     dt = d.dt
     l0 = @SVector ComplexF64[1, 0]
     left01 = MVector{N,typeof(l0)}(undef)
@@ -118,7 +118,7 @@ end
 
     infid = 1 - abs2(A) * 0.0625
 
-    if isempty(infid_grads)
+    if !has_grad
         tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt, ())
         tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt, ())
         d = muladd(-2, tau01, tau11)
