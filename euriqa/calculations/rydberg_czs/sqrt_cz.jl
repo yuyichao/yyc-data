@@ -1,6 +1,7 @@
 #
 
 using StaticArrays
+using Static
 using LinearAlgebra
 
 @inline function rot(sθ, cθ, sϕ, cϕ)
@@ -77,7 +78,7 @@ struct InfidFullData{N,has_grad,N2,TGR}
     end
 end
 
-@inline function rydberg_time_wgrad(Us, Rs, gRs, dt, grads)
+@inline function rydberg_time_wgrad(Us, Rs, gRs, dt, grads, gα, gβ)
     N = length(Us)
     tau = 0.0
     @inbounds for i in 2:N + 1
@@ -87,9 +88,16 @@ end
     if grads !== ()
         e0 = @SVector [1, 0]
         w = @inbounds Rs[N + 1][1] * e0
-        @inbounds for j in N:-1:1
-            grads[j] = -2 * dt * real(w' * gRs[j])
-            w = muladd.(Rs[j][1], e0, Us[j]' * w)
+        if gα == 0
+            @inbounds for j in N:-1:1
+                grads[j] = -2 * dt * gβ * real(w' * gRs[j])
+                w = muladd.(Rs[j][1], e0, Us[j]' * w)
+            end
+        else
+            @inbounds for j in N:-1:1
+                grads[j] = muladd(-2 * dt * gβ, real(w' * gRs[j]), grads[j] * gα)
+                w = muladd.(Rs[j][1], e0, Us[j]' * w)
+            end
         end
     end
     return tau
@@ -119,10 +127,15 @@ end
     infid = 1 - abs2(A) * 0.0625
 
     if !has_grad
-        tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt, ())
-        tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt, ())
-        d = muladd(-2, tau01, tau11)
-        return muladd(lam, abs2(d), infid)
+        if lam != 0
+            tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
+                                       (), static(false), static(false))
+            tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt,
+                                       (), static(false), static(false))
+            d = muladd(-2, tau01, tau11)
+            infid = muladd(lam, abs2(d), infid)
+        end
+        return infid
     end
 
     @inbounds @simd for i in 1:N
@@ -135,18 +148,20 @@ end
         g11 = 2im * fid_11
         infid_grads[N + 1] = -0.125 * real(A' * (2 * g01 - im * g11))
     end
-    dtau01 = MVector{N, Float64}(undef)
-    dtau11 = MVector{N, Float64}(undef)
-    tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt, dtau01)
-    tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt, dtau11)
-
-    d = muladd(-2, tau01, tau11)
-    # robustness has no Z-phase gradient
-    @inbounds @simd for i in 1:N
-        infid_grads[i] = muladd(2 * lam * d, muladd(-2, dtau01[i], dtau11[i]),
-                                infid_grads[i])
+    if lam != 0
+        dd = MVector{N, Float64}(undef)
+        tau01 = rydberg_time_wgrad(d.U01, d.R01, d.gR01, dt,
+                                   dd, static(false), static(-2))
+        tau11 = rydberg_time_wgrad(d.U11, d.R11, d.gR11, dt,
+                                   dd, static(true), static(true))
+        d = muladd(-2, tau01, tau11)
+        # robustness has no Z-phase gradient
+        @inbounds @simd for i in 1:N
+            infid_grads[i] = muladd(2 * lam * d, dd[i], infid_grads[i])
+        end
+        infid = muladd(lam, abs2(d), infid)
     end
-    return muladd(lam, abs2(d), infid)
+    return infid
 end
 
 @inline function leak_amp_wgrad(Us, Rs, gRs, dt, grads)
