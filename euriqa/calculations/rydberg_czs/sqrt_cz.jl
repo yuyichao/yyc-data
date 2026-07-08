@@ -153,23 +153,6 @@ end
     return muladd(lam, abs2(d), infid)
 end
 
-@inline function rot_01(θ, ϕ)
-    s, c = sincos(θ / 2)
-    sp, cp = sincos(ϕ) .* s
-    return @SMatrix [c complex(sp, -cp)
-                     complex(-sp, -cp) c]
-end
-
-@inline function rot_01_grad(θ, ϕ)
-    s = sin(θ / 2)
-    sp, cp = sincos(ϕ) .* s
-    return @SMatrix [0 complex(cp, sp)
-                     complex(-cp, sp) 0]
-end
-
-@inline rot_11(θ, ϕ) = rot_01(sqrt(2) * θ, ϕ)
-@inline rot_11_grad(θ, ϕ) = rot_01_grad(sqrt(2) * θ, ϕ)
-
 @inline function leak_amp_wgrad(Us, Rs, gRs, dt, grads)
     N = length(Us)
     I = 0.0im
@@ -190,27 +173,19 @@ end
     return I
 end
 
-function darkleak_amp_wgrad(θ_list, pm, @specialize(rot),
-                            @specialize(rot_grad), dt, grads)
-    N = length(θ_list)
-    e1 = @SVector [0, 1]
-    U = @inline ntuple(@inline(i->rot(θ_list[i], pm[i])), Val(N))
-    R0 = @SVector ComplexF64[1, 0]
-    Rs = MVector{N+1,typeof(R0)}(undef)
-    @inbounds Rs[1] = R0
-    R = R0
+@inline function darkleak_amp_wgrad(Us, Rs, gRs, dt, grads)
+    N = length(Us)
     I = 0.0im
-    @inbounds for i in 1:N
-        R = U[i] * R
-        Rs[i + 1] = R
-        I += R[2]
+    @inbounds for i in 2:N + 1
+        I += Rs[i][2]
     end
     I *= dt
-    if !isempty(grads)
+    if grads !== ()
+        e1 = @SVector [0, 1]
         w = @SVector ComplexF64[0, 1]
         @inbounds for j in N:-1:1
-            grads[j] = dt * (transpose(w) * rot_grad(θ_list[j], pm[j]) * Rs[j])
-            w = e1 .+ transpose(U[j]) * w
+            grads[j] = dt * (transpose(w) * gRs[j])
+            w = e1 .+ transpose(Us[j]) * w
         end
     end
     return I
@@ -237,7 +212,7 @@ function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
     end
     I01 = leak_amp_wgrad(d.U01, d.R01, d.gR01, dt, dI01)
     I11 = leak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dI11)
-    Id11 = darkleak_amp_wgrad(θs, pm, rot_11, rot_11_grad, dt, dId11)
+    Id11 = darkleak_amp_wgrad(d.U11, d.R11, d.gR11, dt, dId11)
     J = muladd(lam_leak, muladd(2, abs2(I01), abs2(I11)), muladd(lam_dark, abs2(Id11), J))
     if !isempty(grads)
         @inbounds for i in 1:N
