@@ -202,17 +202,11 @@ end
     return I
 end
 
-function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
-    N = length(Ωs)
-    @assert length(ϕs) == N + 1
-    d = InfidFullData(Ωs, ϕs, t_gate, Val(!isempty(grads)))
+@inline function infid_full_wgrad(d::InfidFullData{N,has_grad},
+                                  lam_rob, lam_leak, lam_dark, grads) where {N,has_grad}
+    dt = d.dt
     J = infid_sqrtCZ_robust_wgrad(d, lam_rob, grads)
-
-    dt = t_gate / N
-
-    θs = Ωs .* dt
-    pm = ϕs
-    if isempty(grads)
+    if !has_grad
         dI01 = ()
         dI11 = ()
         dId11 = ()
@@ -231,4 +225,16 @@ function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
         end
     end
     return J
+end
+
+function infid_full_wgrad(Ωs, t_gate, ϕs, lam_rob, lam_leak, lam_dark, grads)
+    N = length(Ωs)
+    @assert length(ϕs) == N + 1
+    if isempty(grads)
+        return infid_full_wgrad(InfidFullData(Ωs, ϕs, t_gate, Val(false)),
+                                lam_rob, lam_leak, lam_dark, ())
+    else
+        return infid_full_wgrad(InfidFullData(Ωs, ϕs, t_gate, Val(true)),
+                                lam_rob, lam_leak, lam_dark, grads)
+    end
 end
