@@ -312,19 +312,22 @@ function opt_one!(opt, tracker, args_buff)
     return objval, args
 end
 
-function opt_n!(opt, tracker, n; verbose=true)
-    args_buff = Vector{Float64}(undef, n)
-    best_obj = 1.0
-    best_args = Vector{Float64}(undef, n)
+function opt_n!(opt, tracker, n; verbose=true,
+                best_obj=1.0, best_args=Vector{Float64}(undef, length(tracker.vars)))
+    args_buff = Vector{Float64}(undef, length(tracker.vars))
     for i in 1:n
         if verbose
-            obj, args = @time opt_one!(opt, tracker, args_buff)
+            opt_res = @time opt_one!(opt, tracker, args_buff)
         else
-            obj, args = opt_one!(opt, tracker, args_buff)
+            opt_res = opt_one!(opt, tracker, args_buff)
             if i % 20 == 0
                 println("Round $i done")
             end
         end
+        if opt_res === nothing
+            continue
+        end
+        obj, args = opt_res
         if obj < best_obj
             @show obj
             best_obj = obj
