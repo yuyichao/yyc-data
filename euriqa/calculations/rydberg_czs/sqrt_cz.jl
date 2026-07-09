@@ -237,6 +237,69 @@ end
     end
 end
 
+function spline_matrix(nseg, nsample)
+    MD = zeros(nseg + 1, nseg + 1)
+    @inbounds for i in 1:nseg
+        MD[i, i] = 4
+        MD[i, i + 1] = 1
+        MD[i + 1, i] = 1
+    end
+    @inbounds MD[1, 1] = 2
+    @inbounds MD[nseg + 1, nseg + 1] = 2
+    M3 = zeros(nseg + 1, nseg + 1)
+    @inbounds for i in 2:nseg
+        M3[i, i + 1] = 3
+        M3[i, i - 1] = -3
+    end
+    @inbounds M3[1, 2] = M3[nseg + 1, nseg + 1] = 3
+    @inbounds M3[1, 1] = M3[nseg + 1, nseg] = -3
+    SD = MD \ M3
+    Mabcd = zeros(4 * nseg, nseg + 1)
+    @inbounds for i in 1:nseg
+        offset = (i - 1) * 4
+        # aᵢ = yᵢ
+        Mabcd[offset + 1, i] = 1
+        # bᵢ = Dᵢ
+        Mabcd[offset + 2, :] .= @view(SD[i, :])
+        # cᵢ = 3(yᵢ₊₁ - yᵢ) - 2Dᵢ - Dᵢ₊₁
+        Mabcd[offset + 3, :] .= muladd.(-2, @view(SD[i, :]), .-@view(SD[i + 1, :]))
+        Mabcd[offset + 3, i] -= 3
+        Mabcd[offset + 3, i + 1] += 3
+        # dᵢ = 2(yᵢ - yᵢ₊₁) + Dᵢ + Dᵢ₊₁
+        Mabcd[offset + 4, :] .= @view(SD[i, :]) .+ @view(SD[i + 1, :])
+        Mabcd[offset + 4, i] += 2
+        Mabcd[offset + 4, i + 1] -= 2
+    end
+    M = zeros(nseg * nsample + 1, nseg + 1)
+    @inbounds for i in 1:nseg
+        offset_abcd = (i - 1) * 4
+        offset = (i - 1) * nsample
+        for j in 1:(i == nseg ? nsample + 1 : nsample)
+            x = (j - 1) / nsample
+            a = @view(Mabcd[offset_abcd + 1, :])
+            b = @view(Mabcd[offset_abcd + 2, :])
+            c = @view(Mabcd[offset_abcd + 3, :])
+            d = @view(Mabcd[offset_abcd + 4, :])
+            M[offset + j, :] .= a .+ x .* (b .+ x .* (c .+ x .* d))
+        end
+    end
+    return M
+end
+
+function fm_spline_matrix(ttotal, nseg, nsample)
+    dt = ttotal / (nseg * nsample)
+    Ms = spline_matrix(nseg, nsample)
+    M = zeros(nseg * nsample + 1, nseg + 1)
+    @inbounds for i in 1:nseg + 1
+        v = 0.0
+        for j in 2:nseg * nsample + 1
+            v += Ms[j - 1, i] * dt
+            M[j, i] = v
+        end
+    end
+    return M
+end
+
 @inline function infid_full_fm(Ωs, dt, ωsϕ, lam_rob, lam_leak, lam_dark, grads)
     N = length(Ωs)
     @assert length(ωsϕ) == N
