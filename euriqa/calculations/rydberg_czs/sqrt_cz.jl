@@ -278,16 +278,32 @@ end
 fm_to_phase(ωsϕ, t_gate) = [0; cumsum(@view(ωsϕ[1:end - 1])) .* (t_gate / length(ωsϕ));
                              ωsϕ[end]]
 
-function get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
-                 algorithm=:LD_CCSAQ, maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
+struct Opt{CB}
+    opt::NLopt.Opt
+    pre_opt::NLopt.Opt
+    tracker::Opts.NLVarTracker
+    args_buff::Vector{Float64}
+    cb::CB
+    t_gate::Float64
+end
+
+function Opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
+             algorithm=:LD_CCSAQ, maxeval_pre=1000,
+             maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
     N = length(Ωs)
     tracker = Opts.NLVarTracker(N)
     opt = NLopt.Opt(algorithm, N)
+    pre_opt = NLopt.Opt(algorithm, N)
 
     for i in 1:N - 1
         Opts.set_bound!(tracker, i, minω, maxω)
     end
     Opts.set_bound!(tracker, N, -4π, 4π)
+
+    NLopt.maxeval!(pre_opt, maxeval_pre)
+    NLopt.xtol_rel!(pre_opt, xtol * 10)
+    NLopt.lower_bounds!(pre_opt, Opts.lower_bounds(tracker))
+    NLopt.upper_bounds!(pre_opt, Opts.upper_bounds(tracker))
 
     NLopt.maxtime!(opt, maxtime)
     NLopt.xtol_rel!(opt, xtol)
@@ -295,31 +311,41 @@ function get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
     NLopt.upper_bounds!(opt, Opts.upper_bounds(tracker))
     cb = get_infid_full_fm_cb(Ωs, t_gate, static(lam_rob),
                               static(lam_leak), static(lam_dark))
+    NLopt.min_objective!(pre_opt, cb)
     NLopt.min_objective!(opt, cb)
-    return opt, tracker, cb
+    return Opt{typeof(cb)}(opt, pre_opt, tracker, Vector{Float64}(undef, N), cb, t_gate)
 end
 
-function get_opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark, kws...)
+function Opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark, kws...)
     Ωs = @SVector(fill(Ω, num_slices))
-    return get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark; kws...)
+    return Opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark; kws...)
 end
 
-function opt_one!(opt, tracker, args_buff)
-    objval, args, ret = NLopt.optimize!(opt, Opts.init_vars!(tracker, args_buff))
+fm_to_phase(opt::Opt, ωsϕ) = fm_to_phase(ωsϕ, opt.t_gate)
+
+function opt_one!(opt::Opt, pre_threshold)
+    objval, args, ret = NLopt.optimize!(opt.pre_opt,
+                                        Opts.init_vars!(opt.tracker, opt.args_buff))
+    if getfield(NLopt, ret)::NLopt.Result < 0
+        return
+    end
+    if objval > pre_threshold
+        return objval, args
+    end
+    objval, args, ret = NLopt.optimize!(opt.opt, args)
     if getfield(NLopt, ret)::NLopt.Result < 0
         return
     end
     return objval, args
 end
 
-function opt_n!(opt, tracker, n; verbose=true,
-                best_obj=1.0, best_args=Vector{Float64}(undef, length(tracker.vars)))
-    args_buff = Vector{Float64}(undef, length(tracker.vars))
+function opt_n!(opt::Opt, n; verbose=true, pre_threshold=0.005,
+                best_obj=1.0, best_args=similar(opt.args_buff))
     for i in 1:n
         if verbose
-            opt_res = @time opt_one!(opt, tracker, args_buff)
+            opt_res = @time opt_one!(opt, pre_threshold)
         else
-            opt_res = opt_one!(opt, tracker, args_buff)
+            opt_res = opt_one!(opt, pre_threshold)
             if i % 20 == 0
                 println("Round $i done")
             end
@@ -337,8 +363,8 @@ function opt_n!(opt, tracker, n; verbose=true,
     return best_obj, best_args
 end
 
-# const opt, tracker, opt_cb = get_opt(Ω=2π * 3, num_slices=100, t_gate=0.6,
-#                                      lam_rob=0, lam_leak=1, lam_dark=1)
+# const opt = get_opt(Ω=2π * 3, num_slices=100, t_gate=0.6,
+#                     lam_rob=0, lam_leak=1, lam_dark=1)
 
 # Ωs = @SVector [0.8120548277768912, 0.6600756672118772, 0.8834624513620218, 0.3784616113155762, 0.718592585456476, 0.2157486028591974, 0.4759595586914189, 0.8853953650900385, 0.38569591634297806, 0.5425073635198567, 0.4547036110530509, 0.36524492058833724, 0.9336343529283576, 0.5417206805604657, 0.4264683528030687, 0.7436124287466458, 0.9003200753748883, 0.6194226364448447, 0.8905048715742345, 0.41242634095552677, 0.8327270563601665, 0.7028116134210601, 0.10351802031716417, 0.6708798796477251, 0.4878743133421236, 0.1326162534712254, 0.2905364957596993, 0.7116240123204844, 0.9291825808455354, 0.032078975375203655, 0.2286254558149481, 0.25430294718459723]
 # ϕs = @SVector [0.9778373273164378, 0.06357512151726186, 0.9558640651034589, 0.6471022152045088, 0.12347033934226914, 0.022044412236653654, 0.9058383482270784, 0.7628439979061399, 0.2447784047455075, 0.4631491990304336, 0.17609449014012069, 0.05016441975120223, 0.8191325108006975, 0.01312912412594236, 0.7116411798906169, 0.18799971307390095, 0.47137853828664955, 0.8909624415832684, 0.40548870824966243, 0.849193421455286, 0.6495156770548955, 0.21323705504676804, 0.21681191098550467, 0.8758800971626411, 0.5416163718880839, 0.6805477197934157, 0.9305298996463732, 0.6558294963939725, 0.08138627788491504, 0.8996129066308572, 0.654624115568562, 0.81096160781888, 0.8738053956553339]
