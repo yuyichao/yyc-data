@@ -237,24 +237,26 @@ end
     end
 end
 
-@inline function infid_full_fm(Ωs, dt, ωs, lam_rob, lam_leak, lam_dark, grads)
+@inline function infid_full_fm(Ωs, dt, ωsϕ, lam_rob, lam_leak, lam_dark, grads)
     N = length(Ωs)
-    @assert length(ωs) == N
+    @assert length(ωsϕ) == N
     ϕs = MVector{N + 1,Float64}(undef)
     ϕgrads = MVector{N + 1,Float64}(undef)
     @inbounds ϕs[1] = 0
     ϕ = 0.0
-    @inbounds for i in 1:N
-        ϕ = muladd(dt, ωs[i], ϕ)
+    @inbounds for i in 1:N - 1
+        ϕ = muladd(dt, ωsϕ[i], ϕ)
         ϕs[i + 1] = ϕ
     end
+    @inbounds ϕs[N + 1] = ωsϕ[N]
     infid = infid_full_wgrad(Ωs, dt, ϕs, lam_rob, lam_leak, lam_dark, ϕgrads)
-    if !isempty(grads)
+    @inbounds if !isempty(grads)
         g = 0.0
-        for i in N:-1:1
+        for i in N - 1:-1:1
             g = muladd(ϕgrads[i + 1], dt, g)
             grads[i] = g
         end
+        grads[N] = ϕgrads[N + 1]
     end
     return infid
 end
@@ -268,20 +270,21 @@ end
 
 function get_infid_full_fm_cb(Ωs, t_gate, lam_rob, lam_leak, lam_dark)
     dt = t_gate / length(Ωs)
-    return function infid_full_cb(ωs, grads)
-        return infid_full_fm(Ωs, dt, ωs, lam_rob, lam_leak, lam_dark, grads)
+    return function infid_full_cb(ωsϕ, grads)
+        return infid_full_fm(Ωs, dt, ωsϕ, lam_rob, lam_leak, lam_dark, grads)
     end
 end
 
 function get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
-                 maxtime=10, xtol=1e-6, minω=-2π * 10, maxω=2π * 10)
+                 algorithm=:LD_CCSAQ, maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
     N = length(Ωs)
     tracker = Opts.NLVarTracker(N)
-    opt = NLopt.Opt(:LD_CCSAQ, N)
+    opt = NLopt.Opt(algorithm, N)
 
-    for i in 1:N
+    for i in 1:N - 1
         Opts.set_bound!(tracker, i, minω, maxω)
     end
+    Opts.set_bound!(tracker, N, -4π, 4π)
 
     NLopt.maxtime!(opt, maxtime)
     NLopt.xtol_rel!(opt, xtol)
@@ -292,6 +295,12 @@ function get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark;
     NLopt.min_objective!(opt, cb)
     return opt, tracker, cb
 end
+
+function get_opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark, kws...)
+    Ωs = @SVector(fill(Ω, num_slices))
+    return get_opt(Ωs, t_gate, lam_rob, lam_leak, lam_dark; kws...)
+end
+
 function opt_one!(opt, tracker, args_buff)
     objval, args, ret = NLopt.optimize!(opt, Opts.init_vars!(tracker, args_buff))
     if getfield(NLopt, ret)::NLopt.Result < 0
@@ -300,13 +309,13 @@ function opt_one!(opt, tracker, args_buff)
     return objval, args
 end
 
-const num_slices = 100
-const opt, tracker, opt_cb = get_opt(@SVector(fill(2π * 2.5, num_slices)), 1.0, 1, 1, 1)
+# const opt, tracker, opt_cb = get_opt(Ω=2π * 3, num_slices=100, t_gate=0.6,
+#                                      lam_rob=0, lam_leak=1, lam_dark=1)
 
 function opt_n!(opt, tracker, n)
-    args_buff = Vector{Float64}(undef, num_slices)
+    args_buff = Vector{Float64}(undef, n)
     best_obj = 1.0
-    best_args = Vector{Float64}(undef, num_slices)
+    best_args = Vector{Float64}(undef, n)
     for i in 1:n
         obj, args = opt_one!(opt, tracker, args_buff)
         if obj < best_obj
