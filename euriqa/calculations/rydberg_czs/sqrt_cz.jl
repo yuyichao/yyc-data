@@ -379,6 +379,89 @@ function (cb::SplineFMCB)(ωsϕ, grads)
     return infid
 end
 
+struct SplineMultiFMCB{NF,SV1,MV2} <: Function
+    Ωs::SV1
+    ϕs::MV2
+    ϕgrads::MV2
+    ϕs2::MV2
+    ϕgrads2::MV2
+    M::Matrix{Float64}
+    dt::Float64
+
+    δωs::NTuple{NF,Float64}
+    weights::NTuple{NF,Float64}
+    lam_robs::NTuple{NF,Float64}
+    lam_leaks::NTuple{NF,Float64}
+    lam_darks::NTuple{NF,Float64}
+end
+
+function SplineMultiFMCB{NF}(Ω, N, nsubsample, t_gate,
+                             δωs::NTuple{NF}, weights::NTuple{NF}, lam_robs::NTuple{NF},
+                             lam_leaks::NTuple{NF}, lam_darks::NTuple{NF}) where NF
+    num_slices = N * nsubsample
+    Ωs = @SVector(fill(Ω, num_slices))
+    ϕs = MVector{num_slices + 1,Float64}(undef)
+    ϕgrads = MVector{num_slices + 1,Float64}(undef)
+    ϕs2 = MVector{num_slices + 1,Float64}(undef)
+    ϕgrads2 = MVector{num_slices + 1,Float64}(undef)
+    M = fm_spline_matrix(t_gate, N, nsubsample)
+    M[end, :] .= 0
+    M = [M zeros(num_slices + 1)]
+    M[end, end] = 1
+
+    return SplineMultiFMCB(Ωs, ϕs, ϕgrads, ϕs2, ϕgrads2, M, t_gate / num_slices,
+                           δωs, weights, lam_robs, lam_leaks, lam_darks)
+end
+
+function (cb::SplineMultiFMCB)(ωsϕ, grads)
+    ϕs = cb.ϕs
+    dt = cb.dt
+    mul!(ϕs, cb.M, ωsϕ)
+    cb.ϕs2[end] = ϕs[end]
+    res = 0.0
+    if isempty(grads)
+        for (δω, weight, lam_rob, lam_leak, lam_dark) in zip(cb.δωs, cb.weights,
+                                                               cb.lam_robs,
+                                                               cb.lam_leaks, cb.lam_darks)
+            if δω == 0
+                _ϕs = ϕs
+            else
+                _ϕs = cb.ϕs2
+                @inbounds for i in 1:length(ϕs) - 1
+                    _ϕs[i] = muladd(δω * dt, i - 1, ϕs[i])
+                end
+            end
+            res = muladd(infid_full_wgrad(cb.Ωs, dt, _ϕs, lam_rob, lam_leak,
+                                          lam_dark, ()), weight, res)
+        end
+        return res
+    end
+    grad_filled = false
+    for (δω, weight, lam_rob, lam_leak, lam_dark) in zip(cb.δωs, cb.weights,
+                                                           cb.lam_robs,
+                                                           cb.lam_leaks, cb.lam_darks)
+        if δω == 0
+            _ϕs = ϕs
+        else
+            _ϕs = cb.ϕs2
+            @inbounds for i in 1:length(ϕs) - 1
+                _ϕs[i] = muladd(δω * dt, i - 1, ϕs[i])
+            end
+        end
+        res = muladd(infid_full_wgrad(cb.Ωs, dt, _ϕs, lam_rob, lam_leak,
+                                      lam_dark, cb.ϕgrads2), weight, res)
+        @inbounds if grad_filled
+            cb.ϕgrads .= muladd.(cb.ϕgrads2, weight, cb.ϕgrads)
+        else
+            grad_filled = true
+            cb.ϕgrads .= cb.ϕgrads2 .* weight
+        end
+    end
+    mul!(grads, cb.M', cb.ϕgrads)
+    return res
+end
+
+
 fm_to_phase(ωsϕ, t_gate) = [0; cumsum(@view(ωsϕ[1:end - 1])) .* (t_gate / length(ωsϕ));
                              ωsϕ[end]]
 
@@ -472,6 +555,54 @@ end
 
 fm_to_phase(opt::SplineOpt, ωsϕ) = opt.cb.M * ωsϕ
 args_to_phase(opt::SplineOpt, ωsϕ) = fm_to_phase(opt, ωsϕ)
+
+struct SplineMultiOpt{CB} <: AbstractDoubleOpt
+    opt::NLopt.Opt
+    pre_opt::NLopt.Opt
+    tracker::Opts.NLVarTracker
+    args_buff::Vector{Float64}
+    cb::CB
+    nseg::Int
+    nsubsample::Int
+    dt::Float64
+    t_gate::Float64
+end
+
+function SplineMultiOpt(; Ω, nseg, nsubsample, t_gate,
+                        δωs, weights, lam_robs, lam_leaks, lam_darks,
+                        algorithm=:LD_CCSAQ, maxeval_pre=1000,
+                        maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
+
+    cb = SplineMultiFMCB{length(δωs)}(Ω, nseg, nsubsample, t_gate,
+                                      δωs, weights, lam_robs, lam_leaks, lam_darks)
+    nargs = size(cb.M, 2)
+    tracker = Opts.NLVarTracker(nargs)
+    opt = NLopt.Opt(algorithm, nargs)
+    pre_opt = NLopt.Opt(algorithm, nargs)
+
+    for i in 1:nargs - 1
+        Opts.set_bound!(tracker, i, minω, maxω)
+    end
+    Opts.set_bound!(tracker, nargs, -4π, 4π)
+
+    NLopt.maxeval!(pre_opt, maxeval_pre)
+    NLopt.xtol_rel!(pre_opt, xtol * 10)
+    NLopt.lower_bounds!(pre_opt, Opts.lower_bounds(tracker))
+    NLopt.upper_bounds!(pre_opt, Opts.upper_bounds(tracker))
+
+    NLopt.maxtime!(opt, maxtime)
+    NLopt.xtol_rel!(opt, xtol)
+    NLopt.lower_bounds!(opt, Opts.lower_bounds(tracker))
+    NLopt.upper_bounds!(opt, Opts.upper_bounds(tracker))
+    NLopt.min_objective!(pre_opt, cb)
+    NLopt.min_objective!(opt, cb)
+    return SplineMultiOpt{typeof(cb)}(opt, pre_opt, tracker,
+                                      Vector{Float64}(undef, nargs), cb,
+                                      nseg, nsubsample, cb.dt, t_gate)
+end
+
+fm_to_phase(opt::SplineMultiOpt, ωsϕ) = opt.cb.M * ωsϕ
+args_to_phase(opt::SplineMultiOpt, ωsϕ) = fm_to_phase(opt, ωsϕ)
 
 function opt_one!(opt::AbstractDoubleOpt, pre_threshold)
     objval, args, ret = NLopt.optimize!(opt.pre_opt,
