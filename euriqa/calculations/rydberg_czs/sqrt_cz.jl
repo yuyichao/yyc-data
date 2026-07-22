@@ -4,7 +4,7 @@ using StaticArrays
 using Static
 using LinearAlgebra
 using NLopt
-using MSSim: Optimizers as Opts
+using MSSim: Optimizers as Opts, Utils as U
 
 @inline function rot(sθ, cθ, sϕ, cϕ)
     sϕ, cϕ = (sϕ, cϕ) .* sθ
@@ -338,6 +338,20 @@ function get_infid_full_fm_cb(Ωs, t_gate, lam_rob, lam_leak, lam_dark)
     end
 end
 
+function _gen_blackman_am(Ω, N, ratio)
+    ary = Vector{Float64}(undef, N)
+    for i in 1:N
+        # convert from [1, N] to [-1, 1]
+        x = (i - 1) / (N - 1) * 2 - 1
+        ary[i] = U.blackman_startend(x, ratio) * Ω
+    end
+    return SVector{N,Float64}(ary)
+end
+
+function gen_blackman_am(Ω, N, t_gate, t_ramp)
+    return _gen_blackman_am(Ω, N, 1 - (2 * t_ramp) / t_gate)
+end
+
 struct SplineFMCB{SV1,MV2,LR,LL,LD} <: Function
     Ωs::SV1
     ϕs::MV2
@@ -349,13 +363,13 @@ struct SplineFMCB{SV1,MV2,LR,LL,LD} <: Function
     lam_dark::LD
 end
 
-function SplineFMCB(Ω, N, nsubsample, t_gate, lam_rob, lam_leak, lam_dark)
+function SplineFMCB(Ω, N, nsubsample, t_gate, lam_rob, lam_leak, lam_dark; t_ramp=0)
     lam_rob = static(lam_rob)
     lam_leak = static(lam_leak)
     lam_dark = static(lam_dark)
 
     num_slices = N * nsubsample
-    Ωs = @SVector(fill(Ω, num_slices))
+    Ωs = gen_blackman_am(Ω, num_slices, t_gate, t_ramp)
     ϕs = MVector{num_slices + 1,Float64}(undef)
     ϕgrads = MVector{num_slices + 1,Float64}(undef)
     M = fm_spline_matrix(t_gate, N, nsubsample)
@@ -397,9 +411,10 @@ end
 
 function SplineMultiFMCB{NF}(Ω, N, nsubsample, t_gate,
                              δωs::NTuple{NF}, weights::NTuple{NF}, lam_robs::NTuple{NF},
-                             lam_leaks::NTuple{NF}, lam_darks::NTuple{NF}) where NF
+                             lam_leaks::NTuple{NF}, lam_darks::NTuple{NF};
+                             t_ramp=0) where NF
     num_slices = N * nsubsample
-    Ωs = @SVector(fill(Ω, num_slices))
+    Ωs = gen_blackman_am(Ω, num_slices, t_gate, t_ramp)
     ϕs = MVector{num_slices + 1,Float64}(undef)
     ϕgrads = MVector{num_slices + 1,Float64}(undef)
     ϕs2 = MVector{num_slices + 1,Float64}(undef)
@@ -478,8 +493,8 @@ end
 
 function Opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark,
              algorithm=:LD_CCSAQ, maxeval_pre=1000,
-             maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
-    Ωs = @SVector(fill(Ω, num_slices))
+             maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0)
+    Ωs = gen_blackman_am(Ω, num_slices, t_gate, t_ramp)
     N = num_slices
     tracker = Opts.NLVarTracker(num_slices)
     opt = NLopt.Opt(algorithm, num_slices)
@@ -524,9 +539,10 @@ end
 
 function SplineOpt(; Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
                    algorithm=:LD_CCSAQ, maxeval_pre=1000,
-                   maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
+                   maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0)
 
-    cb = SplineFMCB(Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark)
+    cb = SplineFMCB(Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
+                    t_ramp=t_ramp)
     nargs = size(cb.M, 2)
     tracker = Opts.NLVarTracker(nargs)
     opt = NLopt.Opt(algorithm, nargs)
@@ -571,10 +587,11 @@ end
 function SplineMultiOpt(; Ω, nseg, nsubsample, t_gate,
                         δωs, weights, lam_robs, lam_leaks, lam_darks,
                         algorithm=:LD_CCSAQ, maxeval_pre=1000,
-                        maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10)
+                        maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0)
 
     cb = SplineMultiFMCB{length(δωs)}(Ω, nseg, nsubsample, t_gate,
-                                      δωs, weights, lam_robs, lam_leaks, lam_darks)
+                                        δωs, weights, lam_robs, lam_leaks, lam_darks,
+                                        t_ramp=t_ramp)
     nargs = size(cb.M, 2)
     tracker = Opts.NLVarTracker(nargs)
     opt = NLopt.Opt(algorithm, nargs)
