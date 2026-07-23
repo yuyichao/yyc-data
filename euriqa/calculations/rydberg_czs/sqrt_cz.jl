@@ -515,6 +515,33 @@ function gen_fm_rate_constraints(t_gate, fm_limit; idx_min=1, idx_max)
     return diff_limit, (args, grads)->fm_rate_constraints(args, grads, idx_rng, diff_limit)
 end
 
+@inline function fm_single_rate_constraints(args, grads, idx1, diff_limit)
+    @inbounds begin
+        v0 = args[idx1]
+        v1 = args[idx1 + 1]
+        d = v1 - v0
+        res = abs(d) - diff_limit
+        if !isempty(grads)
+            grads .= 0
+            if d > 0
+                grads[idx1 + 1] = 1
+                grads[idx1] = -1
+            else
+                grads[idx1 + 1] = -1
+                grads[idx1] = 1
+            end
+        end
+        return res
+    end
+end
+
+function gen_fm_single_rate_constraints(t_gate, fm_limit; idx_min=1, idx_max)
+    dt = t_gate / (idx_max - idx_min)
+    diff_limit = fm_limit * dt
+    return diff_limit, [(args, grads)->fm_single_rate_constraints(args, grads, i, diff_limit)
+                        for i in idx_min:(idx_max - 1)]
+end
+
 fm_to_phase(ωsϕ, t_gate) = [0; cumsum(@view(ωsϕ[1:end - 1])) .* (t_gate / length(ωsϕ));
                              ωsϕ[end]]
 
@@ -610,10 +637,12 @@ function SplineOpt(; Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
     NLopt.min_objective!(opt, cb)
 
     if fm_limit !== nothing
-        diff_limit, constraint_cb = gen_fm_rate_constraints(t_gate, fm_limit;
-                                                            idx_max=nargs - 1)
-        NLopt.inequality_constraint!(pre_opt, constraint_cb, 1e-2)
-        NLopt.inequality_constraint!(opt, constraint_cb, 1e-2)
+        diff_limit, constraint_cbs = gen_fm_single_rate_constraints(t_gate, fm_limit;
+                                                                    idx_max=nargs - 1)
+        for cb in constraint_cbs
+            NLopt.inequality_constraint!(pre_opt, cb, 1e-2)
+            NLopt.inequality_constraint!(opt, cb, 1e-2)
+        end
     else
         diff_limit = Inf
     end
@@ -673,10 +702,12 @@ function SplineMultiOpt(; Ω, nseg, nsubsample, t_gate,
     NLopt.min_objective!(opt, cb)
 
     if fm_limit !== nothing
-        diff_limit, constraint_cb = gen_fm_rate_constraints(t_gate, fm_limit;
-                                                            idx_max=nargs - 1)
-        NLopt.inequality_constraint!(pre_opt, constraint_cb, 1e-2)
-        NLopt.inequality_constraint!(opt, constraint_cb, 1e-2)
+        diff_limit, constraint_cbs = gen_fm_single_rate_constraints(t_gate, fm_limit;
+                                                                    idx_max=nargs - 1)
+        for cb in constraint_cbs
+            NLopt.inequality_constraint!(pre_opt, cb, 1e-2)
+            NLopt.inequality_constraint!(opt, cb, 1e-2)
+        end
     else
         diff_limit = Inf
     end
