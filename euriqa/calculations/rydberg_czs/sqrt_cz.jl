@@ -476,6 +476,44 @@ function (cb::SplineMultiFMCB)(ωsϕ, grads)
     return res
 end
 
+@inline function fm_rate_constraints(args, grads, idx_rng, diff_limit)
+    idx0 = idx_rng[1]
+    val0 = args[idx0]
+    max_diff_idx = idx0
+    max_diff_inc = true
+    max_diff = -1.0
+    @inbounds for i in idx_rng[2:end]
+        val1 = args[i]
+        d = val1 - val0
+        val0 = val1
+        absd = abs(d)
+        if absd <= max_diff
+            continue
+        end
+        max_diff_idx = i
+        max_diff = absd
+        max_diff_inc = d > 0
+    end
+    res = max_diff - diff_limit
+    @inbounds if !isempty(grads)
+        grads .= 0
+        if max_diff_inc
+            grads[max_diff_idx] = 1
+            grads[max_diff_idx - 1] = -1
+        else
+            grads[max_diff_idx] = -1
+            grads[max_diff_idx - 1] = 1
+        end
+    end
+    return res
+end
+
+function gen_fm_rate_constraints(t_gate, fm_limit; idx_min=1, idx_max)
+    idx_rng = idx_min:idx_max
+    dt = t_gate / (length(idx_rng) - 1)
+    diff_limit = fm_limit * dt
+    return diff_limit, (args, grads)->fm_rate_constraints(args, grads, idx_rng, diff_limit)
+end
 
 fm_to_phase(ωsϕ, t_gate) = [0; cumsum(@view(ωsϕ[1:end - 1])) .* (t_gate / length(ωsϕ));
                              ωsϕ[end]]
@@ -489,6 +527,8 @@ struct Opt{CB} <: AbstractDoubleOpt
     args_buff::Vector{Float64}
     cb::CB
     t_gate::Float64
+    idx_max::Int
+    diff_limit::Float64
 end
 
 function Opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark,
@@ -519,7 +559,8 @@ function Opt(; Ω, num_slices, t_gate, lam_rob, lam_leak, lam_dark,
     NLopt.min_objective!(pre_opt, cb)
     NLopt.min_objective!(opt, cb)
     return Opt{typeof(cb)}(opt, pre_opt, tracker,
-                           Vector{Float64}(undef, num_slices), cb, t_gate)
+                           Vector{Float64}(undef, num_slices), cb, t_gate,
+                           num_slices - 1, Inf)
 end
 
 fm_to_phase(opt::Opt, ωsϕ) = fm_to_phase(ωsϕ, opt.t_gate)
@@ -535,11 +576,14 @@ struct SplineOpt{CB} <: AbstractDoubleOpt
     nsubsample::Int
     dt::Float64
     t_gate::Float64
+    idx_max::Int
+    diff_limit::Float64
 end
 
 function SplineOpt(; Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
                    algorithm=:LD_CCSAQ, maxeval_pre=1000,
-                   maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0)
+                   maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0,
+                   fm_limit=nothing)
 
     cb = SplineFMCB(Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
                     t_ramp=t_ramp)
@@ -564,9 +608,20 @@ function SplineOpt(; Ω, nseg, nsubsample, t_gate, lam_rob, lam_leak, lam_dark,
     NLopt.upper_bounds!(opt, Opts.upper_bounds(tracker))
     NLopt.min_objective!(pre_opt, cb)
     NLopt.min_objective!(opt, cb)
+
+    if fm_limit !== nothing
+        diff_limit, constraint_cb = gen_fm_rate_constraints(t_gate, fm_limit;
+                                                            idx_max=nargs - 1)
+        NLopt.inequality_constraint!(pre_opt, constraint_cb, 1e-2)
+        NLopt.inequality_constraint!(opt, constraint_cb, 1e-2)
+    else
+        diff_limit = Inf
+    end
+
     return SplineOpt{typeof(cb)}(opt, pre_opt, tracker,
                                  Vector{Float64}(undef, nargs), cb,
-                                 nseg, nsubsample, cb.dt, t_gate)
+                                 nseg, nsubsample, cb.dt, t_gate,
+                                 nargs - 1, diff_limit)
 end
 
 fm_to_phase(opt::SplineOpt, ωsϕ) = opt.cb.M * ωsϕ
@@ -582,12 +637,15 @@ struct SplineMultiOpt{CB} <: AbstractDoubleOpt
     nsubsample::Int
     dt::Float64
     t_gate::Float64
+    idx_max::Int
+    diff_limit::Float64
 end
 
 function SplineMultiOpt(; Ω, nseg, nsubsample, t_gate,
                         δωs, weights, lam_robs, lam_leaks, lam_darks,
                         algorithm=:LD_CCSAQ, maxeval_pre=1000,
-                        maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0)
+                        maxtime=3, xtol=1e-7, minω=-2π * 10, maxω=2π * 10, t_ramp=0,
+                        fm_limit=nothing)
 
     cb = SplineMultiFMCB{length(δωs)}(Ω, nseg, nsubsample, t_gate,
                                         δωs, weights, lam_robs, lam_leaks, lam_darks,
@@ -613,17 +671,47 @@ function SplineMultiOpt(; Ω, nseg, nsubsample, t_gate,
     NLopt.upper_bounds!(opt, Opts.upper_bounds(tracker))
     NLopt.min_objective!(pre_opt, cb)
     NLopt.min_objective!(opt, cb)
+
+    if fm_limit !== nothing
+        diff_limit, constraint_cb = gen_fm_rate_constraints(t_gate, fm_limit;
+                                                            idx_max=nargs - 1)
+        NLopt.inequality_constraint!(pre_opt, constraint_cb, 1e-2)
+        NLopt.inequality_constraint!(opt, constraint_cb, 1e-2)
+    else
+        diff_limit = Inf
+    end
+
     return SplineMultiOpt{typeof(cb)}(opt, pre_opt, tracker,
                                       Vector{Float64}(undef, nargs), cb,
-                                      nseg, nsubsample, cb.dt, t_gate)
+                                      nseg, nsubsample, cb.dt, t_gate,
+                                      nargs - 1, diff_limit)
 end
 
 fm_to_phase(opt::SplineMultiOpt, ωsϕ) = opt.cb.M * ωsϕ
 args_to_phase(opt::SplineMultiOpt, ωsϕ) = fm_to_phase(opt, ωsϕ)
 
 function opt_one!(opt::AbstractDoubleOpt, pre_threshold)
-    objval, args, ret = NLopt.optimize!(opt.pre_opt,
-                                        Opts.init_vars!(opt.tracker, opt.args_buff))
+    tracker = opt.tracker
+    if isdefined(opt, :diff_limit) && isfinite(opt.diff_limit)
+        args = opt.args_buff
+        lb, ub = tracker.vars[1]
+        v0 = lb + (ub - lb) * rand()
+        args[1] = v0
+        for i in 2:opt.idx_max
+            lb, ub = tracker.vars[i]
+            lb = clamp(lb, v0 - opt.diff_limit, v0 + opt.diff_limit)
+            ub = clamp(ub, v0 - opt.diff_limit, v0 + opt.diff_limit)
+            v0 = lb + (ub - lb) * rand()
+            args[i] = v0
+        end
+        for i in opt.idx_max + 1:length(args)
+            lb, ub = tracker.vars[i]
+            args[i] = lb + (ub - lb) * rand()
+        end
+    else
+        args = Opts.init_vars!(tracker, opt.args_buff)
+    end
+    objval, args, ret = NLopt.optimize!(opt.pre_opt, args)
     if getfield(NLopt, ret)::NLopt.Result < 0
         return
     end
